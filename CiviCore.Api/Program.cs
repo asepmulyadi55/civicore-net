@@ -42,6 +42,9 @@ if (app.Environment.IsDevelopment())
 // please comment it while development to avoid certificate error
 app.UseHttpsRedirection();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseTrustProxies();
 app.UseMiddleware<SetLocaleMiddleware>();
 
@@ -58,6 +61,7 @@ app.UseMiddleware<RequireTwoFactorMiddleware>();
 app.UseMiddleware<RequirePermissionMiddleware>();
 
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 using (var scope = app.Services.CreateScope())
 {

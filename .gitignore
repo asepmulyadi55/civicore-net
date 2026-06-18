@@ -1,12 +1,32 @@
-/CiviCore.Api/bin/
-/CiviCore.Api/obj/
-/CiviCore.Core/obj/
-/CiviCore.Core/bin/
-/CiviCore.Tests/obj/
-/CiviCore.Application/bin/
-/CiviCore.Application/obj/
-/CiviCore.Domain/obj/
-/CiviCore.Infrastructure/obj/
-/CiviCore.Infrastructure/bin/
-/CiviCore.Tests/bin/
-/CiviCore.Domain/bin/
+# .NET Core
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userprefs
+*.dbmdl
+*.jfm
+*.p12
+*.snk
+.vs/
+
+# Frontend (Node/Vite/React)
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build Outputs
+/CiviCore.Api/wwwroot/
+
+# OS Files
+.DS_Store
+Thumbs.db

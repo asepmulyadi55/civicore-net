@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import useDarkMode from '../../admin/useDarkMode';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -9,6 +10,7 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [dark, toggleDark] = useDarkMode();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -22,9 +24,12 @@ export default function Login() {
     try {
       const response = await axios.post('/api/auth/login', {
         email: username,
-        password: password
+        password: password,
       });
-      // Handle successful login (e.g., save token, redirect)
+      const { token, user } = response.data;
+      localStorage.setItem('admin_token', token);
+      localStorage.setItem('admin_user', JSON.stringify(user));
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       navigate('/admin/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
@@ -38,17 +43,26 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4 transition-colors">
+      {/* Dark mode toggle */}
+      <button
+        onClick={toggleDark}
+        className="fixed bottom-6 right-6 p-3 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary transition-all duration-200"
+        title="Toggle dark mode"
+      >
+        <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>
+      </button>
+
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <span className="material-icons text-3xl text-primary">admin_panel_settings</span>
+          <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-xl mb-4">
+            <span className="material-icons text-primary text-4xl">admin_panel_settings</span>
           </div>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">Welcome Back</h2>
-          <p className="text-slate-600 dark:text-slate-400">Sign in to your admin account</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Welcome Back</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Sign in to your admin account</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900/50 dark:border dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none rounded-xl overflow-hidden">
           <div className="p-8">
             {error && (
               <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 flex items-center gap-3 text-red-700 dark:text-red-400 text-sm">
@@ -57,7 +71,7 @@ export default function Login() {
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5" htmlFor="username">
                   Username or Email
@@ -83,9 +97,9 @@ export default function Login() {
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300" htmlFor="password">
                     Password
                   </label>
-                  <a className="text-xs font-bold text-primary hover:underline transition-colors" href="/forgot-password">
+                  <Link to="/admin/forgot-password" className="text-xs font-bold text-primary hover:underline transition-colors">
                     Forgot Password?
-                  </a>
+                  </Link>
                 </div>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -96,7 +110,7 @@ export default function Login() {
                     id="password"
                     name="password"
                     placeholder="••••••••"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -110,37 +124,28 @@ export default function Login() {
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  className="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:bg-slate-800 dark:border-slate-700"
-                  id="remember"
-                  name="remember"
-                  type="checkbox"
-                />
-                <label className="ml-2 text-sm text-slate-600 dark:text-slate-400" htmlFor="remember">Remember this device</label>
-              </div>
-
               <button
-                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-primary/20 transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-primary/20 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 type="submit"
                 disabled={isLoading}
               >
+                <span className="material-icons text-lg">{isLoading ? 'hourglass_top' : 'login'}</span>
                 <span>{isLoading ? 'Signing in...' : 'Login to Dashboard'}</span>
               </button>
             </form>
 
-            <div className="relative my-8">
+            <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
+                <div className="w-full border-t border-slate-200 dark:border-slate-800" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white dark:bg-slate-800 px-4 text-slate-500 font-semibold tracking-wider">Or continue with</span>
+                <span className="bg-white dark:bg-slate-900 px-4 text-slate-500 font-semibold tracking-wider">Or continue with</span>
               </div>
             </div>
 
             <button
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center space-x-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 py-3 px-4 rounded-lg transition-all duration-200 group"
+              className="w-full flex items-center justify-center space-x-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 py-3 px-4 rounded-lg transition-all duration-200"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -154,7 +159,8 @@ export default function Login() {
 
           <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-center">
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Don't have an account? <a className="text-primary font-bold hover:underline" href="/register">Register a new account</a>
+              Don't have an account?{' '}
+              <Link to="/admin/register" className="text-primary font-bold hover:underline">Register a new account</Link>
             </p>
           </div>
         </div>

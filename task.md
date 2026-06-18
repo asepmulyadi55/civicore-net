@@ -58,3 +58,8 @@
 - [x] Implement `HomepageController` (CMS endpoints)
 - [x] Implement Additional Controllers (`Meeting`, `Organization`, `PropertyListing`, `Posyandu`, `Setting`, `Overview`)
 - [x] Implement `AuditMiddleware` (Log actions)
+
+### Phase 6: Frontend Decoupling & Deployment (Completed)
+- [x] Configure `vite.config.js` to proxy `/api` to the `.NET` API
+- [x] Update `app.jsx` to use React Router instead of Inertia.js
+- [x] Configure `.NET` API to serve the static frontend `dist` folder in Production
