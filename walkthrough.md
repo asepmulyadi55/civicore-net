@@ -55,10 +55,21 @@ We have successfully completed Phase 4!
 - **`FinanceController`**: Implemented endpoints to fetch finance reports and aggregate transactions.
 - **`ExcelExportService`**: Using `ClosedXML`, we created robust `.xlsx` export capabilities for both Payments and Finance Transactions, completely replacing the old Laravel Excel export logic.
 
+## Phase 5 Complete: Supporting Modules & Supabase Storage
+
+We have successfully completed Phase 5!
+
+### What was accomplished:
+- **`SupabaseStorageService`**: Replaced Laravel's local disk storage with direct integration to Supabase Storage's `civicore-media` private bucket.
+- **`MediaController`**: Handled fetching private files and generating expiring signed URLs to securely stream photos/documents back to the frontend.
+- **`DashboardController`**: Implemented role-specific dashboard metrics, complete with `.NET` `IMemoryCache` (5-minute TTL) to ensure the homepage loads instantly without hammering the database.
+- **CMS & Secondary Controllers**: Built the `HomepageController`, `MeetingController`, `OrganizationController`, `PropertyListingController`, `PosyanduController`, `SettingController`, and `OverviewController`.
+- **`AuditMiddleware`**: Configured custom HTTP auditing to log non-GET requests to ensure any modifying actions are tracked for security.
+
 ## Next Steps
 
-We are ready to proceed to **Phase 5 — Supporting Modules & Supabase Storage**.
-In Phase 5, we will handle:
-- Integrating `SupabaseStorageService` to handle private file uploads instead of Laravel's local disk.
-- Migrating the `DashboardController`, `HomepageController`, `MeetingController`, `OrganizationController`, and `PropertyListingController`.
-- Setting up the `AuditMiddleware` to log actions using `Serilog.Sinks.PostgreSQL`.
+We are now ready for **Phase 6 — Frontend Decoupling & Deployment**.
+This is the final phase! It involves:
+- Ensuring the React frontend (running via Vite) successfully proxies all requests to the `.NET` backend.
+- Final testing and verifying the seamless operation of the system.
+- Deploying the `.NET` web API production bundle.

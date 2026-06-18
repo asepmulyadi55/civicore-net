@@ -51,3 +51,10 @@
 - [x] Implement `FeeHistoryController` (Lookup effective fees by date)
 - [x] Implement `FinanceController` (Finance reports and transactions)
 - [x] Implement `ExcelExportService` using `ClosedXML`
+### Phase 5: Supporting Modules & Supabase Storage (Completed)
+- [x] Implement `SupabaseStorageService` (Upload/Download from `civicore-media` bucket)
+- [x] Implement `MediaController` (Stream files from Supabase Storage)
+- [x] Implement `DashboardController` (Role-specific stats with `IMemoryCache`)
+- [x] Implement `HomepageController` (CMS endpoints)
+- [x] Implement Additional Controllers (`Meeting`, `Organization`, `PropertyListing`, `Posyandu`, `Setting`, `Overview`)
+- [x] Implement `AuditMiddleware` (Log actions)

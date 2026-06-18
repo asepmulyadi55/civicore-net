@@ -17,6 +17,11 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
+builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
+
+var supabaseUrl = builder.Configuration["Supabase:Url"] ?? "https://dummy.supabase.co";
+var supabaseKey = builder.Configuration["Supabase:ServiceRoleKey"] ?? "dummy";
+builder.Services.AddScoped<Supabase.Client>(_ => new Supabase.Client(supabaseUrl, supabaseKey));
 
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
@@ -44,6 +49,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Custom CiviCore Middlewares
+app.UseMiddleware<AuditMiddleware>();
 app.UseMiddleware<VerifyApiKeyMiddleware>();
 app.UseMiddleware<SessionConflictMiddleware>();
 app.UseMiddleware<UpdateLastActiveMiddleware>();
