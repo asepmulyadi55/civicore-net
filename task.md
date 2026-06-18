@@ -39,8 +39,15 @@
 
 ### Phase 3: Master Data Management (Completed)
 - [x] Create `IEncryptionService` and `EncryptionService` (AES-256-GCM)
+
 - [x] Implement `BlockController` (CRUD, assign coordinators)
 - [x] Implement `UnitController` (CRUD, status management)
 - [x] Implement `HouseholderController` (CRUD, encryption, block/unit scope filtering)
 - [x] Implement `ResidentController` (CRUD for family members, mark head-of-household)
 - [x] Implement `RoleController` (List roles, update permissions)
+
+### Phase 4: Financial Module (CiviPay) (Completed)
+- [x] Implement `PaymentController` (Submit proofs, coordinator reviews, treasurer auto-approve)
+- [x] Implement `FeeHistoryController` (Lookup effective fees by date)
+- [x] Implement `FinanceController` (Finance reports and transactions)
+- [x] Implement `ExcelExportService` using `ClosedXML`

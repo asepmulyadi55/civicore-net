@@ -45,10 +45,20 @@ We have successfully completed Phase 3!
 - **`ResidentController`**: Full CRUD added for family members (called residents in the domain model), allowing assignment of the head of household.
 - **`RoleController`**: Full CRUD to view and edit roles and their associated permissions arrays.
 
+## Phase 4 Complete: Financial Module (CiviPay)
+
+We have successfully completed Phase 4!
+
+### What was accomplished:
+- **`PaymentController`**: Fully implemented the complex approval workflow. Coordinators can review payments (which sets them to `Pending`), and Treasurers can automatically `Approve` payments. Snapshots of the Householder, Block, and Unit are saved during creation.
+- **`FeeHistoryController`**: Built logic to retrieve effective monthly fees based on historical dates.
+- **`FinanceController`**: Implemented endpoints to fetch finance reports and aggregate transactions.
+- **`ExcelExportService`**: Using `ClosedXML`, we created robust `.xlsx` export capabilities for both Payments and Finance Transactions, completely replacing the old Laravel Excel export logic.
+
 ## Next Steps
 
-We are now ready to tackle **Phase 4 — Financial Module (CiviPay)**.
-This is the most critical logic block in the system. It handles:
-- The `PaymentController` (submitting proof of transfers, coordinator reviews, treasurer approvals)
-- The `FinanceController` (finance reports, transactions)
-- The `FeeHistoryService` and generating Excel exports via `ClosedXML`.
+We are ready to proceed to **Phase 5 — Supporting Modules & Supabase Storage**.
+In Phase 5, we will handle:
+- Integrating `SupabaseStorageService` to handle private file uploads instead of Laravel's local disk.
+- Migrating the `DashboardController`, `HomepageController`, `MeetingController`, `OrganizationController`, and `PropertyListingController`.
+- Setting up the `AuditMiddleware` to log actions using `Serilog.Sinks.PostgreSQL`.

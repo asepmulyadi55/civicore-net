@@ -16,6 +16,7 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
 
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
