@@ -1,0 +1,5 @@
+/CiviCore.Api/bin/
+/CiviCore.Api/obj/
+/CiviCore.Core/obj/
+/CiviCore.Core/bin/
+/CiviCore.Tests/obj/
