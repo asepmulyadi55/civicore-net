@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
@@ -12,20 +12,62 @@ interface Role {
   users_count?: number;
 }
 
+const AVAILABLE_PERMISSIONS = {
+  overview: ['view'],
+  dashboard: ['view'],
+  homepage: ['view', 'create', 'edit', 'delete'],
+  householders: ['view', 'create', 'edit', 'delete'],
+  household: ['view', 'edit'],
+  blocks: ['view', 'create', 'edit', 'delete'],
+  payments: ['view', 'create', 'edit', 'delete', 'approve'],
+  reports: ['view'],
+  posyandu: ['view'],
+  users: ['view', 'create', 'edit', 'delete', 'approve'],
+  roles: ['view', 'create', 'edit', 'delete'],
+  property: ['view', 'create', 'edit', 'delete'],
+  media: ['view', 'delete'],
+  organization: ['view', 'create', 'edit', 'delete'],
+  finance: ['view', 'create', 'edit', 'delete', 'approve'],
+  meetings: ['view', 'create', 'edit', 'delete']
+};
+
 function RoleModal({ open, onClose, onSaved, data }: { open: boolean; onClose: () => void; onSaved: () => void; data: Role | null }) {
   const isEdit = !!data?.id;
+  const isSystem = ['admin', 'super-admin', 'superadmin'].includes((data?.name || '').toLowerCase());
   const [name, setName] = useState('');
+  const [selectedPerms, setSelectedPerms] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { setName(data?.name || ''); setErrors({}); }, [data, open]);
+  useEffect(() => {
+    setName(data?.name || '');
+    setErrors({});
+    if (data?.permissions) {
+      const set = new Set<string>();
+      data.permissions.forEach((p: any) => set.add(p.permissionKey || p));
+      setSelectedPerms(set);
+    } else {
+      setSelectedPerms(new Set());
+    }
+  }, [data, open]);
+
+  const togglePerm = (key: string) => {
+    if (isSystem) return;
+    const next = new Set(selectedPerms);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    setSelectedPerms(next);
+  };
 
   const handleSave = async () => {
     if (!name.trim()) { setErrors({ name: 'Role name is required.' }); return; }
     setLoading(true); setErrors({});
     try {
-      if (isEdit) await axios.put(`/api/roles/${data!.id}`, { name });
-      else await axios.post('/api/roles', { name });
+      const payload = {
+        name,
+        permissions: Array.from(selectedPerms).map(p => ({ permissionKey: p }))
+      };
+      if (isEdit) await axios.put(`/api/roles/${data!.id}`, payload);
+      else await axios.post('/api/roles', payload);
       onSaved(); onClose();
     } catch (err: any) {
       setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
@@ -33,11 +75,37 @@ function RoleModal({ open, onClose, onSaved, data }: { open: boolean; onClose: (
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit Role' : 'Create Role'} size="sm">
-      <div className="space-y-4">
+    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit Role' : 'Create Role'} size="lg">
+      <div className="space-y-6">
         {errors.general && <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
-        <FormInput label="Role Name" id="role-name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="e.g. Treasurer" />
-        <div className="flex justify-end gap-3 pt-2">
+        
+        <FormInput label="Role Name" id="role-name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="e.g. Treasurer" disabled={isSystem} />
+
+        <div>
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3 uppercase tracking-wider">Permissions</h3>
+          {isSystem && <p className="text-xs text-primary mb-3 p-2 bg-primary/10 rounded">System roles (Admin) automatically have all permissions.</p>}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.entries(AVAILABLE_PERMISSIONS).map(([module, actions]) => (
+              <div key={module} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/50">
+                <h4 className="font-semibold text-slate-700 dark:text-slate-300 capitalize mb-3 text-sm">{module}</h4>
+                <div className="flex flex-wrap gap-2">
+                  {actions.map(action => {
+                    const key = `${module}.${action}`;
+                    const active = isSystem || selectedPerms.has(key);
+                    return (
+                      <button key={action} type="button" onClick={() => togglePerm(key)} disabled={isSystem}
+                        className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${active ? 'bg-primary border-primary text-white' : 'bg-white border-slate-300 text-slate-500 hover:border-primary/50'}`}>
+                        {action}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
           <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
           <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm disabled:opacity-60 transition-all">
             {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Role'}

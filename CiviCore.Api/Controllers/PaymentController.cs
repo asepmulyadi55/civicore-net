@@ -9,6 +9,16 @@ using CiviCore.Api.Services;
 
 namespace CiviCore.Api.Controllers;
 
+public class PaymentCreateDto
+{
+    public Guid HouseholderId { get; set; }
+    public Guid BlockId { get; set; }
+    public decimal AmountPerMonth { get; set; }
+    public List<string> Months { get; set; } = new();
+    public string? Notes { get; set; }
+    public Guid? PaymentMethodId { get; set; }
+}
+
 [ApiController]
 [Route("api/payments")]
 [Authorize]
@@ -24,13 +34,57 @@ public class PaymentController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1)
     {
-        var payments = await _context.Set<PaymentRecord>()
+        var allRecords = await _context.Set<PaymentRecord>()
             .Include(p => p.Block)
             .Include(p => p.Householder)
+            .OrderByDescending(p => p.PaymentMonth)
             .ToListAsync();
-        return Ok(payments);
+
+        var grouped = allRecords
+            .GroupBy(p => p.BatchId?.ToString() ?? p.Id.ToString())
+            .Select(g =>
+            {
+                var lead = g.OrderBy(p => p.PaymentMonth).First();
+                return new
+                {
+                    id = lead.Id, // Lead ID
+                    batchId = g.Key,
+                    householderId = lead.HouseholderId,
+                    householderName = lead.Householder?.Fullname ?? lead.HouseholderName,
+                    blockName = lead.Block?.Name ?? lead.UnitNumber,
+                    unit = lead.UnitNumber,
+                    amount = g.Sum(p => p.Amount),
+                    allMonths = g.Select(p => p.PaymentMonth.ToString("yyyy-MM-ddTHH:mm:ssZ")).OrderBy(m => m).ToList(),
+                    paymentMonth = lead.PaymentMonth.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    status = lead.Status.ToString().ToLower(),
+                    createdAt = lead.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    approvedAt = lead.ApprovedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    rejectionReason = lead.RejectionReason,
+                    notes = lead.Notes
+                };
+            })
+            .OrderByDescending(x => x.status == "pending") // pending first
+            .ThenByDescending(x => x.paymentMonth)
+            .ToList();
+
+        int pageSize = 20;
+        var total = grouped.Count;
+        var pagedData = grouped.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        return Ok(new
+        {
+            data = pagedData,
+            meta = new
+            {
+                current_page = page,
+                last_page = (int)Math.Ceiling(total / (double)pageSize),
+                from = (page - 1) * pageSize + 1,
+                to = Math.Min(page * pageSize, total),
+                total = total
+            }
+        });
     }
 
     [HttpGet("{id}")]
@@ -62,32 +116,61 @@ public class PaymentController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] PaymentRecord payment)
+    public async Task<IActionResult> Create([FromBody] PaymentCreateDto dto)
     {
+        if (dto.Months == null || !dto.Months.Any())
+        {
+            return BadRequest(new { message = "At least one month must be selected." });
+        }
+
         var user = await _userManager.GetUserAsync(User);
-        if (user != null) payment.SubmittedById = user.Id;
-        
         var isTreasurer = user != null && (await _userManager.IsInRoleAsync(user, "Treasurer") || await _userManager.IsInRoleAsync(user, "Admin"));
 
-        if (isTreasurer)
+        var householder = await _context.Set<Householder>().FindAsync(dto.HouseholderId);
+        var block = await _context.Set<Block>().FindAsync(dto.BlockId);
+
+        Guid batchId = Guid.NewGuid();
+        var records = new List<PaymentRecord>();
+
+        foreach (var monthStr in dto.Months)
         {
-            payment.Status = PaymentStatus.Approved;
-            if (user != null) payment.ApprovedById = user.Id;
-            payment.ApprovedAt = DateTime.UtcNow;
-        }
-        else
-        {
-            payment.Status = PaymentStatus.Pending;
+            if (!DateTime.TryParse(monthStr, out var parsedMonth)) continue;
+
+            var payment = new PaymentRecord
+            {
+                BatchId = batchId,
+                HouseholderId = dto.HouseholderId,
+                BlockId = dto.BlockId,
+                HouseholderName = householder?.Fullname,
+                UnitNumber = block?.Name,
+                Amount = dto.AmountPerMonth,
+                PaymentMonth = parsedMonth.ToUniversalTime(),
+                Notes = dto.Notes,
+                Status = isTreasurer ? PaymentStatus.Approved : PaymentStatus.Pending,
+                SubmittedById = user?.Id
+            };
+
+            if (dto.PaymentMethodId.HasValue && dto.PaymentMethodId != Guid.Empty)
+            {
+                payment.PaymentMethodId = dto.PaymentMethodId.Value;
+            }
+
+            if (isTreasurer)
+            {
+                payment.ApprovedById = user?.Id;
+                payment.ApprovedAt = DateTime.UtcNow;
+            }
+
+            records.Add(payment);
         }
 
-        var householder = await _context.Set<Householder>().FindAsync(payment.HouseholderId);
-        var block = await _context.Set<Block>().FindAsync(payment.BlockId);
-        if (householder != null) payment.HouseholderName = householder.Fullname;
-        if (block != null) payment.UnitNumber = block.Name; // assuming snapshot
-        
-        _context.Set<PaymentRecord>().Add(payment);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = payment.Id }, payment);
+        if (records.Any())
+        {
+            _context.Set<PaymentRecord>().AddRange(records);
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new { batchId = batchId, count = records.Count });
     }
 
     [HttpPut("{id}")]

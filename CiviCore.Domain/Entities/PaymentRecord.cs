@@ -20,16 +20,16 @@ public class PaymentRecord
     public DateTime PaymentMonth { get; set; }
     public decimal Amount { get; set; }
     
-    public Guid PaymentMethodId { get; set; }
-    public PaymentMethod PaymentMethod { get; set; } = null!;
+    public Guid? PaymentMethodId { get; set; }
+    public PaymentMethod? PaymentMethod { get; set; }
     
     public string? ProofPath { get; set; }
     public PaymentStatus Status { get; set; } = PaymentStatus.Unpaid;
     public string? RejectionReason { get; set; }
     public string? Notes { get; set; }
     
-    public Guid SubmittedById { get; set; }
-    public ApplicationUser SubmittedBy { get; set; } = null!;
+    public Guid? SubmittedById { get; set; }
+    public ApplicationUser? SubmittedBy { get; set; }
     
     public Guid? ApprovedById { get; set; }
     public ApplicationUser? ApprovedBy { get; set; }

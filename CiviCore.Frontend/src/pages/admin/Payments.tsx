@@ -75,31 +75,39 @@ function ReviewModal({ open, onClose, payment, onApprove, onReject }) {
 }
 
 function PaymentModal({ open, onClose, onSaved }) {
-  const [form, setForm] = useState({ householderId: '', blockId: '', amount: '', paymentMonth: '', notes: '' });
+  const [form, setForm] = useState({ householderId: '', amount: 0, notes: '', year: new Date().getFullYear() });
   const [householders, setHouseholders] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [selectedMonths, setSelectedMonths] = useState(new Set());
 
   useEffect(() => {
     if (open) {
-      setForm({ householderId: '', blockId: '', amount: '', paymentMonth: new Date().toISOString().slice(0, 7), notes: '' });
+      setForm({ householderId: '', amount: 0, notes: '', year: new Date().getFullYear() });
+      setSelectedMonths(new Set());
       setErrors({});
       axios.get('/api/householders').then(res => setHouseholders(res.data.data || res.data)).catch(() => {});
-      axios.get('/api/blocks').then(res => setBlocks(res.data)).catch(() => {});
     }
   }, [open]);
+
+  const toggleMonth = (m) => {
+    const next = new Set(selectedMonths);
+    if (next.has(m)) next.delete(m); else next.add(m);
+    setSelectedMonths(next);
+  };
 
   const handleSave = async () => {
     setLoading(true); setErrors({});
     try {
+      const selectedResident = householders.find(h => h.id === form.householderId);
       const payload = {
         householderId: form.householderId,
-        blockId: form.blockId,
-        amount: Number(form.amount),
-        paymentMonth: `${form.paymentMonth}-01T00:00:00Z`,
+        blockId: selectedResident?.blockId || "00000000-0000-0000-0000-000000000000",
+        amountPerMonth: Number(form.amount),
+        months: Array.from(selectedMonths).map(m => `${form.year}-${String(m).padStart(2, '0')}-01T00:00:00Z`),
         notes: form.notes,
-        paymentMethodId: "00000000-0000-0000-0000-000000000000" // Default/empty GUID if not used
+        paymentMethodId: null
       };
       await axios.post('/api/payments', payload);
       onSaved(); onClose();
@@ -108,29 +116,66 @@ function PaymentModal({ open, onClose, onSaved }) {
     } finally { setLoading(false); }
   };
 
+  const totalAmount = form.amount * selectedMonths.size;
+
   return (
-    <Modal open={open} onClose={onClose} title="Record Payment" size="md">
-      <div className="space-y-4">
+    <Modal open={open} onClose={onClose} title="Record Payment" size="lg">
+      <div className="space-y-6">
         {errors.general && <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
-        <div className="grid grid-cols-2 gap-4">
-          <FormSelect label="Resident" id="pm-res" value={form.householderId} onChange={e => setForm(f => ({ ...f, householderId: e.target.value }))}
-            options={householders.map(h => ({ value: h.id, label: h.fullname }))} required placeholder="Select Resident" />
-          <FormSelect label="Block/Unit" id="pm-blk" value={form.blockId} onChange={e => setForm(f => ({ ...f, blockId: e.target.value }))}
-            options={blocks.map(b => ({ value: b.id, label: b.name }))} required placeholder="Select Block" />
+        <div className="grid grid-cols-1 gap-4">
+          <FormSelect label="Resident" id="pm-res" value={form.householderId} onChange={e => {
+            const hId = e.target.value;
+            const res = householders.find(h => h.id === hId);
+            const amount = res?.currentFee?.amount || res?.fee || 0; // fallback logic
+            setForm(f => ({ ...f, householderId: hId, amount }));
+          }}
+            options={householders.map(h => ({ value: h.id, label: `${h.fullname} (Unit ${h.unit?.unitNumber || h.unit_number || '?'})` }))} required placeholder="Select Resident" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <FormInput label="Amount (Rp)" id="pm-amt" type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} required placeholder="0" />
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Payment Month *</label>
-            <input type="month" value={form.paymentMonth} onChange={e => setForm(f => ({ ...f, paymentMonth: e.target.value }))}
-              className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-sm font-semibold text-slate-700">Select Months</label>
+            <select value={form.year} onChange={e => setForm(f => ({ ...f, year: Number(e.target.value) }))} className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-700">
+              {[0, 1, 2].map(i => <option key={i} value={new Date().getFullYear() - i}>{new Date().getFullYear() - i}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {MONTH_NAMES.map((name, idx) => {
+              const m = idx + 1;
+              const sel = selectedMonths.has(m);
+              return (
+                <button key={m} onClick={() => toggleMonth(m)}
+                  className={`py-3 flex flex-col items-center justify-center rounded-xl border-2 transition-all ${sel ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'}`}>
+                  <span className="text-xs font-bold text-slate-700">{name.substring(0, 3)}</span>
+                  <span className={`text-[10px] font-bold uppercase mt-1 ${sel ? 'text-primary' : 'text-slate-400'}`}>{sel ? 'Selected' : 'Unpaid'}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
-        <FormInput label="Notes" id="pm-not" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="e.g. Paid in cash" />
-        <div className="flex justify-end gap-3 pt-2">
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormInput label="Amount per Month (Rp)" id="pm-amt" type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} required placeholder="0" />
+          <FormInput label="Notes" id="pm-not" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="e.g. Paid in cash" />
+        </div>
+
+        {selectedMonths.size > 0 && (
+          <div className="p-4 bg-primary/10 rounded-xl border border-primary/20 flex justify-between items-center">
+            <div>
+              <p className="text-xs font-bold text-primary uppercase">Total Calculated</p>
+              <p className="text-2xl font-extrabold text-slate-900 mt-1">Rp {totalAmount.toLocaleString('id-ID')}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-bold text-slate-700">{selectedMonths.size} Months Selected</p>
+              <p className="text-[11px] text-slate-500">{Array.from(selectedMonths).sort((a,b)=>a-b).map(m => MONTH_NAMES[m-1].substring(0,3)).join(', ')}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 mt-4">
           <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50">Cancel</button>
-          <button onClick={handleSave} disabled={loading || !form.householderId || !form.blockId || !form.amount} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold disabled:opacity-60">
-            {loading ? 'Saving...' : 'Record Payment'}
+          <button onClick={handleSave} disabled={loading || !form.householderId || !form.amount || selectedMonths.size === 0} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold disabled:opacity-60 flex items-center gap-2">
+            <span className="material-icons text-sm">verified</span> {loading ? 'Saving...' : 'Record Payment'}
           </button>
         </div>
       </div>
@@ -284,7 +329,23 @@ export default function Payments() {
                     <span className="text-slate-400 font-normal ml-1">Â· {p.unit || '—'}</span>
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                    {p.paymentMonth ? new Date(p.paymentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}
+                    {p.allMonths && p.allMonths.length > 0 ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {p.allMonths.map(m => MONTH_NAMES[new Date(m).getMonth()].substring(0, 3)).join(', ')}
+                        </span>
+                        <span className="text-[11px] text-slate-400">{new Date(p.allMonths[0]).getFullYear()}</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {p.paymentMonth ? MONTH_NAMES[new Date(p.paymentMonth).getMonth()].substring(0, 3) : '—'}
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          {p.paymentMonth ? new Date(p.paymentMonth).getFullYear() : '—'}
+                        </span>
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">
                     Rp {(p.amount || 0).toLocaleString('id-ID')}
