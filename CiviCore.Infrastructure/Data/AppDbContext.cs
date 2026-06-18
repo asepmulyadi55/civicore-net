@@ -85,5 +85,24 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             .WithMany()
             .HasForeignKey(m => m.CreatedById)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // OrganizationPosition Hierarchy
+        builder.Entity<OrganizationPosition>()
+            .HasOne(op => op.Parent)
+            .WithMany(op => op.Children)
+            .HasForeignKey(op => op.ParentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<OrganizationPosition>()
+            .HasOne(op => op.Resident)
+            .WithMany()
+            .HasForeignKey(op => op.ResidentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<OrganizationPosition>()
+            .HasOne(op => op.Householder)
+            .WithMany()
+            .HasForeignKey(op => op.HouseholderId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
