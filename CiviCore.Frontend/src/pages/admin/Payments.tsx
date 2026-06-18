@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
@@ -74,6 +74,70 @@ function ReviewModal({ open, onClose, payment, onApprove, onReject }) {
   );
 }
 
+function PaymentModal({ open, onClose, onSaved }) {
+  const [form, setForm] = useState({ householderId: '', blockId: '', amount: '', paymentMonth: '', notes: '' });
+  const [householders, setHouseholders] = useState([]);
+  const [blocks, setBlocks] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setForm({ householderId: '', blockId: '', amount: '', paymentMonth: new Date().toISOString().slice(0, 7), notes: '' });
+      setErrors({});
+      axios.get('/api/householders').then(res => setHouseholders(res.data.data || res.data)).catch(() => {});
+      axios.get('/api/blocks').then(res => setBlocks(res.data)).catch(() => {});
+    }
+  }, [open]);
+
+  const handleSave = async () => {
+    setLoading(true); setErrors({});
+    try {
+      const payload = {
+        householderId: form.householderId,
+        blockId: form.blockId,
+        amount: Number(form.amount),
+        paymentMonth: `${form.paymentMonth}-01T00:00:00Z`,
+        notes: form.notes,
+        paymentMethodId: "00000000-0000-0000-0000-000000000000" // Default/empty GUID if not used
+      };
+      await axios.post('/api/payments', payload);
+      onSaved(); onClose();
+    } catch (err) {
+      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Failed to save payment.' });
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Record Payment" size="md">
+      <div className="space-y-4">
+        {errors.general && <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
+        <div className="grid grid-cols-2 gap-4">
+          <FormSelect label="Resident" id="pm-res" value={form.householderId} onChange={e => setForm(f => ({ ...f, householderId: e.target.value }))}
+            options={householders.map(h => ({ value: h.id, label: h.fullname }))} required placeholder="Select Resident" />
+          <FormSelect label="Block/Unit" id="pm-blk" value={form.blockId} onChange={e => setForm(f => ({ ...f, blockId: e.target.value }))}
+            options={blocks.map(b => ({ value: b.id, label: b.name }))} required placeholder="Select Block" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormInput label="Amount (Rp)" id="pm-amt" type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} required placeholder="0" />
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Payment Month *</label>
+            <input type="month" value={form.paymentMonth} onChange={e => setForm(f => ({ ...f, paymentMonth: e.target.value }))}
+              className="block w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
+        </div>
+        <FormInput label="Notes" id="pm-not" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="e.g. Paid in cash" />
+        <div className="flex justify-end gap-3 pt-2">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50">Cancel</button>
+          <button onClick={handleSave} disabled={loading || !form.householderId || !form.blockId || !form.amount} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold disabled:opacity-60">
+            {loading ? 'Saving...' : 'Record Payment'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 export default function Payments() {
   const [data, setData] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -82,6 +146,7 @@ export default function Payments() {
   const [filters, setFilters] = useState({ search: '', status: '', page: 1 });
   const [selected, setSelected] = useState([]);
   const [reviewItem, setReviewItem] = useState(null);
+  const [addModal, setAddModal] = useState(false);
   const [confirm, setConfirm] = useState({ open: false, item: null, loading: false });
 
   const token = localStorage.getItem('admin_token');
@@ -125,6 +190,7 @@ export default function Payments() {
 
   return (
     <AdminLayout title="Payments">
+      <PaymentModal open={addModal} onClose={() => setAddModal(false)} onSaved={fetchData} />
       <ReviewModal open={!!reviewItem} onClose={() => setReviewItem(null)} payment={reviewItem} onApprove={fetchData} />
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
@@ -144,7 +210,16 @@ export default function Payments() {
         ))}
       </div>
 
-      <PageHeader title="Payment Records" subtitle="Manage and review resident payment submissions" />
+      <PageHeader 
+        title="Payment Records" 
+        subtitle="Manage and review resident payment submissions" 
+        actions={
+          <button onClick={() => setAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all">
+            <span className="material-icons text-sm">add</span> Record Payment
+          </button>
+        }
+      />
 
       <FilterBar>
         <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search resident, block…" />

@@ -11,6 +11,8 @@ public class Meeting
     public Guid CreatedById { get; set; }
     public ApplicationUser CreatedBy { get; set; } = null!;
 
+    public string Status { get; set; } = "scheduled";
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     

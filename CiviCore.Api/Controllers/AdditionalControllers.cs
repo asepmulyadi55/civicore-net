@@ -13,13 +13,6 @@ public class HomepageController : ControllerBase
     }
 }
 
-[ApiController]
-[Route("api/[controller]")]
-public class MeetingController : ControllerBase
-{
-    [HttpGet]
-    public IActionResult Get() { return Ok(new string[] {}); }
-}
 
 [ApiController]
 [Route("api/[controller]")]

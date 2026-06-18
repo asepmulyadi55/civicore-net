@@ -44,6 +44,23 @@ public class PaymentController : ControllerBase
         return Ok(payment);
     }
 
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats()
+    {
+        var total = await _context.Set<PaymentRecord>().CountAsync();
+        var pending = await _context.Set<PaymentRecord>().CountAsync(p => p.Status == PaymentStatus.Pending);
+        var approved = await _context.Set<PaymentRecord>().CountAsync(p => p.Status == PaymentStatus.Approved);
+        var rejected = await _context.Set<PaymentRecord>().CountAsync(p => p.Status == PaymentStatus.Rejected);
+
+        return Ok(new
+        {
+            total,
+            pending,
+            approved,
+            rejected
+        });
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PaymentRecord payment)
     {
