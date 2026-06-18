@@ -1,6 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using CiviCore.Domain.Entities;
+using CiviCore.Api.Services;
+using System.Security.Claims;
+using OtpNet;
+using QRCoder;
 
 namespace CiviCore.Api.Controllers
 {
@@ -10,38 +16,40 @@ namespace CiviCore.Api.Controllers
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
 
-        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailService emailService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
-            {
                 return BadRequest(new { message = "Email and password are required" });
-            }
 
             var user = await _userManager.FindByEmailAsync(request.Email) ?? await _userManager.FindByNameAsync(request.Email);
             if (user == null)
-            {
                 return Unauthorized(new { message = "Invalid credentials" });
-            }
 
-            var result = await _signInManager.PasswordSignInAsync(user.UserName!, request.Password, request.RememberMe, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(user.UserName!, request.Password, request.RememberMe, lockoutOnFailure: true);
             if (result.Succeeded)
             {
-                // In a real app we'd return a JWT or set a cookie here. 
-                // ASP.NET Core Identity automatically sets an auth cookie.
-                return Ok(new { message = "Login successful", username = user.UserName });
+                user.SessionToken = Guid.NewGuid().ToString();
+                user.LastLoginAt = DateTime.UtcNow;
+                user.LastActiveAt = DateTime.UtcNow;
+                await _userManager.UpdateAsync(user);
+
+                // Add session token to cookie manually if needed, but we will store it in the claims later via custom claims principal factory
+                return Ok(new { message = "Login successful", username = user.UserName, session_token = user.SessionToken });
             }
 
             if (result.RequiresTwoFactor)
             {
-                return StatusCode(403, new { message = "Two factor authentication required" });
+                return StatusCode(403, new { message = "Two factor authentication required", requires_2fa = true });
             }
 
             return Unauthorized(new { message = "Invalid credentials" });
@@ -50,8 +58,165 @@ namespace CiviCore.Api.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                user.SessionToken = null;
+                await _userManager.UpdateAsync(user);
+            }
             await _signInManager.SignOutAsync();
             return Ok(new { message = "Logged out successfully" });
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            if (request.Password != request.ConfirmPassword)
+                return BadRequest(new { message = "Passwords do not match" });
+
+            var user = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                Name = request.Name,
+                IsActive = false // requires approval by default
+            };
+
+            var result = await _userManager.CreateAsync(user, request.Password);
+            if (result.Succeeded)
+            {
+                return Ok(new { message = "Registration successful, pending approval." });
+            }
+
+            return BadRequest(new { message = "Registration failed", errors = result.Errors });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user != null)
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email!)}";
+                
+                await _emailService.SendEmailAsync(user.Email!, "Reset Password", $"Click here to reset your password: <a href=\"{resetLink}\">Reset Password</a>");
+            }
+            // Always return OK to prevent email enumeration
+            return Ok(new { message = "If the email is registered, a password reset link has been sent." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null) return BadRequest(new { message = "Invalid request." });
+
+            var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+            if (result.Succeeded)
+                return Ok(new { message = "Password reset successful." });
+
+            return BadRequest(new { message = "Error resetting password.", errors = result.Errors });
+        }
+
+        [HttpGet("google")]
+        public IActionResult GoogleLogin()
+        {
+            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse") };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("google-response")]
+        public async Task<IActionResult> GoogleResponse()
+        {
+            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            if (!result.Succeeded) return BadRequest();
+
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            if (email == null) return BadRequest();
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                // Auto register google user
+                user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    Name = result.Principal.FindFirstValue(ClaimTypes.Name) ?? "Google User",
+                    GoogleId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier),
+                    IsActive = true
+                };
+                await _userManager.CreateAsync(user);
+            }
+            else if (string.IsNullOrEmpty(user.GoogleId))
+            {
+                user.GoogleId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+                await _userManager.UpdateAsync(user);
+            }
+
+            user.SessionToken = Guid.NewGuid().ToString();
+            await _userManager.UpdateAsync(user);
+
+            await _signInManager.SignInAsync(user, isPersistent: true);
+            return Redirect("/"); // Redirect to frontend
+        }
+
+        [HttpPost("2fa/setup")]
+        public async Task<IActionResult> Setup2FA()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var key = KeyGeneration.GenerateRandomKey(20);
+            var secret = Base32Encoding.ToString(key);
+
+            user.TwoFactorSecretKey = secret;
+            await _userManager.UpdateAsync(user);
+
+            var totpUri = new OtpUri(OtpType.Totp, secret, user.Email, "CiviCore");
+            
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrCodeData = qrGenerator.CreateQrCode(totpUri.ToString(), QRCodeGenerator.ECCLevel.Q);
+            using var qrCode = new PngByteQRCode(qrCodeData);
+            var qrCodeImage = qrCode.GetGraphic(20);
+            
+            var base64Image = Convert.ToBase64String(qrCodeImage);
+
+            return Ok(new { secret = secret, qrCode = $"data:image/png;base64,{base64Image}" });
+        }
+
+        [HttpPost("2fa/verify")]
+        public async Task<IActionResult> Verify2FA([FromBody] Verify2FARequest request)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+            if (string.IsNullOrEmpty(user.TwoFactorSecretKey)) return BadRequest(new { message = "2FA not setup." });
+
+            var totp = new Totp(Base32Encoding.ToBytes(user.TwoFactorSecretKey));
+            if (totp.VerifyTotp(request.Code, out _, window: null))
+            {
+                user.TwoFactorEnabledAt = DateTime.UtcNow;
+                await _userManager.SetTwoFactorEnabledAsync(user, true);
+                await _userManager.UpdateAsync(user);
+                return Ok(new { message = "2FA enabled successfully." });
+            }
+
+            return BadRequest(new { message = "Invalid code." });
+        }
+
+        [HttpPost("2fa/disable")]
+        public async Task<IActionResult> Disable2FA()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            user.TwoFactorEnabledAt = null;
+            user.TwoFactorSecretKey = null;
+            await _userManager.SetTwoFactorEnabledAsync(user, false);
+            await _userManager.UpdateAsync(user);
+
+            return Ok(new { message = "2FA disabled." });
         }
     }
 
@@ -61,4 +226,21 @@ namespace CiviCore.Api.Controllers
         public string Password { get; set; } = string.Empty;
         public bool RememberMe { get; set; } = false;
     }
+
+    public class RegisterRequest
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
+    public class ForgotPasswordRequest { public string Email { get; set; } = string.Empty; }
+    public class ResetPasswordRequest 
+    { 
+        public string Email { get; set; } = string.Empty; 
+        public string Token { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+    }
+    public class Verify2FARequest { public string Code { get; set; } = string.Empty; }
 }

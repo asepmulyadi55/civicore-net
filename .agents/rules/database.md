@@ -20,3 +20,8 @@ globs: civicore-net/**/*.cs
 ## 3. Optimization
 - Design tables with appropriate foreign keys and cascading deletes.
 - Ensure proper indexes on frequently searched columns (e.g., `ResidentId`, `TransactionDate`, `BlockNumber`).
+
+## 4. Laravel-to-PostgreSQL Parity & Security
+- **Soft Deletes:** Implement Soft Deletes behavior across all transactional tables using a `DeletedAt` timestamp. Configure EF Core Global Query Filters (`HasQueryFilter`) to automatically exclude deleted records.
+- **Row Level Security (RLS):** Enable RLS on Supabase tables to protect data from direct client-side exploits using the Anon Key, while ensuring the .NET Backend bypasses it safely using the Service Role Key for authorized requests.
+- **Connection Pooling:** Ensure the DB context utilizes connection pooling effectively to prevent hitting PostgreSQL connection limits on the low-spec Lightsail instance.

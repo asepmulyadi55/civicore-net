@@ -18,3 +18,8 @@ globs: civicore-net/CiviCore.Frontend/**/*.{ts,tsx,css}
 ## 3. UI/UX & Role Guards
 - Component routing and UI elements must be dynamically guarded based on the 4 CiviCore roles (Admin, Treasurer, Block Coordinator, Resident).
 - Handle loading states and API errors gracefully with intuitive UI feedback (e.g., skeletons or toast notifications).
+
+## 4. Security & Performance Guardrails
+- **Token Isolation:** Strictly prohibit the use or exposure of the Supabase Service Role Key. Since the frontend communicates exclusively through the .NET API Gateway, do not inject or use any Supabase keys in the client-side environment.
+- **Private Storage Access:** Never fetch private assets directly via public URLs. Always request a short-lived Signed URL from the .NET Backend API.
+- **Bundle Optimization:** Keep dependencies minimal and use tree-shaking to ensure fast loading times, considering potential low-bandwidth clients.

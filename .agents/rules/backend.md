@@ -3,7 +3,7 @@ trigger: glob
 globs: civicore-net/**/*.cs
 ---
 
-# CiviCore Backend Rules (.NET 10)
+# CiviCore Backend Rules (.NET 8)
 
 ## 1. Stack & Architecture
 - **Framework:** Always use .NET 8 (LTS) and C# 12 features.
@@ -23,3 +23,8 @@ globs: civicore-net/**/*.cs
 
 ## 4. Business Logic Guardrails
 - **User Roles:** Ensure system logic strictly respects the 4 roles: Admin, Treasurer (Bendahara), Block Coordinator (Koordinator Blok/Ketua RT), and Resident (Warga).
+
+## 5. EF Core & Security Guardrails
+- **No Lazy Loading:** Explicitly disable lazy loading proxies. Always use `.Include()` for eager loading to prevent N+1 query issues that drain database connections and memory.
+- **Secret Management:** Never hardcode any keys. Use `IConfiguration` or Environment Variables to inject the Supabase URL and Service Role Key.
+- **Role-Based Access (RBAC):** Map Supabase JWT claims directly to ASP.NET Core Authorization Policies to enforce the 4 system roles at the API controller level.

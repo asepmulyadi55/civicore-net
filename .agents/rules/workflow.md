@@ -17,3 +17,6 @@ trigger: always_on
 - Keep in mind that CiviCore is being migrated from Laravel/MySQL to .NET Core/Supabase.
 - When transforming logic, map Laravel Eloquent patterns directly to efficient EF Core LINQ queries, and Laravel Middlewares to ASP.NET Core Authorization Policies.
 - Always double-check database schema translations to prevent data loss during migration.
+
+## 4. Code Safety Guardrail
+- **No Production Secrets:** Never output real API keys, connection strings, or production credentials in code blocks. Always use placeholders like `YOUR_SUPABASE_KEY` or `Configuration["Supabase:ServiceRoleKey"]`.

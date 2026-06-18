@@ -1,6 +1,8 @@
 using CiviCore.Infrastructure;
 using CiviCore.Domain.Entities;
 using CiviCore.Infrastructure.Data;
+using CiviCore.Api.Services;
+using CiviCore.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,16 @@ builder.Services.AddSwaggerGen();
 // Configure Infrastructure Layer
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Google:ClientId"] ?? "dummy";
+        options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? "dummy";
+    });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -22,10 +34,21 @@ if (app.Environment.IsDevelopment())
 }
 
 // please comment it while development to avoid certificate error
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
+
+app.UseTrustProxies();
+app.UseMiddleware<SetLocaleMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Custom CiviCore Middlewares
+app.UseMiddleware<VerifyApiKeyMiddleware>();
+app.UseMiddleware<SessionConflictMiddleware>();
+app.UseMiddleware<UpdateLastActiveMiddleware>();
+app.UseMiddleware<EnsureUserIsApprovedMiddleware>();
+app.UseMiddleware<RequireTwoFactorMiddleware>();
+app.UseMiddleware<RequirePermissionMiddleware>();
 
 app.MapControllers();
 
