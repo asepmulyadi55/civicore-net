@@ -1,7 +1,6 @@
-using CiviCore.Api.Models;
-using CiviCore.Api.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
+using CiviCore.Infrastructure;
+using CiviCore.Domain.Entities;
+using CiviCore.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,18 +9,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure Database
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("SupabaseConnection")));
-
-// Configure Identity
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(opt => {
-    opt.Password.RequireDigit = true;
-    opt.Password.RequiredLength = 8;
-    opt.Lockout.MaxFailedAccessAttempts = 5;
-})
-.AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();
+// Configure Infrastructure Layer
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 var app = builder.Build();
 
@@ -32,7 +21,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// please comment it while development to avoid certificate error
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -46,10 +36,10 @@ using (var scope = app.Services.CreateScope())
     {
         // This won't do anything until the DB is created/migrated,
         // but it will safely attempt to seed data when ready.
-        var context = services.GetRequiredService<CiviCore.Api.Data.AppDbContext>();
+        var context = services.GetRequiredService<CiviCore.Infrastructure.Data.AppDbContext>();
         if (context.Database.CanConnect())
         {
-            await CiviCore.Api.Data.DataSeeder.SeedDataAsync(services);
+            await CiviCore.Infrastructure.Data.DataSeeder.SeedDataAsync(services);
         }
     }
     catch (Exception ex)

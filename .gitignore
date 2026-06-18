@@ -3,3 +3,10 @@
 /CiviCore.Core/obj/
 /CiviCore.Core/bin/
 /CiviCore.Tests/obj/
+/CiviCore.Application/bin/
+/CiviCore.Application/obj/
+/CiviCore.Domain/obj/
+/CiviCore.Infrastructure/obj/
+/CiviCore.Infrastructure/bin/
+/CiviCore.Tests/bin/
+/CiviCore.Domain/bin/

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using CiviCore.Api.Models;
+using CiviCore.Domain.Entities;
 
 namespace CiviCore.Api.Controllers
 {
