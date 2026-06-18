@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -9,6 +9,7 @@ import Dashboard from './pages/admin/Dashboard';
 // Wave 1
 import Householders from './pages/admin/Householders';
 import Blocks from './pages/admin/Blocks';
+import Units from './pages/admin/Units';
 import Payments from './pages/admin/Payments';
 import Users from './pages/admin/Users';
 // Wave 2
@@ -78,6 +79,7 @@ export default function Router() {
         {/* Wave 1 — Community & Payments */}
         <Route path="/admin/householders" element={<RequireAuth><Householders /></RequireAuth>} />
         <Route path="/admin/blocks" element={<RequireAuth><Blocks /></RequireAuth>} />
+        <Route path="/admin/blocks/:id/units" element={<RequireAuth><Units /></RequireAuth>} />
         <Route path="/admin/payments" element={<RequireAuth><Payments /></RequireAuth>} />
         <Route path="/admin/users" element={<RequireAuth><Users /></RequireAuth>} />
 

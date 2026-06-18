@@ -140,7 +140,7 @@ export default function BuletinPage() {
                                 type="text"
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                placeholder="Search bulletinsâ€¦"
+                                placeholder="Search bulletins…"
                                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 transition-all"
                                 style={{ borderColor: C.border, background: C.cardBg, color: C.primary, fontFamily: "'Inter', sans-serif" }}
                             />
@@ -271,7 +271,7 @@ export default function BuletinPage() {
 
                             {pages.map((p) =>
                                 typeof p === 'string' ? (
-                                    <span key={p} className="px-1 text-sm" style={{ color: C.muted }}>â€¦</span>
+                                    <span key={p} className="px-1 text-sm" style={{ color: C.muted }}>…</span>
                                 ) : (
                                     <button
                                         key={p}

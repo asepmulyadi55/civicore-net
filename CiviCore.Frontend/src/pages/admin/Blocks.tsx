@@ -192,7 +192,7 @@ export default function Blocks() {
       />
 
       <FilterBar>
-        <SearchInput value={search} onChange={setSearch} placeholder="Search blocksâ€¦" />
+        <SearchInput value={search} onChange={setSearch} placeholder="Search blocks…" />
       </FilterBar>
 
       {loading ? (

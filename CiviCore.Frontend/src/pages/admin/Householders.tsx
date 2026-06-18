@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
@@ -19,15 +19,15 @@ const HOUSE_STATUS_OPTIONS = [
 function HouseholderModal({ open, onClose, onSaved, data, blocks }) {
   const isEdit = !!data?.id;
   const [form, setForm] = useState({
-    fullname: '', unit_number: '', block_id: '', house_status: 'owner_occupied', is_active: true,
+    fullname: '', unitId: '', blockId: '', houseStatus: 0, isActive: true,
     phone: '', email: '',
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (data) setForm({ fullname: data.fullname || '', unit_number: data.unit_number || '', block_id: data.block_id || '', house_status: data.house_status || 'owner_occupied', is_active: data.is_active !== false, phone: data.phone || '', email: data.email || '' });
-    else setForm({ fullname: '', unit_number: '', block_id: '', house_status: 'owner_occupied', is_active: true, phone: '', email: '' });
+    if (data) setForm({ fullname: data.fullname || '', unitId: data.unitId || '', blockId: data.blockId || '', houseStatus: data.houseStatus ?? 0, isActive: data.isActive !== false, phone: data.phone || '', email: data.email || '' });
+    else setForm({ fullname: '', unitId: '', blockId: '', houseStatus: 0, isActive: true, phone: '', email: '' });
     setErrors({});
   }, [data, open]);
 
@@ -51,20 +51,27 @@ function HouseholderModal({ open, onClose, onSaved, data, blocks }) {
         {errors.general && <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-sm rounded-lg">{errors.general}</div>}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput label="Full Name" id="h-fullname" value={form.fullname} onChange={set('fullname')} error={errors.fullname} required />
-          <FormInput label="Unit Number" id="h-unit" value={form.unit_number} onChange={set('unit_number')} error={errors.unit_number} required />
+          <FormSelect label="Block" id="h-block" value={form.blockId} onChange={e => setForm(p => ({ ...p, blockId: e.target.value, unitId: '' }))} error={errors.blockId} required
+            options={(blocks || []).map(b => ({ value: b.id, label: b.name }))} placeholder="Select Block" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormSelect label="Block" id="h-block" value={form.block_id} onChange={set('block_id')} error={errors.block_id} required
-            options={(blocks || []).map(b => ({ value: b.id, label: b.name }))} placeholder="Select Block" />
-          <FormSelect label="House Status" id="h-status" value={form.house_status} onChange={set('house_status')} error={errors.house_status}
-            options={HOUSE_STATUS_OPTIONS} />
+          <FormSelect label="Unit Number" id="h-unit" value={form.unitId} onChange={set('unitId')} error={errors.unitId} required
+            options={(blocks.find(b => b.id === form.blockId)?.units || []).map(u => ({ value: u.id, label: u.unitNumber }))} placeholder="Select Unit" />
+          <FormSelect label="House Status (Override)" id="h-status" value={String(form.houseStatus)} onChange={e => setForm(p => ({ ...p, houseStatus: Number(e.target.value) }))} error={errors.houseStatus}
+            options={[
+              { value: '0', label: 'Owner Occupied' },
+              { value: '1', label: 'Rented' },
+              { value: '2', label: 'Vacant' },
+              { value: '3', label: 'Public Facility' },
+              { value: '4', label: 'Developer' }
+            ]} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput label="Phone" id="h-phone" value={form.phone} onChange={set('phone')} error={errors.phone} />
           <FormInput label="Email" id="h-email" type="email" value={form.email} onChange={set('email')} error={errors.email} />
         </div>
         <div className="flex items-center gap-3 pt-1">
-          <input type="checkbox" id="h-active" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))}
+          <input type="checkbox" id="h-active" checked={form.isActive} onChange={e => setForm(p => ({ ...p, isActive: e.target.checked }))}
             className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30" />
           <label htmlFor="h-active" className="text-sm font-medium text-slate-700 dark:text-slate-300">Active householder</label>
         </div>
@@ -155,7 +162,7 @@ export default function Householders() {
       />
 
       <FilterBar>
-        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search name, unit, phoneâ€¦" />
+        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search name, unit, phone…" />
         <SelectFilter value={filters.block_id} onChange={v => setFilter('block_id', v)} options={blockOptions} placeholder="All Blocks" />
         <SelectFilter value={filters.status} onChange={v => setFilter('status', v)}
           options={[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]} placeholder="All Status" />
@@ -188,7 +195,7 @@ export default function Householders() {
               <tr><td colSpan={6}><EmptyState icon="people_outline" title="No residents found" subtitle="Try adjusting your filters" /></td></tr>
             ) : data.map(h => {
               const initials = h.fullname?.split(' ').map(w => w[0]?.toUpperCase() || '').slice(0, 2).join('') || '?';
-              const blockLabel = h.block ? `${h.block.name} Â· ${h.unit_number}` : h.unit_number;
+              const blockLabel = h.block && h.unit ? `${h.block.name} • ${h.unit.unitNumber}` : 'Unassigned';
               return (
                 <tr key={h.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="w-12 px-6 py-4 text-center">
@@ -206,13 +213,13 @@ export default function Householders() {
                     </div>
                   </td>
                   <td className="px-6 py-4 hidden sm:table-cell">
-                    <StatusBadge status={h.house_status || 'owner_occupied'} />
+                    <StatusBadge status={['owner_occupied', 'rented', 'vacant', 'public_facility', 'developer'][h.unit?.houseStatus ?? 0]} />
                   </td>
                   <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white text-right">
-                    Rp {(h.monthly_fee || 0).toLocaleString('id-ID')}
+                    Rp {(h.monthlyFee || 0).toLocaleString('id-ID')}
                   </td>
                   <td className="px-6 py-4">
-                    <StatusBadge status={h.is_active ? 'active' : 'inactive'} />
+                    <StatusBadge status={h.isActive ? 'active' : 'inactive'} />
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-1">

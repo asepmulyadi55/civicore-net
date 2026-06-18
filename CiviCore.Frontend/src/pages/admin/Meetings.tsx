@@ -144,7 +144,7 @@ export default function Meetings() {
       />
 
       <FilterBar>
-        <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search meetingsâ€¦" />
+        <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search meetings…" />
         <SelectFilter value={filters.status} onChange={(v) => setFilter('status', v)} options={STATUS_OPTIONS} placeholder="All Status" />
         <button onClick={() => setFilters({ search: '', status: '', page: 1 })}
           className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors">

@@ -125,7 +125,7 @@ export default function Media() {
       <div className="mb-6">
         <div className="relative w-full sm:max-w-sm">
           <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search filesâ€¦"
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search files…"
             className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none dark:text-white" />
         </div>
       </div>

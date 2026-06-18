@@ -147,7 +147,7 @@ export default function Payments() {
       <PageHeader title="Payment Records" subtitle="Manage and review resident payment submissions" />
 
       <FilterBar>
-        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search resident, blockâ€¦" />
+        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search resident, block…" />
         <SelectFilter value={filters.status} onChange={v => setFilter('status', v)}
           options={[
             { value: 'pending', label: 'Pending' },

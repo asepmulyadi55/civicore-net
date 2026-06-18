@@ -10,7 +10,7 @@ using CiviCore.Api.Services;
 namespace CiviCore.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/payments")]
 [Authorize]
 public class PaymentController : ControllerBase
 {

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace CiviCore.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/roles")]
 [Authorize(Roles = "admin")]
 public class RoleController : ControllerBase
 {

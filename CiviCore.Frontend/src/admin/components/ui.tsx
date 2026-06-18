@@ -65,11 +65,11 @@ export function Pagination({ meta, onChange }: { meta: any; onChange: (page: num
           disabled={current_page === 1} onClick={() => onChange(current_page - 1)}>
           <span className="material-icons text-sm">chevron_left</span>
         </button>
-        {start > 1 && (<><button className={`${btnBase} ${btnNormal} px-3 py-1.5`} onClick={() => onChange(1)}>1</button>{start > 2 && <span className="text-slate-400 text-sm px-1">â€¦</span>}</>)}
+        {start > 1 && (<><button className={`${btnBase} ${btnNormal} px-3 py-1.5`} onClick={() => onChange(1)}>1</button>{start > 2 && <span className="text-slate-400 text-sm px-1">…</span>}</>)}
         {pages.map(p => (
           <button key={p} className={`${btnBase} px-3 py-1.5 ${p === current_page ? btnActive : btnNormal}`} onClick={() => onChange(p)}>{p}</button>
         ))}
-        {end < last_page && (<>{end < last_page - 1 && <span className="text-slate-400 text-sm px-1">â€¦</span>}<button className={`${btnBase} ${btnNormal} px-3 py-1.5`} onClick={() => onChange(last_page)}>{last_page}</button></>)}
+        {end < last_page && (<>{end < last_page - 1 && <span className="text-slate-400 text-sm px-1">…</span>}<button className={`${btnBase} ${btnNormal} px-3 py-1.5`} onClick={() => onChange(last_page)}>{last_page}</button></>)}
         <button className={`${btnBase} ${current_page === last_page ? btnDisabled : btnNormal}`}
           disabled={current_page === last_page} onClick={() => onChange(current_page + 1)}>
           <span className="material-icons text-sm">chevron_right</span>

@@ -251,7 +251,7 @@ export default function Users() {
       />
 
       <FilterBar>
-        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search name, email, usernameâ€¦" />
+        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search name, email, username…" />
         <SelectFilter value={filters.role} onChange={v => setFilter('role', v)} options={roleOptions} placeholder="All Roles" />
         <SelectFilter value={filters.status} onChange={v => setFilter('status', v)}
           options={[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }, { value: 'pending', label: 'Pending Approval' }]}

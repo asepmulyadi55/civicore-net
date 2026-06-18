@@ -128,7 +128,7 @@ export default function PropertyAdmin() {
       />
 
       <FilterBar>
-        <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search title, locationâ€¦" />
+        <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search title, location…" />
         <FormSelect label="" id="pf-type" value={filters.type} onChange={(e) => setFilter('type', e.target.value)} options={TYPE_OPTIONS} placeholder="All Types" />
         <FormSelect label="" id="pf-status" value={filters.status} onChange={(e) => setFilter('status', e.target.value)} options={STATUS_OPTIONS} placeholder="All Status" />
         <button onClick={() => setFilters({ search: '', type: '', status: '', page: 1 })}
