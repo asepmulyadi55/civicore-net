@@ -1,7 +1,8 @@
-using CiviCore.Api.Models;
-using CiviCore.Api.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
+using CiviCore.Infrastructure;
+using CiviCore.Domain.Entities;
+using CiviCore.Infrastructure.Data;
+using CiviCore.Api.Services;
+using CiviCore.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,18 +11,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure Database
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("SupabaseConnection")));
+// Configure Infrastructure Layer
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// Configure Identity
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(opt => {
-    opt.Password.RequireDigit = true;
-    opt.Password.RequiredLength = 8;
-    opt.Lockout.MaxFailedAccessAttempts = 5;
-})
-.AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Google:ClientId"] ?? "dummy";
+        options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? "dummy";
+    });
 
 var app = builder.Build();
 
@@ -32,10 +33,22 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// please comment it while development to avoid certificate error
 app.UseHttpsRedirection();
+
+app.UseTrustProxies();
+app.UseMiddleware<SetLocaleMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Custom CiviCore Middlewares
+app.UseMiddleware<VerifyApiKeyMiddleware>();
+app.UseMiddleware<SessionConflictMiddleware>();
+app.UseMiddleware<UpdateLastActiveMiddleware>();
+app.UseMiddleware<EnsureUserIsApprovedMiddleware>();
+app.UseMiddleware<RequireTwoFactorMiddleware>();
+app.UseMiddleware<RequirePermissionMiddleware>();
 
 app.MapControllers();
 
@@ -46,10 +59,10 @@ using (var scope = app.Services.CreateScope())
     {
         // This won't do anything until the DB is created/migrated,
         // but it will safely attempt to seed data when ready.
-        var context = services.GetRequiredService<CiviCore.Api.Data.AppDbContext>();
+        var context = services.GetRequiredService<CiviCore.Infrastructure.Data.AppDbContext>();
         if (context.Database.CanConnect())
         {
-            await CiviCore.Api.Data.DataSeeder.SeedDataAsync(services);
+            await CiviCore.Infrastructure.Data.DataSeeder.SeedDataAsync(services);
         }
     }
     catch (Exception ex)
