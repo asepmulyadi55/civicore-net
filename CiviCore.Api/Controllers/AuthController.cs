@@ -7,6 +7,7 @@ using CiviCore.Api.Services;
 using System.Security.Claims;
 using OtpNet;
 using QRCoder;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CiviCore.Api.Controllers
 {
@@ -26,6 +27,7 @@ namespace CiviCore.Api.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting("AuthLimit")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
@@ -69,6 +71,7 @@ namespace CiviCore.Api.Controllers
         }
 
         [HttpPost("register")]
+        [EnableRateLimiting("AuthLimit")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             if (request.Password != request.ConfirmPassword)
@@ -76,7 +79,7 @@ namespace CiviCore.Api.Controllers
 
             var user = new ApplicationUser
             {
-                UserName = request.Email,
+                UserName = string.IsNullOrEmpty(request.Username) ? request.Email : request.Username,
                 Email = request.Email,
                 Name = request.Name,
                 IsActive = false // requires approval by default
@@ -92,6 +95,7 @@ namespace CiviCore.Api.Controllers
         }
 
         [HttpPost("forgot-password")]
+        [EnableRateLimiting("AuthLimit")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
@@ -231,6 +235,7 @@ namespace CiviCore.Api.Controllers
     {
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string ConfirmPassword { get; set; } = string.Empty;
     }

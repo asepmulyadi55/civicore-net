@@ -4,12 +4,37 @@
 @custom-variant dark (&:is(.dark *));
 
 
+:root {
+  --color-app-primary: #1C2D27;
+  --color-app-secondary: #D4AF37;
+  --color-app-surface: #FAF9F6;
+  --color-app-surface-var: #E8E6E1;
+  --color-app-on-surface: #2C2C2C;
+  --color-app-on-surface-var: #595959;
+}
+
+.dark {
+  --color-app-primary: #D4AF37;
+  --color-app-secondary: #D4AF37;
+  --color-app-surface: #0D1A17;
+  --color-app-surface-var: #1C2D27;
+  --color-app-on-surface: #F0EDE8;
+  --color-app-on-surface-var: #9E9C97;
+}
+
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 
-    /* Custom brand colors */
-    --color-primary: #1A237E;
+    /* Custom brand colors dynamically linked to light/dark mode */
+    --color-primary: var(--color-app-primary);
+    --color-secondary: var(--color-app-secondary);
+    --color-surface: var(--color-app-surface);
+    --color-surface-var: var(--color-app-surface-var);
+    --color-on-surface: var(--color-app-on-surface);
+    --color-on-surface-var: var(--color-app-on-surface-var);
+
+    /* Keep the old ones just in case */
     --color-indigo-950: #1A237E;
     --color-coral-500: #FF7043;
     --color-warm-gray-50: #FDFDFD;
