@@ -39,8 +39,27 @@
 
 ### Phase 3: Master Data Management (Completed)
 - [x] Create `IEncryptionService` and `EncryptionService` (AES-256-GCM)
+
 - [x] Implement `BlockController` (CRUD, assign coordinators)
 - [x] Implement `UnitController` (CRUD, status management)
 - [x] Implement `HouseholderController` (CRUD, encryption, block/unit scope filtering)
 - [x] Implement `ResidentController` (CRUD for family members, mark head-of-household)
 - [x] Implement `RoleController` (List roles, update permissions)
+
+### Phase 4: Financial Module (CiviPay) (Completed)
+- [x] Implement `PaymentController` (Submit proofs, coordinator reviews, treasurer auto-approve)
+- [x] Implement `FeeHistoryController` (Lookup effective fees by date)
+- [x] Implement `FinanceController` (Finance reports and transactions)
+- [x] Implement `ExcelExportService` using `ClosedXML`
+### Phase 5: Supporting Modules & Supabase Storage (Completed)
+- [x] Implement `SupabaseStorageService` (Upload/Download from `civicore-media` bucket)
+- [x] Implement `MediaController` (Stream files from Supabase Storage)
+- [x] Implement `DashboardController` (Role-specific stats with `IMemoryCache`)
+- [x] Implement `HomepageController` (CMS endpoints)
+- [x] Implement Additional Controllers (`Meeting`, `Organization`, `PropertyListing`, `Posyandu`, `Setting`, `Overview`)
+- [x] Implement `AuditMiddleware` (Log actions)
+
+### Phase 6: Frontend Decoupling & Deployment (Completed)
+- [x] Configure `vite.config.js` to proxy `/api` to the `.NET` API
+- [x] Update `app.jsx` to use React Router instead of Inertia.js
+- [x] Configure `.NET` API to serve the static frontend `dist` folder in Production

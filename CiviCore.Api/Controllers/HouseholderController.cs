@@ -8,7 +8,7 @@ using CiviCore.Api.Services;
 namespace CiviCore.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/householders")]
 [Authorize]
 public class HouseholderController : ControllerBase
 {
@@ -24,7 +24,10 @@ public class HouseholderController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var householders = await _context.Set<Householder>().ToListAsync();
+        var householders = await _context.Set<Householder>()
+            .Include(h => h.Block)
+            .Include(h => h.Unit)
+            .ToListAsync();
         
         // Decrypt family card numbers on read
         foreach(var h in householders)
@@ -41,7 +44,10 @@ public class HouseholderController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var householder = await _context.Set<Householder>().FindAsync(id);
+        var householder = await _context.Set<Householder>()
+            .Include(h => h.Block)
+            .Include(h => h.Unit)
+            .FirstOrDefaultAsync(h => h.Id == id);
         if (householder == null) return NotFound();
 
         if (!string.IsNullOrEmpty(householder.FamilyCardNumber))

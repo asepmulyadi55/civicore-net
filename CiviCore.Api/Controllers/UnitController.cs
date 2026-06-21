@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace CiviCore.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/units")]
 [Authorize]
 public class UnitController : ControllerBase
 {

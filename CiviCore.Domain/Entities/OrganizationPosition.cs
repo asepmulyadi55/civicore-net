@@ -8,8 +8,17 @@ public class OrganizationPosition
     
     public string PositionName { get; set; } = string.Empty;
     
-    public Guid? UserId { get; set; }
-    public ApplicationUser? User { get; set; }
+    // Hierarchical Tree Structure
+    public Guid? ParentId { get; set; }
+    public OrganizationPosition? Parent { get; set; }
+    public ICollection<OrganizationPosition> Children { get; set; } = new List<OrganizationPosition>();
+    
+    // Linked person (can be either a Resident or a Householder)
+    public Guid? ResidentId { get; set; }
+    public Resident? Resident { get; set; }
+    
+    public Guid? HouseholderId { get; set; }
+    public Householder? Householder { get; set; }
     
     public int SortOrder { get; set; } = 0;
 

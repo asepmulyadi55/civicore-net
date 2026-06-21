@@ -24,7 +24,7 @@ public class VerifyApiKeyMiddleware
             }
 
             var apiKey = _config["CivicoreApiKey"];
-            if (!apiKey.Equals(extractedApiKey))
+            if (apiKey != extractedApiKey)
             {
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsJsonAsync(new { message = "Unauthorized client." });

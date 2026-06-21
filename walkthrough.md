@@ -45,10 +45,40 @@ We have successfully completed Phase 3!
 - **`ResidentController`**: Full CRUD added for family members (called residents in the domain model), allowing assignment of the head of household.
 - **`RoleController`**: Full CRUD to view and edit roles and their associated permissions arrays.
 
-## Next Steps
+## Phase 4 Complete: Financial Module (CiviPay)
 
-We are now ready to tackle **Phase 4 — Financial Module (CiviPay)**.
-This is the most critical logic block in the system. It handles:
-- The `PaymentController` (submitting proof of transfers, coordinator reviews, treasurer approvals)
-- The `FinanceController` (finance reports, transactions)
-- The `FeeHistoryService` and generating Excel exports via `ClosedXML`.
+We have successfully completed Phase 4!
+
+### What was accomplished:
+- **`PaymentController`**: Fully implemented the complex approval workflow. Coordinators can review payments (which sets them to `Pending`), and Treasurers can automatically `Approve` payments. Snapshots of the Householder, Block, and Unit are saved during creation.
+- **`FeeHistoryController`**: Built logic to retrieve effective monthly fees based on historical dates.
+- **`FinanceController`**: Implemented endpoints to fetch finance reports and aggregate transactions.
+- **`ExcelExportService`**: Using `ClosedXML`, we created robust `.xlsx` export capabilities for both Payments and Finance Transactions, completely replacing the old Laravel Excel export logic.
+
+## Phase 5 Complete: Supporting Modules & Supabase Storage
+
+We have successfully completed Phase 5!
+
+### What was accomplished:
+- **`SupabaseStorageService`**: Replaced Laravel's local disk storage with direct integration to Supabase Storage's `civicore-media` private bucket.
+- **`MediaController`**: Handled fetching private files and generating expiring signed URLs to securely stream photos/documents back to the frontend.
+- **`DashboardController`**: Implemented role-specific dashboard metrics, complete with `.NET` `IMemoryCache` (5-minute TTL) to ensure the homepage loads instantly without hammering the database.
+- **CMS & Secondary Controllers**: Built the `HomepageController`, `MeetingController`, `OrganizationController`, `PropertyListingController`, `PosyanduController`, `SettingController`, and `OverviewController`.
+- **`AuditMiddleware`**: Configured custom HTTP auditing to log non-GET requests to ensure any modifying actions are tracked for security.
+
+## Phase 6 Complete: Frontend Decoupling & Deployment
+
+We have successfully completed Phase 6, which marks the completion of the migration! 🎉
+
+### What was accomplished:
+- **Frontend Decoupling**: Verified that `vite.config.js` and React Router are fully configured for a standalone Single Page Application (SPA), officially decoupling the frontend from Laravel's routing and Inertia.js.
+- **Production Static Serving**: Updated `CiviCore.Api/Program.cs` with `app.UseDefaultFiles()` and `app.UseStaticFiles()` to serve the React frontend `dist` directory directly.
+- **SPA Fallback Routing**: Added `app.MapFallbackToFile("index.html")` so that client-side routing works seamlessly when hosted via the .NET API.
+- **Production Build**: Successfully ran `npm run build` using Vite to compile the React frontend, and placed the compiled assets into `CiviCore.Api/wwwroot`.
+
+The `.NET` Web API is now fully capable of acting as both the API server and the production web host for the compiled React frontend!
+
+---
+
+## Migration Complete 🚀
+The system has been successfully migrated from Laravel to `.NET 8` and `React`. All tasks in our implementation plan have been accomplished. Excellent work!
