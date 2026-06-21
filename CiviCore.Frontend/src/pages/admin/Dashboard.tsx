@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
@@ -53,10 +53,11 @@ export default function Dashboard() {
 
     Promise.all([
       axios.get('/api/dashboard/stats').catch(() => ({ data: {} })),
-      axios.get('/api/payment?limit=10').catch(() => ({ data: [] })),
+      axios.get('/api/payments?page=1').catch(() => ({ data: { data: [] } })),
     ]).then(([statsRes, paymentsRes]) => {
       setStats(statsRes.data);
-      setPayments(Array.isArray(paymentsRes.data) ? paymentsRes.data.slice(0, 10) : []);
+      const paymentsData = paymentsRes.data.data || paymentsRes.data;
+      setPayments(Array.isArray(paymentsData) ? paymentsData.slice(0, 10) : []);
     }).finally(() => setLoading(false));
   }, []);
 

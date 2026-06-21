@@ -30,12 +30,19 @@ namespace CiviCore.Api.Services
             using var client = new SmtpClient();
             var host = _config["Smtp:Host"] ?? "localhost";
             var port = int.TryParse(_config["Smtp:Port"], out var p) ? p : 25;
+            var user = _config["Smtp:User"];
+            var pass = _config["Smtp:Pass"];
             
-            // For development, we can catch failures or use MailHog
             try
             {
-                await client.ConnectAsync(host, port, false);
-                // await client.AuthenticateAsync(_config["Smtp:User"], _config["Smtp:Pass"]);
+                // Use Auto so it automatically upgrades to STARTTLS for ports like 587 (Gmail)
+                await client.ConnectAsync(host, port, MailKit.Security.SecureSocketOptions.Auto);
+                
+                if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(pass))
+                {
+                    await client.AuthenticateAsync(user, pass);
+                }
+                
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }

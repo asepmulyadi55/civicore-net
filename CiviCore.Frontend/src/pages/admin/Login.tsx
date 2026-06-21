@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, useSearchParams } from 'react-router-dom';
 import useDarkMode from '../../admin/useDarkMode';
 
 export default function Login() {
@@ -13,9 +13,29 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [dark, toggleDark] = useDarkMode();
   
-  const successMessage = location.state?.message;
+  const [successMessage, setSuccessMessage] = useState(location.state?.message);
+
+  React.useEffect(() => {
+    const token = searchParams.get('token');
+    const userStr = searchParams.get('user');
+    const msg = searchParams.get('message');
+    const isError = searchParams.get('isError');
+
+    if (msg) {
+      if (isError) setError(msg);
+      else setSuccessMessage(msg);
+    }
+
+    if (token && userStr) {
+      localStorage.setItem('admin_token', token);
+      localStorage.setItem('admin_user', userStr);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      navigate('/admin/dashboard');
+    }
+  }, [searchParams, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -45,7 +65,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = '/api/auth/google';
+    window.location.href = '/api/auth/google?intent=login';
   };
 
   return (
@@ -59,7 +79,7 @@ export default function Login() {
             <h1 className="text-3xl font-extrabold text-on-surface tracking-tight">Dwipapuri</h1>
             <p className="text-on-surface-var mt-2 font-medium">Internal Admin Dashboard</p>
           </div>
-          
+
           <div className="bg-surface dark:bg-surface-var border border-surface-var shadow-xl rounded-xl overflow-hidden">
             <div className="p-8">
               <div className="mb-6">
@@ -90,7 +110,7 @@ export default function Login() {
                       <span className="material-icons text-on-surface-var text-sm">alternate_email</span>
                     </span>
                     <input
-                      className={`block w-full pl-10 pr-4 py-2.5 bg-surface border border-surface-var rounded-lg text-on-surface placeholder:text-on-surface-var focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none ${!username && error ? 'border-red-500 dark:border-red-500' : ''}`}
+                      className={`block w-full pl-10 pr-4 py-2.5 bg-surface border border-surface-var rounded-lg text-on-surface placeholder:text-on-surface-var focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none ${!username && error === 'Please enter your username/email and password.' ? 'border-red-500 dark:border-red-500' : ''}`}
                       id="username"
                       name="username"
                       placeholder="admin@civicore.com"
@@ -115,7 +135,7 @@ export default function Login() {
                       <span className="material-icons text-on-surface-var text-sm">lock_outline</span>
                     </span>
                     <input
-                      className={`block w-full pl-10 pr-10 py-2.5 bg-surface border border-surface-var rounded-lg text-on-surface placeholder:text-on-surface-var focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none [&::-ms-reveal]:hidden [&::-webkit-contacts-auto-fill-button]:hidden ${!password && error ? 'border-red-500 dark:border-red-500' : ''}`}
+                      className={`block w-full pl-10 pr-10 py-2.5 bg-surface border border-surface-var rounded-lg text-on-surface placeholder:text-on-surface-var focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none [&::-ms-reveal]:hidden [&::-webkit-contacts-auto-fill-button]:hidden ${!password && error === 'Please enter your username/email and password.' ? 'border-red-500 dark:border-red-500' : ''}`}
                       id="password"
                       name="password"
                       placeholder="••••••••"

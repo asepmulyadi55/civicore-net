@@ -18,12 +18,14 @@ namespace CiviCore.Api.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _config;
 
-        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailService emailService)
+        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailService emailService, IConfiguration config)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _emailService = emailService;
+            _config = config;
         }
 
         [HttpPost("login")]
@@ -45,8 +47,11 @@ namespace CiviCore.Api.Controllers
                 user.LastActiveAt = DateTime.UtcNow;
                 await _userManager.UpdateAsync(user);
 
+                var roles = await _userManager.GetRolesAsync(user);
+                var userRole = roles.FirstOrDefault() ?? "";
+
                 // Add session token to cookie manually if needed, but we will store it in the claims later via custom claims principal factory
-                return Ok(new { message = "Login successful", username = user.UserName, session_token = user.SessionToken });
+                return Ok(new { message = "Login successful", token = user.SessionToken, user = new { name = user.Name, email = user.Email, role = userRole } });
             }
 
             if (result.RequiresTwoFactor)
@@ -124,14 +129,14 @@ namespace CiviCore.Api.Controllers
         }
 
         [HttpGet("google")]
-        public IActionResult GoogleLogin()
+        public IActionResult GoogleLogin([FromQuery] string intent = "login")
         {
-            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse") };
+            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse", new { intent }) };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
         [HttpGet("google-response")]
-        public async Task<IActionResult> GoogleResponse()
+        public async Task<IActionResult> GoogleResponse([FromQuery] string intent = "login")
         {
             var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
             if (!result.Succeeded) return BadRequest();
@@ -139,19 +144,31 @@ namespace CiviCore.Api.Controllers
             var email = result.Principal.FindFirstValue(ClaimTypes.Email);
             if (email == null) return BadRequest();
 
+            var frontendUrl = _config["FrontendUrl"] ?? "/";
+            var loginUrl = frontendUrl.Replace("/dashboard", "/login");
+            var registerUrl = frontendUrl.Replace("/dashboard", "/register");
+
             var user = await _userManager.FindByEmailAsync(email);
+
+            if (user != null && intent == "register")
+            {
+                return Redirect($"{registerUrl}?error={Uri.EscapeDataString("An account with this Google email already exists. Please sign in instead.")}");
+            }
+
             if (user == null)
             {
-                // Auto register google user
+                // Auto register google user (pending approval)
                 user = new ApplicationUser
                 {
                     UserName = email,
                     Email = email,
                     Name = result.Principal.FindFirstValue(ClaimTypes.Name) ?? "Google User",
                     GoogleId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier),
-                    IsActive = true
+                    IsActive = false // Requires approval by default!
                 };
                 await _userManager.CreateAsync(user);
+                
+                return Redirect($"{loginUrl}?message={Uri.EscapeDataString("Registration successful! Your account is pending admin approval.")}");
             }
             else if (string.IsNullOrEmpty(user.GoogleId))
             {
@@ -159,11 +176,24 @@ namespace CiviCore.Api.Controllers
                 await _userManager.UpdateAsync(user);
             }
 
+            if (!user.IsActive)
+            {
+                return Redirect($"{loginUrl}?message={Uri.EscapeDataString("Your account is still pending admin approval.")}&isError=true");
+            }
+
             user.SessionToken = Guid.NewGuid().ToString();
             await _userManager.UpdateAsync(user);
 
             await _signInManager.SignInAsync(user, isPersistent: true);
-            return Redirect("/"); // Redirect to frontend
+            
+            var roles = await _userManager.GetRolesAsync(user);
+            var userRole = roles.FirstOrDefault() ?? "";
+
+            var userJson = System.Text.Json.JsonSerializer.Serialize(new { name = user.Name, email = user.Email, role = userRole });
+            var encodedUser = Uri.EscapeDataString(userJson);
+            
+            // Redirect to login page with token so the React frontend can save it to localStorage
+            return Redirect($"{loginUrl}?token={user.SessionToken}&user={encodedUser}");
         }
 
         [HttpPost("2fa/setup")]

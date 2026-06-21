@@ -30,3 +30,4 @@ dist-ssr/
 # OS Files
 .DS_Store
 Thumbs.db
+CiviCore.Api/appsettings.json

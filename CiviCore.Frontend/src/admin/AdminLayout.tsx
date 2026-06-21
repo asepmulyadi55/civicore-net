@@ -8,43 +8,43 @@ const NAV_GROUPS = [
   {
     label: null,
     items: [
-      { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard' },
+      { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
     ],
   },
   {
     label: 'Community',
     icon: 'groups',
     items: [
-      { key: 'householders', label: 'Residents', icon: 'people', path: '/admin/householders' },
-      { key: 'blocks', label: 'Blocks', icon: 'domain', path: '/admin/blocks' },
-      { key: 'organization', label: 'Organization', icon: 'account_tree', path: '/admin/organization' },
-      { key: 'meetings', label: 'Meetings', icon: 'event_note', path: '/admin/meetings' },
+      { key: 'householders', label: 'Residents', icon: 'people', path: '/admin/householders', roles: ['admin', 'block_coordinator'] },
+      { key: 'blocks', label: 'Blocks', icon: 'domain', path: '/admin/blocks', roles: ['admin', 'block_coordinator'] },
+      { key: 'organization', label: 'Organization', icon: 'account_tree', path: '/admin/organization', roles: ['admin'] },
+      { key: 'meetings', label: 'Meetings', icon: 'event_note', path: '/admin/meetings', roles: ['admin', 'block_coordinator'] },
     ],
   },
   {
     label: 'Finance',
     icon: 'attach_money',
     items: [
-      { key: 'finance', label: 'Finance', icon: 'account_balance', path: '/admin/finance' },
-      { key: 'payments', label: 'Payments', icon: 'payments', path: '/admin/payments' },
-      { key: 'reports', label: 'Reports', icon: 'bar_chart', path: '/admin/reports' },
+      { key: 'finance', label: 'Finance', icon: 'account_balance', path: '/admin/finance', roles: ['admin', 'treasurer'] },
+      { key: 'payments', label: 'Payments', icon: 'payments', path: '/admin/payments', roles: ['admin', 'treasurer'] },
+      { key: 'reports', label: 'Reports', icon: 'bar_chart', path: '/admin/reports', roles: ['admin', 'treasurer'] },
     ],
   },
   {
     label: 'Administration',
     icon: 'admin_panel_settings',
     items: [
-      { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/admin/users' },
-      { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/admin/roles' },
-      { key: 'property', label: 'Property', icon: 'home_work', path: '/admin/property' },
-      { key: 'homepage', label: 'Homepage CMS', icon: 'public', path: '/admin/homepage' },
-      { key: 'media', label: 'Media', icon: 'perm_media', path: '/admin/media' },
+      { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/admin/users', roles: ['admin'] },
+      { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/admin/roles', roles: ['admin'] },
+      { key: 'property', label: 'Property', icon: 'home_work', path: '/admin/property', roles: ['admin'] },
+      { key: 'homepage', label: 'Homepage CMS', icon: 'public', path: '/admin/homepage', roles: ['admin'] },
+      { key: 'media', label: 'Media', icon: 'perm_media', path: '/admin/media', roles: ['admin'] },
     ],
   },
   {
     label: null,
     items: [
-      { key: 'settings', label: 'Settings', icon: 'settings', path: '/admin/settings' },
+      { key: 'settings', label: 'Settings', icon: 'settings', path: '/admin/settings', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
     ],
   },
 ];
@@ -65,14 +65,19 @@ function NavItem({ item, isActive }) {
   );
 }
 
-function NavGroup({ group, activePath }) {
-  const isGroupActive = group.items.some(i => activePath.startsWith(i.path));
+function NavGroup({ group, activePath, userRole }) {
+  // Filter items based on user role
+  const visibleItems = group.items.filter(i => i.roles.includes(userRole));
+  
+  if (visibleItems.length === 0) return null;
+
+  const isGroupActive = visibleItems.some(i => activePath.startsWith(i.path));
   const [open, setOpen] = useState(isGroupActive);
 
   if (!group.label) {
     return (
       <div className="space-y-0.5">
-        {group.items.map(item => (
+        {visibleItems.map(item => (
           <NavItem key={item.key} item={item} isActive={activePath.startsWith(item.path)} />
         ))}
       </div>
@@ -95,7 +100,7 @@ function NavGroup({ group, activePath }) {
       </button>
       {open && (
         <div className="pl-3 space-y-0.5 mt-0.5">
-          {group.items.map(item => (
+          {visibleItems.map(item => (
             <NavItem key={item.key} item={item} isActive={activePath.startsWith(item.path)} />
           ))}
         </div>
@@ -146,7 +151,7 @@ export default function AdminLayout({ children, title }) {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
           {NAV_GROUPS.map((group, i) => (
-            <NavGroup key={i} group={group} activePath={location.pathname} />
+            <NavGroup key={i} group={group} activePath={location.pathname} userRole={user.role} />
           ))}
         </nav>
 

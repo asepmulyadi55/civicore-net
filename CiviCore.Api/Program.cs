@@ -65,6 +65,7 @@ builder.Services.AddAuthentication()
     {
         options.ClientId = builder.Configuration["Google:ClientId"] ?? "dummy";
         options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? "dummy";
+        options.CallbackPath = "/auth/google/callback";
     });
 
 var app = builder.Build();
