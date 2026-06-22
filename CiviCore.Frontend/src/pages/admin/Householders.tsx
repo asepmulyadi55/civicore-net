@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import {
@@ -56,7 +57,7 @@ function HouseholderModal({ open, onClose, onSaved, data, blocks }) {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormSelect label="Unit Number" id="h-unit" value={form.unitId} onChange={set('unitId')} error={errors.unitId} required
-            options={(blocks.find(b => b.id === form.blockId)?.units || []).map(u => ({ value: u.id, label: u.unitNumber }))} placeholder="Select Unit" />
+            options={(blocks.find(b => b.id === form.blockId)?.units || []).filter(u => !u.isAssigned).map(u => ({ value: u.id, label: u.unitNumber }))} placeholder="Select Unit" />
           <FormSelect label="House Status (Override)" id="h-status" value={String(form.houseStatus)} onChange={e => setForm(p => ({ ...p, houseStatus: Number(e.target.value) }))} error={errors.houseStatus}
             options={[
               { value: '0', label: 'Owner Occupied' },
@@ -76,8 +77,8 @@ function HouseholderModal({ open, onClose, onSaved, data, blocks }) {
           <label htmlFor="h-active" className="text-sm font-medium text-slate-700 dark:text-slate-300">Active householder</label>
         </div>
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm shadow-primary/20 transition-all disabled:opacity-60">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
             {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Householder'}
           </button>
         </div>
@@ -155,22 +156,22 @@ export default function Householders() {
         subtitle="Manage all residential units and occupants"
         actions={
           <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all">
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
             <span className="material-icons text-sm">add</span> Add Householder
           </button>
         }
       />
 
-      <FilterBar>
-        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search name, unit, phone…" />
+      <div className="mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
+        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search name, unit, or phone..." />
         <SelectFilter value={filters.block_id} onChange={v => setFilter('block_id', v)} options={blockOptions} placeholder="All Blocks" />
         <SelectFilter value={filters.status} onChange={v => setFilter('status', v)}
           options={[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]} placeholder="All Status" />
         <button onClick={() => setFilters({ search: '', block_id: '', status: '', page: 1 })}
-          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors">
+          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
           <span className="material-icons text-sm">close</span> Clear
         </button>
-      </FilterBar>
+      </div>
 
       <BulkActionBar count={selected.length} onDelete={() => openConfirm('bulk', null)} />
 
@@ -179,15 +180,15 @@ export default function Householders() {
       ) : (
         <TableWrapper>
           <thead>
-            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800/50">
               <th className="w-12 px-6 py-4 text-center">
-                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
+                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded bg-transparent border-slate-400 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
               </th>
-              <Th>Household</Th>
-              <Th className="hidden sm:table-cell">House Status</Th>
-              <Th className="text-right">Monthly Fee</Th>
-              <Th>Status</Th>
-              <Th className="text-center">Actions</Th>
+              <Th>Household &uarr;</Th>
+              <Th className="hidden sm:table-cell">House Status &uarr;</Th>
+              <Th>Monthly Fee</Th>
+              <Th>Status &uarr;</Th>
+              <Th className="text-right pr-6">Actions</Th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -195,44 +196,44 @@ export default function Householders() {
               <tr><td colSpan={6}><EmptyState icon="people_outline" title="No residents found" subtitle="Try adjusting your filters" /></td></tr>
             ) : data.map(h => {
               const initials = h.fullname?.split(' ').map(w => w[0]?.toUpperCase() || '').slice(0, 2).join('') || '?';
-              const blockLabel = h.block && h.unit ? `${h.block.name} • ${h.unit.unitNumber}` : 'Unassigned';
+              const blockLabel = h.block && h.unit ? `${h.block.name} - ${h.unit.unitNumber}` : 'Unassigned';
               return (
-                <tr key={h.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <tr key={h.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/30 last:border-0">
                   <td className="w-12 px-6 py-4 text-center">
-                    <input type="checkbox" checked={selected.includes(h.id)} onChange={() => toggleOne(h.id)} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
+                    <input type="checkbox" checked={selected.includes(h.id)} onChange={() => toggleOne(h.id)} className="w-4 h-4 rounded bg-transparent border-slate-400 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <Avatar name={h.fullname} photo={h.photo_url} />
+                      <div className="w-9 h-9 rounded-md bg-primary text-white dark:text-slate-900 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                        {initials}
+                      </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-slate-900 dark:text-white">{h.fullname}</span>
-                        </div>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">{blockLabel}</span>
+                        <div className="text-sm font-semibold text-slate-900 dark:text-white leading-none mb-1">{h.fullname}</div>
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300">{blockLabel}</span>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 hidden sm:table-cell">
                     <StatusBadge status={['owner_occupied', 'rented', 'vacant', 'public_facility', 'developer'][h.unit?.houseStatus ?? 0]} />
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white text-right">
+                  <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-slate-200">
                     Rp {(h.monthlyFee || 0).toLocaleString('id-ID')}
                   </td>
                   <td className="px-6 py-4">
                     <StatusBadge status={h.isActive ? 'active' : 'inactive'} />
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => setModal({ open: true, data: h })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" title="Edit">
-                        <span className="material-icons text-lg">edit</span>
-                      </button>
+                  <td className="px-6 py-4 text-right pr-6">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link to={`/admin/householders/${h.id}/edit`} className="text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit">
+                        <span className="material-icons text-[18px]">edit</span>
+                      </Link>
                       {h.is_active && (
-                        <button onClick={() => openConfirm('deactivate', h)} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors" title="Deactivate">
-                          <span className="material-icons text-lg">person_off</span>
+                        <button onClick={() => openConfirm('deactivate', h)} className="text-slate-400 hover:text-amber-500 transition-colors cursor-pointer" title="Deactivate">
+                          <span className="material-icons text-[18px]">visibility_off</span>
                         </button>
                       )}
-                      <button onClick={() => openConfirm('delete', h)} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors" title="Delete">
-                        <span className="material-icons text-lg">delete_forever</span>
+                      <button onClick={() => openConfirm('delete', h)} className="text-slate-400 hover:text-rose-500 transition-colors cursor-pointer" title="Delete">
+                        <span className="material-icons text-[18px]">delete</span>
                       </button>
                     </div>
                   </td>

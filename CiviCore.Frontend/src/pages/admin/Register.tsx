@@ -128,7 +128,7 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400">
       <button onClick={toggleDark}
-        className="fixed bottom-6 right-6 p-3 bg-surface rounded-full shadow-lg border border-surface-var text-on-surface hover:text-primary transition-all duration-200">
+        className="fixed bottom-6 right-6 p-3 rounded-full bg-surface shadow-lg border border-surface-var text-on-surface hover:text-primary hover:scale-105 hover:shadow-xl transition-all duration-200 cursor-pointer">
         <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>
       </button>
 
@@ -173,7 +173,7 @@ export default function Register() {
               </div>
 
               <button
-                className="w-full bg-primary hover:opacity-90 text-white dark:text-surface font-bold py-3 px-4 rounded-lg shadow-lg shadow-primary/20 transition-all duration-200 flex items-center justify-center gap-2 mt-2 disabled:opacity-60"
+                className="w-full bg-primary hover:opacity-90 text-white dark:text-surface font-bold py-3 px-4 rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 type="submit" disabled={isLoading}
               >
                 <span>{isLoading ? 'Registering...' : 'Register Account'}</span>
@@ -194,7 +194,7 @@ export default function Register() {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center space-x-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 py-3 px-4 rounded-lg transition-all duration-200 group shadow-sm"
+              className="w-full flex items-center justify-center space-x-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 hover:scale-[1.02] hover:shadow-md py-3 px-4 rounded-lg transition-all duration-200 group shadow-sm cursor-pointer"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />

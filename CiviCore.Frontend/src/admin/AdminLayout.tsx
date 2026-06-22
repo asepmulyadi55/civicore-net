@@ -15,7 +15,7 @@ const NAV_GROUPS = [
     label: 'Community',
     icon: 'groups',
     items: [
-      { key: 'householders', label: 'Residents', icon: 'people', path: '/admin/householders', roles: ['admin', 'block_coordinator'] },
+      { key: 'householders', label: 'Householders', icon: 'people', path: '/admin/householders', roles: ['admin', 'block_coordinator'] },
       { key: 'blocks', label: 'Blocks', icon: 'domain', path: '/admin/blocks', roles: ['admin', 'block_coordinator'] },
       { key: 'organization', label: 'Organization', icon: 'account_tree', path: '/admin/organization', roles: ['admin'] },
       { key: 'meetings', label: 'Meetings', icon: 'event_note', path: '/admin/meetings', roles: ['admin', 'block_coordinator'] },
@@ -109,7 +109,7 @@ function NavGroup({ group, activePath, userRole }) {
   );
 }
 
-export default function AdminLayout({ children, title }) {
+export default function AdminLayout({ children, title, subtitle }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [dark, toggleDark] = useDarkMode();
@@ -165,7 +165,7 @@ export default function AdminLayout({ children, title }) {
               <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">{user.name || 'Admin'}</p>
               <p className="text-xs text-slate-400 truncate">{user.email || ''}</p>
             </div>
-            <button onClick={handleLogout} title="Logout" className="text-slate-400 hover:text-red-500 transition-colors">
+            <button onClick={handleLogout} title="Logout" className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
               <span className="material-icons text-lg">logout</span>
             </button>
           </div>
@@ -183,11 +183,14 @@ export default function AdminLayout({ children, title }) {
             >
               <span className="material-icons text-slate-500">menu</span>
             </button>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h1>
+            <div>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h1>
+              {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
+            </div>
           </div>
           <button
             onClick={toggleDark}
-            className="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+            className="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary hover:scale-105 hover:shadow-md transition-all cursor-pointer"
             title="Toggle dark mode"
           >
             <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>

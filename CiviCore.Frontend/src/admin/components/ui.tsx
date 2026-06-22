@@ -88,7 +88,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: { open: b
       <div className={`w-full ${sizes[size]} bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">
             <span className="material-icons">close</span>
           </button>
         </div>
@@ -112,10 +112,10 @@ export function ConfirmModal({ open, onClose, onConfirm, title, message, confirm
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed" dangerouslySetInnerHTML={{ __html: message }} />
         </div>
         <div className="flex gap-3 px-6 pb-6">
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">
             Cancel
           </button>
-          <button onClick={onConfirm} disabled={loading} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-60 ${confirmClass}`}>
+          <button onClick={onConfirm} disabled={loading} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${confirmClass}`}>
             {loading ? 'Processing...' : confirmLabel}
           </button>
         </div>
@@ -185,7 +185,7 @@ export function BulkActionBar({ count, onDelete }: { count: number; onDelete: ()
   return (
     <div className="mb-4 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between shadow-sm">
       <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-2">{count} selected</span>
-      <button onClick={onDelete} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors">
+      <button onClick={onDelete} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
         <span className="material-icons text-sm">delete</span> Delete Selected
       </button>
     </div>

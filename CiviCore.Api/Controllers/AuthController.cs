@@ -39,9 +39,53 @@ namespace CiviCore.Api.Controllers
             if (user == null)
                 return Unauthorized(new { message = "Invalid credentials" });
 
-            var result = await _signInManager.PasswordSignInAsync(user.UserName!, request.Password, request.RememberMe, lockoutOnFailure: true);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+            
+            if (result.IsLockedOut)
+                return Unauthorized(new { message = "Account locked out due to multiple failed attempts." });
+
             if (result.Succeeded)
             {
+                // Mirror Laravel exactly: Force 2FA Challenge if they have a secret configured
+                if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
+                {
+                    return StatusCode(403, new { message = "Two factor authentication required", requires_2fa = true });
+                }
+
+                // If they don't have a secret, MANDATORY 2FA dictates they MUST set it up now!
+                return StatusCode(403, new { message = "Mandatory Security: You must set up Two-Factor Authentication.", requires_2fa_setup = true });
+            }
+
+            return Unauthorized(new { message = "Invalid credentials" });
+        }
+
+        [HttpPost("login-2fa")]
+        [EnableRateLimiting("AuthLimit")]
+        public async Task<IActionResult> Login2FA([FromBody] Login2FARequest request)
+        {
+            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+            
+            // Fallback for API clients that do not send cookies
+            if (user == null && !string.IsNullOrEmpty(request.Email) && !string.IsNullOrEmpty(request.Password))
+            {
+                var fallbackUser = await _userManager.FindByEmailAsync(request.Email) ?? await _userManager.FindByNameAsync(request.Email);
+                if (fallbackUser != null && await _userManager.CheckPasswordAsync(fallbackUser, request.Password))
+                {
+                    user = fallbackUser;
+                }
+            }
+
+            if (user == null)
+                return Unauthorized(new { message = "Invalid 2FA session. Please login again." });
+
+            if (string.IsNullOrEmpty(user.TwoFactorSecretKey)) 
+                return BadRequest(new { message = "2FA not setup." });
+
+            var totp = new Totp(Base32Encoding.ToBytes(user.TwoFactorSecretKey));
+            if (totp.VerifyTotp(request.Code, out _, window: null))
+            {
+                await _signInManager.SignInAsync(user, request.RememberMe);
+                
                 user.SessionToken = Guid.NewGuid().ToString();
                 user.LastLoginAt = DateTime.UtcNow;
                 user.LastActiveAt = DateTime.UtcNow;
@@ -50,16 +94,10 @@ namespace CiviCore.Api.Controllers
                 var roles = await _userManager.GetRolesAsync(user);
                 var userRole = roles.FirstOrDefault() ?? "";
 
-                // Add session token to cookie manually if needed, but we will store it in the claims later via custom claims principal factory
                 return Ok(new { message = "Login successful", token = user.SessionToken, user = new { name = user.Name, email = user.Email, role = userRole } });
             }
 
-            if (result.RequiresTwoFactor)
-            {
-                return StatusCode(403, new { message = "Two factor authentication required", requires_2fa = true });
-            }
-
-            return Unauthorized(new { message = "Invalid credentials" });
+            return Unauthorized(new { message = "Invalid 2FA code." });
         }
 
         [HttpPost("logout")]
@@ -197,10 +235,22 @@ namespace CiviCore.Api.Controllers
         }
 
         [HttpPost("2fa/setup")]
-        public async Task<IActionResult> Setup2FA()
+        public async Task<IActionResult> Setup2FA([FromBody] Setup2FARequest request)
         {
+            // Try to get user from Identity session first
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
+            
+            // Fallback for stateless 2FA setup during login flow
+            if (user == null && !string.IsNullOrEmpty(request.Email) && !string.IsNullOrEmpty(request.Password))
+            {
+                var fallbackUser = await _userManager.FindByEmailAsync(request.Email) ?? await _userManager.FindByNameAsync(request.Email);
+                if (fallbackUser != null && await _userManager.CheckPasswordAsync(fallbackUser, request.Password))
+                {
+                    user = fallbackUser;
+                }
+            }
+
+            if (user == null) return Unauthorized(new { message = "Invalid credentials." });
 
             var key = KeyGeneration.GenerateRandomKey(20);
             var secret = Base32Encoding.ToString(key);
@@ -261,6 +311,14 @@ namespace CiviCore.Api.Controllers
         public bool RememberMe { get; set; } = false;
     }
 
+    public class Login2FARequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public bool RememberMe { get; set; } = false;
+    }
+
     public class RegisterRequest
     {
         public string Name { get; set; } = string.Empty;
@@ -278,4 +336,9 @@ namespace CiviCore.Api.Controllers
         public string NewPassword { get; set; } = string.Empty;
     }
     public class Verify2FARequest { public string Code { get; set; } = string.Empty; }
+    public class Setup2FARequest 
+    { 
+        public string Email { get; set; } = string.Empty; 
+        public string Password { get; set; } = string.Empty; 
+    }
 }

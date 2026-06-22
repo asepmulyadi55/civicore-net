@@ -22,23 +22,62 @@ public class HouseholderController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] Guid? block_id, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int per_page = 10)
     {
-        var householders = await _context.Set<Householder>()
+        var query = _context.Set<Householder>()
             .Include(h => h.Block)
             .Include(h => h.Unit)
+            .Include(h => h.FeeHistories)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(h => h.Fullname.ToLower().Contains(searchLower) || (h.Phone != null && h.Phone.Contains(search)));
+        }
+
+        if (block_id.HasValue)
+        {
+            query = query.Where(h => h.BlockId == block_id.Value);
+        }
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            bool isActive = status.ToLower() == "active";
+            query = query.Where(h => h.IsActive == isActive);
+        }
+
+        var total = await query.CountAsync();
+        var last_page = (int)Math.Ceiling(total / (double)per_page);
+
+        var householders = await query
+            .OrderByDescending(h => h.Id)
+            .Skip((page - 1) * per_page)
+            .Take(per_page)
             .ToListAsync();
         
-        // Decrypt family card numbers on read
+        // Decrypt family card numbers on read and set MonthlyFee
         foreach(var h in householders)
         {
             if (!string.IsNullOrEmpty(h.FamilyCardNumber))
             {
                 h.FamilyCardNumber = _encryption.Decrypt(h.FamilyCardNumber);
             }
+            var latestFee = h.FeeHistories.OrderByDescending(f => f.EffectiveFrom).FirstOrDefault();
+            h.MonthlyFee = latestFee?.Amount ?? 0;
+            h.EffectiveFrom = latestFee?.EffectiveFrom.ToString("MMMM yyyy");
         }
         
-        return Ok(householders);
+        return Ok(new {
+            data = householders,
+            meta = new {
+                current_page = page,
+                last_page = last_page,
+                total = total,
+                from = total == 0 ? 0 : (page - 1) * per_page + 1,
+                to = Math.Min(page * per_page, total)
+            }
+        });
     }
 
     [HttpGet("{id}")]
@@ -47,8 +86,13 @@ public class HouseholderController : ControllerBase
         var householder = await _context.Set<Householder>()
             .Include(h => h.Block)
             .Include(h => h.Unit)
+            .Include(h => h.FeeHistories)
             .FirstOrDefaultAsync(h => h.Id == id);
         if (householder == null) return NotFound();
+
+        var latestFee = householder.FeeHistories.OrderByDescending(f => f.EffectiveFrom).FirstOrDefault();
+        householder.MonthlyFee = latestFee?.Amount ?? 0;
+        householder.EffectiveFrom = latestFee?.EffectiveFrom.ToString("MMMM yyyy");
 
         if (!string.IsNullOrEmpty(householder.FamilyCardNumber))
         {
@@ -71,20 +115,46 @@ public class HouseholderController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = householder.Id }, householder);
     }
 
+    public class UpdateHouseholderDto
+    {
+        public string Fullname { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+        public string? Notes { get; set; }
+        public string? FamilyCardNumber { get; set; }
+        public bool IsActive { get; set; }
+        public decimal? NewMonthlyFee { get; set; }
+        public string? EffectiveFrom { get; set; }
+    }
+
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Householder updatedHouseholder)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateHouseholderDto dto)
     {
         var householder = await _context.Set<Householder>().FindAsync(id);
         if (householder == null) return NotFound();
 
-        householder.Fullname = updatedHouseholder.Fullname;
-        householder.Phone = updatedHouseholder.Phone;
-        householder.Email = updatedHouseholder.Email;
-        householder.Notes = updatedHouseholder.Notes;
+        householder.Fullname = dto.Fullname;
+        householder.Phone = dto.Phone;
+        householder.Email = dto.Email;
+        householder.Notes = dto.Notes;
+        householder.IsActive = dto.IsActive;
 
-        if (!string.IsNullOrEmpty(updatedHouseholder.FamilyCardNumber))
+        if (!string.IsNullOrEmpty(dto.FamilyCardNumber))
         {
-            householder.FamilyCardNumber = _encryption.Encrypt(updatedHouseholder.FamilyCardNumber);
+            householder.FamilyCardNumber = _encryption.Encrypt(dto.FamilyCardNumber);
+        }
+
+        if (dto.NewMonthlyFee.HasValue && !string.IsNullOrEmpty(dto.EffectiveFrom))
+        {
+            if (DateTime.TryParse(dto.EffectiveFrom + "-01", out DateTime effectiveDate))
+            {
+                var fee = new FeeHistory {
+                    HouseholderId = id,
+                    Amount = dto.NewMonthlyFee.Value,
+                    EffectiveFrom = DateTime.SpecifyKind(effectiveDate, DateTimeKind.Utc)
+                };
+                _context.Set<FeeHistory>().Add(fee);
+            }
         }
 
         await _context.SaveChangesAsync();
@@ -100,5 +170,28 @@ public class HouseholderController : ControllerBase
         _context.Set<Householder>().Remove(householder);
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+
+    public class BulkDeleteRequest { public List<Guid> Ids { get; set; } = new(); }
+
+    [HttpDelete("bulk")]
+    public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteRequest request)
+    {
+        if (request.Ids == null || !request.Ids.Any()) return BadRequest();
+        var householders = await _context.Set<Householder>().Where(h => request.Ids.Contains(h.Id)).ToListAsync();
+        _context.Set<Householder>().RemoveRange(householders);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("{id}/deactivate")]
+    public async Task<IActionResult> Deactivate(Guid id)
+    {
+        var householder = await _context.Set<Householder>().FindAsync(id);
+        if (householder == null) return NotFound();
+
+        householder.IsActive = false;
+        await _context.SaveChangesAsync();
+        return Ok(householder);
     }
 }

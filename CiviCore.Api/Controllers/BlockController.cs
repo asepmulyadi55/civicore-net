@@ -21,7 +21,19 @@ public class BlockController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var blocks = await _context.Set<Block>().Include(b => b.Units).ToListAsync();
+        var blocks = await _context.Set<Block>()
+            .Select(b => new {
+                b.Id,
+                b.Name,
+                b.Description,
+                Units = b.Units.Select(u => new {
+                    u.Id,
+                    u.UnitNumber,
+                    u.HouseStatus,
+                    IsAssigned = _context.Set<Householder>().Any(h => h.UnitId == u.Id)
+                }).ToList()
+            })
+            .ToListAsync();
         return Ok(blocks);
     }
 

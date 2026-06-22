@@ -8,6 +8,7 @@ import ForgotPassword from './pages/admin/ForgotPassword';
 import Dashboard from './pages/admin/Dashboard';
 // Wave 1
 import Householders from './pages/admin/Householders';
+import EditHouseholder from './pages/admin/EditHouseholder';
 import Blocks from './pages/admin/Blocks';
 import Units from './pages/admin/Units';
 import Payments from './pages/admin/Payments';
@@ -78,6 +79,7 @@ export default function Router() {
 
         {/* Wave 1 — Community & Payments */}
         <Route path="/admin/householders" element={<RequireAuth><Householders /></RequireAuth>} />
+        <Route path="/admin/householders/:id/edit" element={<RequireAuth><EditHouseholder /></RequireAuth>} />
         <Route path="/admin/blocks" element={<RequireAuth><Blocks /></RequireAuth>} />
         <Route path="/admin/blocks/:id/units" element={<RequireAuth><Units /></RequireAuth>} />
         <Route path="/admin/payments" element={<RequireAuth><Payments /></RequireAuth>} />

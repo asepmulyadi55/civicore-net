@@ -30,7 +30,7 @@ export default function ForgotPassword() {
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400">
       <button onClick={toggleDark}
-        className="fixed bottom-6 right-6 p-3 bg-surface rounded-full shadow-lg border border-surface-var text-on-surface hover:text-primary transition-all duration-200">
+        className="fixed bottom-6 right-6 p-3 rounded-full bg-surface shadow-lg border border-surface-var text-on-surface hover:text-primary hover:scale-105 hover:shadow-xl transition-all duration-200 cursor-pointer">
         <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>
       </button>
 
@@ -77,7 +77,7 @@ export default function ForgotPassword() {
               </div>
 
               <button type="submit"
-                className="w-full bg-primary hover:opacity-90 text-white dark:text-surface font-bold py-3 px-4 rounded-lg shadow-lg shadow-primary/20 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60"
+                className="w-full bg-primary hover:opacity-90 text-white dark:text-surface font-bold py-3 px-4 rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 disabled={isLoading}
               >
                 <span className="material-icons text-lg">{isLoading ? 'hourglass_top' : 'send'}</span>
