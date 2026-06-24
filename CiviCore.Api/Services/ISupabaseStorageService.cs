@@ -7,4 +7,5 @@ public interface ISupabaseStorageService
 {
     Task<string> UploadFileAsync(string bucketName, string filePath, Stream fileStream);
     Task<string> GetSignedUrlAsync(string bucketName, string filePath, int expiresInSeconds = 3600);
+    Task RemoveFileAsync(string bucketName, string filePath);
 }

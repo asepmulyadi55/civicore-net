@@ -88,7 +88,7 @@ function NavGroup({ group, activePath, userRole }) {
     <div>
       <button
         onClick={() => setOpen(o => !o)}
-        className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+        className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
           isGroupActive ? 'text-primary dark:text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
         }`}
       >

@@ -36,6 +36,12 @@ public class ResidentController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Resident resident)
     {
+        if (resident.Relationship == "Head of Family") {
+            resident.IsHead = true;
+        }
+        if (resident.BirthDate.HasValue) {
+            resident.BirthDate = DateTime.SpecifyKind(resident.BirthDate.Value, DateTimeKind.Utc);
+        }
         _context.Set<Resident>().Add(resident);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = resident.Id }, resident);
@@ -49,7 +55,11 @@ public class ResidentController : ControllerBase
 
         resident.Fullname = updatedResident.Fullname;
         resident.Relationship = updatedResident.Relationship;
-        resident.IsHead = updatedResident.IsHead;
+        resident.IsHead = updatedResident.Relationship == "Head of Family" || updatedResident.IsHead;
+        resident.BirthDate = updatedResident.BirthDate.HasValue ? DateTime.SpecifyKind(updatedResident.BirthDate.Value, DateTimeKind.Utc) : null;
+        resident.Gender = updatedResident.Gender;
+        resident.Education = updatedResident.Education;
+        resident.Occupation = updatedResident.Occupation;
         
         await _context.SaveChangesAsync();
         return Ok(resident);

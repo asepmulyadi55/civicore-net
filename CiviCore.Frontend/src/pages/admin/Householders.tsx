@@ -6,7 +6,7 @@ import AdminLayout from '../../admin/AdminLayout';
 import {
   StatusBadge, EmptyState, Pagination, Modal, ConfirmModal,
   Avatar, PageHeader, FilterBar, SearchInput, SelectFilter,
-  BulkActionBar, TableWrapper, Th, FormInput, FormSelect
+  BulkActionBar, TableWrapper, Th, FormInput, FormSelect, SecureImage
 } from '../../admin/components/ui';
 
 const HOUSE_STATUS_OPTIONS = [
@@ -204,8 +204,12 @@ export default function Householders() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-md bg-primary text-white dark:text-slate-900 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                        {initials}
+                      <div className="w-9 h-9 rounded-md bg-primary text-white dark:text-slate-900 flex items-center justify-center text-sm font-bold flex-shrink-0 overflow-hidden">
+                        {h.photoPath ? (
+                          <SecureImage src={`/api/media/path/${h.photoPath}`} className="w-full h-full object-cover" alt="Household" />
+                        ) : (
+                          initials
+                        )}
                       </div>
                       <div>
                         <div className="text-sm font-semibold text-slate-900 dark:text-white leading-none mb-1">{h.fullname}</div>

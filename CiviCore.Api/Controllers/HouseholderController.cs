@@ -87,12 +87,13 @@ public class HouseholderController : ControllerBase
             .Include(h => h.Block)
             .Include(h => h.Unit)
             .Include(h => h.FeeHistories)
+            .Include(h => h.Residents)
             .FirstOrDefaultAsync(h => h.Id == id);
         if (householder == null) return NotFound();
 
         var latestFee = householder.FeeHistories.OrderByDescending(f => f.EffectiveFrom).FirstOrDefault();
         householder.MonthlyFee = latestFee?.Amount ?? 0;
-        householder.EffectiveFrom = latestFee?.EffectiveFrom.ToString("MMMM yyyy");
+        householder.EffectiveFrom = latestFee?.EffectiveFrom.ToString("yyyy-MM");
 
         if (!string.IsNullOrEmpty(householder.FamilyCardNumber))
         {
@@ -125,6 +126,9 @@ public class HouseholderController : ControllerBase
         public bool IsActive { get; set; }
         public decimal? NewMonthlyFee { get; set; }
         public string? EffectiveFrom { get; set; }
+        public Guid? BlockId { get; set; }
+        public Guid? UnitId { get; set; }
+        public string? PhotoPath { get; set; }
     }
 
     [HttpPut("{id}")]
@@ -138,6 +142,10 @@ public class HouseholderController : ControllerBase
         householder.Email = dto.Email;
         householder.Notes = dto.Notes;
         householder.IsActive = dto.IsActive;
+        householder.PhotoPath = dto.PhotoPath;
+
+        if (dto.BlockId.HasValue) householder.BlockId = dto.BlockId.Value;
+        if (dto.UnitId.HasValue) householder.UnitId = dto.UnitId.Value;
 
         if (!string.IsNullOrEmpty(dto.FamilyCardNumber))
         {

@@ -1,6 +1,7 @@
 // @ts-nocheck
 // Shared admin UI components
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export function StatusBadge({ status }: { status?: string }) {
   const map: Record<string, string> = {
@@ -240,4 +241,29 @@ export function FormSelect({ label, id, value, onChange, options, error, require
       {error && <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{error}</p>}
     </div>
   );
+}
+
+export function SecureImage({ src, alt, className }: { src: string, alt?: string, className?: string }) {
+  const [objectUrl, setObjectUrl] = React.useState<string>('');
+
+  React.useEffect(() => {
+    if (!src) return;
+    let isMounted = true;
+    
+    import('axios').then(({ default: axios }) => {
+      axios.get(src, { responseType: 'blob' })
+        .then(res => {
+          if (isMounted) setObjectUrl(URL.createObjectURL(res.data));
+        })
+        .catch(err => console.error('Failed to load secure image', err));
+    });
+
+    return () => {
+      isMounted = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [src]);
+
+  if (!objectUrl) return <div className={`flex items-center justify-center bg-slate-100 dark:bg-slate-800 animate-pulse ${className}`}><span className="material-icons text-slate-300 dark:text-slate-600">image</span></div>;
+  return <img src={objectUrl} alt={alt} className={className} />;
 }

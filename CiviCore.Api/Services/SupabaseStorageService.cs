@@ -28,4 +28,9 @@ public class SupabaseStorageService : ISupabaseStorageService
         var url = await _supabaseClient.Storage.From(bucketName).CreateSignedUrl(filePath, expiresInSeconds);
         return url;
     }
+
+    public async Task RemoveFileAsync(string bucketName, string filePath)
+    {
+        await _supabaseClient.Storage.From(bucketName).Remove(new System.Collections.Generic.List<string> { filePath });
+    }
 }
