@@ -69,15 +69,18 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
               <input type="file" id={`residentPhoto-${data?.id || 'new'}`} className="hidden" accept="image/*" onChange={async e => {
                 if (!e.target.files?.length) return;
                 setUploadingPhoto(true);
-                const formData = new FormData();
-                const compressedFile = await compressImage(e.target.files[0]);
-                formData.append('file', compressedFile);
-                if (form.photoPath) formData.append('replacePath', form.photoPath);
                 try {
+                  const formData = new FormData();
+                  const compressedFile = await compressImage(e.target.files[0]);
+                  formData.append('file', compressedFile);
+                  if (form.photoPath) formData.append('replacePath', form.photoPath);
                   const res = await axios.post('/api/media/upload', formData);
                   setForm(p => ({ ...p, photoPath: res.data.filePath }));
                 } catch (err) { console.error(err); }
-                finally { setUploadingPhoto(false); }
+                finally { 
+                  setUploadingPhoto(false); 
+                  e.target.value = ''; 
+                }
               }} />
               <button onClick={() => document.getElementById(`residentPhoto-${data?.id || 'new'}`)?.click()} disabled={uploadingPhoto} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-white transition-colors cursor-pointer shadow-sm disabled:opacity-50">
                 <span className="material-icons text-sm">{uploadingPhoto ? 'hourglass_empty' : 'upload'}</span> {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
@@ -261,15 +264,18 @@ export default function EditHouseholder() {
                   <input type="file" id="householdPhoto" className="hidden" accept="image/*" onChange={async e => {
                     if (!e.target.files?.length) return;
                     setUploadingHouseholdPhoto(true);
-                    const formData = new FormData();
-                    const compressedFile = await compressImage(e.target.files[0]);
-                    formData.append('file', compressedFile);
-                    if (data.photoPath) formData.append('replacePath', data.photoPath);
                     try {
+                      const formData = new FormData();
+                      const compressedFile = await compressImage(e.target.files[0]);
+                      formData.append('file', compressedFile);
+                      if (data.photoPath) formData.append('replacePath', data.photoPath);
                       const res = await axios.post('/api/media/upload', formData);
                       setData((p: any) => ({ ...p, photoPath: res.data.filePath }));
                     } catch (err) { console.error(err); }
-                    finally { setUploadingHouseholdPhoto(false); }
+                    finally { 
+                      setUploadingHouseholdPhoto(false); 
+                      e.target.value = ''; 
+                    }
                   }} />
                   <button onClick={() => document.getElementById('householdPhoto')?.click()} disabled={uploadingHouseholdPhoto} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-white transition-colors cursor-pointer shadow-sm disabled:opacity-50">
                     <span className="material-icons text-sm">{uploadingHouseholdPhoto ? 'hourglass_empty' : 'upload'}</span> {uploadingHouseholdPhoto ? 'Uploading...' : 'Upload Photo'}
@@ -418,8 +424,12 @@ export default function EditHouseholder() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {data.residents.map(r => (
                 <div key={r.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center gap-4 hover:border-primary/30 transition-all cursor-pointer group" onClick={() => setResidentModal({ open: true, data: r })}>
-                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                    <span className="material-icons text-slate-400 dark:text-slate-500 text-xl">person</span>
+                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-slate-700">
+                    {r.photoPath ? (
+                      <SecureImage src={`/api/media/path/${r.photoPath}`} className="w-full h-full object-cover" alt={r.fullname} />
+                    ) : (
+                      <span className="material-icons text-slate-400 dark:text-slate-500 text-xl">person</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{r.fullname}</div>

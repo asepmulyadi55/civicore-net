@@ -60,6 +60,7 @@ public class ResidentController : ControllerBase
         resident.Gender = updatedResident.Gender;
         resident.Education = updatedResident.Education;
         resident.Occupation = updatedResident.Occupation;
+        resident.PhotoPath = updatedResident.PhotoPath;
         
         await _context.SaveChangesAsync();
         return Ok(resident);

@@ -39,8 +39,32 @@ public class MediaController : ControllerBase
     public async Task<IActionResult> GetMediaByPath(string filePath)
     {
         if (string.IsNullOrEmpty(filePath)) return BadRequest();
-        var url = await _storageService.GetSignedUrlAsync(PrivateBucket, filePath);
-        return Redirect(url);
+        
+        try
+        {
+            var bytes = await _storageService.DownloadFileAsync(PrivateBucket, filePath);
+            
+            var ext = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
+            var mimeType = ext switch
+            {
+                ".png" => "image/png",
+                ".jpg" => "image/jpeg",
+                ".jpeg" => "image/jpeg",
+                ".webp" => "image/webp",
+                ".gif" => "image/gif",
+                _ => "application/octet-stream"
+            };
+
+            // Tell the browser to cache this securely for 1 hour to save bandwidth
+            Response.Headers.Append("Cache-Control", "private, max-age=3600");
+            
+            return File(bytes, mimeType);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error proxying image {filePath}: {ex.Message}");
+            return NotFound();
+        }
     }
 
     [HttpPost("upload")]
