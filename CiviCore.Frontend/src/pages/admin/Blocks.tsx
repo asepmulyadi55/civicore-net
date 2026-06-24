@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
@@ -53,7 +53,7 @@ function BlockModal({ open, onClose, onSaved, data, coordinatorUsers }) {
             <div className="flex flex-wrap gap-2">
               {coordinatorUsers.map(u => (
                 <button key={u.id} type="button" onClick={() => toggleCoord(String(u.id))}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${form.coordinator_ids.includes(String(u.id)) ? 'bg-primary/10 text-primary border-primary/30' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-primary/30'}`}>
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${form.coordinator_ids.includes(String(u.id)) ? 'bg-primary/10 text-primary border-primary/30' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-primary/30'}`}>
                   <span className="material-icons text-sm">{form.coordinator_ids.includes(String(u.id)) ? 'check_circle' : 'radio_button_unchecked'}</span>
                   {u.name}
                 </button>
@@ -67,8 +67,8 @@ function BlockModal({ open, onClose, onSaved, data, coordinatorUsers }) {
           <label htmlFor="b-active" className="text-sm font-medium text-slate-700 dark:text-slate-300">Active block</label>
         </div>
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm shadow-primary/20 disabled:opacity-60 transition-all">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
             {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Block'}
           </button>
         </div>
@@ -123,13 +123,13 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits }) {
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
         <StatusBadge status={block.is_active ? 'active' : 'inactive'} />
         <div className="flex gap-1">
-          <button onClick={() => onManageUnits(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Manage Units">
+          <button onClick={() => onManageUnits(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title="Manage Units">
             <span className="material-icons text-sm">home_work</span>
           </button>
-          <button onClick={() => onEdit(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Edit">
+          <button onClick={() => onEdit(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title="Edit">
             <span className="material-icons text-sm">edit</span>
           </button>
-          <button onClick={() => onDelete(block)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors" title="Delete">
+          <button onClick={() => onDelete(block)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer" title="Delete">
             <span className="material-icons text-sm">delete_outline</span>
           </button>
         </div>
@@ -185,7 +185,7 @@ export default function Blocks() {
         subtitle="Manage residential blocks and their coordinators"
         actions={
           <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all">
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
             <span className="material-icons text-sm">add</span> Add Block
           </button>
         }

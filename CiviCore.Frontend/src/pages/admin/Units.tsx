@@ -65,8 +65,8 @@ function UnitModal({ open, onClose, onSaved, data, blockId }) {
         </div>
 
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm shadow-primary/20 disabled:opacity-60 transition-all">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
             {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Unit'}
           </button>
         </div>
@@ -83,7 +83,8 @@ export default function Units() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState({ open: false, data: null });
-  const [confirm, setConfirm] = useState({ open: false, item: null, loading: false });
+  const [confirm, setConfirm] = useState({ open: false, type: null, item: null, loading: false });
+  const [selected, setSelected] = useState([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -103,14 +104,23 @@ export default function Units() {
   const doDelete = async () => {
     setConfirm(c => ({ ...c, loading: true }));
     try { 
-      await axios.delete(`/api/units/${confirm.item.id}`); 
+      if (confirm.type === 'bulk') {
+        await axios.delete('/api/units/bulk', { data: { ids: selected } });
+        setSelected([]);
+      } else {
+        await axios.delete(`/api/units/${confirm.item.id}`); 
+      }
       fetchData(); 
-      setConfirm({ open: false, item: null, loading: false }); 
+      setConfirm({ open: false, type: null, item: null, loading: false }); 
     }
     catch { setConfirm(c => ({ ...c, loading: false })); }
   };
 
   const filtered = units.filter(u => !search || (u.unitNumber || u.unit_number)?.toLowerCase().includes(search.toLowerCase()));
+
+  const allChecked = filtered.length > 0 && selected.length === filtered.length;
+  const toggleAll = () => setSelected(allChecked ? [] : filtered.map(u => u.id));
+  const toggleOne = (id) => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
   const getStatusLabel = (statusVal) => {
     switch(statusVal) {
@@ -123,12 +133,20 @@ export default function Units() {
     }
   };
 
+  const stats = [
+    { label: 'UNITS', value: filtered.length, valCls: 'text-slate-900 dark:text-white' },
+    { label: 'OWNER OCCUPIED', value: filtered.filter(u => (u.houseStatus ?? u.house_status) === 0).length, valCls: 'text-amber-600 dark:text-amber-500' },
+    { label: 'RENTED', value: filtered.filter(u => (u.houseStatus ?? u.house_status) === 1).length, valCls: 'text-orange-600 dark:text-orange-500' },
+    { label: 'VACANT', value: filtered.filter(u => (u.houseStatus ?? u.house_status) === 2).length, valCls: 'text-sky-500 dark:text-sky-400' },
+  ];
+
   return (
     <AdminLayout title={`Manage Units - ${block?.name || 'Block'}`}>
       <UnitModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} blockId={id} />
-      <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
+      <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, type: null, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
-        title="Delete Unit?" message={`Permanently delete unit <strong>${confirm.item?.unitNumber || confirm.item?.unit_number}</strong>?`}
+        title={confirm.type === 'bulk' ? 'Delete Selected?' : 'Delete Unit?'} 
+        message={confirm.type === 'bulk' ? `Delete <strong>${selected.length}</strong> selected units permanently?` : `Permanently delete unit <strong>${confirm.item?.unitNumber || confirm.item?.unit_number}</strong>?`}
         confirmLabel="Yes, Delete" />
 
       <PageHeader
@@ -137,7 +155,7 @@ export default function Units() {
         onBack={() => navigate('/admin/blocks')}
         actions={
           <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all">
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
             <span className="material-icons text-sm">add</span> Add Unit
           </button>
         }
@@ -147,6 +165,15 @@ export default function Units() {
         <SearchInput value={search} onChange={setSearch} placeholder="Search unit number…" />
       </FilterBar>
 
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {stats.map(s => (
+          <div key={s.label} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 text-center shadow-sm">
+            <div className={`text-2xl font-bold ${s.valCls}`}>{s.value}</div>
+            <div className="text-[10px] text-slate-500 uppercase font-semibold tracking-wider mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
       {loading ? (
         <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>
       ) : filtered.length === 0 ? (
@@ -154,37 +181,67 @@ export default function Units() {
           <EmptyState icon="door_front" title="No units found" subtitle="Add the first unit for this block" />
         </div>
       ) : (
-        <TableWrapper>
-            <thead>
-              <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
-                <Th>UNIT NUMBER</Th>
-                <Th>STATUS</Th>
-                <Th className="text-right">ACTIONS</Th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filtered.map(unit => (
-                <tr key={unit.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
-                  <td className="p-4 font-bold text-slate-900 dark:text-white">{unit.unitNumber || unit.unit_number}</td>
-                  <td className="p-4">
-                    <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold rounded-full border border-slate-200 dark:border-slate-700">
-                      {getStatusLabel(unit.houseStatus ?? unit.house_status)}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex justify-end gap-1">
-                      <button onClick={() => setModal({ open: true, data: unit })} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
-                        <span className="material-icons text-sm">edit</span>
-                      </button>
-                      <button onClick={() => setConfirm({ open: true, item: unit, loading: false })} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
-                        <span className="material-icons text-sm">delete_outline</span>
-                      </button>
+        <>
+          <div className="mb-4 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-3 pl-2">
+               <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+               <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3">Select All</span>
+               <span className={`text-sm font-semibold transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
+                 {selected.length} selected
+               </span>
+            </div>
+            {selected.length > 0 && (
+              <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
+                <span className="material-icons text-sm">delete</span> Delete Selected
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filtered.map(unit => {
+            const status = unit.houseStatus ?? unit.house_status;
+            return (
+              <div key={unit.id} className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800 flex flex-col hover:border-primary/30 dark:hover:border-slate-700 transition-colors shadow-sm">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                      <span className="material-icons text-[18px]">{status === 2 ? 'home' : 'person'}</span>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-        </TableWrapper>
+                    <div>
+                      <div className="text-xl font-bold text-slate-900 dark:text-white leading-none">{unit.unitNumber || unit.unit_number}</div>
+                      <div className={`text-[10px] mt-1.5 font-semibold uppercase tracking-wide ${
+                        status === 0 ? 'text-amber-600 dark:text-amber-500' :
+                        status === 1 ? 'text-orange-600 dark:text-orange-500' :
+                        status === 2 ? 'text-sky-500 dark:text-sky-400' :
+                        'text-slate-500 dark:text-slate-400'
+                      }`}>
+                        {getStatusLabel(status)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider">ACTIVE</span>
+                    <input type="checkbox" checked={selected.includes(unit.id)} onChange={() => toggleOne(unit.id)} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-xs mb-5">
+                  <span className="material-icons text-[16px]">person_outline</span>
+                  <span className="truncate">{unit.householders?.[0]?.fullname || unit.current_householder?.fullname || '-'}</span>
+                </div>
+
+                <div className="flex gap-2 mt-auto">
+                  <button onClick={() => setModal({ open: true, data: unit })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                    <span className="material-icons text-[14px]">edit</span> Edit
+                  </button>
+                  <button onClick={() => setConfirm({ open: true, type: 'delete', item: unit, loading: false })} className="w-9 h-9 flex shrink-0 items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-slate-200 dark:border-slate-700 hover:border-rose-200 dark:hover:border-rose-900/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors text-slate-500 dark:text-slate-400 cursor-pointer">
+                    <span className="material-icons text-[14px]">delete_outline</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          </div>
+        </>
       )}
     </AdminLayout>
   );
