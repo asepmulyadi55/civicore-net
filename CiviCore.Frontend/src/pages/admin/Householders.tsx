@@ -6,7 +6,8 @@ import AdminLayout from '../../admin/AdminLayout';
 import {
   StatusBadge, EmptyState, Pagination, Modal, ConfirmModal,
   Avatar, PageHeader, FilterBar, SearchInput, SelectFilter,
-  BulkActionBar, TableWrapper, Th, FormInput, FormSelect, SecureImage
+  BulkActionBar, TableWrapper, Th, FormInput, FormSelect, SecureImage,
+  SearchableSelect, CustomSelect
 } from '../../admin/components/ui';
 
 const HOUSE_STATUS_OPTIONS = [
@@ -52,13 +53,13 @@ function HouseholderModal({ open, onClose, onSaved, data, blocks }) {
         {errors.general && <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-sm rounded-lg">{errors.general}</div>}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput label="Full Name" id="h-fullname" value={form.fullname} onChange={set('fullname')} error={errors.fullname} required />
-          <FormSelect label="Block" id="h-block" value={form.blockId} onChange={e => setForm(p => ({ ...p, blockId: e.target.value, unitId: '' }))} error={errors.blockId} required
-            options={(blocks || []).map(b => ({ value: b.id, label: b.name }))} placeholder="Select Block" />
+          <SearchableSelect label="Block" value={form.blockId} onChange={v => setForm(p => ({ ...p, blockId: v, unitId: '' }))} error={errors.blockId}
+            options={(blocks || []).map(b => ({ value: String(b.id), label: b.name }))} placeholder="Search Block..." />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormSelect label="Unit Number" id="h-unit" value={form.unitId} onChange={set('unitId')} error={errors.unitId} required
-            options={(blocks.find(b => b.id === form.blockId)?.units || []).filter(u => !u.isAssigned).map(u => ({ value: u.id, label: u.unitNumber }))} placeholder="Select Unit" />
-          <FormSelect label="House Status (Override)" id="h-status" value={String(form.houseStatus)} onChange={e => setForm(p => ({ ...p, houseStatus: Number(e.target.value) }))} error={errors.houseStatus}
+          <SearchableSelect label="Unit Number" value={form.unitId} onChange={v => setForm(p => ({ ...p, unitId: v }))} error={errors.unitId}
+            options={(blocks.find(b => String(b.id) === String(form.blockId))?.units || []).filter(u => !u.isAssigned || String(u.id) === String(data?.unitId)).map(u => ({ value: String(u.id), label: String(u.unitNumber) }))} placeholder="Search Unit..." />
+          <CustomSelect label="House Status (Override)" value={String(form.houseStatus)} onChange={v => setForm(p => ({ ...p, houseStatus: Number(v) }))} error={errors.houseStatus}
             options={[
               { value: '0', label: 'Owner Occupied' },
               { value: '1', label: 'Rented' },

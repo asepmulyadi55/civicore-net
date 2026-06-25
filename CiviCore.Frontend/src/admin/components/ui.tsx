@@ -169,14 +169,41 @@ export function SearchInput({ value, onChange, placeholder = 'Search...' }: { va
 }
 
 export function SelectFilter({ value, onChange, options, placeholder = 'All' }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; placeholder?: string }) {
+  const [open, setOpen] = React.useState(false);
+  const selectedLabel = value === '' ? placeholder : (options.find(o => o.value === value)?.label || placeholder);
+
   return (
-    <div className="relative w-full sm:w-auto">
-      <select value={value} onChange={e => onChange(e.target.value)}
-        className="appearance-none w-full sm:w-auto pl-4 pr-9 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none">
-        <option value="">{placeholder}</option>
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-      <span className="material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
+    <div className="relative w-full sm:w-48">
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          onBlur={() => setTimeout(() => setOpen(false), 200)}
+          className="w-full text-left pl-4 pr-9 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+        >
+          {selectedLabel}
+        </button>
+        <span className="material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
+      </div>
+      {open && (
+        <ul className="absolute z-20 w-full mt-1 max-h-60 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1">
+          <li
+            onMouseDown={(e) => { e.preventDefault(); onChange(''); setOpen(false); }}
+            className={`px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === '' ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+          >
+            {placeholder}
+          </li>
+          {options.map(o => (
+            <li
+              key={o.value}
+              onMouseDown={(e) => { e.preventDefault(); onChange(o.value); setOpen(false); }}
+              className={`px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === o.value ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+            >
+              {o.label}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -266,4 +293,101 @@ export function SecureImage({ src, alt, className }: { src: string, alt?: string
 
   if (!objectUrl) return <div className={`flex items-center justify-center bg-slate-100 dark:bg-slate-800 animate-pulse ${className}`}><span className="material-icons text-slate-300 dark:text-slate-600">image</span></div>;
   return <img src={objectUrl} alt={alt} className={className} />;
+}
+
+export function SearchableSelect({ label, value, onChange, options, placeholder = 'Search...', error }: { label?: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; placeholder?: string; error?: string }) {
+  const [query, setQuery] = React.useState('');
+  const [open, setOpen] = React.useState(false);
+  
+  const selectedLabel = options.find(o => o.value === value)?.label || '';
+  
+  React.useEffect(() => {
+    if (!open) setQuery(selectedLabel);
+  }, [value, selectedLabel, open]);
+
+  const filtered = options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()));
+
+  return (
+    <div className="relative w-full">
+      {label && <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>}
+      <div className="relative">
+        <input
+          type="text"
+          value={open ? query : selectedLabel}
+          onChange={e => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => { setOpen(true); setQuery(''); onChange(''); }}
+          onBlur={() => setTimeout(() => setOpen(false), 200)}
+          placeholder={placeholder}
+          className={`w-full pl-4 pr-9 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all dark:text-slate-100 dark:placeholder-slate-500 outline-none ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'}`}
+        />
+        <span className="material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">search</span>
+      </div>
+      {error && <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{error}</p>}
+      {open && (
+        <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1">
+          <li
+            onMouseDown={(e) => { e.preventDefault(); onChange(''); setOpen(false); }}
+            className={`px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === '' ? 'bg-primary/10 text-primary font-bold' : 'text-slate-500 italic'}`}
+          >
+            {placeholder}
+          </li>
+          {filtered.length === 0 ? (
+            <li className="px-4 py-2 text-sm text-slate-500 italic">No results found</li>
+          ) : (
+            filtered.map(o => (
+              <li
+                key={o.value}
+                onMouseDown={(e) => { e.preventDefault(); onChange(o.value); setOpen(false); }}
+                className={`px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === o.value ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+              >
+                {o.label}
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export function CustomSelect({ label, value, onChange, options, placeholder = 'Select...', error }: { label?: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; placeholder?: string; error?: string }) {
+  const [open, setOpen] = React.useState(false);
+  const selectedLabel = options.find(o => o.value === value)?.label || placeholder;
+
+  return (
+    <div className="relative w-full">
+      {label && <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          onBlur={() => setTimeout(() => setOpen(false), 200)}
+          className={`w-full text-left pl-4 pr-9 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all dark:text-slate-100 outline-none ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'}`}
+        >
+          {selectedLabel}
+        </button>
+        <span className="material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
+      </div>
+      {error && <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{error}</p>}
+      {open && (
+        <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1">
+          <li
+            onMouseDown={(e) => { e.preventDefault(); onChange(''); setOpen(false); }}
+            className={`px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === '' ? 'bg-primary/10 text-primary font-bold' : 'text-slate-500 italic'}`}
+          >
+            {placeholder}
+          </li>
+          {options.map(o => (
+            <li
+              key={o.value}
+              onMouseDown={(e) => { e.preventDefault(); onChange(o.value); setOpen(false); }}
+              className={`px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === o.value ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+            >
+              {o.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }

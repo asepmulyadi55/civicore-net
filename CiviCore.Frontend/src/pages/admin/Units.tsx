@@ -6,7 +6,7 @@ import AdminLayout from '../../admin/AdminLayout';
 import {
   StatusBadge, EmptyState, Modal, ConfirmModal,
   PageHeader, FilterBar, SearchInput,
-  TableWrapper, Th, FormInput, FormSelect
+  TableWrapper, Th, FormInput, FormSelect, CustomSelect
 } from '../../admin/components/ui';
 
 function UnitModal({ open, onClose, onSaved, data, blockId }) {
@@ -55,14 +55,12 @@ function UnitModal({ open, onClose, onSaved, data, blockId }) {
         {errors.general && <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
         <FormInput label="Unit Number" id="u-number" value={form.unit_number} onChange={set('unit_number')} error={errors.unit_number} required placeholder="e.g. 101, A-12" />
         
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">House Status</label>
-          <select value={form.house_status} onChange={set('house_status')} className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white outline-none">
-            {statusOptions.map(o => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-        </div>
+        <CustomSelect 
+          label="House Status"
+          value={String(form.house_status)} 
+          onChange={val => setForm(p => ({ ...p, house_status: Number(val) }))} 
+          options={statusOptions.map(o => ({ value: String(o.value), label: o.label }))} 
+        />
 
         <div className="flex justify-end gap-3 pt-2">
           <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>

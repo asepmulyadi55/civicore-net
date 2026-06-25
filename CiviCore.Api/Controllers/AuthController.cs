@@ -46,6 +46,9 @@ namespace CiviCore.Api.Controllers
 
             if (result.Succeeded)
             {
+                if (!user.IsActive)
+                    return Unauthorized(new { message = "Your account is pending admin approval." });
+
                 // Mirror Laravel exactly: Force 2FA Challenge if they have a secret configured
                 if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
                 {
@@ -77,6 +80,9 @@ namespace CiviCore.Api.Controllers
 
             if (user == null)
                 return Unauthorized(new { message = "Invalid 2FA session. Please login again." });
+
+            if (!user.IsActive)
+                return Unauthorized(new { message = "Your account is pending admin approval." });
 
             if (string.IsNullOrEmpty(user.TwoFactorSecretKey)) 
                 return BadRequest(new { message = "2FA not setup." });

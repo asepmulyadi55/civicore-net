@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
-import { PageHeader, EmptyState, Modal, ConfirmModal, FormInput, FormSelect, SecureImage } from '../../admin/components/ui';
+import { PageHeader, EmptyState, Modal, ConfirmModal, FormInput, FormSelect, SecureImage, CustomSelect, SearchableSelect } from '../../admin/components/ui';
 
 interface OrgPeriod {
   id: string;
@@ -45,7 +45,11 @@ function PeriodModal({ open, onClose, onSaved, data }: { open: boolean; onClose:
       else await axios.post('/api/organization/periods', form);
       onSaved(); onClose();
     } catch (err: any) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+      let msg = err.response?.data?.message || 'Save failed.';
+      if (err.response?.data?.errors) {
+        msg = Object.values(err.response.data.errors).flat().join(' ');
+      }
+      setErrors({ general: msg });
     } finally { setLoading(false); }
   };
 
@@ -114,7 +118,11 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
       else await axios.post('/api/organization/positions', payload);
       onSaved(); onClose();
     } catch (err: any) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+      let msg = err.response?.data?.message || 'Save failed.';
+      if (err.response?.data?.errors) {
+        msg = Object.values(err.response.data.errors).flat().join(' ');
+      }
+      setErrors({ general: msg });
     } finally { setLoading(false); }
   };
 
@@ -125,12 +133,12 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
       <div className="space-y-4">
         {errors.general && <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
         <FormInput label="Position Name" id="pos-name" value={form.positionName} onChange={e => setForm(p => ({ ...p, positionName: e.target.value }))} error={errors.positionName} required placeholder="e.g. Ketua RT" />
-        <FormSelect label="Parent Position (Reports To)" id="pos-parent" value={form.parentId} onChange={e => setForm(p => ({ ...p, parentId: e.target.value }))} options={parentOptions} placeholder="None (Top Level)" />
+        <CustomSelect label="Parent Position (Reports To)" value={form.parentId} onChange={v => setForm(p => ({ ...p, parentId: v }))} options={parentOptions} placeholder="None (Top Level)" />
         <FormInput label="Sort Order" id="pos-sort" type="number" value={String(form.sortOrder)} onChange={e => setForm(p => ({ ...p, sortOrder: parseInt(e.target.value) || 0 }))} />
         
         <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
-          <p className="text-sm font-semibold mb-2">Assign Person</p>
-          <FormSelect label="Person Type" id="pos-ptype" value={personType} onChange={e => setPersonType(e.target.value)} options={[
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Assign Person</p>
+          <CustomSelect label="Person Type" value={personType} onChange={v => setPersonType(v)} options={[
             { value: 'none', label: 'Unassigned' },
             { value: 'resident', label: 'Resident' },
             { value: 'householder', label: 'Householder' }
@@ -138,12 +146,12 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
           
           {personType === 'resident' && (
             <div className="mt-3">
-              <FormSelect label="Select Resident" id="pos-res" value={form.residentId} onChange={e => setForm(p => ({ ...p, residentId: e.target.value }))} options={residents.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Choose Resident..." />
+              <SearchableSelect label="Select Resident" value={form.residentId} onChange={v => setForm(p => ({ ...p, residentId: v }))} options={residents.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Search Resident..." />
             </div>
           )}
           {personType === 'householder' && (
             <div className="mt-3">
-              <FormSelect label="Select Householder" id="pos-hh" value={form.householderId} onChange={e => setForm(p => ({ ...p, householderId: e.target.value }))} options={householders.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Choose Householder..." />
+              <SearchableSelect label="Select Householder" value={form.householderId} onChange={v => setForm(p => ({ ...p, householderId: v }))} options={householders.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Search Householder..." />
             </div>
           )}
         </div>
