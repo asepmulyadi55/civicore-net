@@ -31,7 +31,7 @@ public class FinanceController : ControllerBase
     }
 
     [HttpGet("transactions")]
-    public async Task<IActionResult> GetTransactions([FromQuery] string? type, [FromQuery] string? category, [FromQuery] int page = 1)
+    public async Task<IActionResult> GetTransactions([FromQuery] string? type, [FromQuery] string? category, [FromQuery] string? search, [FromQuery] int? month, [FromQuery] int? year, [FromQuery] int page = 1)
     {
         var query = _context.Set<FinanceTransaction>().AsQueryable();
 
@@ -43,6 +43,21 @@ public class FinanceController : ControllerBase
         if (!string.IsNullOrEmpty(category))
         {
             query = query.Where(x => x.Category == category);
+        }
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(x => x.Description.ToLower().Contains(searchLower) || x.Category.ToLower().Contains(searchLower));
+        }
+
+        if (month.HasValue && year.HasValue)
+        {
+            query = query.Where(x => x.Date.Month == month.Value && x.Date.Year == year.Value);
+        }
+        else if (year.HasValue)
+        {
+            query = query.Where(x => x.Date.Year == year.Value);
         }
 
         int pageSize = 10;
@@ -99,23 +114,51 @@ public class FinanceController : ControllerBase
     }
 
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats()
+    public async Task<IActionResult> GetStats([FromQuery] int? month, [FromQuery] int? year)
     {
-        var now = DateTime.UtcNow;
-        var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var targetMonth = month ?? DateTime.UtcNow.Month;
+        var targetYear = year ?? DateTime.UtcNow.Year;
+        
+        var startOfTargetMonth = new DateTime(targetYear, targetMonth, 1, 0, 0, 0, DateTimeKind.Utc);
+        var endOfTargetMonth = startOfTargetMonth.AddMonths(1).AddTicks(-1);
 
-        var transactions = await _context.Set<FinanceTransaction>().ToListAsync();
+        var allTransactions = await _context.Set<FinanceTransaction>().ToListAsync();
 
-        var totalIncome = transactions.Where(t => t.Type == FinanceTransactionType.Income).Sum(t => t.Amount);
-        var totalExpense = transactions.Where(t => t.Type == FinanceTransactionType.Expense).Sum(t => t.Amount);
-        var thisMonthIncome = transactions.Where(t => t.Type == FinanceTransactionType.Income && t.Date >= startOfMonth).Sum(t => t.Amount);
+        var periodIncome = allTransactions
+            .Where(t => t.Type == FinanceTransactionType.Income && t.Date >= startOfTargetMonth && t.Date <= endOfTargetMonth)
+            .Sum(t => t.Amount);
+            
+        var periodExpense = allTransactions
+            .Where(t => t.Type == FinanceTransactionType.Expense && t.Date >= startOfTargetMonth && t.Date <= endOfTargetMonth)
+            .Sum(t => t.Amount);
+
+        // Calculate 6 months trend
+        var trends = new List<object>();
+        for (int i = 5; i >= 0; i--)
+        {
+            var m = startOfTargetMonth.AddMonths(-i);
+            var mEnd = m.AddMonths(1).AddTicks(-1);
+            var mIncome = allTransactions.Where(t => t.Type == FinanceTransactionType.Income && t.Date >= m && t.Date <= mEnd).Sum(t => t.Amount);
+            var mExpense = allTransactions.Where(t => t.Type == FinanceTransactionType.Expense && t.Date >= m && t.Date <= mEnd).Sum(t => t.Amount);
+            trends.Add(new { month = m.ToString("MMM"), income = mIncome, expense = mExpense });
+        }
+
+        // Mock pending payments and approvals as they don't exist in DB yet
+        var pendingPayments = 0;
+        var pendingApprovals = new List<object>();
+
+        // Real overall balance
+        var totalIncome = allTransactions.Where(t => t.Type == FinanceTransactionType.Income).Sum(t => t.Amount);
+        var totalExpense = allTransactions.Where(t => t.Type == FinanceTransactionType.Expense).Sum(t => t.Amount);
 
         return Ok(new
         {
-            total_income = totalIncome,
-            total_expense = totalExpense,
             balance = totalIncome - totalExpense,
-            this_month_income = thisMonthIncome
+            period_income = periodIncome,
+            period_expense = periodExpense,
+            pending_payments = pendingPayments,
+            trends = trends,
+            pending_approvals = pendingApprovals
         });
     }
 
