@@ -108,5 +108,18 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             .WithMany()
             .HasForeignKey(op => op.HouseholderId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // MeetingAttendance Mappings
+        builder.Entity<MeetingAttendance>()
+            .HasOne(ma => ma.Resident)
+            .WithMany()
+            .HasForeignKey(ma => ma.ResidentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<MeetingAttendance>()
+            .HasOne(ma => ma.Householder)
+            .WithMany()
+            .HasForeignKey(ma => ma.HouseholderId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

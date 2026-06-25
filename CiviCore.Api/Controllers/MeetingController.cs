@@ -4,6 +4,9 @@ using CiviCore.Infrastructure.Data;
 using CiviCore.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using CiviCore.Api.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace CiviCore.Api.Controllers;
 
@@ -16,6 +19,39 @@ public class MeetingDto
     public string Location { get; set; } = string.Empty;
     public string Status { get; set; } = "scheduled";
     public DateTime Created_at { get; set; }
+    public List<MeetingAttendeeDto> Attendees { get; set; } = new();
+}
+
+public class MeetingAttendeeDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string? PhotoPath { get; set; }
+}
+
+public class UpdateDescriptionDto
+{
+    public string Description { get; set; } = string.Empty;
+}
+
+public class MeetingImageDto
+{
+    public Guid Id { get; set; }
+    public string ImagePath { get; set; } = string.Empty;
+}
+
+public class AttendanceSubmitDto
+{
+    public List<AttendanceRecordDto> Records { get; set; } = new();
+}
+
+public class AttendanceRecordDto
+{
+    public Guid Id { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public bool IsPresent { get; set; }
+    public string? Notes { get; set; }
 }
 
 [ApiController]
@@ -24,10 +60,15 @@ public class MeetingDto
 public class MeetingController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ISupabaseStorageService _storageService;
+    private readonly IConfiguration _configuration;
+    private string PrivateBucket => _configuration["Supabase:PrivateBucket"] ?? "civicore-private";
 
-    public MeetingController(AppDbContext context)
+    public MeetingController(AppDbContext context, ISupabaseStorageService storageService, IConfiguration configuration)
     {
         _context = context;
+        _storageService = storageService;
+        _configuration = configuration;
     }
 
     [HttpGet]
@@ -48,6 +89,10 @@ public class MeetingController : ControllerBase
         int pageSize = 10;
         var total = await query.CountAsync();
         var meetings = await query
+            .Include(m => m.Attendances)
+                .ThenInclude(a => a.Resident)
+            .Include(m => m.Attendances)
+                .ThenInclude(a => a.Householder)
             .OrderByDescending(m => m.Date)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -61,7 +106,14 @@ public class MeetingController : ControllerBase
             Meeting_date = m.Date.ToString("yyyy-MM-ddTHH:mm"),
             Location = m.Location,
             Status = m.Status,
-            Created_at = m.CreatedAt
+            Created_at = m.CreatedAt,
+            Attendees = m.Attendances.Where(a => a.IsPresent).Select(a => new MeetingAttendeeDto
+            {
+                Id = a.ResidentId ?? a.HouseholderId ?? Guid.Empty,
+                Name = a.Resident?.Fullname ?? a.Householder?.Fullname ?? "Unknown",
+                Type = a.ResidentId.HasValue ? "resident" : "householder",
+                PhotoPath = a.Resident?.PhotoPath ?? a.Householder?.PhotoPath
+            }).ToList()
         });
 
         return Ok(new
@@ -81,7 +133,13 @@ public class MeetingController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var meeting = await _context.Meetings.FindAsync(id);
+        var meeting = await _context.Meetings
+            .Include(m => m.Attendances)
+                .ThenInclude(a => a.Resident)
+            .Include(m => m.Attendances)
+                .ThenInclude(a => a.Householder)
+            .FirstOrDefaultAsync(m => m.Id == id);
+            
         if (meeting == null) return NotFound();
 
         return Ok(new MeetingDto
@@ -92,7 +150,14 @@ public class MeetingController : ControllerBase
             Meeting_date = meeting.Date.ToString("yyyy-MM-ddTHH:mm"),
             Location = meeting.Location,
             Status = meeting.Status,
-            Created_at = meeting.CreatedAt
+            Created_at = meeting.CreatedAt,
+            Attendees = meeting.Attendances.Where(a => a.IsPresent).Select(a => new MeetingAttendeeDto
+            {
+                Id = a.ResidentId ?? a.HouseholderId ?? Guid.Empty,
+                Name = a.Resident?.Fullname ?? a.Householder?.Fullname ?? "Unknown",
+                Type = a.ResidentId.HasValue ? "resident" : "householder",
+                PhotoPath = a.Resident?.PhotoPath ?? a.Householder?.PhotoPath
+            }).ToList()
         });
     }
 
@@ -146,5 +211,166 @@ public class MeetingController : ControllerBase
         _context.Meetings.Remove(meeting);
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpPatch("{id}/description")]
+    public async Task<IActionResult> UpdateDescription(Guid id, [FromBody] UpdateDescriptionDto dto)
+    {
+        var meeting = await _context.Meetings.FindAsync(id);
+        if (meeting == null) return NotFound();
+
+        meeting.Description = dto.Description;
+        meeting.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "Description updated successfully" });
+    }
+
+    [HttpGet("{id}/images")]
+    public async Task<IActionResult> GetImages(Guid id)
+    {
+        var images = await _context.MeetingImages
+            .Where(i => i.MeetingId == id)
+            .Select(i => new MeetingImageDto
+            {
+                Id = i.Id,
+                ImagePath = i.ImagePath
+            })
+            .ToListAsync();
+        
+        return Ok(images);
+    }
+
+    [HttpPost("{id}/images")]
+    public async Task<IActionResult> UploadImage(Guid id, [FromForm] IFormFile file)
+    {
+        var meeting = await _context.Meetings.FindAsync(id);
+        if (meeting == null) return NotFound("Meeting not found");
+
+        if (file == null || file.Length == 0) return BadRequest("No file uploaded");
+
+        var extension = System.IO.Path.GetExtension(file.FileName);
+        var filePath = $"meetings/{id}/{Guid.NewGuid()}{extension}";
+
+        using var stream = file.OpenReadStream();
+        await _storageService.UploadFileAsync(PrivateBucket, filePath, stream);
+
+        var meetingImage = new MeetingImage
+        {
+            MeetingId = id,
+            ImagePath = filePath
+        };
+
+        _context.MeetingImages.Add(meetingImage);
+        await _context.SaveChangesAsync();
+
+        return Ok(new MeetingImageDto
+        {
+            Id = meetingImage.Id,
+            ImagePath = meetingImage.ImagePath
+        });
+    }
+
+    [HttpDelete("images/{imageId}")]
+    public async Task<IActionResult> DeleteImage(Guid imageId)
+    {
+        var image = await _context.MeetingImages.FindAsync(imageId);
+        if (image == null) return NotFound();
+
+        try
+        {
+            await _storageService.RemoveFileAsync(PrivateBucket, image.ImagePath);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to delete file from storage: {ex.Message}");
+        }
+
+        _context.MeetingImages.Remove(image);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpGet("{id}/attendance")]
+    public async Task<IActionResult> GetAttendance(Guid id)
+    {
+        var attendances = await _context.MeetingAttendances.Where(a => a.MeetingId == id).ToListAsync();
+        
+        var householders = await _context.Householders.ToListAsync();
+        var residents = await _context.Residents.ToListAsync();
+        
+        var result = new List<object>();
+        
+        foreach (var h in householders)
+        {
+            var a = attendances.FirstOrDefault(x => x.HouseholderId == h.Id);
+            result.Add(new 
+            {
+                Id = h.Id,
+                Name = h.Fullname,
+                Email = h.Email,
+                Type = "householder",
+                IsPresent = a?.IsPresent ?? false,
+                Notes = a?.Notes
+            });
+        }
+        
+        foreach (var r in residents)
+        {
+            var a = attendances.FirstOrDefault(x => x.ResidentId == r.Id);
+            result.Add(new 
+            {
+                Id = r.Id,
+                Name = r.Fullname,
+                Email = (string?)null,
+                Type = "resident",
+                IsPresent = a?.IsPresent ?? false,
+                Notes = a?.Notes
+            });
+        }
+
+        var sortedResult = result.OrderBy(r => ((dynamic)r).Name).ToList();
+
+        return Ok(sortedResult);
+    }
+
+    [HttpPost("{id}/attendance")]
+    public async Task<IActionResult> SubmitAttendance(Guid id, [FromBody] AttendanceSubmitDto dto)
+    {
+        var meeting = await _context.Meetings.FindAsync(id);
+        if (meeting == null) return NotFound();
+
+        var existingAttendances = await _context.MeetingAttendances.Where(a => a.MeetingId == id).ToListAsync();
+        
+        foreach (var record in dto.Records)
+        {
+            var isHouseholder = record.Type == "householder";
+            var existing = existingAttendances.FirstOrDefault(a => 
+                (isHouseholder && a.HouseholderId == record.Id) || 
+                (!isHouseholder && a.ResidentId == record.Id)
+            );
+
+            if (existing != null)
+            {
+                existing.IsPresent = record.IsPresent;
+                existing.Notes = record.Notes;
+                existing.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                _context.MeetingAttendances.Add(new MeetingAttendance
+                {
+                    MeetingId = id,
+                    HouseholderId = isHouseholder ? record.Id : null,
+                    ResidentId = isHouseholder ? null : record.Id,
+                    IsPresent = record.IsPresent,
+                    Notes = record.Notes
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "Attendance updated successfully" });
     }
 }
