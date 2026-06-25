@@ -193,7 +193,7 @@ export default function Login() {
                       setRequires2FA(false);
                       setError(null);
                     }}
-                    className="w-full mt-3 text-sm font-bold text-on-surface-var hover:text-primary transition-colors cursor-pointer"
+                    className="w-full mt-3 py-3 px-4 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-bold text-on-surface-var hover:text-on-surface hover:bg-slate-50 dark:hover:bg-white/5 transition-all duration-200 cursor-pointer"
                   >
                     Back to Login
                   </button>
@@ -253,7 +253,7 @@ export default function Login() {
 
                       setError(null);
                     }}
-                    className="w-full mt-3 text-sm font-bold text-on-surface-var hover:text-primary transition-colors cursor-pointer"
+                    className="w-full mt-3 py-3 px-4 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-bold text-on-surface-var hover:text-on-surface hover:bg-slate-50 dark:hover:bg-white/5 transition-all duration-200 cursor-pointer"
                   >
                     Back to Login
                   </button>
