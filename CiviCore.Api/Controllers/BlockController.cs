@@ -25,10 +25,17 @@ public class BlockController : ControllerBase
             .Include(b => b.Units)
             .Include(b => b.Coordinators).ThenInclude(c => c.Resident)
             .Include(b => b.Coordinators).ThenInclude(c => c.Householder)
+            .OrderBy(b => b.Name)
             .Select(b => new {
                 b.Id,
                 b.Name,
                 b.Description,
+                units_count = b.Units.Count,
+                owner_occupied_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.OwnerOccupied),
+                rented_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Rented),
+                vacant_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Vacant),
+                public_facility_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.PublicFacility),
+                developer_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Developer),
                 Coordinators = b.Coordinators.Select(c => new {
                     type = c.ResidentId != null ? "resident" : "householder",
                     id = c.ResidentId ?? c.HouseholderId,
@@ -60,6 +67,12 @@ public class BlockController : ControllerBase
             block.Id,
             block.Name,
             block.Description,
+            units_count = block.Units.Count,
+            owner_occupied_units_count = block.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.OwnerOccupied),
+            rented_units_count = block.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Rented),
+            vacant_units_count = block.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Vacant),
+            public_facility_units_count = block.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.PublicFacility),
+            developer_units_count = block.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Developer),
             Coordinators = block.Coordinators.Select(c => new {
                 type = c.ResidentId != null ? "resident" : "householder",
                 id = c.ResidentId ?? c.HouseholderId,

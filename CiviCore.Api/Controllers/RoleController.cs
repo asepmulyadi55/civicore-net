@@ -22,7 +22,25 @@ public class RoleController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var roles = await _context.Roles.Include(r => r.Permissions).ToListAsync();
-        return Ok(roles);
+
+        // Get user counts per role from the UserRoles join table
+        var userRoleCounts = await _context.UserRoles
+            .GroupBy(ur => ur.RoleId)
+            .Select(g => new { RoleId = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        var result = roles.Select(r => new
+        {
+            r.Id,
+            r.Name,
+            r.NormalizedName,
+            r.Description,
+            r.Style,
+            r.Permissions,
+            users_count = userRoleCounts.FirstOrDefault(uc => uc.RoleId == r.Id)?.Count ?? 0
+        });
+
+        return Ok(result);
     }
 
     [HttpGet("{id}")]

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import {
@@ -59,13 +59,13 @@ function ReviewModal({ open, onClose, payment, onApprove, onReject }) {
             className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
         </div>
         <div className="flex gap-3 pt-2">
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all">Cancel</button>
+          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all cursor-pointer">Cancel</button>
           <button onClick={() => handle('reject')} disabled={!!loading}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-sm font-bold transition-all disabled:opacity-60">
+            className="flex-1 px-4 py-2.5 rounded-xl border border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-sm font-bold transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
             {loading === 'reject' ? 'Rejecting...' : 'Reject'}
           </button>
           <button onClick={() => handle('approve')} disabled={!!loading}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow-sm disabled:opacity-60 transition-all">
+            className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow-sm transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
             {loading === 'approve' ? 'Approving...' : 'Approve'}
           </button>
         </div>
@@ -82,10 +82,33 @@ function PaymentModal({ open, onClose, onSaved }) {
   const [loading, setLoading] = useState(false);
   const [selectedMonths, setSelectedMonths] = useState(new Set());
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const dropdownRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
+  useEffect(() => {
+    if (!dropdownOpen) {
+      setSearchQuery('');
+    }
+  }, [dropdownOpen]);
+
   useEffect(() => {
     if (open) {
       setForm({ householderId: '', amount: 0, notes: '', year: new Date().getFullYear() });
       setSelectedMonths(new Set());
+      setProofFile(null);
       setErrors({});
       axios.get('/api/householders').then(res => setHouseholders(res.data.data || res.data)).catch(() => {});
     }
@@ -109,7 +132,17 @@ function PaymentModal({ open, onClose, onSaved }) {
         notes: form.notes,
         paymentMethodId: null
       };
-      await axios.post('/api/payments', payload);
+      const res = await axios.post('/api/payments', payload);
+      const batchId = res.data?.batchId;
+      
+      if (proofFile && batchId) {
+        const formData = new FormData();
+        formData.append('file', proofFile);
+        await axios.post(`/api/payments/${batchId}/proof`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      
       onSaved(); onClose();
     } catch (err) {
       setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Failed to save payment.' });
@@ -118,64 +151,173 @@ function PaymentModal({ open, onClose, onSaved }) {
 
   const totalAmount = form.amount * selectedMonths.size;
 
+  const selectedResident = householders.find(h => h.id === form.householderId);
+  const filteredHouseholders = householders.filter(h => {
+    const term = searchQuery.toLowerCase();
+    const name = h.fullname?.toLowerCase() || '';
+    const unit = (h.unit?.unitNumber || h.unit_number || '').toLowerCase();
+    const block = (h.block?.name || '').toLowerCase();
+    return name.includes(term) || unit.includes(term) || block.includes(term);
+  });
+
   return (
-    <Modal open={open} onClose={onClose} title="Record Payment" size="lg">
-      <div className="space-y-6">
-        {errors.general && <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
-        <div className="grid grid-cols-1 gap-4">
-          <FormSelect label="Resident" id="pm-res" value={form.householderId} onChange={e => {
-            const hId = e.target.value;
-            const res = householders.find(h => h.id === hId);
-            const amount = res?.currentFee?.amount || res?.fee || 0; // fallback logic
-            setForm(f => ({ ...f, householderId: hId, amount }));
-          }}
-            options={householders.map(h => ({ value: h.id, label: `${h.fullname} (Unit ${h.unit?.unitNumber || h.unit_number || '?'})` }))} required placeholder="Select Resident" />
+    <Modal open={open} onClose={onClose} title="Record Payment" subtitle="Select a householder to continue" size="lg">
+      <div className="space-y-6 -m-2">
+        {errors.general && <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded-lg mx-2">{errors.general}</div>}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-2">
+          {/* Householder */}
+          <div ref={dropdownRef}>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">HOUSEHOLDER <span className="text-rose-500">*</span></label>
+            <div className="relative">
+               <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+               <input 
+                 type="text"
+                 placeholder="Search householder name or unit..."
+                 value={dropdownOpen ? searchQuery : (selectedResident ? `${selectedResident.fullname} — ${selectedResident.block?.name || ''} Unit ${selectedResident.unit?.unitNumber || selectedResident.unit_number || '?'}` : '')}
+                 onChange={e => {
+                   setSearchQuery(e.target.value);
+                   setDropdownOpen(true);
+                 }}
+                 onFocus={() => setDropdownOpen(true)}
+                 className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-semibold text-slate-700 dark:text-white outline-none focus:border-primary transition-all placeholder:text-slate-500"
+               />
+               <span className={`material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}>expand_more</span>
+               
+               {dropdownOpen && (
+                 <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden py-1">
+                   {filteredHouseholders.length === 0 ? (
+                     <div className="p-4 text-center text-sm text-slate-500">No householder found.</div>
+                   ) : (
+                     filteredHouseholders.map(h => (
+                       <div key={h.id} 
+                         onClick={() => {
+                           const amount = h.monthlyFee || 0;
+                           setForm(f => ({ ...f, householderId: h.id, amount }));
+                           setDropdownOpen(false);
+                           setSearchQuery('');
+                         }}
+                         className={`px-4 py-2.5 cursor-pointer border-b border-slate-100 dark:border-white/5 last:border-0 transition-colors flex items-center ${form.householderId === h.id ? 'bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}>
+                         <span className="font-bold text-slate-900 dark:text-white whitespace-nowrap overflow-hidden text-ellipsis mr-2">{h.fullname}</span>
+                         <span className="text-slate-500 dark:text-slate-400 text-[13px] whitespace-nowrap">— {h.block?.name || ''} Unit {h.unit?.unitNumber || h.unit_number || '?'}</span>
+                       </div>
+                     ))
+                   )}
+                 </div>
+               )}
+            </div>
+          </div>
+
+          {/* Year */}
+          <div>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">YEAR</label>
+            <div className="relative">
+               <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">calendar_today</span>
+               <select value={form.year} onChange={e => setForm(f => ({ ...f, year: Number(e.target.value) }))} className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-semibold text-slate-700 dark:text-white appearance-none outline-none focus:border-primary transition-all">
+                 {[0, 1, 2].map(i => <option key={i} value={new Date().getFullYear() - i}>{new Date().getFullYear() - i}</option>)}
+               </select>
+               <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">expand_more</span>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-semibold text-slate-700">Select Months</label>
-            <select value={form.year} onChange={e => setForm(f => ({ ...f, year: Number(e.target.value) }))} className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-700">
-              {[0, 1, 2].map(i => <option key={i} value={new Date().getFullYear() - i}>{new Date().getFullYear() - i}</option>)}
-            </select>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
+        {/* Months */}
+        <div className="border-t border-slate-100 dark:border-white/5 pt-6 px-2">
+          <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">SELECT MONTHS ({form.year}) <span className="text-slate-400 dark:text-slate-500 normal-case lowercase font-medium tracking-normal">— select at least one</span></p>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {MONTH_NAMES.map((name, idx) => {
               const m = idx + 1;
               const sel = selectedMonths.has(m);
               return (
-                <button key={m} onClick={() => toggleMonth(m)}
-                  className={`py-3 flex flex-col items-center justify-center rounded-xl border-2 transition-all ${sel ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'}`}>
-                  <span className="text-xs font-bold text-slate-700">{name.substring(0, 3)}</span>
-                  <span className={`text-[10px] font-bold uppercase mt-1 ${sel ? 'text-primary' : 'text-slate-400'}`}>{sel ? 'Selected' : 'Unpaid'}</span>
+                <button key={m} onClick={() => toggleMonth(m)} type="button"
+                  className={`py-3 flex flex-col items-center justify-center rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${sel ? 'border-primary bg-primary/5 dark:bg-primary/10' : 'border-slate-200 dark:border-slate-800'}`}>
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{name.substring(0, 3)}</span>
+                  <span className={`text-[10px] font-bold uppercase mt-1 tracking-wider ${sel ? 'text-primary' : 'text-slate-400'}`}>{sel ? 'Selected' : 'Unpaid'}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormInput label="Amount per Month (Rp)" id="pm-amt" type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} required placeholder="0" />
-          <FormInput label="Notes" id="pm-not" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="e.g. Paid in cash" />
-        </div>
-
-        {selectedMonths.size > 0 && (
-          <div className="p-4 bg-primary/10 rounded-xl border border-primary/20 flex justify-between items-center">
-            <div>
-              <p className="text-xs font-bold text-primary uppercase">Total Calculated</p>
-              <p className="text-2xl font-extrabold text-slate-900 mt-1">Rp {totalAmount.toLocaleString('id-ID')}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-bold text-slate-700">{selectedMonths.size} Months Selected</p>
-              <p className="text-[11px] text-slate-500">{Array.from(selectedMonths).sort((a,b)=>a-b).map(m => MONTH_NAMES[m-1].substring(0,3)).join(', ')}</p>
+        {/* Method & Status and Proof & Notes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6 border-t border-slate-100 dark:border-white/5 pt-6 px-2">
+          {/* Payment Method */}
+          <div>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">PAYMENT METHOD</label>
+            <div className="relative">
+               <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">account_balance</span>
+               <select className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-semibold text-slate-700 dark:text-white appearance-none outline-none focus:border-primary transition-all">
+                 <option value="">— None —</option>
+                 <option value="bank">Bank Transfer</option>
+                 <option value="cash">Cash</option>
+               </select>
+               <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">expand_more</span>
             </div>
           </div>
-        )}
 
-        <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 mt-4">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50">Cancel</button>
-          <button onClick={handleSave} disabled={loading || !form.householderId || !form.amount || selectedMonths.size === 0} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold disabled:opacity-60 flex items-center gap-2">
-            <span className="material-icons text-sm">verified</span> {loading ? 'Saving...' : 'Record Payment'}
+          {/* Proof of Payment */}
+          <div>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">PROOF OF PAYMENT <span className="text-slate-400 dark:text-slate-500 normal-case lowercase tracking-normal font-medium">optional</span></label>
+            <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setProofFile(e.target.files?.[0] || null)} />
+            <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors h-[104px] overflow-hidden relative group">
+              {proofFile ? (
+                <>
+                  <span className="material-icons text-emerald-500 mb-1.5 text-[24px]">check_circle</span>
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 truncate max-w-full px-2">{proofFile.name}</span>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setProofFile(null); fileInputRef.current && (fileInputRef.current.value = ''); }} className="absolute top-2 right-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer p-1">
+                    <span className="material-icons text-sm">close</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="material-icons text-amber-500 mb-1.5 text-[24px]">cloud_upload</span>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Click to upload receipt</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">PDF, JPG, PNG (MAX 5MB)</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Status Info */}
+          <div className="flex flex-col">
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">STATUS</label>
+            <div className="flex items-start gap-3 p-4 bg-amber-50/50 border border-amber-200 dark:bg-[#1B2236]/30 dark:border-amber-500/20 rounded-xl flex-1">
+              <span className="material-icons text-amber-500 text-[20px] mt-0.5">hourglass_empty</span>
+              <div>
+                <p className="text-sm font-bold text-amber-600 dark:text-amber-500">Pending (awaiting review)</p>
+                <p className="text-[11px] text-amber-600/70 dark:text-amber-500/70 font-medium mt-1 leading-relaxed">New payments are automatically set to Pending for review.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="flex flex-col">
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">NOTES <span className="text-slate-400 dark:text-slate-500 normal-case lowercase tracking-normal font-medium">optional</span></label>
+            <textarea placeholder="Any additional notes..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full p-4 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-700 dark:text-white appearance-none outline-none focus:border-primary resize-none flex-1 transition-all min-h-[116px]"></textarea>
+          </div>
+        </div>
+
+        {/* Amount */}
+        <div className="border-t border-slate-100 dark:border-white/5 pt-6 px-2">
+          <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">AMOUNT PER MONTH (RP) <span className="text-rose-500">*</span></label>
+          <div className="relative">
+            <span className="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">payments</span>
+            <input 
+              type="text" 
+              disabled 
+              value={form.householderId ? form.amount.toLocaleString('id-ID') : ""} 
+              placeholder="Select a resident first" 
+              className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-[#1B2236]/40 border border-slate-200 dark:border-white/5 rounded-xl text-sm font-semibold text-slate-500 dark:text-slate-400 outline-none cursor-not-allowed transition-all" 
+            />
+          </div>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">Auto-filled from resident's current monthly fee.</p>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-white/5 px-2">
+          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading || !form.householderId || !form.amount || selectedMonths.size === 0} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+            <span className="material-icons text-sm">verified</span> {loading ? 'Saving...' : 'Confirm Payment'}
           </button>
         </div>
       </div>
@@ -260,7 +402,7 @@ export default function Payments() {
         subtitle="Manage and review resident payment submissions" 
         actions={
           <button onClick={() => setAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all">
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
             <span className="material-icons text-sm">add</span> Record Payment
           </button>
         }
@@ -275,7 +417,7 @@ export default function Payments() {
             { value: 'rejected', label: 'Rejected' },
           ]} placeholder="All Status" />
         <button onClick={() => setFilters({ search: '', status: '', page: 1 })}
-          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors">
+          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
           <span className="material-icons text-sm">close</span> Clear
         </button>
       </FilterBar>
@@ -361,7 +503,7 @@ export default function Payments() {
                     <div className="flex items-center justify-end gap-1">
                       {status === 'pending' && (
                         <button onClick={() => setReviewItem(p)}
-                          className="text-amber-600 border border-amber-500/40 bg-amber-50/60 hover:bg-amber-500 hover:text-white dark:bg-amber-500/10 dark:text-amber-400 font-semibold text-xs px-3 py-1.5 rounded-lg transition-all">
+                          className="text-amber-600 border border-amber-500/40 bg-amber-50/60 hover:bg-amber-500 hover:text-white dark:bg-amber-500/10 dark:text-amber-400 font-semibold text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer">
                           Review
                         </button>
                       )}
@@ -369,7 +511,7 @@ export default function Payments() {
                       {status === 'rejected' && <span className="text-xs text-rose-400 px-2" title={p.rejectionReason}>Rejected</span>}
                       {!isApproved && (
                         <button onClick={() => setConfirm({ open: true, item: p, loading: false })}
-                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors" title="Delete">
+                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title="Delete">
                           <span className="material-icons text-lg">delete_outline</span>
                         </button>
                       )}

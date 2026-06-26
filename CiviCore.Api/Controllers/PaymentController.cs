@@ -236,4 +236,28 @@ public class PaymentController : ControllerBase
         var fileBytes = exportService.ExportPayments(payments);
         return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "payments.xlsx");
     }
+
+    [HttpPost("{batchId}/proof")]
+    public async Task<IActionResult> UploadProof(Guid batchId, [FromForm] IFormFile file, [FromServices] ISupabaseStorageService storageService, [FromServices] IConfiguration configuration)
+    {
+        var records = await _context.Set<PaymentRecord>().Where(p => p.BatchId == batchId).ToListAsync();
+        if (!records.Any()) return NotFound("Payment records not found for this batch.");
+
+        if (file == null || file.Length == 0) return BadRequest("No file uploaded");
+
+        var extension = System.IO.Path.GetExtension(file.FileName);
+        var filePath = $"payments/{batchId}/{Guid.NewGuid()}{extension}";
+        var bucket = configuration["Supabase:PrivateBucket"] ?? "civicore-private";
+
+        using var stream = file.OpenReadStream();
+        await storageService.UploadFileAsync(bucket, filePath, stream);
+
+        foreach (var record in records)
+        {
+            record.ProofPath = filePath;
+        }
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Proof uploaded successfully", path = filePath });
+    }
 }

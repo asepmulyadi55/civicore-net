@@ -218,6 +218,34 @@ public class UserController : ControllerBase
 
         return Ok(new { message = "User approved" });
     }
+
+    [HttpPost("{id}/deactivate")]
+    public async Task<IActionResult> Deactivate(Guid id)
+    {
+        var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == id.ToString())
+            return BadRequest(new { message = "You cannot deactivate your own account." });
+
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        if (user == null) return NotFound();
+
+        user.IsActive = false;
+        await _userManager.UpdateAsync(user);
+
+        return Ok(new { message = "User deactivated" });
+    }
+
+    [HttpPost("{id}/reactivate")]
+    public async Task<IActionResult> Reactivate(Guid id)
+    {
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        if (user == null) return NotFound();
+
+        user.IsActive = true;
+        await _userManager.UpdateAsync(user);
+
+        return Ok(new { message = "User reactivated" });
+    }
 }
 
 public class UserCreateDto
