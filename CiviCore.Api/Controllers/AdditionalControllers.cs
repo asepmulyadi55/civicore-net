@@ -18,13 +18,7 @@ public class PosyanduController : ControllerBase
     public IActionResult Get() { return Ok(new string[] {}); }
 }
 
-[ApiController]
-[Route("api/[controller]")]
-public class SettingController : ControllerBase
-{
-    [HttpGet]
-    public IActionResult Get() { return Ok(new string[] {}); }
-}
+
 
 [ApiController]
 [Route("api/[controller]")]

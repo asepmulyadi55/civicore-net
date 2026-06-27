@@ -53,7 +53,7 @@ function NavItem({ item, isActive }) {
   return (
     <Link
       to={item.path}
-      className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm transition-all ${
+      className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm transition-all cursor-pointer ${
         isActive
           ? 'bg-primary/10 dark:bg-primary/20 text-primary font-semibold'
           : 'text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 font-medium'

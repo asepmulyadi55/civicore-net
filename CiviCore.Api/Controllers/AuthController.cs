@@ -224,7 +224,7 @@ namespace CiviCore.Api.Controllers
                 // Auto register google user (pending approval)
                 user = new ApplicationUser
                 {
-                    UserName = email,
+                    UserName = email.Contains('@') ? email.Split('@')[0] : email,
                     Email = email,
                     Name = result.Principal.FindFirstValue(ClaimTypes.Name) ?? "Google User",
                     GoogleId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier),
