@@ -151,9 +151,29 @@ namespace CiviCore.Api.Controllers
             if (user != null)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email!)}";
+                var frontendUrl = _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+                var resetLink = $"{frontendUrl}/admin/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email!)}";
                 
-                await _emailService.SendEmailAsync(user.Email!, "Reset Password", $"Click here to reset your password: <a href=\"{resetLink}\">Reset Password</a>");
+                var emailBody = $@"
+<div style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"">
+    <div style=""text-align: center; margin-bottom: 25px;"">
+        <h2 style=""color: #1e293b; margin: 0; font-size: 24px;"">Password Reset Request</h2>
+    </div>
+    <p style=""color: #475569; font-size: 16px; line-height: 1.6;"">Hello,</p>
+    <p style=""color: #475569; font-size: 16px; line-height: 1.6;"">We received a request to reset your password for your CiviCore account. Click the button below to set up a new password:</p>
+    <div style=""text-align: center; margin: 35px 0;"">
+        <a href=""{resetLink}"" style=""background-color: #3b82f6; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 16px; font-weight: 600; display: inline-block; transition: background-color 0.2s;"">Reset My Password</a>
+    </div>
+    <p style=""color: #475569; font-size: 15px; line-height: 1.6;"">If the button doesn't work, you can also copy and paste the following link into your browser:</p>
+    <p style=""background-color: #f8fafc; padding: 12px; border-radius: 4px; word-break: break-all; font-size: 14px; color: #64748b; border: 1px solid #e2e8f0;"">
+        {resetLink}
+    </p>
+    <p style=""color: #475569; font-size: 15px; margin-top: 30px;"">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+    <hr style=""border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;"">
+    <p style=""color: #94a3b8; font-size: 14px; text-align: center; margin: 0;"">Best regards,<br><strong>The CiviCore Team</strong></p>
+</div>";
+
+                await _emailService.SendEmailAsync(user.Email!, "Reset Your CiviCore Password", emailBody);
             }
             // Always return OK to prevent email enumeration
             return Ok(new { message = "If the email is registered, a password reset link has been sent." });
@@ -188,9 +208,9 @@ namespace CiviCore.Api.Controllers
             var email = result.Principal.FindFirstValue(ClaimTypes.Email);
             if (email == null) return BadRequest();
 
-            var frontendUrl = _config["FrontendUrl"] ?? "/";
-            var loginUrl = frontendUrl.Replace("/dashboard", "/login");
-            var registerUrl = frontendUrl.Replace("/dashboard", "/register");
+            var frontendUrl = _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+            var loginUrl = $"{frontendUrl}/admin/login";
+            var registerUrl = $"{frontendUrl}/admin/register";
 
             var user = await _userManager.FindByEmailAsync(email);
 

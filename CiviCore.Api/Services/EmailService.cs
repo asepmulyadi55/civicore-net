@@ -17,8 +17,9 @@ namespace CiviCore.Api.Services
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             var message = new MimeMessage();
-            var fromAddress = _config["Smtp:From"] ?? "noreply@civicore.com";
-            message.From.Add(new MailboxAddress("CiviCore", fromAddress));
+            var fromAddress = _config["MailSettings:FromAddress"] ?? "noreply@civicore.com";
+            var fromName = _config["MailSettings:FromName"] ?? "CiviCore";
+            message.From.Add(new MailboxAddress(fromName, fromAddress));
             message.To.Add(new MailboxAddress("", toEmail));
             message.Subject = subject;
 
@@ -28,10 +29,10 @@ namespace CiviCore.Api.Services
             };
 
             using var client = new SmtpClient();
-            var host = _config["Smtp:Host"] ?? "localhost";
-            var port = int.TryParse(_config["Smtp:Port"], out var p) ? p : 25;
-            var user = _config["Smtp:User"];
-            var pass = _config["Smtp:Pass"];
+            var host = _config["MailSettings:Host"] ?? "localhost";
+            var port = int.TryParse(_config["MailSettings:Port"], out var p) ? p : 25;
+            var user = _config["MailSettings:Username"];
+            var pass = _config["MailSettings:Password"];
             
             try
             {

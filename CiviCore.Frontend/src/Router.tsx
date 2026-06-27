@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import Login from './pages/admin/Login';
 import Register from './pages/admin/Register';
 import ForgotPassword from './pages/admin/ForgotPassword';
+import ResetPassword from './pages/admin/ResetPassword';
 import Dashboard from './pages/admin/Dashboard';
 // Wave 1
 import Householders from './pages/admin/Householders';
@@ -73,6 +74,7 @@ export default function Router() {
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin/register" element={<Register />} />
         <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin/reset-password" element={<ResetPassword />} />
 
         {/* Dashboard */}
         <Route path="/admin/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
