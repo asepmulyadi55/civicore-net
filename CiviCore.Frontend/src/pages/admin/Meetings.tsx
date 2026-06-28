@@ -343,7 +343,7 @@ export default function Meetings() {
         <SelectFilter 
           value={filters.year || ''} 
           onChange={(v) => setFilter('year', v)} 
-          options={[new Date().getFullYear() + 1, new Date().getFullYear(), new Date().getFullYear() - 1, new Date().getFullYear() - 2].map(y => ({ value: String(y), label: String(y) }))} 
+          options={Array.from({ length: Math.max(1, new Date().getFullYear() - 2026 + 2) }, (_, i) => new Date().getFullYear() + 1 - i).filter(y => y >= 2026).map(y => ({ value: String(y), label: String(y) }))} 
           placeholder="All Years" 
         />
         <button onClick={() => setFilters({ search: '', month: '', year: '', page: 1 })}

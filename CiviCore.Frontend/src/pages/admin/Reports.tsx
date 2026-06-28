@@ -37,10 +37,10 @@ export default function Reports() {
 
   const setFilter = (k, v) => setFilters((p) => ({ ...p, [k]: v, page: 1 }));
 
-  const years = Array.from({ length: 4 }, (_, i) => {
-    const y = new Date().getFullYear() - i;
-    return { value: String(y), label: String(y) };
-  });
+  const years = [];
+  for (let y = new Date().getFullYear() + 1; y >= 2026; y--) {
+    years.push({ value: String(y), label: String(y) });
+  }
 
   const blockOptions = blocks.map((b) => ({ value: String(b.id), label: b.name }));
 
@@ -50,11 +50,24 @@ export default function Reports() {
     { label: 'Collection Rate', value: `${stats?.collection_rate ?? 0}%`, icon: 'percent', iconBg: 'bg-primary/10', iconColor: 'text-primary' },
   ];
 
-  const statusColor = (s) => {
+  const statusColor = (s, monthNum) => {
     if (s === 'approved') return 'bg-emerald-500';
     if (s === 'pending') return 'bg-amber-400';
     if (s === 'rejected') return 'bg-rose-500';
-    return 'bg-slate-300 dark:bg-slate-600';
+    
+    const reportYear = parseInt(filters.year, 10);
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+    
+    const isPast = reportYear < currentYear || (reportYear === currentYear && monthNum < currentMonth);
+    
+    if (isPast) {
+      // Past unpaid month (missed/late) - Hollow Red Ring
+      return 'border-[3px] border-rose-400/70 dark:border-rose-500/70 bg-rose-50 dark:bg-rose-950/30';
+    }
+    
+    // Future/Current unpaid month - Hollow Gray Ring
+    return 'border-[3px] border-slate-200 dark:border-slate-700 bg-transparent';
   };
 
   return (
@@ -75,7 +88,7 @@ export default function Reports() {
 
       <FilterBar>
         <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search householder or unit…" />
-        <SelectFilter value={filters.year} onChange={(v) => setFilter('year', v)} options={years} placeholder="Year" />
+        <SelectFilter value={filters.year} onChange={(v) => setFilter('year', v)} options={years} placeholder="All Years" hidePlaceholderOption={true} />
         <SelectFilter value={filters.block_id} onChange={(v) => setFilter('block_id', v)} options={blockOptions} placeholder="All Blocks" />
         <button onClick={() => setFilters({ year: String(new Date().getFullYear()), block_id: '', search: '', page: 1 })}
           className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
@@ -107,7 +120,7 @@ export default function Reports() {
                 </td>
                 {(r.months || []).map((m) => (
                   <td key={m.month} className="px-1 py-3 text-center">
-                    <div className={`w-5 h-5 rounded-full mx-auto ${statusColor(m.status)}`} title={`${MONTH_LABELS[m.month - 1]}: ${m.status}`}></div>
+                    <div className={`w-5 h-5 rounded-full mx-auto ${statusColor(m.status, m.month)}`} title={`${MONTH_LABELS[m.month - 1]}: ${m.status}`}></div>
                   </td>
                 ))}
                 <td className="px-4 py-3 text-sm font-bold text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">

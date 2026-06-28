@@ -175,8 +175,8 @@ export default function Finance() {
             <SelectFilter 
               value={dashboardFilters.year} 
               onChange={(v) => setDashboardFilters(p => ({ ...p, year: String(v) }))} 
-              options={[2024, 2025, 2026, 2027].map(y => ({ value: String(y), label: String(y) }))} 
-              placeholder="Select Year" 
+              options={Array.from({ length: Math.max(1, new Date().getFullYear() - 2026 + 2) }, (_, i) => new Date().getFullYear() + 1 - i).filter(y => y >= 2026).map(y => ({ value: String(y), label: String(y) }))} 
+              placeholder="All Years" 
             />
             <button onClick={() => setDashboardFilters({ month: (new Date().getMonth() + 1).toString(), year: new Date().getFullYear().toString() })}
               className="flex items-center gap-1 px-3 py-2 text-sm text-slate-400 hover:text-slate-200 transition-colors cursor-pointer">
@@ -304,7 +304,7 @@ export default function Finance() {
             <SelectFilter 
               value={filters.year || ''} 
               onChange={(v) => setFilter('year', v)} 
-              options={[2024, 2025, 2026, 2027].map(y => ({ value: String(y), label: String(y) }))} 
+              options={Array.from({ length: Math.max(1, new Date().getFullYear() - 2026 + 2) }, (_, i) => new Date().getFullYear() + 1 - i).filter(y => y >= 2026).map(y => ({ value: String(y), label: String(y) }))} 
               placeholder="All Years" 
             />
             <button onClick={() => setFilters({ type: '', category: '', search: '', month: '', year: '', page: 1 })}
@@ -371,7 +371,7 @@ export default function Finance() {
             <SelectFilter 
               value={reportYear} 
               onChange={(v) => setReportYear(String(v))} 
-              options={[2024, 2025, 2026, 2027].map(y => ({ value: String(y), label: String(y) }))} 
+              options={Array.from({ length: Math.max(1, new Date().getFullYear() - 2026 + 2) }, (_, i) => new Date().getFullYear() + 1 - i).filter(y => y >= 2026).map(y => ({ value: String(y), label: String(y) }))} 
               placeholder="All Years" 
             />
             {reportYear && (

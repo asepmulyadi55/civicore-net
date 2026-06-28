@@ -513,10 +513,10 @@ export default function Payments() {
   };
 
   const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: 5 }, (_, i) => ({
-    value: String(currentYear - i),
-    label: String(currentYear - i)
-  }));
+  const yearOptions = [];
+  for (let y = currentYear + 1; y >= 2026; y--) {
+    yearOptions.push({ value: String(y), label: String(y) });
+  }
 
   const monthOptions = MONTH_NAMES.map((name, idx) => ({
     value: String(idx + 1),

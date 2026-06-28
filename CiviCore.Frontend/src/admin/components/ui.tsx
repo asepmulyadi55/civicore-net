@@ -171,7 +171,7 @@ export function SearchInput({ value, onChange, placeholder = 'Search...' }: { va
   );
 }
 
-export function SelectFilter({ value, onChange, options, placeholder = 'All' }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; placeholder?: string }) {
+export function SelectFilter({ value, onChange, options, placeholder = 'All', hidePlaceholderOption = false }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; placeholder?: string, hidePlaceholderOption?: boolean }) {
   const [open, setOpen] = React.useState(false);
   const selectedLabel = value === '' ? placeholder : (options.find(o => o.value === value)?.label || placeholder);
 
@@ -190,12 +190,14 @@ export function SelectFilter({ value, onChange, options, placeholder = 'All' }: 
       </div>
       {open && (
         <ul className="absolute z-20 w-full mt-1 max-h-60 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1">
-          <li
-            onMouseDown={(e) => { e.preventDefault(); onChange(''); setOpen(false); }}
-            className={`px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === '' ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
-          >
-            {placeholder}
-          </li>
+          {!hidePlaceholderOption && (
+            <li
+              onMouseDown={(e) => { e.preventDefault(); onChange(''); setOpen(false); }}
+              className={`px-4 py-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === '' ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+            >
+              {placeholder}
+            </li>
+          )}
           {options.map(o => (
             <li
               key={o.value}
