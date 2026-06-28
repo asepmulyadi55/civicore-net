@@ -94,6 +94,7 @@ public class UserController : ControllerBase
                 roleName = mainRoleName,
                 role = mainRole,
                 is_active = u.IsActive,
+                email_verified_at = u.EmailConfirmed ? "verified" : null,
                 photo = u.Avatar
             });
         }
@@ -203,6 +204,7 @@ public class UserController : ControllerBase
         if (user == null) return NotFound();
 
         user.IsActive = true;
+        user.EmailConfirmed = true; // Mark as verified/approved so they don't revert to Pending if deactivated
         await _userManager.UpdateAsync(user);
 
         if (!string.IsNullOrEmpty(dto.Role_Id) && Guid.TryParse(dto.Role_Id, out var roleId))
@@ -230,6 +232,7 @@ public class UserController : ControllerBase
         if (user == null) return NotFound();
 
         user.IsActive = false;
+        user.EmailConfirmed = true; // Mark as verified so they appear as Inactive, not Pending
         await _userManager.UpdateAsync(user);
 
         return Ok(new { message = "User deactivated" });
@@ -242,6 +245,7 @@ public class UserController : ControllerBase
         if (user == null) return NotFound();
 
         user.IsActive = true;
+        user.EmailConfirmed = true;
         await _userManager.UpdateAsync(user);
 
         return Ok(new { message = "User reactivated" });
