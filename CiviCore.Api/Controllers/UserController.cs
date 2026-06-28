@@ -123,7 +123,7 @@ public class UserController : ControllerBase
         var active = await _userManager.Users.CountAsync(u => u.IsActive);
         var pending = await _userManager.Users.CountAsync(u => !u.IsActive);
         
-        var adminUsers = await _userManager.GetUsersInRoleAsync("admin");
+        var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
         var admins = adminUsers.Count;
 
         return Ok(new { total, active, pending, admins });

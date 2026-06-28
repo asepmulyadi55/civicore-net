@@ -1,8 +1,8 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
-import { PageHeader, FilterBar, SearchInput, EmptyState, Pagination, TableWrapper, Th, Modal, ConfirmModal, FormInput, FormSelect, StatusBadge } from '../../admin/components/ui';
+import { PageHeader, FilterBar, SearchInput, SelectFilter, EmptyState, Pagination, TableWrapper, Th, Modal, ConfirmModal, FormInput, FormSelect, StatusBadge } from '../../admin/components/ui';
 
 interface Property {
   id: number;
@@ -18,8 +18,7 @@ interface Property {
 interface PaginationMeta { current_page: number; last_page: number; from: number; to: number; total: number; }
 
 const TYPE_OPTIONS = [
-  { value: 'house', label: 'House' }, { value: 'land', label: 'Land' },
-  { value: 'apartment', label: 'Apartment' }, { value: 'commercial', label: 'Commercial' },
+  { value: 'house', label: 'House' }
 ];
 const STATUS_OPTIONS = [
   { value: 'available', label: 'Available' }, { value: 'sold', label: 'Sold' }, { value: 'rented', label: 'Rented' },
@@ -68,9 +67,9 @@ function PropertyModal({ open, onClose, onSaved, data }: { open: boolean; onClos
           <textarea value={form.description} onChange={set('description')} rows={3} placeholder="Property details..."
             className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
         </div>
-        <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm disabled:opacity-60 transition-all">
+        <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-white/5 px-2 mt-4">
+          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
             {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Property'}
           </button>
         </div>
@@ -121,7 +120,7 @@ export default function PropertyAdmin() {
       <PageHeader title="Property Listings" subtitle="Manage available, sold, and rented properties"
         actions={
           <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all">
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
             <span className="material-icons text-sm">add</span> Add Property
           </button>
         }
@@ -129,10 +128,10 @@ export default function PropertyAdmin() {
 
       <FilterBar>
         <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search title, location…" />
-        <FormSelect label="" id="pf-type" value={filters.type} onChange={(e) => setFilter('type', e.target.value)} options={TYPE_OPTIONS} placeholder="All Types" />
-        <FormSelect label="" id="pf-status" value={filters.status} onChange={(e) => setFilter('status', e.target.value)} options={STATUS_OPTIONS} placeholder="All Status" />
+        <SelectFilter value={filters.type} onChange={(v) => setFilter('type', v)} options={TYPE_OPTIONS} placeholder="All Types" />
+        <SelectFilter value={filters.status} onChange={(v) => setFilter('status', v)} options={STATUS_OPTIONS} placeholder="All Status" />
         <button onClick={() => setFilters({ search: '', type: '', status: '', page: 1 })}
-          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors">
+          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
           <span className="material-icons text-sm">close</span> Clear
         </button>
       </FilterBar>
@@ -170,10 +169,10 @@ export default function PropertyAdmin() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-center gap-1">
-                    <button onClick={() => setModal({ open: true, data: p })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">
+                    <button onClick={() => setModal({ open: true, data: p })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer">
                       <span className="material-icons text-lg">edit</span>
                     </button>
-                    <button onClick={() => setConfirm({ open: true, item: p, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
+                    <button onClick={() => setConfirm({ open: true, item: p, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer">
                       <span className="material-icons text-lg">delete_outline</span>
                     </button>
                   </div>

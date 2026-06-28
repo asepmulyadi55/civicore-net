@@ -37,14 +37,31 @@ const NAV_GROUPS = [
       { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/admin/users', roles: ['admin'] },
       { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/admin/roles', roles: ['admin'] },
       { key: 'property', label: 'Property', icon: 'home_work', path: '/admin/property', roles: ['admin'] },
-      { key: 'homepage', label: 'Homepage CMS', icon: 'public', path: '/admin/homepage', roles: ['admin'] },
       { key: 'media', label: 'Media', icon: 'perm_media', path: '/admin/media', roles: ['admin'] },
     ],
   },
   {
-    label: null,
+    label: 'Homepage',
+    icon: 'public',
     items: [
-      { key: 'settings', label: 'Settings', icon: 'settings', path: '/admin/settings', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'featured', label: 'Featured Event', icon: 'star', path: '/admin/homepage/featured', roles: ['admin'] },
+      { key: 'events', label: 'Events', icon: 'event', path: '/admin/homepage/events', roles: ['admin'] },
+      { key: 'moments', label: 'Memorable Moments', icon: 'photo_library', path: '/admin/homepage/moments', roles: ['admin'] },
+      { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/admin/homepage/bulletin', roles: ['admin'] },
+      { key: 'about', label: 'About Section', icon: 'info', path: '/admin/homepage/about', roles: ['admin'] },
+      { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/admin/homepage/footer', roles: ['admin'] },
+      { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/admin/homepage/metadata', roles: ['admin'] },
+    ],
+  },
+  {
+    label: 'Settings',
+    icon: 'settings',
+    items: [
+      { key: 'profile', label: 'Profile', icon: 'person', path: '/admin/settings/profile', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'password', label: 'Password', icon: 'lock', path: '/admin/settings/password', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'security', label: 'Security', icon: 'security', path: '/admin/settings/security', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'memo', label: 'Admin Memo', icon: 'sticky_note_2', path: '/admin/settings/memo', roles: ['admin'] },
+      { key: 'posyandu', label: 'Posyandu', icon: 'child_care', path: '/admin/settings/posyandu', roles: ['admin'] },
     ],
   },
 ];
@@ -67,7 +84,8 @@ function NavItem({ item, isActive }) {
 
 function NavGroup({ group, activePath, userRole }) {
   // Filter items based on user role
-  const visibleItems = group.items.filter(i => i.roles.includes(userRole));
+  const normalizedRole = (userRole || '').toLowerCase();
+  const visibleItems = group.items.filter(i => i.roles.includes(normalizedRole));
   
   if (visibleItems.length === 0) return null;
 

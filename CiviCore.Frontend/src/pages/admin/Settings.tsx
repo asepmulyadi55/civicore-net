@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 
@@ -7,7 +8,6 @@ import AdminLayout from '../../admin/AdminLayout';
 const ALL_TABS = [
   { id: 'profile',   icon: 'person',              label: 'Profile' },
   { id: 'password',  icon: 'lock',                label: 'Password' },
-  { id: 'twofactor', icon: 'verified_user',       label: 'Two-Factor Auth' },
   { id: 'security',  icon: 'admin_panel_settings', label: 'Security',   adminOnly: true },
   { id: 'memo',      icon: 'sticky_note_2',       label: 'Admin Memo', adminOnly: true },
   { id: 'posyandu',  icon: 'health_and_safety',   label: 'Posyandu',   adminOnly: true },
@@ -102,7 +102,7 @@ function ProfileTab({ flash, setFlash }) {
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)}
-            className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
+            className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
         </div>
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
@@ -143,7 +143,7 @@ function ProfileTab({ flash, setFlash }) {
 
       <div className="flex justify-end">
         <button onClick={handleSave} disabled={saving}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm shadow-primary/20 text-sm cursor-pointer disabled:opacity-60">
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
           <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Save Profile'}
         </button>
       </div>
@@ -199,14 +199,14 @@ function PasswordTab({ flash, setFlash }) {
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Password</label>
           <input type="password" value={form.currentPassword} onChange={e => setForm(f => ({ ...f, currentPassword: e.target.value }))}
-            className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
+            className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
         </div>
       )}
 
       <div>
         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">New Password</label>
         <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-          className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
+          className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
       </div>
 
       {pw && (
@@ -223,139 +223,15 @@ function PasswordTab({ flash, setFlash }) {
       <div>
         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Confirm Password</label>
         <input type="password" value={form.passwordConfirmation} onChange={e => setForm(f => ({ ...f, passwordConfirmation: e.target.value }))}
-          className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
+          className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
       </div>
 
       <div className="flex justify-end pt-1">
         <button onClick={handleSave} disabled={saving || !form.password || form.password !== form.passwordConfirmation}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm shadow-primary/20 text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
           <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Change Password'}
         </button>
       </div>
-    </div>
-  );
-}
-
-// ── Two-Factor Auth Tab ───────────────────────────────────────────────────
-function TwoFactorTab({ flash, setFlash }) {
-  const [profile, setProfile] = useState(null);
-  const [setupData, setSetupData] = useState(null);
-  const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    axios.get('/api/settings/profile').then(res => setProfile(res.data)).catch(() => {});
-  }, []);
-
-  const isEnabled = profile?.twoFactorEnabled;
-
-  const handleSetup = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.post('/api/auth/2fa/setup', {
-        email: profile?.email,
-        password: '' // Will use session auth
-      });
-      setSetupData(res.data);
-    } catch (err) {
-      setFlash({ message: err.response?.data?.message || 'Failed to start 2FA setup.', type: 'error' });
-    } finally { setLoading(false); }
-  };
-
-  const handleVerify = async () => {
-    setLoading(true);
-    try {
-      await axios.post('/api/auth/2fa/verify', { code });
-      setFlash({ message: 'Two-Factor Authentication enabled successfully!', type: 'success' });
-      setSetupData(null);
-      setCode('');
-      // Refresh profile
-      const res = await axios.get('/api/settings/profile');
-      setProfile(res.data);
-    } catch (err) {
-      setFlash({ message: err.response?.data?.message || 'Invalid code. Please try again.', type: 'error' });
-    } finally { setLoading(false); }
-  };
-
-  const handleDisable = async () => {
-    setLoading(true);
-    try {
-      await axios.post('/api/auth/2fa/disable');
-      setFlash({ message: 'Two-Factor Authentication disabled.', type: 'success' });
-      const res = await axios.get('/api/settings/profile');
-      setProfile(res.data);
-    } catch (err) {
-      setFlash({ message: err.response?.data?.message || 'Failed to disable 2FA.', type: 'error' });
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-5">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-          <span className="material-icons text-slate-500 text-lg">verified_user</span>
-        </div>
-        <div>
-          <h2 className="font-bold text-slate-900 dark:text-white">Two-Factor Authentication</h2>
-          <p className="text-xs text-slate-500">Add an extra layer of security to your account</p>
-        </div>
-      </div>
-
-      {isEnabled ? (
-        <div className="space-y-4">
-          <div className="flex items-start gap-3 p-4 bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-800 rounded-xl">
-            <span className="material-icons text-emerald-500 text-[20px] mt-0.5">shield</span>
-            <div>
-              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">2FA is enabled</p>
-              <p className="text-xs text-emerald-600/70 dark:text-emerald-500/70 mt-1">
-                Enabled {profile?.twoFactorEnabledAt ? `on ${new Date(profile.twoFactorEnabledAt).toLocaleDateString()}` : ''}
-              </p>
-            </div>
-          </div>
-          <button onClick={handleDisable} disabled={loading}
-            className="flex items-center gap-2 px-4 py-2.5 border border-rose-300 text-rose-600 hover:bg-rose-50 rounded-lg text-sm font-bold transition-all cursor-pointer disabled:opacity-60">
-            <span className="material-icons text-sm">lock_open</span> {loading ? 'Disabling...' : 'Disable 2FA'}
-          </button>
-        </div>
-      ) : setupData ? (
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">Scan this QR code with your authenticator app, then enter the 6-digit code below.</p>
-          <div className="flex justify-center p-4 bg-white rounded-xl border border-slate-200 dark:border-slate-700">
-            <img src={setupData.qrCode} alt="2FA QR Code" className="w-48 h-48" />
-          </div>
-          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-            <p className="text-xs font-semibold text-slate-500 mb-1">Secret Key (backup)</p>
-            <code className="text-xs text-slate-700 dark:text-slate-300 font-mono break-all">{setupData.secret}</code>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Verification Code</label>
-            <input type="text" value={code} onChange={e => setCode(e.target.value)} maxLength={6} placeholder="000000"
-              className="w-full max-w-xs px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-mono text-center tracking-[0.5em] focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
-          </div>
-          <div className="flex gap-3">
-            <button onClick={() => { setSetupData(null); setCode(''); }}
-              className="px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">Cancel</button>
-            <button onClick={handleVerify} disabled={loading || code.length !== 6}
-              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
-              <span className="material-icons text-sm">verified</span> {loading ? 'Verifying...' : 'Verify & Enable'}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 dark:bg-amber-900/10 dark:border-amber-800 rounded-xl">
-            <span className="material-icons text-amber-500 text-[20px] mt-0.5">warning</span>
-            <div>
-              <p className="text-sm font-bold text-amber-700 dark:text-amber-400">2FA is not enabled</p>
-              <p className="text-xs text-amber-600/70 dark:text-amber-500/70 mt-1">We strongly recommend enabling two-factor authentication for security.</p>
-            </div>
-          </div>
-          <button onClick={handleSetup} disabled={loading}
-            className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm text-sm cursor-pointer disabled:opacity-60">
-            <span className="material-icons text-sm">security</span> {loading ? 'Setting up...' : 'Set Up 2FA'}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -399,7 +275,7 @@ function SecurityTab({ flash, setFlash }) {
         <div className="flex items-center gap-3">
           <input type="number" min="5" max="120" step="5" value={data.session_timeout_minutes}
             onChange={e => setData(d => ({ ...d, session_timeout_minutes: Number(e.target.value) }))}
-            className="w-32 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
+            className="w-32 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
           <span className="text-sm text-slate-500">minutes</span>
         </div>
         <p className="text-xs text-slate-400 mt-1">Auto-logout after this many minutes of inactivity (5–120)</p>
@@ -415,14 +291,14 @@ function SecurityTab({ flash, setFlash }) {
           <input type="text" maxLength={20} value={data.ga_measurement_id}
             onChange={e => setData(d => ({ ...d, ga_measurement_id: e.target.value }))}
             placeholder="G-XXXXXXXXXX"
-            className="w-full max-w-xs px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all font-mono" />
+            className="w-full max-w-xs px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all font-mono" />
           <p className="text-xs text-slate-400 mt-1">Leave empty to disable tracking. Format: <code>G-XXXXXXXXXX</code></p>
         </div>
       </div>
 
       <div className="flex justify-end pt-1">
         <button onClick={handleSave} disabled={saving}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm shadow-primary/20 text-sm cursor-pointer disabled:opacity-60">
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
           <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Save Security'}
         </button>
       </div>
@@ -463,12 +339,12 @@ function MemoTab({ flash, setFlash }) {
 
       <textarea value={memo} onChange={e => setMemo(e.target.value)} rows={8} maxLength={1000}
         placeholder="Write your admin notes here..."
-        className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none resize-none transition-all" />
+        className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none resize-none transition-all" />
       <p className="text-xs text-slate-400 text-right">{memo.length}/1000</p>
 
       <div className="flex justify-end">
         <button onClick={handleSave} disabled={saving}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm shadow-primary/20 text-sm cursor-pointer disabled:opacity-60">
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
           <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Save Memo'}
         </button>
       </div>
@@ -536,7 +412,7 @@ function PosyanduTab({ flash, setFlash }) {
             </label>
             <input type="number" min={f.min} max={f.max} value={data[f.key]}
               onChange={e => setData(d => ({ ...d, [f.key]: Number(e.target.value) }))}
-              className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
+              className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
             <p className="text-[11px] text-slate-400 mt-1">Range: {f.min} – {f.max} months</p>
           </div>
         ))}
@@ -544,7 +420,7 @@ function PosyanduTab({ flash, setFlash }) {
 
       <div className="flex justify-end pt-1">
         <button onClick={handleSave} disabled={saving}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm shadow-primary/20 text-sm cursor-pointer disabled:opacity-60">
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
           <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Save Posyandu'}
         </button>
       </div>
@@ -554,7 +430,8 @@ function PosyanduTab({ flash, setFlash }) {
 
 // ── Main Settings Page ────────────────────────────────────────────────────
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState('profile');
+  const { tab } = useParams();
+  const activeTab = tab || 'profile';
   const [flash, setFlash] = useState({ message: '', type: 'success' });
 
   const token = localStorage.getItem('admin_token');
@@ -574,7 +451,6 @@ export default function Settings() {
     switch (activeTab) {
       case 'profile': return <ProfileTab {...props} />;
       case 'password': return <PasswordTab {...props} />;
-      case 'twofactor': return <TwoFactorTab {...props} />;
       case 'security': return isAdmin ? <SecurityTab {...props} /> : null;
       case 'memo': return isAdmin ? <MemoTab {...props} /> : null;
       case 'posyandu': return isAdmin ? <PosyanduTab {...props} /> : null;
@@ -582,32 +458,17 @@ export default function Settings() {
     }
   };
 
+  const tabTitle = tabs.find(t => t.id === activeTab)?.label || 'Account Settings';
+
   return (
-    <AdminLayout title="Account Settings">
-      {/* Tab Nav */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-6">
-        <div className="overflow-x-auto">
-          <nav className="flex border-b border-slate-100 dark:border-slate-800 min-w-max" aria-label="Settings sections">
-            {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} type="button"
-                className={`flex items-center gap-2 px-5 py-4 text-sm font-semibold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
-                  activeTab === tab.id
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                }`}>
-                <span className="material-icons text-[18px]">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
+    <AdminLayout title={tabTitle}>
+      <div className="max-w-4xl mx-auto pb-12">
+        {/* Flash */}
+        <Flash message={flash.message} type={flash.type} />
+
+        {/* Active Tab Content */}
+        {renderTab()}
       </div>
-
-      {/* Flash */}
-      <Flash message={flash.message} type={flash.type} />
-
-      {/* Active Tab Content */}
-      {renderTab()}
     </AdminLayout>
   );
 }

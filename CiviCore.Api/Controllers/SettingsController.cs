@@ -130,7 +130,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Contains("Admin"))
+        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         var timeout = await GetSettingValue("session_timeout_minutes", "30");
@@ -150,7 +150,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Contains("Admin"))
+        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         if (dto.SessionTimeoutMinutes < 5 || dto.SessionTimeoutMinutes > 120)
@@ -171,7 +171,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Contains("Admin"))
+        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         var memo = await GetSettingValue("admin_memo", "");
@@ -185,7 +185,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Contains("Admin"))
+        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         await SetSettingValue("admin_memo", dto.AdminMemo ?? "");
@@ -201,7 +201,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Contains("Admin"))
+        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         return Ok(new
@@ -221,7 +221,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Contains("Admin"))
+        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         await SetSettingValue("posyandu_baby_max_months", dto.PosyanduBabyMaxMonths.ToString());

@@ -72,7 +72,8 @@ function TransactionModal({ open, onClose, onSaved }: { open: boolean; onClose: 
         <div>
           <label htmlFor="ft-date" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date <span className="text-rose-500">*</span></label>
           <input id="ft-date" type="date" value={form.date} onChange={set('date')}
-            className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
+            onClick={e => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
+            className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none cursor-pointer dark:[color-scheme:dark]" />
         </div>
         <FormInput label="Description" id="ft-desc" value={form.description} onChange={set('description')} error={errors.description} placeholder="e.g. Iuran bulanan RT" />
         <div className="flex justify-end gap-3 pt-2">

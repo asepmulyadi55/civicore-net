@@ -8,7 +8,7 @@ namespace CiviCore.Api.Controllers;
 
 [ApiController]
 [Route("api/roles")]
-[Authorize(Roles = "admin")]
+[Authorize(Roles = "admin,Admin")]
 public class RoleController : ControllerBase
 {
     private readonly AppDbContext _context;

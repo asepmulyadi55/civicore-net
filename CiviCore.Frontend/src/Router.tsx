@@ -95,9 +95,11 @@ export default function Router() {
 
         {/* Wave 3 — Admin & Config */}
         <Route path="/admin/roles" element={<RequireAuth><Roles /></RequireAuth>} />
-        <Route path="/admin/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+        <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
+        <Route path="/admin/settings/:tab" element={<RequireAuth><Settings /></RequireAuth>} />
         <Route path="/admin/property" element={<RequireAuth><PropertyAdmin /></RequireAuth>} />
-        <Route path="/admin/homepage" element={<RequireAuth><HomepageCMS /></RequireAuth>} />
+        <Route path="/admin/homepage" element={<Navigate to="/admin/homepage/featured" replace />} />
+        <Route path="/admin/homepage/:tab" element={<RequireAuth><HomepageCMS /></RequireAuth>} />
         <Route path="/admin/media" element={<RequireAuth><Media /></RequireAuth>} />
 
         {/* Stubs for remaining modules */}
