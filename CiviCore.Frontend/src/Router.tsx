@@ -27,6 +27,7 @@ import HomepageCMS from './pages/admin/HomepageCMS';
 import Media from './pages/admin/Media';
 // Public pages
 import EventsPage from './pages/EventsPage';
+import EventDetailPage from './pages/EventDetailPage';
 import BuletinPage from './pages/BuletinPage';
 import PropertyPage from './pages/PropertyPage';
 import PropertyDetailPage from './pages/PropertyDetailPage';
@@ -65,6 +66,7 @@ export default function Router() {
         {/* Public site */}
         <Route path="/" element={<HomePage />} />
         <Route path="/events" element={<EventsPage />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
         <Route path="/buletin" element={<BuletinPage />} />
         <Route path="/property" element={<PropertyPage />} />
         <Route path="/property/:id" element={<PropertyDetailPage />} />

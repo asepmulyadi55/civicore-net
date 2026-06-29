@@ -6,7 +6,7 @@ import Footer from '../components/Footer';
 const CATEGORIES = ['wellness', 'meetings', 'education', 'cultural', 'sports', 'other'];
 const PER_PAGE = 6;
 
-const MOCK_EVENTS = [
+export const MOCK_EVENTS = [
     {
         id: '1',
         title: 'Summer Garden Party',
@@ -170,9 +170,9 @@ export default function EventsPage() {
 
                     {/* Page heading */}
                     <div className="mb-10">
-                        <Link to="/" className="inline-flex items-center gap-1.5 text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider mb-4 hover:underline">
+                        <Link to="/" className="inline-flex items-center gap-1.5 text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider mb-4 group">
                             <span className="material-symbols-outlined text-sm">arrow_back</span>
-                            Back to Home
+                            <span className="group-hover:underline">Back to Home</span>
                         </Link>
                         <h1 className="text-display-lg-mobile md:text-display-lg font-display-lg text-primary dark:text-primary-fixed-dim">
                             Community Events
@@ -266,10 +266,10 @@ export default function EventsPage() {
                                             <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow">{event.description}</p>
                                             
                                             <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
-                                                <a className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" href={event.url}>
-                                                    <span className="group-hover/link:underline">{isPast ? 'View Gallery' : 'RSVP'}</span> 
+                                                <Link className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" to={`/events/${event.id}`}>
+                                                    <span className="group-hover/link:underline">{isPast ? 'View Gallery' : 'View Details'}</span> 
                                                     <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
-                                                </a>
+                                                </Link>
                                                 <span className="text-label-sm text-text-muted dark:text-on-primary/50">
                                                     {event.date ? new Date(event.date + 'T00:00:00').getFullYear() : ''}
                                                 </span>

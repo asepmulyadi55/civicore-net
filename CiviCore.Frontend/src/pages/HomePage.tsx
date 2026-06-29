@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import TopNavBar from '../components/TopNavBar';
 import Footer from '../components/Footer';
 
@@ -110,10 +111,10 @@ export default function HomePage() {
                             <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Discover More</span>
                             <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Events</h2>
                         </div>
-                        <a className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/events">
+                        <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" to="/events">
                             View All 
                             <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                        </a>
+                        </Link>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
                         <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group">
@@ -125,8 +126,13 @@ export default function HomePage() {
                             </div>
                             <div className="p-6">
                                 <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">Summer Garden Party</h3>
-                                <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-4 line-clamp-2">Join us for an evening of music, local food, and community connection in the central garden.</p>
-                                <a className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group" href="#"><span className="group-hover:underline">Read More</span> <span className="material-symbols-outlined text-sm ml-1">chevron_right</span></a>
+                                <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow">Join us for an evening of music, local food, and community connection in the central garden.</p>
+                                <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
+                                    <Link className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" to="/events/1">
+                                        <span className="group-hover/link:underline">View Details</span> 
+                                        <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                         <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group">
@@ -138,8 +144,13 @@ export default function HomePage() {
                             </div>
                             <div className="p-6">
                                 <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">Community Workshop</h3>
-                                <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-4 line-clamp-2">Learn sustainable gardening practices from local experts in our monthly green living series.</p>
-                                <a className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group" href="#"><span className="group-hover:underline">Read More</span> <span className="material-symbols-outlined text-sm ml-1">chevron_right</span></a>
+                                <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow">Learn sustainable gardening practices from local experts in our monthly green living series.</p>
+                                <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
+                                    <Link className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" to="/events/2">
+                                        <span className="group-hover/link:underline">View Details</span> 
+                                        <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                         <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group">
@@ -151,8 +162,13 @@ export default function HomePage() {
                             </div>
                             <div className="p-6">
                                 <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">Acoustic Evening</h3>
-                                <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-4 line-clamp-2">Unwind with live acoustic music by the clubhouse pool. Bring your own picnic blankets!</p>
-                                <a className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group" href="#"><span className="group-hover:underline">Read More</span> <span className="material-symbols-outlined text-sm ml-1">chevron_right</span></a>
+                                <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow">Unwind with live acoustic music by the clubhouse pool. Bring your own picnic blankets!</p>
+                                <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
+                                    <Link className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" to="/events/3">
+                                        <span className="group-hover/link:underline">View Details</span> 
+                                        <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </div>
