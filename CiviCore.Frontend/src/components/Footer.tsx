@@ -1,153 +1,63 @@
-﻿// @ts-nocheck
-import React, { useState } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-const C = {
-  primary:  '#1C2D27',
-  secondary: '#D4AF37',
-  surface:  '#FAF9F6',
-};
-
-export default function Footer({ footer = {}, isDark = false }) {
-  const brandName   = footer.brand_name    || '';
-  const tagline     = footer.tagline       || '';
-  const quickLinks  = (footer.links?.length ? footer.links : []);
-  const contactEmail   = footer.contact_email  || '';
-  const contactPhone   = footer.contact_phone  || '';
-  const location       = footer.location       || '';
-  const facebookUrl    = footer.facebook_url   || null;
-  const instagramUrl   = footer.instagram_url  || null;
-  const copyright      = footer.copyright      || '';
-  const bottomNote     = footer.bottom_note    || null;
-
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleFeedbackSubmit = (e) => {
-    e.preventDefault();
-    if (!subject.trim() || !message.trim()) return;
-    const mailtoLink = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
-    window.location.href = mailtoLink;
-  };
-
-  return (
-    <footer id="contact" style={{ backgroundColor: C.primary, color: C.surface }}>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12 max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-20">
-
-        {/* Brand */}
-        <div className="space-y-4 md:space-y-6 md:pr-8">
-          <div
-            className="text-xl md:text-2xl font-semibold tracking-tight"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            {brandName}
-          </div>
-          <p className="text-sm leading-relaxed font-light" style={{ color: `${C.surface}99` }}>
-            {tagline}
-          </p>
-        </div>
-
-        {/* Quick Links */}
-        <div>
-          <h4
-            className="font-medium mb-4 md:mb-6 tracking-wide text-sm md:text-base"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            Quick Links
-          </h4>
-          <ul className="space-y-3 md:space-y-4 text-xs md:text-sm font-light" style={{ color: `${C.surface}99` }}>
-            {quickLinks.map((link, i) => (
-              <li key={i}>
-                <a
-                  href={link.url || '#'}
-                  className="transition-colors"
-                  onMouseEnter={e => e.currentTarget.style.color = C.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = `${C.surface}99`}
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Contact */}
-        <div>
-          <h4
-            className="font-medium mb-4 md:mb-6 tracking-wide text-sm md:text-base"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            Contact
-          </h4>
-          <ul className="space-y-3 md:space-y-4 text-xs md:text-sm font-light" style={{ color: `${C.surface}99` }}>
-            <li className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-base opacity-70 mt-0.5">location_on</span>
-              {location}
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-base opacity-70">call</span>
-              {contactPhone}
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-base opacity-70">mail</span>
-              {contactEmail}
-            </li>
-          </ul>
-        </div>
-
-        {/* Submit Feedback */}
-        <div>
-          <h4
-            className="font-medium mb-4 md:mb-6 tracking-wide text-sm md:text-base"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            Submit Feedback
-          </h4>
-          <form onSubmit={handleFeedbackSubmit} className="space-y-4">
-            <div className="border-b pb-1" style={{ borderColor: `${C.surface}33` }}>
-              <input
-                type="text"
-                placeholder="Subject"
-                value={subject}
-                onChange={e => setSubject(e.target.value)}
-                required
-                className="bg-transparent border-none px-0 py-1 text-xs md:text-sm w-full focus:ring-0 font-light placeholder:opacity-40"
-                style={{ color: C.surface, fontFamily: "'Inter', sans-serif" }}
-              />
+export default function Footer({ setActiveTab }: any) {
+    return (
+        <footer className="w-full py-section-gap bg-primary dark:bg-[#002117] border-t border-primary-container text-on-primary dark:text-on-primary" id="contact">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter px-margin-desktop max-w-container-max mx-auto mb-12">
+                <div>
+                    <h4 className="font-headline-sm text-headline-sm mb-6">Quick Links</h4>
+                    <ul className="space-y-4 font-body-md text-body-md">
+                        <li><a className="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href="/" onClick={() => setActiveTab?.('home')}>Home</a></li>
+                        <li><a className="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href="/#events" onClick={() => setActiveTab?.('events')}>Events</a></li>
+                        <li><a className="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href="/#gallery" onClick={() => setActiveTab?.('gallery')}>Gallery</a></li>
+                        <li><a className="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href="/#bulletins" onClick={() => setActiveTab?.('bulletins')}>Bulletins</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 className="font-headline-sm text-headline-sm mb-6">Contact</h4>
+                    <ul className="space-y-6 font-body-md text-body-md text-on-primary/80">
+                        <li className="flex items-start gap-4">
+                            <span className="material-symbols-outlined shrink-0">location_on</span>
+                            <span>Jl. Desa Cipadung, Cipadung, Kec.<br />Cibiru, Kota Bandung, Jawa Barat<br />40615</span>
+                        </li>
+                        <li className="flex items-center gap-4">
+                            <span className="material-symbols-outlined shrink-0">phone</span>
+                            <span>+62 (0) 123 456 789</span>
+                        </li>
+                        <li className="flex items-center gap-4">
+                            <span className="material-symbols-outlined shrink-0">mail</span>
+                            <span>cs.dwipapuri@gmail.com</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 className="font-headline-sm text-headline-sm mb-6">Submit Feedback</h4>
+                    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                        <div>
+                            <input className="w-full bg-transparent border-0 border-b border-on-primary/30 text-on-primary placeholder:text-on-primary/50 focus:ring-0 focus:border-on-primary transition-colors px-0 py-2 font-body-md" placeholder="Subject" type="text" />
+                        </div>
+                        <div>
+                            <textarea className="w-full bg-transparent border-0 border-b border-on-primary/30 text-on-primary placeholder:text-on-primary/50 focus:ring-0 focus:border-on-primary transition-colors px-0 py-2 font-body-md resize-none" placeholder="Your message..." rows={3}></textarea>
+                        </div>
+                        <div className="flex justify-end">
+                            <button className="group flex items-center gap-2 text-label-md font-label-md text-[#b45309] dark:text-[#d97706] hover:text-[#d97706] dark:hover:text-[#f59e0b] transition-colors uppercase tracking-wider" type="submit">
+                                Send
+                                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div className="border-b pb-1" style={{ borderColor: `${C.surface}33` }}>
-              <textarea
-                placeholder="Your message..."
-                rows="2"
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                required
-                className="bg-transparent border-none px-0 py-1 text-xs md:text-sm w-full focus:ring-0 font-light placeholder:opacity-40 resize-none"
-                style={{ color: C.surface, fontFamily: "'Inter', sans-serif" }}
-              ></textarea>
+            <div className="px-margin-desktop max-w-container-max mx-auto border-t border-on-primary/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p className="font-label-sm text-label-sm text-on-primary/70">
+                    © 2026 Dwipapuri Residential. All rights reserved.
+                </p>
+                <div className="flex gap-6 font-label-sm text-label-sm">
+                    <a className="text-on-primary/70 hover:text-on-primary transition-colors" href="#">Privacy Policy</a>
+                    <a className="text-on-primary/70 hover:text-on-primary transition-colors" href="#">Terms of Service</a>
+                </div>
             </div>
-            <div className="flex justify-end items-end pt-2">
-              <button
-                type="submit"
-                className="transition-colors p-1 md:p-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wider"
-                style={{ color: C.secondary }}
-                onMouseEnter={e => e.currentTarget.style.color = C.surface}
-                onMouseLeave={e => e.currentTarget.style.color = C.secondary}
-              >
-                Send <span className="material-symbols-outlined text-lg">arrow_forward</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      {/* Bottom bar */}
-      <div
-        className="border-t py-6 md:py-8 text-[10px] md:text-xs font-light flex flex-col sm:flex-row justify-between items-center px-6 md:px-8 max-w-7xl mx-auto gap-2"
-        style={{ borderColor: `${C.surface}1A`, color: `${C.surface}66` }}
-      >
-        <span>{copyright}</span>
-        {bottomNote && <span>{bottomNote}</span>}
-      </div>
-    </footer>
-  );
+        </footer>
+    );
 }

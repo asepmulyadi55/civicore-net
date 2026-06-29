@@ -1,23 +1,107 @@
-﻿// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header';
+import TopNavBar from '../components/TopNavBar';
 import Footer from '../components/Footer';
 
 const CATEGORIES = ['wellness', 'meetings', 'education', 'cultural', 'sports', 'other'];
-const PER_PAGE = 9;
+const PER_PAGE = 6;
 
-const PLACEHOLDER_IMAGES = [
-    'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80&auto=format',
-    'https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=600&q=80&auto=format',
-    'https://images.unsplash.com/photo-1416331108676-a22ccb276e35?w=600&q=80&auto=format',
+const MOCK_EVENTS = [
+    {
+        id: '1',
+        title: 'Summer Garden Party',
+        description: 'Join us for an evening of music, local food, and community connection in the central garden.',
+        category: 'cultural',
+        status: 'ongoing',
+        date: '2026-08-15',
+        image_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAcznvVK2f2TkbuY6sy-PZMgOSdo_kRR-2Qfso47BVm7LWAZuEq9UWnQ29d6RFx00Qg50WfrZdaKXGMpYc7s-2TdKkcdEpU8uhurr_cnQDrP4xA1dePRfB-5tW8d9L7p_2pwiEqN4g8QYj9CwS8z3vqv3bK28IQp2aEanu2mz8DgbpGg7yp9QmlTEieQec3U6eiVUMiJLrB_zje7RCZu2bA8ChaOzagFlfLQUc8EbVbnQzRA8KiYgwFYKrIvR91ss3cEqAtrwWkqtQ',
+        url: '#'
+    },
+    {
+        id: '2',
+        title: 'Community Workshop',
+        description: 'Learn sustainable gardening practices from local experts in our monthly green living series.',
+        category: 'education',
+        status: 'upcoming',
+        date: '2026-09-02',
+        image_url: '/workshop_event.png',
+        url: '#'
+    },
+    {
+        id: '3',
+        title: 'Acoustic Evening',
+        description: 'Unwind with live acoustic music by the clubhouse pool. Bring your own picnic blankets!',
+        category: 'cultural',
+        status: 'upcoming',
+        date: '2026-09-20',
+        image_url: '/acoustic_event.png',
+        url: '#'
+    },
+    {
+        id: '4',
+        title: 'Morning Yoga Session',
+        description: 'Start your weekend with a refreshing yoga session at the botanical gardens.',
+        category: 'wellness',
+        status: 'upcoming',
+        date: '2026-09-25',
+        image_url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80&auto=format',
+        url: '#'
+    },
+    {
+        id: '5',
+        title: 'HOA Board Meeting',
+        description: 'Monthly meeting to discuss community improvements and budget allocations.',
+        category: 'meetings',
+        status: 'upcoming',
+        date: '2026-10-05',
+        image_url: 'https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=600&q=80&auto=format',
+        url: '#'
+    },
+    {
+        id: '6',
+        title: 'Tennis Tournament',
+        description: 'Annual Dwipapuri doubles tennis tournament. Registration required.',
+        category: 'sports',
+        status: 'past',
+        date: '2026-05-15',
+        image_url: 'https://images.unsplash.com/photo-1416331108676-a22ccb276e35?w=600&q=80&auto=format',
+        url: '#'
+    },
+    {
+        id: '7',
+        title: 'Cooking Masterclass',
+        description: 'Learn how to prepare authentic local cuisine with guest chef Renata.',
+        category: 'education',
+        status: 'upcoming',
+        date: '2026-10-12',
+        image_url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80&auto=format',
+        url: '#'
+    },
+    {
+        id: '8',
+        title: 'Morning Cycling Tour',
+        description: 'Join the community cycling club for a scenic 15km ride around the perimeter.',
+        category: 'sports',
+        status: 'upcoming',
+        date: '2026-10-18',
+        image_url: 'https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=600&q=80&auto=format',
+        url: '#'
+    },
+    {
+        id: '9',
+        title: 'Annual Resident Meeting',
+        description: 'End-of-year review and planning session. All residents encouraged to attend.',
+        category: 'meetings',
+        status: 'upcoming',
+        date: '2026-11-20',
+        image_url: 'https://images.unsplash.com/photo-1416331108676-a22ccb276e35?w=600&q=80&auto=format',
+        url: '#'
+    }
 ];
 
-const SKELETON_KEYS = ['sk-a', 'sk-b', 'sk-c', 'sk-d', 'sk-e', 'sk-f'];
-
-function getPaginationPages(current, total) /* fixme: param types */ {
+function getPaginationPages(current: number, total: number) {
     if (total <= 7) return new Array(total).fill(null).map((_, i) => i + 1);
-    const pages = [1];
+    const pages: any[] = [1];
     if (current > 3) pages.push('ellipsis-start');
     for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
         pages.push(i);
@@ -27,32 +111,22 @@ function getPaginationPages(current, total) /* fixme: param types */ {
     return pages;
 }
 
-function SkeletonCard(props: any) /* fixme: param types */ {
-    const skBg   = isDark ? '#1C2D27' : '#f1f5f9';
-    const cardBg = isDark ? '#142920' : '#ffffff';
-    return (
-        <div className="rounded-2xl overflow-hidden animate-pulse" style={{ background: cardBg, border: `1px solid ${isDark ? '#1C2D27' : '#E8E6E1'}` }}>
-            <div className="w-full h-48" style={{ background: skBg }} />
-            <div className="p-6 space-y-3">
-                <div className="h-3 rounded w-1/4" style={{ background: skBg }} />
-                <div className="h-5 rounded w-3/4" style={{ background: skBg }} />
-                <div className="h-3 rounded w-full" style={{ background: skBg }} />
-                <div className="h-3 rounded w-5/6" style={{ background: skBg }} />
-            </div>
-        </div>
-    );
-}
-
 export default function EventsPage() {
-    const [data, setData]         = useState<any>(null);
-    const [loading, setLoading]   = useState(true);
     const [search, setSearch]     = useState('');
     const [category, setCategory] = useState('');
     const [status, setStatus]     = useState('');
     const [page, setPage]         = useState(1);
-    const [isDark, setIsDark]     = useState(() => {
+    const [activeTab, setActiveTab] = useState('events');
+
+    const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
+
+    useEffect(() => {
+        const html = document.documentElement;
+        if (isDark) html.classList.add('dark');
+        else html.classList.remove('dark');
+    }, [isDark]);
 
     const toggleDark = () => {
         setIsDark(prev => {
@@ -64,43 +138,10 @@ export default function EventsPage() {
 
     useEffect(() => { window.scrollTo(0, 0); }, []);
 
-    const C = isDark ? {
-        primary:    '#F0EDE8',
-        secondary:  '#D4AF37',
-        surface:    '#0D1A17',
-        surfaceVar: '#1C2D27',
-        border:     '#1C2D27',
-        muted:      '#9E9C97',
-        cardBg:     '#142920',
-    } : {
-        primary:    '#1C2D27',
-        secondary:  '#D4AF37',
-        surface:    '#FAF9F6',
-        surfaceVar: '#E8E6E1',
-        border:     '#E8E6E1',
-        muted:      '#595959',
-        cardBg:     '#ffffff',
-    };
-
-    useEffect(() => {
-        const basePath = import.meta.env.VITE_APP_BASE ?? '';
-        const apiKey   = document.querySelector('meta[name="api-key"]')?.content ?? '';
-        fetch(`${basePath}/api/events`, {
-            headers: { 'X-Api-Key': apiKey },
-        })
-            .then(res => res.json())
-            .then(json => { setData(json); setLoading(false); })
-            .catch(() => setLoading(false));
-    }, []);
-
     // Filter
-    const allEvents = data?.events ?? [];
-    const today     = new Date().toISOString().slice(0, 10);
-
-    const filtered = allEvents.filter(e => {
-        const matchSearch   = !search ||
-            (e.title       ?? '').toLowerCase().includes(search.toLowerCase()) ||
-            (e.description ?? '').toLowerCase().includes(search.toLowerCase());
+    const today = new Date().toISOString().slice(0, 10);
+    const filtered = MOCK_EVENTS.filter(e => {
+        const matchSearch   = !search || (e.title ?? '').toLowerCase().includes(search.toLowerCase()) || (e.description ?? '').toLowerCase().includes(search.toLowerCase());
         const matchCategory = !category || (e.category ?? '').toLowerCase() === category;
 
         let matchStatus = true;
@@ -115,58 +156,46 @@ export default function EventsPage() {
     const paginated  = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
     const pages      = getPaginationPages(page, totalPages);
 
-    // Reset page on filter change
     useEffect(() => { setPage(1); }, [search, category, status]);
 
     const clearFilters = () => { setSearch(''); setCategory(''); setStatus(''); };
     const hasFilters   = !!(search || category || status);
 
     return (
-        <div className="font-sans" style={{ backgroundColor: C.surface, color: C.primary, minHeight: '100vh', transition: 'background-color 0.3s, color 0.3s' }}>
-            <Header isDark={isDark} toggleDark={toggleDark} />
+        <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300 min-h-screen flex flex-col">
+            <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
 
-            <main className="pt-20 pb-20">
-                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+            <main className="flex-grow pt-20 pb-20">
+                <section className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto py-12 md:py-20">
 
                     {/* Page heading */}
                     <div className="mb-10">
-                        <Link to="/"
-                            className="inline-flex items-center gap-1.5 text-sm mb-4 transition-opacity hover:opacity-70"
-                            style={{ color: C.secondary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                        >
+                        <Link to="/" className="inline-flex items-center gap-1.5 text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider mb-4 hover:underline">
                             <span className="material-symbols-outlined text-sm">arrow_back</span>
-                            {' '}Back to Home
+                            Back to Home
                         </Link>
-                        <h1
-                            className="text-3xl md:text-5xl font-medium tracking-tight"
-                            style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                        >
-                            All Events
+                        <h1 className="text-display-lg-mobile md:text-display-lg font-display-lg text-primary dark:text-primary-fixed-dim">
+                            Community Events
                         </h1>
                     </div>
 
                     {/* Filters */}
-                    <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                        {/* Search */}
+                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
                         <div className="relative flex-1 sm:max-w-sm">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base pointer-events-none"
-                                style={{ color: C.muted }}>search</span>
+                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted dark:text-on-primary/50">search</span>
                             <input
                                 type="text"
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
                                 placeholder="Search events…"
-                                className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 transition-all"
-                                style={{ borderColor: C.border, background: C.cardBg, color: C.primary, fontFamily: "'Inter', sans-serif" }}
+                                className="w-full pl-11 pr-4 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-primary dark:text-on-primary focus:outline-none focus:border-primary dark:focus:border-primary-fixed-dim transition-all shadow-sm"
                             />
                         </div>
 
-                        {/* Category */}
                         <select
                             value={category}
                             onChange={e => setCategory(e.target.value)}
-                            className="px-4 py-2.5 rounded-xl border text-sm focus:outline-none w-full sm:w-auto"
-                            style={{ borderColor: C.border, background: C.cardBg, color: C.muted, fontFamily: "'Inter', sans-serif" }}
+                            className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-auto shadow-sm appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231C2D27%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] dark:bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F0EDE8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.75rem_auto] bg-no-repeat bg-[position:right_1rem_center]"
                         >
                             <option value="">All Categories</option>
                             {CATEGORIES.map(c => (
@@ -174,12 +203,10 @@ export default function EventsPage() {
                             ))}
                         </select>
 
-                        {/* Status */}
                         <select
                             value={status}
                             onChange={e => setStatus(e.target.value)}
-                            className="px-4 py-2.5 rounded-xl border text-sm focus:outline-none w-full sm:w-auto"
-                            style={{ borderColor: C.border, background: C.cardBg, color: C.muted, fontFamily: "'Inter', sans-serif" }}
+                            className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-auto shadow-sm appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231C2D27%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] dark:bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F0EDE8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.75rem_auto] bg-no-repeat bg-[position:right_1rem_center]"
                         >
                             <option value="">All Status</option>
                             <option value="upcoming">Upcoming</option>
@@ -189,166 +216,104 @@ export default function EventsPage() {
 
                         {hasFilters && (
                             <button onClick={clearFilters}
-                                className="px-4 py-2.5 rounded-xl border text-sm transition-all w-full sm:w-auto"
-                                style={{ borderColor: C.border, background: C.cardBg, color: C.muted }}>
+                                className="px-6 py-3 rounded-xl bg-surface-container dark:bg-primary-container/50 text-primary dark:text-on-primary hover:bg-surface-container-low transition-colors w-full sm:w-auto">
                                 Clear
                             </button>
                         )}
                     </div>
 
-                    {/* Result count */}
-                    {!loading && (
-                        <p className="text-sm mb-6" style={{ color: C.muted }}>
-                            {filtered.length} event{filtered.length > 1 || filtered.length === 0 ? 's' : ''}
-                            {hasFilters ? ' found' : ' total'}
-                        </p>
-                    )}
+                    <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-8">
+                        {filtered.length} event{filtered.length !== 1 ? 's' : ''} {hasFilters ? 'found' : 'total'}
+                    </p>
 
                     {/* Grid */}
-                    {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {SKELETON_KEYS.map(k => <SkeletonCard key={k} isDark={isDark} />)}
-                        </div>
-                    ) : null}
-                    {!loading && paginated.length === 0 ? (
-                        <div className="text-center py-20 rounded-2xl" style={{ background: C.cardBg, border: `1px solid ${C.border}` }}>
-                            <span className="material-symbols-outlined text-5xl mb-3 block" style={{ color: C.border }}>event_busy</span>
-                            <p className="font-semibold text-sm" style={{ color: C.muted }}>No events found</p>
+                    {paginated.length === 0 ? (
+                        <div className="text-center py-20 rounded-2xl bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50">
+                            <span className="material-symbols-outlined text-5xl mb-4 text-text-muted dark:text-on-primary/30">event_busy</span>
+                            <p className="font-headline-sm text-primary dark:text-on-primary">No events found</p>
                             {hasFilters && (
-                                <button onClick={clearFilters}
-                                    className="mt-3 text-sm underline transition-opacity hover:opacity-70"
-                                    style={{ color: C.secondary }}>
+                                <button onClick={clearFilters} className="mt-4 text-[#b45309] dark:text-[#d97706] hover:underline">
                                     Clear filters
                                 </button>
                             )}
                         </div>
-                    ) : null}
-                    {!loading && paginated.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {paginated.map((event, i) => {
-                                const cat     = (event.category || 'other').toLowerCase();
-                                const image   = event.image_url || PLACEHOLDER_IMAGES[i % PLACEHOLDER_IMAGES.length];
-                                const isPast  = (event.status !== 'ongoing') && !!event.date && event.date < today;
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {paginated.map((event) => {
+                                const isPast = (event.status !== 'ongoing') && !!event.date && event.date < today;
 
                                 return (
-                                    <article
-                                        key={event.id || i}
-                                        className="rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg"
-                                        style={{ background: C.cardBg, border: `1px solid ${C.border}` }}
-                                    >
-                                        {/* Image */}
-                                        <div className="relative h-48 overflow-hidden flex-shrink-0">
-                                            <img
-                                                src={image}
-                                                alt={event.title}
-                                                loading="lazy"
-                                                className={`w-full h-full object-cover transition-transform duration-700 hover:scale-105${isPast ? ' grayscale opacity-75' : ''}`}
-                                            />
-                                            <div className="absolute top-3 left-3 flex gap-2">
-                                                <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest"
-                                                    style={{ background: 'rgba(255,255,255,0.88)', color: '#1C2D27', backdropFilter: 'blur(12px)' }}>
-                                                    {cat}
-                                                </span>
+                                    <div key={event.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow flex flex-col group">
+                                        <div className="h-48 overflow-hidden relative">
+                                            <img alt={event.title} className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isPast ? 'grayscale opacity-80' : ''}`} src={event.image_url} />
+                                            <div className="absolute top-4 left-4 flex gap-2">
+                                                {event.date && (
+                                                    <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
+                                                        {new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
+                                                    </div>
+                                                )}
                                                 {isPast && (
-                                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest"
-                                                        style={{ background: 'rgba(28,45,39,0.82)', color: '#fff', backdropFilter: 'blur(12px)' }}>
-                                                        Past
-                                                    </span>
+                                                    <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">Past</div>
                                                 )}
                                                 {event.status === 'ongoing' && (
-                                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest"
-                                                        style={{ background: 'rgba(212,175,55,0.9)', color: '#fff', backdropFilter: 'blur(12px)' }}>
-                                                        Ongoing
-                                                    </span>
+                                                    <div className="bg-[#b45309] text-white px-3 py-1 rounded font-bold text-sm">Ongoing</div>
                                                 )}
                                             </div>
                                         </div>
-
-                                        {/* Body */}
                                         <div className="p-6 flex flex-col flex-grow">
-                                            <h3 className="text-base font-semibold mb-2 leading-snug"
-                                                style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                                {event.title}
-                                            </h3>
-                                            {event.description && (
-                                                <p className="text-sm leading-relaxed mb-4 flex-grow font-light line-clamp-3"
-                                                    style={{ color: C.muted }}>
-                                                    {event.description}
-                                                </p>
-                                            )}
-
-                                            {/* Footer row */}
-                                            <div className="flex items-center justify-between mt-auto pt-4"
-                                                style={{ borderTop: `1px solid ${C.border}` }}>
-                                                {event.url ? (
-                                                    <a
-                                                        href={event.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="font-semibold text-xs flex items-center gap-1 tracking-wide transition-opacity hover:opacity-70"
-                                                        style={{ color: C.secondary }}
-                                                    >
-                                                        {isPast ? 'Learn More' : 'RSVP'}
-                                                        <span className="material-symbols-outlined text-sm">arrow_right_alt</span>
-                                                    </a>
-                                                ) : (
-                                                    <span className="text-xs font-light" style={{ color: C.muted }}>Details TBA</span>
-                                                )}
-                                                {event.date && (
-                                                    <span className="text-xs font-light" style={{ color: C.muted }}>
-                                                        {new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', {
-                                                            month: 'short', day: 'numeric', year: 'numeric',
-                                                        })}
-                                                    </span>
-                                                )}
+                                            <div className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider mb-2">{event.category}</div>
+                                            <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">{event.title}</h3>
+                                            <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow">{event.description}</p>
+                                            
+                                            <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
+                                                <a className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" href={event.url}>
+                                                    <span className="group-hover/link:underline">{isPast ? 'View Gallery' : 'RSVP'}</span> 
+                                                    <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
+                                                </a>
+                                                <span className="text-label-sm text-text-muted dark:text-on-primary/50">
+                                                    {event.date ? new Date(event.date + 'T00:00:00').getFullYear() : ''}
+                                                </span>
                                             </div>
                                         </div>
-                                    </article>
+                                    </div>
                                 );
                             })}
                         </div>
-                    ) : null}
+                    )}
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-1.5 mt-12 flex-wrap">
+                        <div className="flex justify-center gap-2 mt-12">
                             <button
                                 disabled={page === 1}
                                 onClick={() => setPage(p => p - 1)}
-                                className="p-2 rounded-lg border disabled:opacity-30 transition-all"
-                                style={{ borderColor: C.border, background: C.cardBg }}
-                                aria-label="Previous page"
+                                className="w-10 h-10 rounded-lg flex items-center justify-center border border-border-subtle/50 dark:border-primary-container/50 disabled:opacity-50 text-primary dark:text-on-primary hover:bg-surface-container dark:hover:bg-primary-container transition-colors"
                             >
-                                <span className="material-symbols-outlined text-base" style={{ color: C.muted }}>chevron_left</span>
+                                <span className="material-symbols-outlined">chevron_left</span>
                             </button>
-
-                            {pages.map((p) =>
+                            {pages.map((p, i) =>
                                 typeof p === 'string' ? (
-                                    <span key={p} className="px-1 text-sm" style={{ color: C.muted }}>…</span>
+                                    <span key={i} className="w-10 h-10 flex items-center justify-center text-text-muted dark:text-on-primary/50">...</span>
                                 ) : (
                                     <button
-                                        key={p}
+                                        key={i}
                                         onClick={() => setPage(p)}
-                                        className="w-9 h-9 rounded-lg text-sm font-medium transition-all"
-                                        style={{
-                                            background: page === p ? C.primary : C.cardBg,
-                                            color:      page === p ? C.surface : C.muted,
-                                            border:     `1px solid ${page === p ? C.primary : C.border}`,
-                                        }}
+                                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors font-label-md ${
+                                            page === p 
+                                            ? 'bg-primary dark:bg-primary-fixed-dim text-white dark:text-primary' 
+                                            : 'border border-border-subtle/50 dark:border-primary-container/50 text-primary dark:text-on-primary hover:bg-surface-container dark:hover:bg-primary-container'
+                                        }`}
                                     >
                                         {p}
                                     </button>
                                 )
                             )}
-
                             <button
                                 disabled={page === totalPages}
                                 onClick={() => setPage(p => p + 1)}
-                                className="p-2 rounded-lg border disabled:opacity-30 transition-all"
-                                style={{ borderColor: C.border, background: C.cardBg }}
-                                aria-label="Next page"
+                                className="w-10 h-10 rounded-lg flex items-center justify-center border border-border-subtle/50 dark:border-primary-container/50 disabled:opacity-50 text-primary dark:text-on-primary hover:bg-surface-container dark:hover:bg-primary-container transition-colors"
                             >
-                                <span className="material-symbols-outlined text-base" style={{ color: C.muted }}>chevron_right</span>
+                                <span className="material-symbols-outlined">chevron_right</span>
                             </button>
                         </div>
                     )}
@@ -356,7 +321,7 @@ export default function EventsPage() {
                 </section>
             </main>
 
-            <Footer footer={data?.footer} isDark={isDark} />
+            <Footer setActiveTab={setActiveTab} />
         </div>
     );
 }
