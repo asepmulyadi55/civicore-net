@@ -54,11 +54,7 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
-builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
-
-var supabaseUrl = builder.Configuration["Supabase:Url"] ?? "https://dummy.supabase.co";
-var supabaseKey = builder.Configuration["Supabase:ServiceRoleKey"] ?? "dummy";
-builder.Services.AddScoped<Supabase.Client>(_ => new Supabase.Client(supabaseUrl, supabaseKey));
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 
 builder.Services.AddAuthentication()
     .AddGoogle(options =>

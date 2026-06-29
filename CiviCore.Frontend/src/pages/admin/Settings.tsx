@@ -91,7 +91,7 @@ function ProfileTab({ flash, setFlash }) {
               <span className="material-icons text-sm">upload</span> Upload photo
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-            <p className="text-xs text-slate-400 mt-2">JPG, PNG or WEBP · Max 2 MB</p>
+            <p className="text-xs text-slate-400 mt-2">JPG, PNG or WEBP · Max 2 MB · Recommended: 400x400 (1:1)</p>
           </div>
         </div>
       </div>

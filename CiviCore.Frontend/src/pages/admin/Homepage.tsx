@@ -61,8 +61,8 @@ function SaveButton({ onClick, loading, label = 'Save Changes' }) {
   );
 }
 
-function ImageUploadBox({ id, label, currentUrl, onFileChange, file }) {
-  const inputRef = React.useRef(null);
+function ImageUploadBox({ id, label, currentUrl, onFileChange, file, recommendedSize }: any) {
+  const inputRef = React.useRef<any>(null);
   return (
     <div className="space-y-1.5">
       {label && <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{label}</label>}
@@ -89,7 +89,7 @@ function ImageUploadBox({ id, label, currentUrl, onFileChange, file }) {
       ) : (
         <label className="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer">
           <span className="material-icons text-slate-400 text-2xl">cloud_upload</span>
-          <span className="text-xs font-semibold text-slate-500">Upload New Image <span className="text-slate-400 font-normal">(optional · max 5 MB)</span></span>
+          <span className="text-xs font-semibold text-slate-500">Upload New Image <span className="text-slate-400 font-normal">(optional · max 5 MB{recommendedSize ? ` · rec: ${recommendedSize}` : ''})</span></span>
           <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={e => onFileChange(e.target.files?.[0] || null)} />
         </label>
       )}
@@ -151,7 +151,7 @@ function HeroTab() {
             className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none resize-none" />
         </div>
         <FormInput label="CTA Button Text" id="hero-cta" value={data.cta_label || ''} onChange={e => set('cta_label', e.target.value)} placeholder="e.g. Schedule a Visit" />
-        <ImageUploadBox label="Background Image" currentUrl={data.background_image_url} file={bgImage} onFileChange={setBgImage} />
+        <ImageUploadBox label="Background Image" currentUrl={data.background_image_url} file={bgImage} onFileChange={setBgImage} recommendedSize="1920x1080" />
       </div>
       <SaveButton onClick={save} loading={saving} label="Save Hero Section" />
     </SectionCard>
@@ -257,7 +257,7 @@ function EventsTab() {
             <ReactQuill theme="snow" value={form.description || ''} onChange={v => setForm(f => ({ ...f, description: v }))} className="bg-white text-slate-900 rounded-lg" />
           </div>
           <FormInput label="URL" id="ev-url" value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
-          <ImageUploadBox label="Event Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} />
+          <ImageUploadBox label="Event Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} recommendedSize="1000x600" />
           
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
@@ -440,7 +440,7 @@ function GalleryTab() {
             <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Album description..."
               className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none resize-none" />
           </div>
-          <ImageUploadBox label="Cover Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} />
+          <ImageUploadBox label="Cover Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} recommendedSize="1000x800" />
           
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
@@ -622,7 +622,7 @@ function BulletinTab() {
               <ReactQuill theme="snow" value={editForm.description || ''} onChange={v => setEditForm(f => ({ ...f, description: v }))} className="bg-white text-slate-900 rounded-lg" />
             </div>
           <FormInput label="URL" id="eb-url" value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
-          <ImageUploadBox label="Bulletin Image" currentUrl={editModal.data?.image_url} file={editImage} onFileChange={setEditImage} />
+          <ImageUploadBox label="Bulletin Image" currentUrl={editModal.data?.image_url} file={editImage} onFileChange={setEditImage} recommendedSize="800x600" />
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <button onClick={() => setEditModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
             <button onClick={saveEdit} disabled={editLoading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
@@ -655,7 +655,7 @@ function BulletinTab() {
             <ReactQuill theme="snow" value={addForm.description || ''} onChange={v => setAddForm(f => ({ ...f, description: v }))} className="bg-white text-slate-900 rounded-lg mb-4" />
           </div>
             <FormInput label="URL" id="ab-url" value={addForm.url} onChange={e => setAddForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
-            <ImageUploadBox label="Bulletin Image" file={addImage} onFileChange={setAddImage} />
+            <ImageUploadBox label="Bulletin Image" file={addImage} onFileChange={setAddImage} recommendedSize="800x600" />
             <div className="flex justify-end">
               <button onClick={addBulletin} disabled={addLoading}
                 className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
@@ -907,7 +907,7 @@ function MetadataTab() {
           <textarea value={data.og_description || ''} onChange={e => set('og_description', e.target.value)} rows={2} maxLength={300} placeholder={data.meta_description || 'Defaults to Meta Description'}
             className="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 outline-none resize-none" />
         </div>
-        <ImageUploadBox label="OG Image (optional)" currentUrl={data.og_image} file={ogFile} onFileChange={setOgFile} />
+        <ImageUploadBox label="OG Image (optional)" currentUrl={data.og_image} file={ogFile} onFileChange={setOgFile} recommendedSize="1200x630" />
       </div>
 
       <SaveButton onClick={save} loading={saving} label="Save Metadata" />

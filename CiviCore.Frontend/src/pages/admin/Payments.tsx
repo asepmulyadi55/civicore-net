@@ -386,7 +386,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
                 <>
                   <span className="material-icons text-amber-500 mb-1.5 text-[24px]">cloud_upload</span>
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Click to upload receipt</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">PDF, JPG, PNG (MAX 5MB)</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">PDF, JPG, PNG (MAX 5MB) · Rec: Clear scan</span>
                 </>
               )}
             </div>

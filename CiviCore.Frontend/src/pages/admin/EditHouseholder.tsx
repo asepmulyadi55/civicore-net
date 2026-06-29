@@ -85,7 +85,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
               <button onClick={() => document.getElementById(`residentPhoto-${data?.id || 'new'}`)?.click()} disabled={uploadingPhoto} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-white transition-colors cursor-pointer shadow-sm disabled:opacity-50">
                 <span className="material-icons text-sm">{uploadingPhoto ? 'hourglass_empty' : 'upload'}</span> {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
               </button>
-              <p className="text-[10px] text-slate-500 mt-1.5">JPG, PNG, WebP. Auto-compressed if oversized.</p>
+              <p className="text-[10px] text-slate-500 mt-1.5">JPG, PNG, WebP. Auto-compressed if oversized. (Rec: 400x400)</p>
             </div>
           </div>
         </div>
@@ -280,7 +280,7 @@ export default function EditHouseholder() {
                   <button onClick={() => document.getElementById('householdPhoto')?.click()} disabled={uploadingHouseholdPhoto} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-white transition-colors cursor-pointer shadow-sm disabled:opacity-50">
                     <span className="material-icons text-sm">{uploadingHouseholdPhoto ? 'hourglass_empty' : 'upload'}</span> {uploadingHouseholdPhoto ? 'Uploading...' : 'Upload Photo'}
                   </button>
-                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">JPG, PNG, WebP.<br/>Automatically compressed before upload.</p>
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">JPG, PNG, WebP.<br/>Automatically compressed before upload.<br/>(Recommended: 1000x800)</p>
                 </div>
               </div>
             </div>

@@ -5,6 +5,8 @@ using CiviCore.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 
+using CiviCore.Api.Services;
+
 namespace CiviCore.Api.Controllers;
 
 [ApiController]
@@ -13,12 +15,12 @@ namespace CiviCore.Api.Controllers;
 public class HomepageCmsController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly IWebHostEnvironment _env;
+    private readonly ILocalStorageService _storageService;
 
-    public HomepageCmsController(AppDbContext context, IWebHostEnvironment env)
+    public HomepageCmsController(AppDbContext context, ILocalStorageService storageService)
     {
         _context = context;
-        _env = env;
+        _storageService = storageService;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -48,16 +50,11 @@ public class HomepageCmsController : ControllerBase
     {
         if (file == null || file.Length == 0) return null;
 
-        var uploadsDir = Path.Combine(_env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"), "uploads", "homepage", subFolder);
-        Directory.CreateDirectory(uploadsDir);
-
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-        var filePath = Path.Combine(uploadsDir, fileName);
+        var filePath = $"homepage/{subFolder}/{fileName}";
 
-        using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
-
-        return $"/uploads/homepage/{subFolder}/{fileName}";
+        using var stream = file.OpenReadStream();
+        return await _storageService.UploadFileAsync(false, filePath, stream);
     }
 
     // ── Hero Section ─────────────────────────────────────────────────────────

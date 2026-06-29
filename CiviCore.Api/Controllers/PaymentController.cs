@@ -31,9 +31,9 @@ public class PaymentController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ISupabaseStorageService _storageService;
+    private readonly ILocalStorageService _storageService;
 
-    public PaymentController(AppDbContext context, UserManager<ApplicationUser> userManager, ISupabaseStorageService storageService)
+    public PaymentController(AppDbContext context, UserManager<ApplicationUser> userManager, ILocalStorageService storageService)
     {
         _context = context;
         _userManager = userManager;
@@ -267,14 +267,13 @@ public class PaymentController : ControllerBase
             
         if (!records.Any()) return NotFound("Batch not found");
 
-        var bucket = configuration["Supabase:PrivateBucket"] ?? "civicore-private";
         var ext = Path.GetExtension(file.FileName);
         var filePath = $"proofs/{batchId}{ext}";
 
         using var stream = file.OpenReadStream();
-        await _storageService.UploadFileAsync(bucket, filePath, stream);
+        await _storageService.UploadFileAsync(true, filePath, stream);
 
-        var publicUrl = await _storageService.GetSignedUrlAsync(bucket, filePath, 31536000); 
+        var publicUrl = $"/api/media/path/{filePath}";
 
         foreach(var record in records)
         {

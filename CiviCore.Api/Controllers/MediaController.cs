@@ -14,12 +14,11 @@ namespace CiviCore.Api.Controllers;
 [Route("api/[controller]")]
 public class MediaController : ControllerBase
 {
-    private readonly ISupabaseStorageService _storageService;
+    private readonly ILocalStorageService _storageService;
     private readonly IConfiguration _configuration;
     private readonly AppDbContext _context;
-    private string PrivateBucket => _configuration["Supabase:PrivateBucket"] ?? "civicore-private";
 
-    public MediaController(ISupabaseStorageService storageService, IConfiguration configuration, AppDbContext context)
+    public MediaController(ILocalStorageService storageService, IConfiguration configuration, AppDbContext context)
     {
         _storageService = storageService;
         _configuration = configuration;
@@ -61,7 +60,7 @@ public class MediaController : ControllerBase
         var media = await _context.MediaFiles.FindAsync(id);
         if (media == null) return NotFound();
 
-        var url = await _storageService.GetSignedUrlAsync(PrivateBucket, media.FilePath);
+        var url = $"/api/media/path/{media.FilePath}";
         return Redirect(url);
     }
 
@@ -73,7 +72,7 @@ public class MediaController : ControllerBase
         
         try
         {
-            var bytes = await _storageService.DownloadFileAsync(PrivateBucket, filePath);
+            var bytes = await _storageService.DownloadFileAsync(true, filePath);
             
             var ext = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
             var mimeType = ext switch
@@ -114,7 +113,7 @@ public class MediaController : ControllerBase
 
         if (!string.IsNullOrEmpty(replacePath))
         {
-            try { await _storageService.RemoveFileAsync(PrivateBucket, replacePath); }
+            try { await _storageService.RemoveFileAsync(true, replacePath); }
             catch (Exception ex) { Console.WriteLine($"Failed to delete old file: {ex.Message}"); }
         }
 
@@ -124,7 +123,7 @@ public class MediaController : ControllerBase
             var filePath = $"uploads/{Guid.NewGuid()}{extension}";
 
             using var stream = f.OpenReadStream();
-            await _storageService.UploadFileAsync(PrivateBucket, filePath, stream);
+            await _storageService.UploadFileAsync(true, filePath, stream);
 
             var mediaFile = new MediaFile
             {
@@ -163,7 +162,7 @@ public class MediaController : ControllerBase
 
         try
         {
-            await _storageService.RemoveFileAsync(PrivateBucket, media.FilePath);
+            await _storageService.RemoveFileAsync(true, media.FilePath);
         }
         catch (Exception ex)
         {

@@ -79,18 +79,20 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
                 </section>
 
                 {/* Events Section */}
-                {events && events.length > 0 && (
-                    <section className="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="events">
-                        <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
-                            <div>
-                                <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Discover More</span>
-                                <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Events</h2>
-                            </div>
+                <section className="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="events">
+                    <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
+                        <div>
+                            <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Discover More</span>
+                            <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Events</h2>
+                        </div>
+                        {events && events.length > 0 && (
                             <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/events">
                                 View All 
                                 <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </Link>
-                        </div>
+                        )}
+                    </div>
+                    {events && events.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
                             {events.slice(0, 3).map((ev: any) => (
                                 <div key={ev.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
@@ -117,8 +119,12 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
                                 </div>
                             ))}
                         </div>
-                    </section>
-                )}
+                    ) : (
+                        <div className="text-center py-12 text-text-muted dark:text-on-primary/70 bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50">
+                            No events currently available.
+                        </div>
+                    )}
+                </section>
 
                 {/* Gallery Section */}
                 <section className="py-section-gap bg-surface-container-low dark:bg-primary-container/20 px-margin-mobile md:px-margin-desktop" id="gallery">
@@ -129,13 +135,15 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
                                 <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">{gallerySettings?.title || 'Gallery'}</h2>
                                 {gallerySettings?.subtitle && <p className="mt-2 text-text-muted dark:text-on-primary/70">{gallerySettings?.subtitle}</p>}
                             </div>
-                            <Link className="inline-flex items-center gap-2 font-label-md text-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors mt-4 md:mt-0 group" href={gallerySettings?.archive_url || "/gallery"}>
-                                View All
-                                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                            </Link>
+                            {gallery && gallery.length > 0 && (
+                                <Link className="inline-flex items-center gap-2 font-label-md text-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors mt-4 md:mt-0 group" href={gallerySettings?.archive_url || "/gallery"}>
+                                    View All
+                                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                </Link>
+                            )}
                         </div>
                         
-                        {gallery && gallery.length > 0 && (
+                        {gallery && gallery.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-auto md:h-[600px]">
                                 <Link href={gallerySettings?.archive_url || "/gallery"} className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full">
                                     <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url('${getImageUrl(gallery[0]?.image_url) || "https://lh3.googleusercontent.com/aida-public/AB6AXuD55aFz8NDn0tXi_fzmIam_RZaFwDhAczD1L4kTGDx3sbMlR0oF0fEJB5qFaP04Btkcj6aHz6QlpxgzjIYCilYWKVHAUZys336usIkE5SzFmXdvI3NvErNZ0g2TMOrUu1c-4tth-d3jBfcLR85PhiVZ-By3Hj2sgF0VsRp1fP7NyU97aIp0YyjjBQkx4-gGQIjtxX_CFAevCygShudFFGofPbQX20yTk7WXTZJxCtg4SvhN88iP29cXUKzOB9OXHuNDpxl0_s61314"}')` }}></div>
@@ -165,23 +173,29 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
                                     )}
                                 </div>
                             </div>
+                        ) : (
+                            <div className="text-center py-12 text-text-muted dark:text-on-primary/70 bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50 mt-8">
+                                No gallery items currently available.
+                            </div>
                         )}
                     </div>
                 </section>
 
                 {/* Bulletins Section */}
-                {bulletins && bulletins.length > 0 && (
-                    <section className="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="bulletins">
-                        <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
-                            <div>
-                                <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Informasi</span>
-                                <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Buletin</h2>
-                            </div>
+                <section className="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="bulletins">
+                    <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
+                        <div>
+                            <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Informasi</span>
+                            <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Buletin</h2>
+                        </div>
+                        {bulletins && bulletins.length > 0 && (
                             <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/buletin">
                                 View All 
                                 <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </Link>
-                        </div>
+                        )}
+                    </div>
+                    {bulletins && bulletins.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
                             {bulletins.slice(0, 3).map((b: any) => (
                                 <div key={b.id} className="bg-surface dark:bg-primary-container rounded-2xl p-6 shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
@@ -192,23 +206,29 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
                                 </div>
                             ))}
                         </div>
-                    </section>
-                )}
+                    ) : (
+                        <div className="text-center py-12 text-text-muted dark:text-on-primary/70 bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50">
+                            No bulletins currently available.
+                        </div>
+                    )}
+                </section>
 
                 {/* Available Properties Section */}
-                {properties && properties.length > 0 && (
-                    <section className="py-section-gap bg-surface-container-low dark:bg-primary-container/20 px-margin-mobile md:px-margin-desktop" id="properties">
-                        <div className="max-w-container-max mx-auto">
-                            <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
-                                <div>
-                                    <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Find Your Home</span>
-                                    <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Available Properties</h2>
-                                </div>
+                <section className="py-section-gap bg-surface-container-low dark:bg-primary-container/20 px-margin-mobile md:px-margin-desktop" id="properties">
+                    <div className="max-w-container-max mx-auto">
+                        <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
+                            <div>
+                                <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Find Your Home</span>
+                                <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Available Properties</h2>
+                            </div>
+                            {properties && properties.length > 0 && (
                                 <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/property">
                                     View All
                                     <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                                 </Link>
-                            </div>
+                            )}
+                        </div>
+                        {properties && properties.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
                                 {properties.map((p: any) => (
                                     <div key={p.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden flex flex-col group">
@@ -231,9 +251,13 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    </section>
-                )}
+                        ) : (
+                            <div className="text-center py-12 text-text-muted dark:text-on-primary/70 bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50">
+                                No properties currently available.
+                            </div>
+                        )}
+                    </div>
+                </section>
             </main>
 
             <Footer footerData={footerData} />

@@ -163,7 +163,7 @@ function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: ()
     <Modal open={open} onClose={onClose} title="Meeting Images" size="lg">
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <p className="text-sm text-slate-500 dark:text-slate-400">Upload minutes, photos, or documents.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Upload minutes, photos, or documents. (Rec: 16:9 for photos)</p>
           <label className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-bold transition-all cursor-pointer">
             <span className="material-icons text-sm">upload</span> {uploading ? 'Uploading...' : 'Upload Image'}
             <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
