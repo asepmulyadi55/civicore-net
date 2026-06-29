@@ -12,7 +12,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
 
     public DbSet<Permission> Permissions { get; set; } = null!;
     public DbSet<Block> Blocks { get; set; } = null!;
-    public DbSet<BlockUser> BlockUsers { get; set; } = null!;
+    public DbSet<BlockCoordinator> BlockCoordinators { get; set; } = null!;
     public DbSet<Unit> Units { get; set; } = null!;
     public DbSet<Householder> Householders { get; set; } = null!;
     public DbSet<Resident> Residents { get; set; } = null!;
@@ -40,19 +40,23 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
         builder.HasPostgresEnum<CiviCore.Domain.Enums.FinanceReportStatus>();
         builder.HasPostgresEnum<CiviCore.Domain.Enums.FinanceTransactionType>();
 
-        // BlockUser Pivot
-        builder.Entity<BlockUser>()
-            .HasKey(bu => new { bu.BlockId, bu.UserId });
+        // BlockCoordinator mappings
+        builder.Entity<BlockCoordinator>()
+            .HasOne(bc => bc.Block)
+            .WithMany(b => b.Coordinators)
+            .HasForeignKey(bc => bc.BlockId);
             
-        builder.Entity<BlockUser>()
-            .HasOne(bu => bu.Block)
-            .WithMany(b => b.BlockUsers)
-            .HasForeignKey(bu => bu.BlockId);
-            
-        builder.Entity<BlockUser>()
-            .HasOne(bu => bu.User)
-            .WithMany(u => u.BlockUsers)
-            .HasForeignKey(bu => bu.UserId);
+        builder.Entity<BlockCoordinator>()
+            .HasOne(bc => bc.Resident)
+            .WithMany()
+            .HasForeignKey(bc => bc.ResidentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<BlockCoordinator>()
+            .HasOne(bc => bc.Householder)
+            .WithMany()
+            .HasForeignKey(bc => bc.HouseholderId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // Setting Key unique
         builder.Entity<Setting>()
@@ -104,5 +108,18 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             .WithMany()
             .HasForeignKey(op => op.HouseholderId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // MeetingAttendance Mappings
+        builder.Entity<MeetingAttendance>()
+            .HasOne(ma => ma.Resident)
+            .WithMany()
+            .HasForeignKey(ma => ma.ResidentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<MeetingAttendance>()
+            .HasOne(ma => ma.Householder)
+            .WithMany()
+            .HasForeignKey(ma => ma.HouseholderId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -22,12 +22,17 @@ public class RequireTwoFactorMiddleware
             if (userId != null)
             {
                 var user = await userManager.FindByIdAsync(userId);
-                // If user has 2FA configured but hasn't completed it this session (this is usually handled by Identity, 
-                // but we explicitly check if they need to be challenged)
-                if (user != null && user.TwoFactorEnabled)
+                
+                // Mimic Laravel's strict enforcement: if they don't have a secret, block everything except setup/logout endpoints
+                if (user != null && string.IsNullOrEmpty(user.TwoFactorSecretKey))
                 {
-                    // ASP.NET Identity typically handles 2FA with TwoFactorSignInAsync. 
-                    // This middleware acts as a double-check if the route requires strict 2FA completion.
+                    var path = context.Request.Path.Value?.ToLower();
+                    if (path != null && !path.Contains("/api/auth/2fa/setup") && !path.Contains("/api/auth/2fa/verify") && !path.Contains("/api/auth/logout"))
+                    {
+                        context.Response.StatusCode = 403;
+                        await context.Response.WriteAsJsonAsync(new { code = "REQUIRES_2FA_SETUP", message = "Mandatory Security: You must enable Two-Factor Authentication to access this application." });
+                        return;
+                    }
                 }
             }
         }

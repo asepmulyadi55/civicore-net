@@ -65,4 +65,16 @@ public class UnitController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
+    public class BulkDeleteRequest { public List<Guid> Ids { get; set; } = new(); }
+
+    [HttpDelete("bulk")]
+    public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteRequest request)
+    {
+        if (request.Ids == null || !request.Ids.Any()) return BadRequest();
+        var units = await _context.Set<Unit>().Where(u => request.Ids.Contains(u.Id)).ToListAsync();
+        _context.Set<Unit>().RemoveRange(units);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
 }

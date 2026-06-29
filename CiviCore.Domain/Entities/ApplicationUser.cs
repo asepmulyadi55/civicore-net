@@ -22,6 +22,4 @@ public class ApplicationUser : IdentityUser<Guid>
     
     public string? TwoFactorSecretKey { get; set; }
     public DateTime? TwoFactorEnabledAt { get; set; }
-
-    public ICollection<BlockUser> BlockUsers { get; set; } = new List<BlockUser>();
 }

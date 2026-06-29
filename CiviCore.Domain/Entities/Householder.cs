@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace CiviCore.Domain.Entities;
 
 public class Householder
@@ -28,5 +30,12 @@ public class Householder
 
     public ICollection<Resident> Residents { get; set; } = new List<Resident>();
     public ICollection<PaymentRecord> PaymentRecords { get; set; } = new List<PaymentRecord>();
+
+    [NotMapped]
+    public decimal MonthlyFee { get; set; }
+    [NotMapped]
+    public string? EffectiveFrom { get; set; }
+    [NotMapped]
+    public decimal? NewMonthlyFee { get; set; }
     public ICollection<FeeHistory> FeeHistories { get; set; } = new List<FeeHistory>();
 }

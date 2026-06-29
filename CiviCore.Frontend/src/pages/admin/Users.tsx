@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
@@ -110,7 +110,7 @@ function UserModal({ open, onClose, onSaved, data, roles }: { open: boolean; onC
             <input id="u-pw" type={showPw ? 'text' : 'password'} value={form.password} onChange={set('password')} placeholder="••••••••"
               className={`block w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none ${errors.password ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'}`} />
             <button type="button" onClick={() => setShowPw(s => !s)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
               <span className="material-icons text-sm">{showPw ? 'visibility_off' : 'visibility'}</span>
             </button>
           </div>
@@ -126,8 +126,8 @@ function UserModal({ open, onClose, onSaved, data, roles }: { open: boolean; onC
           <label htmlFor="u-active" className="text-sm font-medium text-slate-700 dark:text-slate-300">Active account</label>
         </div>
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm shadow-primary/20 disabled:opacity-60 transition-all">
+          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
             {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create User'}
           </button>
         </div>
@@ -159,8 +159,8 @@ function ApproveModal({ open, onClose, user, onApproved }: { open: boolean; onCl
         <p className="text-sm text-slate-600 dark:text-slate-400">Approve <strong className="text-slate-900 dark:text-white">{user.name}</strong> and assign a role.</p>
         <FormSelect label="Assign Role" id="approve-role" value={roleId} onChange={e => setRoleId(e.target.value)} options={(roles || []).map(r => ({ value: String(r.id), label: r.name }))} placeholder="Select Role" required />
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
-          <button onClick={handle} disabled={!roleId || loading} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold disabled:opacity-60 transition-all">
+          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+          <button onClick={handle} disabled={!roleId || loading} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold flex justify-center items-center gap-2 cursor-pointer hover:scale-[1.02] shadow-lg shadow-emerald-500/20 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all duration-200">
             {loading ? 'Approving...' : 'Approve'}
           </button>
         </div>
@@ -244,7 +244,7 @@ export default function Users() {
         subtitle="Manage system users, roles, and approvals"
         actions={
           <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all">
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
             <span className="material-icons text-sm">person_add</span> Add User
           </button>
         }
@@ -257,7 +257,7 @@ export default function Users() {
           options={[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }, { value: 'pending', label: 'Pending Approval' }]}
           placeholder="All Status" />
         <button onClick={() => setFilters({ search: '', role: '', status: '', page: 1 })}
-          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors">
+          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
           <span className="material-icons text-sm">close</span> Clear
         </button>
       </FilterBar>
@@ -310,14 +310,24 @@ export default function Users() {
                     <div className="flex items-center justify-center gap-1">
                       {isPending && (
                         <button onClick={() => setApproveModal({ open: true, user: u })}
-                          className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white dark:bg-emerald-900/30 dark:text-emerald-400 rounded-lg transition-all">
+                          className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white dark:bg-emerald-900/30 dark:text-emerald-400 rounded-lg transition-all cursor-pointer">
                           <span className="material-icons text-sm">how_to_reg</span> Approve
                         </button>
                       )}
-                      <button onClick={() => setModal({ open: true, data: u })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" title="Edit">
+                      <button onClick={() => setModal({ open: true, data: u })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title="Edit">
                         <span className="material-icons text-lg">edit</span>
                       </button>
-                      <button onClick={() => setConfirm({ open: true, item: u, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors" title="Delete">
+                      {!isPending && u.is_active && (
+                        <button onClick={async () => { try { await axios.post(`/api/users/${u.id}/deactivate`); fetchData(); } catch {} }} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors cursor-pointer" title="Deactivate">
+                          <span className="material-icons text-lg">person_off</span>
+                        </button>
+                      )}
+                      {!isPending && !u.is_active && (
+                        <button onClick={async () => { try { await axios.post(`/api/users/${u.id}/reactivate`); fetchData(); } catch {} }} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors cursor-pointer" title="Reactivate">
+                          <span className="material-icons text-lg">person_add</span>
+                        </button>
+                      )}
+                      <button onClick={() => setConfirm({ open: true, item: u, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title="Delete">
                         <span className="material-icons text-lg">person_remove</span>
                       </button>
                     </div>

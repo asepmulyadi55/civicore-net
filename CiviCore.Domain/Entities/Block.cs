@@ -9,5 +9,5 @@ public class Block
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Unit> Units { get; set; } = new List<Unit>();
-    public ICollection<BlockUser> BlockUsers { get; set; } = new List<BlockUser>();
+    public ICollection<BlockCoordinator> Coordinators { get; set; } = new List<BlockCoordinator>();
 }

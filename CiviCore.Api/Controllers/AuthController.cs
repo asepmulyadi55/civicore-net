@@ -39,9 +39,64 @@ namespace CiviCore.Api.Controllers
             if (user == null)
                 return Unauthorized(new { message = "Invalid credentials" });
 
-            var result = await _signInManager.PasswordSignInAsync(user.UserName!, request.Password, request.RememberMe, lockoutOnFailure: true);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+            
+            if (result.IsLockedOut)
+                return Unauthorized(new { message = "Account locked out due to multiple failed attempts." });
+
             if (result.Succeeded)
             {
+                if (!user.IsActive)
+                {
+                    if (user.EmailConfirmed)
+                        return Unauthorized(new { message = "Your account has been deactivated." });
+                    else
+                        return Unauthorized(new { message = "Your account is pending admin approval." });
+                }
+
+                // Mirror Laravel exactly: Force 2FA Challenge if they have a secret configured
+                if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
+                {
+                    return StatusCode(403, new { message = "Two factor authentication required", requires_2fa = true });
+                }
+
+                // If they don't have a secret, MANDATORY 2FA dictates they MUST set it up now!
+                return StatusCode(403, new { message = "Mandatory Security: You must set up Two-Factor Authentication.", requires_2fa_setup = true });
+            }
+
+            return Unauthorized(new { message = "Invalid credentials" });
+        }
+
+        [HttpPost("login-2fa")]
+        [EnableRateLimiting("AuthLimit")]
+        public async Task<IActionResult> Login2FA([FromBody] Login2FARequest request)
+        {
+            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+            
+            // Fallback for API clients that do not send cookies
+            if (user == null && !string.IsNullOrEmpty(request.Email) && !string.IsNullOrEmpty(request.Password))
+            {
+                var fallbackUser = await _userManager.FindByEmailAsync(request.Email) ?? await _userManager.FindByNameAsync(request.Email);
+                if (fallbackUser != null && await _userManager.CheckPasswordAsync(fallbackUser, request.Password))
+                {
+                    user = fallbackUser;
+                }
+            }
+
+            if (user == null)
+                return Unauthorized(new { message = "Invalid 2FA session. Please login again." });
+
+            if (!user.IsActive)
+                return Unauthorized(new { message = "Your account is pending admin approval." });
+
+            if (string.IsNullOrEmpty(user.TwoFactorSecretKey)) 
+                return BadRequest(new { message = "2FA not setup." });
+
+            var totp = new Totp(Base32Encoding.ToBytes(user.TwoFactorSecretKey));
+            if (totp.VerifyTotp(request.Code, out _, window: null))
+            {
+                await _signInManager.SignInAsync(user, request.RememberMe);
+                
                 user.SessionToken = Guid.NewGuid().ToString();
                 user.LastLoginAt = DateTime.UtcNow;
                 user.LastActiveAt = DateTime.UtcNow;
@@ -50,16 +105,10 @@ namespace CiviCore.Api.Controllers
                 var roles = await _userManager.GetRolesAsync(user);
                 var userRole = roles.FirstOrDefault() ?? "";
 
-                // Add session token to cookie manually if needed, but we will store it in the claims later via custom claims principal factory
                 return Ok(new { message = "Login successful", token = user.SessionToken, user = new { name = user.Name, email = user.Email, role = userRole } });
             }
 
-            if (result.RequiresTwoFactor)
-            {
-                return StatusCode(403, new { message = "Two factor authentication required", requires_2fa = true });
-            }
-
-            return Unauthorized(new { message = "Invalid credentials" });
+            return Unauthorized(new { message = "Invalid 2FA code." });
         }
 
         [HttpPost("logout")]
@@ -107,9 +156,29 @@ namespace CiviCore.Api.Controllers
             if (user != null)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email!)}";
+                var frontendUrl = _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+                var resetLink = $"{frontendUrl}/admin/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email!)}";
                 
-                await _emailService.SendEmailAsync(user.Email!, "Reset Password", $"Click here to reset your password: <a href=\"{resetLink}\">Reset Password</a>");
+                var emailBody = $@"
+<div style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"">
+    <div style=""text-align: center; margin-bottom: 25px;"">
+        <h2 style=""color: #1e293b; margin: 0; font-size: 24px;"">Password Reset Request</h2>
+    </div>
+    <p style=""color: #475569; font-size: 16px; line-height: 1.6;"">Hello,</p>
+    <p style=""color: #475569; font-size: 16px; line-height: 1.6;"">We received a request to reset your password for your CiviCore account. Click the button below to set up a new password:</p>
+    <div style=""text-align: center; margin: 35px 0;"">
+        <a href=""{resetLink}"" style=""background-color: #3b82f6; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 16px; font-weight: 600; display: inline-block; transition: background-color 0.2s;"">Reset My Password</a>
+    </div>
+    <p style=""color: #475569; font-size: 15px; line-height: 1.6;"">If the button doesn't work, you can also copy and paste the following link into your browser:</p>
+    <p style=""background-color: #f8fafc; padding: 12px; border-radius: 4px; word-break: break-all; font-size: 14px; color: #64748b; border: 1px solid #e2e8f0;"">
+        {resetLink}
+    </p>
+    <p style=""color: #475569; font-size: 15px; margin-top: 30px;"">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+    <hr style=""border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;"">
+    <p style=""color: #94a3b8; font-size: 14px; text-align: center; margin: 0;"">Best regards,<br><strong>The CiviCore Team</strong></p>
+</div>";
+
+                await _emailService.SendEmailAsync(user.Email!, "Reset Your CiviCore Password", emailBody);
             }
             // Always return OK to prevent email enumeration
             return Ok(new { message = "If the email is registered, a password reset link has been sent." });
@@ -144,9 +213,9 @@ namespace CiviCore.Api.Controllers
             var email = result.Principal.FindFirstValue(ClaimTypes.Email);
             if (email == null) return BadRequest();
 
-            var frontendUrl = _config["FrontendUrl"] ?? "/";
-            var loginUrl = frontendUrl.Replace("/dashboard", "/login");
-            var registerUrl = frontendUrl.Replace("/dashboard", "/register");
+            var frontendUrl = _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+            var loginUrl = $"{frontendUrl}/admin/login";
+            var registerUrl = $"{frontendUrl}/admin/register";
 
             var user = await _userManager.FindByEmailAsync(email);
 
@@ -160,7 +229,7 @@ namespace CiviCore.Api.Controllers
                 // Auto register google user (pending approval)
                 user = new ApplicationUser
                 {
-                    UserName = email,
+                    UserName = email.Contains('@') ? email.Split('@')[0] : email,
                     Email = email,
                     Name = result.Principal.FindFirstValue(ClaimTypes.Name) ?? "Google User",
                     GoogleId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier),
@@ -197,10 +266,22 @@ namespace CiviCore.Api.Controllers
         }
 
         [HttpPost("2fa/setup")]
-        public async Task<IActionResult> Setup2FA()
+        public async Task<IActionResult> Setup2FA([FromBody] Setup2FARequest request)
         {
+            // Try to get user from Identity session first
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
+            
+            // Fallback for stateless 2FA setup during login flow
+            if (user == null && !string.IsNullOrEmpty(request.Email) && !string.IsNullOrEmpty(request.Password))
+            {
+                var fallbackUser = await _userManager.FindByEmailAsync(request.Email) ?? await _userManager.FindByNameAsync(request.Email);
+                if (fallbackUser != null && await _userManager.CheckPasswordAsync(fallbackUser, request.Password))
+                {
+                    user = fallbackUser;
+                }
+            }
+
+            if (user == null) return Unauthorized(new { message = "Invalid credentials." });
 
             var key = KeyGeneration.GenerateRandomKey(20);
             var secret = Base32Encoding.ToString(key);
@@ -261,6 +342,14 @@ namespace CiviCore.Api.Controllers
         public bool RememberMe { get; set; } = false;
     }
 
+    public class Login2FARequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public bool RememberMe { get; set; } = false;
+    }
+
     public class RegisterRequest
     {
         public string Name { get; set; } = string.Empty;
@@ -278,4 +367,9 @@ namespace CiviCore.Api.Controllers
         public string NewPassword { get; set; } = string.Empty;
     }
     public class Verify2FARequest { public string Code { get; set; } = string.Empty; }
+    public class Setup2FARequest 
+    { 
+        public string Email { get; set; } = string.Empty; 
+        public string Password { get; set; } = string.Empty; 
+    }
 }

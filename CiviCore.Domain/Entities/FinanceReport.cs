@@ -9,6 +9,11 @@ public class FinanceReport
     public DateTime PeriodStart { get; set; }
     public DateTime PeriodEnd { get; set; }
     
+    public decimal OpeningBalance { get; set; } = 0;
+    public decimal TotalIncome { get; set; } = 0;
+    public decimal TotalExpense { get; set; } = 0;
+    public decimal ClosingBalance { get; set; } = 0;
+    
     public FinanceReportStatus Status { get; set; } = FinanceReportStatus.Pending;
     public string? RejectedReason { get; set; }
     

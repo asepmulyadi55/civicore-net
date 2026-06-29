@@ -3,6 +3,7 @@ using System;
 using CiviCore.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,16 +12,18 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CiviCore.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260625092742_BlockCoordinators")]
+    partial class BlockCoordinators
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.28")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "finance_report_status", new[] { "draft", "pending", "approved", "rejected" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "finance_report_status", new[] { "pending", "approved", "rejected" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "finance_transaction_type", new[] { "income", "expense" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "house_status", new[] { "owner_occupied", "rented", "vacant", "public_facility", "developer" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "payment_status", new[] { "unpaid", "pending", "approved", "rejected" });
@@ -248,17 +251,11 @@ namespace CiviCore.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("ClosingBalance")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CreatedById")
                         .HasColumnType("uuid");
-
-                    b.Property<decimal>("OpeningBalance")
-                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("PeriodEnd")
                         .HasColumnType("timestamp with time zone");
@@ -275,12 +272,6 @@ namespace CiviCore.Infrastructure.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<decimal>("TotalExpense")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalIncome")
-                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -485,9 +476,6 @@ namespace CiviCore.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("HouseholderId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsPresent")
                         .HasColumnType("boolean");
 
@@ -497,19 +485,17 @@ namespace CiviCore.Infrastructure.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ResidentId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
-                    b.HasIndex("HouseholderId");
+                    b.HasKey("Id");
 
                     b.HasIndex("MeetingId");
 
-                    b.HasIndex("ResidentId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("MeetingAttendances");
                 });
@@ -742,68 +728,34 @@ namespace CiviCore.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("Bathrooms")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Bedrooms")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("BlockId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("BuildingArea")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("ContactName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ContactPhone")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<decimal?>("LandArea")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("LocationLabel")
+                    b.Property<string>("ListingType")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("UnitId")
+                    b.Property<Guid>("UnitId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BlockId");
-
-                    b.HasIndex("CreatedById");
 
                     b.HasIndex("UnitId");
 
@@ -1130,27 +1082,21 @@ namespace CiviCore.Infrastructure.Migrations
 
             modelBuilder.Entity("CiviCore.Domain.Entities.MeetingAttendance", b =>
                 {
-                    b.HasOne("CiviCore.Domain.Entities.Householder", "Householder")
-                        .WithMany()
-                        .HasForeignKey("HouseholderId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("CiviCore.Domain.Entities.Meeting", "Meeting")
                         .WithMany("Attendances")
                         .HasForeignKey("MeetingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CiviCore.Domain.Entities.Resident", "Resident")
+                    b.HasOne("CiviCore.Domain.Entities.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("ResidentId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Householder");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Meeting");
 
-                    b.Navigation("Resident");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CiviCore.Domain.Entities.MeetingImage", b =>
@@ -1248,21 +1194,11 @@ namespace CiviCore.Infrastructure.Migrations
 
             modelBuilder.Entity("CiviCore.Domain.Entities.PropertyListing", b =>
                 {
-                    b.HasOne("CiviCore.Domain.Entities.Block", "Block")
-                        .WithMany()
-                        .HasForeignKey("BlockId");
-
-                    b.HasOne("CiviCore.Domain.Entities.ApplicationUser", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById");
-
                     b.HasOne("CiviCore.Domain.Entities.Unit", "Unit")
                         .WithMany()
-                        .HasForeignKey("UnitId");
-
-                    b.Navigation("Block");
-
-                    b.Navigation("CreatedBy");
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Unit");
                 });

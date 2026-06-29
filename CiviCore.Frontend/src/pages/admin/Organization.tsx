@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
-import { PageHeader, EmptyState, Modal, ConfirmModal, FormInput, FormSelect } from '../../admin/components/ui';
+import { PageHeader, EmptyState, Modal, ConfirmModal, FormInput, FormSelect, SecureImage, CustomSelect, SearchableSelect } from '../../admin/components/ui';
 
 interface OrgPeriod {
   id: string;
@@ -45,7 +45,11 @@ function PeriodModal({ open, onClose, onSaved, data }: { open: boolean; onClose:
       else await axios.post('/api/organization/periods', form);
       onSaved(); onClose();
     } catch (err: any) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+      let msg = err.response?.data?.message || 'Save failed.';
+      if (err.response?.data?.errors) {
+        msg = Object.values(err.response.data.errors).flat().join(' ');
+      }
+      setErrors({ general: msg });
     } finally { setLoading(false); }
   };
 
@@ -59,8 +63,8 @@ function PeriodModal({ open, onClose, onSaved, data }: { open: boolean; onClose:
           <FormInput label="End Year" id="p-end" type="number" value={String(form.endYear)} onChange={e => setForm(p => ({ ...p, endYear: parseInt(e.target.value) || 0 }))} error={errors.endYear} required />
         </div>
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border hover:bg-slate-50 transition-all text-sm font-semibold">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-sm transition-all">{loading ? 'Saving...' : 'Save Period'}</button>
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all text-sm font-semibold cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary text-white dark:text-surface text-sm font-bold shadow-sm transition-all cursor-pointer">{loading ? 'Saving...' : 'Save Period'}</button>
         </div>
       </div>
     </Modal>
@@ -80,8 +84,8 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
 
   useEffect(() => {
     if (open) {
-      axios.get('/api/residents').then(r => setResidents(r.data)).catch(() => {});
-      axios.get('/api/householders').then(r => setHouseholders(r.data)).catch(() => {});
+      axios.get('/api/residents?per_page=1000').then(r => setResidents(Array.isArray(r.data) ? r.data : (r.data?.data || []))).catch(() => {});
+      axios.get('/api/householders?per_page=1000').then(r => setHouseholders(Array.isArray(r.data) ? r.data : (r.data?.data || []))).catch(() => {});
     }
   }, [open]);
 
@@ -114,7 +118,11 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
       else await axios.post('/api/organization/positions', payload);
       onSaved(); onClose();
     } catch (err: any) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+      let msg = err.response?.data?.message || 'Save failed.';
+      if (err.response?.data?.errors) {
+        msg = Object.values(err.response.data.errors).flat().join(' ');
+      }
+      setErrors({ general: msg });
     } finally { setLoading(false); }
   };
 
@@ -125,12 +133,12 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
       <div className="space-y-4">
         {errors.general && <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
         <FormInput label="Position Name" id="pos-name" value={form.positionName} onChange={e => setForm(p => ({ ...p, positionName: e.target.value }))} error={errors.positionName} required placeholder="e.g. Ketua RT" />
-        <FormSelect label="Parent Position (Reports To)" id="pos-parent" value={form.parentId} onChange={e => setForm(p => ({ ...p, parentId: e.target.value }))} options={parentOptions} placeholder="None (Top Level)" />
+        <CustomSelect label="Parent Position (Reports To)" value={form.parentId} onChange={v => setForm(p => ({ ...p, parentId: v }))} options={parentOptions} placeholder="None (Top Level)" />
         <FormInput label="Sort Order" id="pos-sort" type="number" value={String(form.sortOrder)} onChange={e => setForm(p => ({ ...p, sortOrder: parseInt(e.target.value) || 0 }))} />
         
         <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
-          <p className="text-sm font-semibold mb-2">Assign Person</p>
-          <FormSelect label="Person Type" id="pos-ptype" value={personType} onChange={e => setPersonType(e.target.value)} options={[
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Assign Person</p>
+          <CustomSelect label="Person Type" value={personType} onChange={v => setPersonType(v)} options={[
             { value: 'none', label: 'Unassigned' },
             { value: 'resident', label: 'Resident' },
             { value: 'householder', label: 'Householder' }
@@ -138,19 +146,19 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
           
           {personType === 'resident' && (
             <div className="mt-3">
-              <FormSelect label="Select Resident" id="pos-res" value={form.residentId} onChange={e => setForm(p => ({ ...p, residentId: e.target.value }))} options={residents.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Choose Resident..." />
+              <SearchableSelect label="Select Resident" value={form.residentId} onChange={v => setForm(p => ({ ...p, residentId: v }))} options={residents.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Search Resident..." />
             </div>
           )}
           {personType === 'householder' && (
             <div className="mt-3">
-              <FormSelect label="Select Householder" id="pos-hh" value={form.householderId} onChange={e => setForm(p => ({ ...p, householderId: e.target.value }))} options={householders.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Choose Householder..." />
+              <SearchableSelect label="Select Householder" value={form.householderId} onChange={v => setForm(p => ({ ...p, householderId: v }))} options={householders.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Search Householder..." />
             </div>
           )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border hover:bg-slate-50 transition-all text-sm font-semibold">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-sm transition-all">{loading ? 'Saving...' : 'Save Position'}</button>
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all text-sm font-semibold cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary text-white dark:text-surface text-sm font-bold shadow-sm transition-all cursor-pointer">{loading ? 'Saving...' : 'Save Position'}</button>
         </div>
       </div>
     </Modal>
@@ -164,21 +172,21 @@ function OrgHeroCard({ node, onEdit, onDelete }: { node: OrgPosition; onEdit: (n
 
   return (
     <div className="flex justify-center mb-4">
-      <div className="group relative">
-        <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <button onClick={() => onEdit(node)} className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-primary/50 shadow-sm transition-all"><span className="material-icons text-slate-400 hover:text-primary text-sm">edit</span></button>
-          <button onClick={() => onDelete(node)} className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-rose-400 shadow-sm transition-all"><span className="material-icons text-slate-400 hover:text-rose-500 text-sm">close</span></button>
+    <div className="flex justify-center mb-4">
+      <div className="group relative w-64 text-center px-6 py-6 rounded-2xl bg-gradient-to-b from-primary/5 to-transparent border-2 border-primary/20 shadow-md hover:shadow-lg transition-shadow">
+        <div className="absolute top-3 right-3 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
+          <button onClick={() => onEdit(node)} className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-primary/50 shadow-sm transition-all cursor-pointer"><span className="material-icons text-slate-400 hover:text-primary text-sm">edit</span></button>
+          <button onClick={() => onDelete(node)} className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-rose-400 shadow-sm transition-all cursor-pointer"><span className="material-icons text-slate-400 hover:text-rose-500 text-sm">close</span></button>
         </div>
-        <div className="w-64 text-center px-6 py-6 rounded-2xl bg-gradient-to-b from-primary/5 to-transparent border-2 border-primary/20 shadow-md hover:shadow-lg transition-shadow">
-          {photoUrl ? (
-            <img src={photoUrl} className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-md mx-auto mb-4" alt="" />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-2xl shadow-sm mx-auto mb-4 border-4 border-white dark:border-slate-800">{initials}</div>
-          )}
-          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary mb-2">{node.positionName}</span>
-          <p className={`font-bold text-base leading-tight ${personName !== 'Unassigned' ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>{personName}</p>
-        </div>
+        {photoUrl ? (
+          <SecureImage src={`/api/media/path/${photoUrl}`} className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-md mx-auto mb-4" alt="" />
+        ) : (
+          <div className="w-24 h-24 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-2xl shadow-sm mx-auto mb-4 border-4 border-white dark:border-slate-800">{initials}</div>
+        )}
+        <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary mb-2">{node.positionName}</span>
+        <p className={`font-bold text-base leading-tight ${personName !== 'Unassigned' ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>{personName}</p>
       </div>
+    </div>
     </div>
   );
 }
@@ -189,14 +197,14 @@ function OrgOfficerCard({ node, onEdit, onDelete }: { node: OrgPosition; onEdit:
   const photoUrl = node.resident?.photoPath || node.householder?.photoPath;
 
   return (
-    <div className="group relative">
-      <div className="absolute -top-1 -right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-        <button onClick={() => onEdit(node)} className="w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-primary/50 shadow-sm transition-all"><span className="material-icons text-slate-400 hover:text-primary text-[13px]">edit</span></button>
-        <button onClick={() => onDelete(node)} className="w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-rose-400 shadow-sm transition-all"><span className="material-icons text-slate-400 hover:text-rose-500 text-[13px]">close</span></button>
-      </div>
-      <div className="w-48 text-center px-4 py-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+    <div className="flex justify-center">
+      <div className="group relative w-48 text-center px-4 py-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+        <div className="absolute top-2 right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
+          <button onClick={() => onEdit(node)} className="w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-primary/50 shadow-sm transition-all cursor-pointer"><span className="material-icons text-slate-400 hover:text-primary text-[13px]">edit</span></button>
+          <button onClick={() => onDelete(node)} className="w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-rose-400 shadow-sm transition-all cursor-pointer"><span className="material-icons text-slate-400 hover:text-rose-500 text-[13px]">close</span></button>
+        </div>
         {photoUrl ? (
-          <img src={photoUrl} className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm mx-auto mb-2" alt="" />
+          <SecureImage src={`/api/media/path/${photoUrl}`} className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm mx-auto mb-2" alt="" />
         ) : (
           <div className="w-14 h-14 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 font-bold flex items-center justify-center text-base shadow-sm mx-auto mb-2 border-2 border-white dark:border-slate-800">{initials}</div>
         )}
@@ -215,12 +223,12 @@ function OrgSectionNode({ node, onEdit, onDelete }: { node: OrgPosition; onEdit:
   return (
     <div className="bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 p-4 mb-4">
       <div className="flex items-center gap-3 mb-3 pb-3 border-b border-slate-200 dark:border-slate-700 group relative">
-        <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => onEdit(node)} className="w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-primary/50 transition-all"><span className="material-icons text-slate-400 hover:text-primary text-[13px]">edit</span></button>
-          <button onClick={() => onDelete(node)} className="w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-rose-400 transition-all"><span className="material-icons text-slate-400 hover:text-rose-500 text-[13px]">close</span></button>
+        <div className="absolute top-0 right-0 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+          <button onClick={() => onEdit(node)} className="w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-primary/50 transition-all cursor-pointer"><span className="material-icons text-slate-400 hover:text-primary text-[13px]">edit</span></button>
+          <button onClick={() => onDelete(node)} className="w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-rose-400 transition-all cursor-pointer"><span className="material-icons text-slate-400 hover:text-rose-500 text-[13px]">close</span></button>
         </div>
         {photoUrl ? (
-          <img src={photoUrl} className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm" alt="" />
+          <SecureImage src={`/api/media/path/${photoUrl}`} className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm" alt="" />
         ) : (
           <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center text-sm shadow-sm border-2 border-white dark:border-slate-800">{initials}</div>
         )}
@@ -236,9 +244,9 @@ function OrgSectionNode({ node, onEdit, onDelete }: { node: OrgPosition; onEdit:
             const cName = child.resident?.fullname || child.householder?.fullname || 'Unassigned';
             return (
               <div key={child.id} className="group relative flex items-center gap-3 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary/30 transition-all">
-                <div className="absolute right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-slate-900 pl-2">
-                  <button onClick={() => onEdit(child)} className="w-6 h-6 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-primary/50"><span className="material-icons text-slate-400 hover:text-primary text-[13px]">edit</span></button>
-                  <button onClick={() => onDelete(child)} className="w-6 h-6 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-rose-400"><span className="material-icons text-slate-400 hover:text-rose-500 text-[13px]">close</span></button>
+                <div className="absolute right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-white dark:bg-slate-900 pl-2">
+                  <button onClick={() => onEdit(child)} className="w-6 h-6 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-primary/50 cursor-pointer"><span className="material-icons text-slate-400 hover:text-primary text-[13px]">edit</span></button>
+                  <button onClick={() => onDelete(child)} className="w-6 h-6 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-rose-400 cursor-pointer"><span className="material-icons text-slate-400 hover:text-rose-500 text-[13px]">close</span></button>
                 </div>
                 <div className="flex-1 min-w-0 pr-16">
                   <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block truncate">{child.positionName}</span>
@@ -380,11 +388,11 @@ export default function Organization() {
         subtitle="Manage community leadership hierarchies and assignments"
         actions={
           <div className="flex gap-2">
-            <button onClick={() => setPeriodModal({ open: true, data: null })} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white text-sm font-bold rounded-lg transition-all">
+            <button onClick={() => setPeriodModal({ open: true, data: null })} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white text-sm font-bold rounded-lg transition-all cursor-pointer">
               Manage Periods
             </button>
             {selectedPeriod && (
-              <button onClick={() => setPosModal({ open: true, data: null })} className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all">
+              <button onClick={() => setPosModal({ open: true, data: null })} className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all cursor-pointer">
                 <span className="material-icons text-sm">account_tree</span> Add Position
               </button>
             )}
@@ -398,16 +406,16 @@ export default function Organization() {
           <div className="flex flex-wrap gap-2">
             {periods.map(p => (
               <div key={p.id} className="relative group">
-                <button onClick={() => setSelectedPeriod(p.id)} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${selectedPeriod === p.id ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                <button onClick={() => setSelectedPeriod(p.id)} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${selectedPeriod === p.id ? 'bg-primary text-white dark:text-surface border-primary' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>
                   {p.name}
                   {p.isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
                 </button>
                 {/* Fixed Hover Gap: Removed mt-1, replaced with invisible padding wrapper to bridge the gap */}
                 <div className="absolute top-full pt-1 hidden group-hover:block z-10 w-32 left-0">
-                  <div className="flex flex-col bg-white dark:bg-slate-800 border shadow-lg rounded-lg overflow-hidden">
-                    {!p.isActive && <button onClick={() => activatePeriod(p.id)} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700">Set Active</button>}
-                    <button onClick={() => setPeriodModal({ open: true, data: p })} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700">Edit</button>
-                    {!p.isActive && <button onClick={() => setConfirm({ open: true, item: p, type: 'period', loading: false })} className="px-3 py-2 text-xs text-left text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20">Delete</button>}
+                  <div className="flex flex-col bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-lg rounded-lg overflow-hidden">
+                    {!p.isActive && <button onClick={() => activatePeriod(p.id)} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">Set Active</button>}
+                    <button onClick={() => setPeriodModal({ open: true, data: p })} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">Edit</button>
+                    {!p.isActive && <button onClick={() => setConfirm({ open: true, item: p, type: 'period', loading: false })} className="px-3 py-2 text-xs text-left text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 cursor-pointer">Delete</button>}
                   </div>
                 </div>
               </div>

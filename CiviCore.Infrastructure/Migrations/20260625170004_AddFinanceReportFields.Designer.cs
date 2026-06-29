@@ -3,6 +3,7 @@ using System;
 using CiviCore.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CiviCore.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260625170004_AddFinanceReportFields")]
+    partial class AddFinanceReportFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -742,68 +745,34 @@ namespace CiviCore.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("Bathrooms")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Bedrooms")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("BlockId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("BuildingArea")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("ContactName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ContactPhone")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<decimal?>("LandArea")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("LocationLabel")
+                    b.Property<string>("ListingType")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("UnitId")
+                    b.Property<Guid>("UnitId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BlockId");
-
-                    b.HasIndex("CreatedById");
 
                     b.HasIndex("UnitId");
 
@@ -1248,21 +1217,11 @@ namespace CiviCore.Infrastructure.Migrations
 
             modelBuilder.Entity("CiviCore.Domain.Entities.PropertyListing", b =>
                 {
-                    b.HasOne("CiviCore.Domain.Entities.Block", "Block")
-                        .WithMany()
-                        .HasForeignKey("BlockId");
-
-                    b.HasOne("CiviCore.Domain.Entities.ApplicationUser", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById");
-
                     b.HasOne("CiviCore.Domain.Entities.Unit", "Unit")
                         .WithMany()
-                        .HasForeignKey("UnitId");
-
-                    b.Navigation("Block");
-
-                    b.Navigation("CreatedBy");
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Unit");
                 });

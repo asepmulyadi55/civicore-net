@@ -1,8 +1,9 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
-import { PageHeader, FilterBar, SearchInput, SelectFilter, TableWrapper, Th, EmptyState, Pagination, Modal, ConfirmModal, FormInput, FormSelect } from '../../admin/components/ui';
+import { PageHeader, SearchInput, SelectFilter, EmptyState, Pagination, Modal, ConfirmModal, FormInput, FormSelect, SearchableSelect } from '../../admin/components/ui';
+import { compressImage } from '../../utils/imageCompressor';
 
 interface Meeting {
   id: number;
@@ -12,6 +13,7 @@ interface Meeting {
   location?: string;
   status: 'scheduled' | 'completed' | 'cancelled';
   created_at: string;
+  attendees?: { id: string; name: string; type: string; photoPath?: string }[];
 }
 
 interface PaginationMeta {
@@ -28,34 +30,28 @@ const STATUS_OPTIONS = [
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
-const STATUS_STYLES: Record<string, string> = {
-  scheduled: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  cancelled: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
-};
-
 function MeetingModal({ open, onClose, onSaved, data }: { open: boolean; onClose: () => void; onSaved: () => void; data: Meeting | null }) {
   const isEdit = !!data?.id;
-  const [form, setForm] = useState({ title: '', description: '', meeting_date: '', location: '', status: 'scheduled' });
+  const [form, setForm] = useState({ title: '', meeting_date: '', location: '', status: 'scheduled' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (data) {
-      setForm({ title: data.title, description: data.description || '', meeting_date: data.meeting_date?.slice(0, 16) || '', location: data.location || '', status: data.status });
+      setForm({ title: data.title, meeting_date: data.meeting_date?.slice(0, 16) || '', location: data.location || '', status: data.status });
     } else {
-      setForm({ title: '', description: '', meeting_date: '', location: '', status: 'scheduled' });
+      setForm({ title: '', meeting_date: '', location: '', status: 'scheduled' });
     }
     setErrors({});
   }, [data, open]);
 
-  const set = (f: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+  const set = (f: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((p) => ({ ...p, [f]: e.target.value }));
 
   const handleSave = async () => {
     setLoading(true); setErrors({});
     try {
-      if (isEdit) await axios.put(`/api/meetings/${data!.id}`, form);
+      if (isEdit) await axios.put(`/api/meetings/${data!.id}`, { ...data, ...form });
       else await axios.post('/api/meetings', form);
       onSaved(); onClose();
     } catch (err: any) {
@@ -72,21 +68,207 @@ function MeetingModal({ open, onClose, onSaved, data }: { open: boolean; onClose
           <div>
             <label htmlFor="m-date" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date & Time <span className="text-rose-500">*</span></label>
             <input id="m-date" type="datetime-local" value={form.meeting_date} onChange={set('meeting_date')}
-              className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-sm" />
+              className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white dark:[color-scheme:dark] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-sm" />
             {errors.meeting_date && <p className="mt-1.5 text-xs text-rose-600">{errors.meeting_date}</p>}
           </div>
           <FormSelect label="Status" id="m-status" value={form.status} onChange={set('status')} options={STATUS_OPTIONS} />
         </div>
         <FormInput label="Location" id="m-location" value={form.location} onChange={set('location')} error={errors.location} placeholder="e.g. Balai RT, Block A" />
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-          <textarea value={form.description} onChange={set('description')} rows={3} placeholder="Meeting agenda or notes..."
-            className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
-        </div>
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-sm disabled:opacity-60 transition-all">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
             {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Schedule Meeting'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function MeetingDescriptionModal({ open, onClose, onSaved, data }: { open: boolean; onClose: () => void; onSaved: () => void; data: Meeting | null }) {
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (data) setDescription(data.description || '');
+  }, [data, open]);
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      await axios.patch(`/api/meetings/${data!.id}/description`, { description });
+      onSaved(); onClose();
+    } catch (err) {
+      console.error(err);
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Meeting Description" size="md">
+      <div className="space-y-4">
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={6} placeholder="Meeting agenda or notes..."
+          className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
+        <div className="flex justify-end gap-3 pt-2">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+            {loading ? 'Saving...' : 'Save Description'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: () => void; data: Meeting | null }) {
+  const [images, setImages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const fetchImages = useCallback(async () => {
+    if (!data) return;
+    setLoading(true);
+    try {
+      const res = await axios.get(`/api/meetings/${data.id}/images`);
+      setImages(res.data);
+    } catch (err) { console.error(err); } finally { setLoading(false); }
+  }, [data]);
+
+  useEffect(() => {
+    if (open) fetchImages();
+  }, [open, fetchImages]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !data) return;
+    
+    setUploading(true);
+    try {
+      const compressedFile = await compressImage(file);
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      await axios.post(`/api/meetings/${data.id}/images`, formData);
+      fetchImages();
+    } catch (err) { console.error(err); } finally { setUploading(false); }
+  };
+
+  const handleDelete = async (imageId: string) => {
+    if (!confirm('Delete this image?')) return;
+    try {
+      await axios.delete(`/api/meetings/images/${imageId}`);
+      fetchImages();
+    } catch (err) { console.error(err); }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Meeting Images" size="lg">
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-slate-500 dark:text-slate-400">Upload minutes, photos, or documents.</p>
+          <label className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-bold transition-all cursor-pointer">
+            <span className="material-icons text-sm">upload</span> {uploading ? 'Uploading...' : 'Upload Image'}
+            <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
+          </label>
+        </div>
+        
+        {loading ? (
+          <div className="flex justify-center py-8"><span className="material-icons text-primary animate-spin">autorenew</span></div>
+        ) : images.length === 0 ? (
+          <div className="text-center py-8 text-slate-500 text-sm bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">No images uploaded yet.</div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+            {images.map(img => (
+              <div key={img.id} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 aspect-video bg-slate-100 dark:bg-slate-800">
+                <img src={`/api/media/path/${img.imagePath}`} alt="Meeting" className="w-full h-full object-cover" />
+                <button onClick={() => handleDelete(img.id)} className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-rose-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                  <span className="material-icons text-sm">delete</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+function MeetingAttendanceModal({ open, onClose, data }: { open: boolean; onClose: () => void; data: Meeting | null }) {
+  const [attendees, setAttendees] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const fetchAttendance = useCallback(async () => {
+    if (!data) return;
+    setLoading(true);
+    try {
+      const res = await axios.get(`/api/meetings/${data.id}/attendance`);
+      setAttendees(res.data);
+    } catch (err) { console.error(err); } finally { setLoading(false); }
+  }, [data]);
+
+  useEffect(() => {
+    if (open) fetchAttendance();
+  }, [open, fetchAttendance]);
+
+  const togglePresence = (id: string) => {
+    setAttendees(prev => prev.map(a => a.id === id ? { ...a, isPresent: !a.isPresent } : a));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await axios.post(`/api/meetings/${data!.id}/attendance`, { records: attendees });
+      onClose();
+    } catch (err) { console.error(err); } finally { setSaving(false); }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Attendance List" size="md">
+      <div className="space-y-4">
+        {loading ? (
+          <div className="flex justify-center py-8"><span className="material-icons text-primary animate-spin">autorenew</span></div>
+        ) : (
+          <>
+            <div className="mb-4">
+              <SearchableSelect 
+                placeholder="Search to add attendee..."
+                value=""
+                onChange={(id) => {
+                  if (id) togglePresence(id);
+                }}
+                options={attendees.filter(a => !a.isPresent).map(a => ({ value: a.id, label: `${a.name} (${a.type.toUpperCase()})` }))}
+              />
+            </div>
+            
+            <div className="max-h-[50vh] overflow-y-auto pr-2 space-y-2">
+              {attendees.filter(a => a.isPresent).length === 0 ? (
+                <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm italic">
+                  No attendees added yet.
+                </div>
+              ) : (
+                attendees.filter(a => a.isPresent).map(a => (
+                  <div key={a.id} className="flex items-center justify-between p-3 rounded-xl border border-primary/50 bg-primary/5">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-slate-900 dark:text-white text-sm leading-tight">{a.name}</p>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${a.type === 'householder' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
+                          {a.type}
+                        </span>
+                      </div>
+                      {a.email && <p className="text-xs text-slate-500 mt-0.5">{a.email}</p>}
+                    </div>
+                    <button onClick={() => togglePresence(a.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all cursor-pointer">
+                      <span className="material-icons text-sm">close</span>
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </>
+        )}
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={handleSave} disabled={saving} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+            {saving ? 'Saving...' : 'Save Attendance'}
           </button>
         </div>
       </div>
@@ -98,8 +280,11 @@ export default function Meetings() {
   const [data, setData] = useState<Meeting[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ search: '', status: '', page: 1 });
+  const [filters, setFilters] = useState({ search: '', month: '', year: '', page: 1 });
   const [modal, setModal] = useState<{ open: boolean; data: Meeting | null }>({ open: false, data: null });
+  const [descModal, setDescModal] = useState<{ open: boolean; data: Meeting | null }>({ open: false, data: null });
+  const [imgModal, setImgModal] = useState<{ open: boolean; data: Meeting | null }>({ open: false, data: null });
+  const [attModal, setAttModal] = useState<{ open: boolean; data: Meeting | null }>({ open: false, data: null });
   const [confirm, setConfirm] = useState<{ open: boolean; item: Meeting | null; loading: boolean }>({ open: false, item: null, loading: false });
 
   const token = localStorage.getItem('admin_token');
@@ -128,6 +313,10 @@ export default function Meetings() {
   return (
     <AdminLayout title="Meetings">
       <MeetingModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} />
+      <MeetingDescriptionModal open={descModal.open} onClose={() => setDescModal({ open: false, data: null })} onSaved={fetchData} data={descModal.data} />
+      <MeetingImageModal open={imgModal.open} onClose={() => setImgModal({ open: false, data: null })} data={imgModal.data} />
+      <MeetingAttendanceModal open={attModal.open} onClose={() => setAttModal({ open: false, data: null })} data={attModal.data} />
+      
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="event_busy"
         title="Cancel Meeting?" message={`Are you sure you want to delete <strong>${confirm.item?.title}</strong>?`}
@@ -137,67 +326,111 @@ export default function Meetings() {
         title="Meetings" subtitle="Schedule and track community meetings"
         actions={
           <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all">
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
             <span className="material-icons text-sm">add</span> Schedule Meeting
           </button>
         }
       />
 
-      <FilterBar>
-        <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search meetings…" />
-        <SelectFilter value={filters.status} onChange={(v) => setFilter('status', v)} options={STATUS_OPTIONS} placeholder="All Status" />
-        <button onClick={() => setFilters({ search: '', status: '', page: 1 })}
-          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors">
+      <div className="mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
+        <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search by topic..." />
+        <SelectFilter 
+          value={filters.month || ''} 
+          onChange={(v) => setFilter('month', v)} 
+          options={['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => ({ value: String(i+1), label: m }))} 
+          placeholder="All Months" 
+        />
+        <SelectFilter 
+          value={filters.year || ''} 
+          onChange={(v) => setFilter('year', v)} 
+          options={Array.from({ length: Math.max(1, new Date().getFullYear() - 2026 + 2) }, (_, i) => new Date().getFullYear() + 1 - i).filter(y => y >= 2026).map(y => ({ value: String(y), label: String(y) }))} 
+          placeholder="All Years" 
+        />
+        <button onClick={() => setFilters({ search: '', month: '', year: '', page: 1 })}
+          className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
           <span className="material-icons text-sm">close</span> Clear
         </button>
-      </FilterBar>
+      </div>
+
+      <div className="mb-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        Showing {data.length} of {meta?.total || data.length}
+      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>
+      ) : data.length === 0 ? (
+        <div className="bg-white dark:bg-[#1A1F36] border border-slate-200 dark:border-white/5 rounded-xl p-12 shadow-sm text-center">
+          <EmptyState icon="event_note" title="No meetings found" subtitle="Try adjusting your filters or schedule a new meeting" />
+        </div>
       ) : (
-        <TableWrapper>
-          <thead>
-            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-              <Th>Meeting</Th>
-              <Th>Date & Time</Th>
-              <Th>Location</Th>
-              <Th>Status</Th>
-              <Th className="text-center">Actions</Th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {data.length === 0 ? (
-              <tr><td colSpan={5}><EmptyState icon="event_note" title="No meetings found" subtitle="Schedule your first community meeting" /></td></tr>
-            ) : data.map((m) => (
-              <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                <td className="px-6 py-4">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{m.title}</p>
-                  {m.description && <p className="text-xs text-slate-400 truncate max-w-xs">{m.description}</p>}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                  {m.meeting_date ? new Date(m.meeting_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-500">{m.location || '—'}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${STATUS_STYLES[m.status] || STATUS_STYLES.scheduled}`}>
-                    {m.status.charAt(0).toUpperCase() + m.status.slice(1)}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-center gap-1">
-                    <button onClick={() => setModal({ open: true, data: m })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">
-                      <span className="material-icons text-lg">edit</span>
-                    </button>
-                    <button onClick={() => setConfirm({ open: true, item: m, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
-                      <span className="material-icons text-lg">delete_outline</span>
-                    </button>
+        <div className="space-y-4">
+          {data.map(m => {
+            const d = m.meeting_date ? new Date(m.meeting_date) : new Date();
+            const monthStr = d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+            const dateNum = d.getDate();
+            const timeStr = d.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            const fullDateStr = d.toLocaleString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+             
+            return (
+              <div key={m.id} className="bg-white dark:bg-[#1A1F36] border border-slate-200 dark:border-white/5 rounded-xl p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/30 transition-all shadow-sm group">
+                <div className="flex items-center gap-5">
+                  <div className="bg-primary text-white dark:text-[#0D1A17] flex flex-col items-center justify-center rounded-lg w-14 h-14 shrink-0 shadow-md">
+                    <span className="text-[10px] font-bold tracking-wider leading-none mt-1">{monthStr}</span>
+                    <span className="text-xl font-extrabold leading-tight mt-0.5">{dateNum}</span>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          {meta && <tfoot><tr><td colSpan={5}><Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} /></td></tr></tfoot>}
-        </TableWrapper>
+                  
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5">{m.title}</h3>
+                    <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                      <span className="flex items-center gap-1.5"><span className="material-icons text-[15px] opacity-70">schedule</span> {timeStr}</span>
+                      <span className="flex items-center gap-1.5"><span className="material-icons text-[15px] opacity-70">event</span> {fullDateStr}</span>
+                      {m.location && <span className="flex items-center gap-1.5"><span className="material-icons text-[15px] opacity-70">location_on</span> {m.location}</span>}
+                    </div>
+                    {m.attendees && m.attendees.length > 0 && (
+                      <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
+                        {m.attendees.map(a => (
+                          <div key={a.id} className="flex items-center gap-1.5 pl-0.5 pr-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm" title={`${a.name} (${a.type})`}>
+                            {a.photoPath ? (
+                               <img src={`/api/media/path/${a.photoPath}`} alt={a.name} className="w-5 h-5 rounded-full object-cover border border-slate-200 dark:border-slate-600" />
+                            ) : (
+                               <div className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold border border-primary/20">
+                                 {a.name.charAt(0).toUpperCase()}
+                               </div>
+                            )}
+                            <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300">{a.name.split(' ')[0]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-1 sm:opacity-50 sm:group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => setImgModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer" title="Images">
+                    <span className="material-icons text-[20px]">image</span>
+                  </button>
+                  <button onClick={() => setDescModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-amber-500 transition-colors cursor-pointer" title="Description">
+                    <span className="material-icons text-[18px]">description</span>
+                  </button>
+                  <button onClick={() => setAttModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-emerald-500 transition-colors cursor-pointer" title="Attendance">
+                    <span className="material-icons text-[18px]">how_to_reg</span>
+                  </button>
+                  <button onClick={() => setModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit">
+                    <span className="material-icons text-[18px]">edit</span>
+                  </button>
+                  <button onClick={() => setConfirm({ open: true, item: m, loading: false })} className="p-2 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer" title="Delete">
+                    <span className="material-icons text-[18px]">delete</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {meta && meta.last_page > 1 && (
+            <div className="mt-6 flex justify-center">
+              <Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
+            </div>
+          )}
+        </div>
       )}
     </AdminLayout>
   );

@@ -15,7 +15,7 @@ const NAV_GROUPS = [
     label: 'Community',
     icon: 'groups',
     items: [
-      { key: 'householders', label: 'Residents', icon: 'people', path: '/admin/householders', roles: ['admin', 'block_coordinator'] },
+      { key: 'householders', label: 'Householders', icon: 'people', path: '/admin/householders', roles: ['admin', 'block_coordinator'] },
       { key: 'blocks', label: 'Blocks', icon: 'domain', path: '/admin/blocks', roles: ['admin', 'block_coordinator'] },
       { key: 'organization', label: 'Organization', icon: 'account_tree', path: '/admin/organization', roles: ['admin'] },
       { key: 'meetings', label: 'Meetings', icon: 'event_note', path: '/admin/meetings', roles: ['admin', 'block_coordinator'] },
@@ -37,14 +37,31 @@ const NAV_GROUPS = [
       { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/admin/users', roles: ['admin'] },
       { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/admin/roles', roles: ['admin'] },
       { key: 'property', label: 'Property', icon: 'home_work', path: '/admin/property', roles: ['admin'] },
-      { key: 'homepage', label: 'Homepage CMS', icon: 'public', path: '/admin/homepage', roles: ['admin'] },
       { key: 'media', label: 'Media', icon: 'perm_media', path: '/admin/media', roles: ['admin'] },
     ],
   },
   {
-    label: null,
+    label: 'Homepage',
+    icon: 'public',
     items: [
-      { key: 'settings', label: 'Settings', icon: 'settings', path: '/admin/settings', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'featured', label: 'Featured Event', icon: 'star', path: '/admin/homepage/featured', roles: ['admin'] },
+      { key: 'events', label: 'Events', icon: 'event', path: '/admin/homepage/events', roles: ['admin'] },
+      { key: 'moments', label: 'Memorable Moments', icon: 'photo_library', path: '/admin/homepage/moments', roles: ['admin'] },
+      { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/admin/homepage/bulletin', roles: ['admin'] },
+      { key: 'about', label: 'About Section', icon: 'info', path: '/admin/homepage/about', roles: ['admin'] },
+      { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/admin/homepage/footer', roles: ['admin'] },
+      { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/admin/homepage/metadata', roles: ['admin'] },
+    ],
+  },
+  {
+    label: 'Settings',
+    icon: 'settings',
+    items: [
+      { key: 'profile', label: 'Profile', icon: 'person', path: '/admin/settings/profile', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'password', label: 'Password', icon: 'lock', path: '/admin/settings/password', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'security', label: 'Security', icon: 'security', path: '/admin/settings/security', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'memo', label: 'Admin Memo', icon: 'sticky_note_2', path: '/admin/settings/memo', roles: ['admin'] },
+      { key: 'posyandu', label: 'Posyandu', icon: 'child_care', path: '/admin/settings/posyandu', roles: ['admin'] },
     ],
   },
 ];
@@ -53,7 +70,7 @@ function NavItem({ item, isActive }) {
   return (
     <Link
       to={item.path}
-      className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm transition-all ${
+      className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm transition-all cursor-pointer ${
         isActive
           ? 'bg-primary/10 dark:bg-primary/20 text-primary font-semibold'
           : 'text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 font-medium'
@@ -67,7 +84,8 @@ function NavItem({ item, isActive }) {
 
 function NavGroup({ group, activePath, userRole }) {
   // Filter items based on user role
-  const visibleItems = group.items.filter(i => i.roles.includes(userRole));
+  const normalizedRole = (userRole || '').toLowerCase();
+  const visibleItems = group.items.filter(i => i.roles.includes(normalizedRole));
   
   if (visibleItems.length === 0) return null;
 
@@ -88,7 +106,7 @@ function NavGroup({ group, activePath, userRole }) {
     <div>
       <button
         onClick={() => setOpen(o => !o)}
-        className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+        className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
           isGroupActive ? 'text-primary dark:text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
         }`}
       >
@@ -109,7 +127,7 @@ function NavGroup({ group, activePath, userRole }) {
   );
 }
 
-export default function AdminLayout({ children, title }) {
+export default function AdminLayout({ children, title, subtitle }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [dark, toggleDark] = useDarkMode();
@@ -165,7 +183,7 @@ export default function AdminLayout({ children, title }) {
               <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">{user.name || 'Admin'}</p>
               <p className="text-xs text-slate-400 truncate">{user.email || ''}</p>
             </div>
-            <button onClick={handleLogout} title="Logout" className="text-slate-400 hover:text-red-500 transition-colors">
+            <button onClick={handleLogout} title="Logout" className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
               <span className="material-icons text-lg">logout</span>
             </button>
           </div>
@@ -183,11 +201,14 @@ export default function AdminLayout({ children, title }) {
             >
               <span className="material-icons text-slate-500">menu</span>
             </button>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h1>
+            <div>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h1>
+              {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
+            </div>
           </div>
           <button
             onClick={toggleDark}
-            className="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+            className="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary hover:scale-105 hover:shadow-md transition-all cursor-pointer"
             title="Toggle dark mode"
           >
             <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>

@@ -5,9 +5,11 @@ import HomePage from './pages/HomePage';
 import Login from './pages/admin/Login';
 import Register from './pages/admin/Register';
 import ForgotPassword from './pages/admin/ForgotPassword';
+import ResetPassword from './pages/admin/ResetPassword';
 import Dashboard from './pages/admin/Dashboard';
 // Wave 1
 import Householders from './pages/admin/Householders';
+import EditHouseholder from './pages/admin/EditHouseholder';
 import Blocks from './pages/admin/Blocks';
 import Units from './pages/admin/Units';
 import Payments from './pages/admin/Payments';
@@ -72,12 +74,14 @@ export default function Router() {
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin/register" element={<Register />} />
         <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin/reset-password" element={<ResetPassword />} />
 
         {/* Dashboard */}
         <Route path="/admin/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
 
         {/* Wave 1 — Community & Payments */}
         <Route path="/admin/householders" element={<RequireAuth><Householders /></RequireAuth>} />
+        <Route path="/admin/householders/:id/edit" element={<RequireAuth><EditHouseholder /></RequireAuth>} />
         <Route path="/admin/blocks" element={<RequireAuth><Blocks /></RequireAuth>} />
         <Route path="/admin/blocks/:id/units" element={<RequireAuth><Units /></RequireAuth>} />
         <Route path="/admin/payments" element={<RequireAuth><Payments /></RequireAuth>} />
@@ -91,9 +95,11 @@ export default function Router() {
 
         {/* Wave 3 — Admin & Config */}
         <Route path="/admin/roles" element={<RequireAuth><Roles /></RequireAuth>} />
-        <Route path="/admin/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+        <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
+        <Route path="/admin/settings/:tab" element={<RequireAuth><Settings /></RequireAuth>} />
         <Route path="/admin/property" element={<RequireAuth><PropertyAdmin /></RequireAuth>} />
-        <Route path="/admin/homepage" element={<RequireAuth><HomepageCMS /></RequireAuth>} />
+        <Route path="/admin/homepage" element={<Navigate to="/admin/homepage/featured" replace />} />
+        <Route path="/admin/homepage/:tab" element={<RequireAuth><HomepageCMS /></RequireAuth>} />
         <Route path="/admin/media" element={<RequireAuth><Media /></RequireAuth>} />
 
         {/* Stubs for remaining modules */}
