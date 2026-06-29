@@ -1,7 +1,9 @@
 // @ts-nocheck
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import HomePage from './pages/HomePage';
+import AdminLayout from './admin/AdminLayout';
+import RequireAuth from './admin/RequireAuth';
+
 import Login from './pages/admin/Login';
 import Register from './pages/admin/Register';
 import ForgotPassword from './pages/admin/ForgotPassword';
@@ -25,20 +27,6 @@ import Settings from './pages/admin/Settings';
 import PropertyAdmin from './pages/admin/PropertyAdmin';
 import AdminHomepage from './pages/admin/Homepage';
 import Media from './pages/admin/Media';
-// Public pages
-import EventsPage from './pages/EventsPage';
-import EventDetailPage from './pages/EventDetailPage';
-import GalleryPage from './pages/GalleryPage';
-import GalleryDetailPage from './pages/GalleryDetailPage';
-import BuletinPage from './pages/BuletinPage';
-import BulletinDetailPage from './pages/BulletinDetailPage';
-import PropertyPage from './pages/PropertyPage';
-import PropertyDetailPage from './pages/PropertyDetailPage';
-import ResidentReportPage from './pages/ResidentReportPage';
-import ScheduleVisitPage from './pages/ScheduleVisitPage';
-import AdminLayout from './admin/AdminLayout';
-import ScrollToTop from './components/ScrollToTop';
-import RequireAuth from './admin/RequireAuth';
 
 function GaTracker() {
   const location = useLocation();
@@ -67,20 +55,11 @@ export default function Router() {
   return (
     <BrowserRouter basename={basePath}>
       <GaTracker />
-      <ScrollToTop />
       <Routes>
-        {/* Public site */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/events" element={<EventsPage />} />
-        <Route path="/events/:id" element={<EventDetailPage />} />
-        <Route path="/gallery" element={<GalleryPage />} />
-        <Route path="/gallery/:id" element={<GalleryDetailPage />} />
-        <Route path="/buletin" element={<BuletinPage />} />
-        <Route path="/buletin/:id" element={<BulletinDetailPage />} />
-        <Route path="/property" element={<PropertyPage />} />
-        <Route path="/property/:id" element={<PropertyDetailPage />} />
-        <Route path="/report" element={<ResidentReportPage />} />
-        <Route path="/schedule-visit" element={<ScheduleVisitPage />} />
+        {/* Base Redirect */}
+        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+        
+        {/* Admin Layout */}
         <Route path="/admin/*" element={<AdminLayout />} />
 
         {/* Auth pages */}
