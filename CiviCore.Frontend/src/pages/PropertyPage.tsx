@@ -1,40 +1,134 @@
-﻿// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header';
+import TopNavBar from '../components/TopNavBar';
 import Footer from '../components/Footer';
 
-const PLACEHOLDER_IMAGES = [
-    'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&auto=format',
-    'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80&auto=format',
-    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&q=80&auto=format',
+export const MOCK_PROPERTIES = [
+    {
+        id: '1',
+        title: 'The Emerald Villa',
+        price: '$2,450,000',
+        type: 'sell',
+        type_label: 'New Launch',
+        bedrooms: 4,
+        bathrooms: 3.5,
+        area: 4200,
+        image_url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
+        images: [
+            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
+            'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80',
+            'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80'
+        ],
+        description: 'Experience unparalleled luxury in this contemporary masterpiece. Featuring soaring ceilings, panoramic floor-to-ceiling windows, and premium finishes throughout.'
+    },
+    {
+        id: '2',
+        title: 'Modern Townhouse',
+        price: '$850,000',
+        type: 'sell',
+        type_label: 'For Sale',
+        bedrooms: 3,
+        bathrooms: 2.5,
+        area: 2100,
+        image_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
+        images: [
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
+            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80',
+            'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80'
+        ],
+        description: 'A beautiful modern townhouse with great community access.'
+    },
+    {
+        id: '3',
+        title: 'Garden Apartment',
+        price: '$3,500/mo',
+        type: 'rent',
+        type_label: 'For Rent',
+        bedrooms: 2,
+        bathrooms: 2,
+        area: 1200,
+        image_url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
+        images: [
+            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
+            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80',
+            'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80'
+        ],
+        description: 'Enjoy the view of the central garden from your balcony.'
+    },
+    {
+        id: '4',
+        title: 'Penthouse Suite',
+        price: '$2,500,000',
+        type: 'sell',
+        type_label: 'For Sale',
+        bedrooms: 4,
+        bathrooms: 4,
+        area: 4500,
+        image_url: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80',
+        images: [
+            'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80',
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
+            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80'
+        ],
+        description: 'Luxury penthouse living at its finest.'
+    },
+    {
+        id: '5',
+        title: 'Cozy Studio',
+        price: '$1,200/mo',
+        type: 'rent',
+        type_label: 'For Rent',
+        bedrooms: 1,
+        bathrooms: 1,
+        area: 600,
+        image_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
+        images: [
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
+            'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80',
+            'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80'
+        ],
+        description: 'Perfect for young professionals.'
+    },
+    {
+        id: '6',
+        title: 'Family Home',
+        price: '$950,000',
+        type: 'sell',
+        type_label: 'For Sale',
+        bedrooms: 4,
+        bathrooms: 3,
+        area: 2800,
+        image_url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
+        images: [
+            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
+            'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80',
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80'
+        ],
+        description: 'Spacious family home with a large backyard.'
+    }
 ];
 
-function SkeletonCard(props: any) /* fixme: param types */ {
-    const skBg   = isDark ? '#1C2D27' : '#f1f5f9';
-    const cardBg = isDark ? '#142920' : '#ffffff';
-    return (
-        <div className="rounded-2xl overflow-hidden animate-pulse" style={{ background: cardBg, border: `1px solid ${isDark ? '#1C2D27' : 'rgba(198,197,212,0.10)'}` }}>
-            <div className="w-full h-52" style={{ background: skBg }} />
-            <div className="p-5 space-y-3">
-                <div className="h-3 rounded w-1/4" style={{ background: skBg }} />
-                <div className="h-5 rounded w-3/4" style={{ background: skBg }} />
-                <div className="h-4 rounded w-1/2" style={{ background: skBg }} />
-                <div className="h-3 rounded w-2/3" style={{ background: skBg }} />
-                <div className="h-10 rounded w-full mt-2" style={{ background: skBg }} />
-            </div>
-        </div>
-    );
-}
-
 export default function PropertyPage() {
-    const [data, setData]       = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [filter, setFilter]   = useState('all'); // 'all' | 'sell' | 'rent'
-    const [search, setSearch]   = useState('');
-    const [isDark, setIsDark]   = useState(() => {
+    const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
+
+    const [filter, setFilter] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeTab, setActiveTab] = useState('');
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+    useEffect(() => {
+        const html = document.documentElement;
+        if (isDark) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+    }, [isDark]);
 
     const toggleDark = () => {
         setIsDark(prev => {
@@ -44,264 +138,95 @@ export default function PropertyPage() {
         });
     };
 
-    useEffect(() => { window.scrollTo(0, 0); }, []);
-
-    useEffect(() => {
-        const apiBase = document.querySelector('meta[name="api-base"]')?.content ?? '';
-        const apiKey  = document.querySelector('meta[name="api-key"]')?.content ?? '';
-        fetch(`${apiBase}/api/property`, { headers: { 'X-Api-Key': apiKey } })
-            .then(r => r.json())
-            .then(d => { setData(d); setLoading(false); })
-            .catch(() => setLoading(false));
-    }, []);
-
-    const C = isDark ? {
-        primary:    '#F0EDE8',
-        secondary:  '#D4AF37',
-        surface:    '#0D1A17',
-        surfaceVar: '#1C2D27',
-        card:       '#142920',
-        cardBorder: '#1C2D27',
-        muted:      '#9E9C97',
-        input:      '#1C2D27',
-        inputBorder:'#2A3D37',
-    } : {
-        primary:    '#1C2D27',
-        secondary:  '#1C2D27',
-        surface:    '#f8f9fa',
-        surfaceVar: '#f1f5f9',
-        card:       '#ffffff',
-        cardBorder: 'rgba(198,197,212,0.10)',
-        muted:      '#6b7280',
-        input:      '#ffffff',
-        inputBorder:'#e2e8f0',
-    };
-
-    const badgeSell = isDark
-        ? { background: '#92711a', color: '#fde68a' }
-        : { background: '#fefce8', color: '#b45309' };
-    const badgeRent = isDark
-        ? { background: '#0e5c4a', color: '#6ee7b7' }
-        : { background: '#f0fdf4', color: '#15803d' };
-    const badgeSold = isDark
-        ? { background: '#374151', color: '#d1d5db' }
-        : { background: '#f1f5f9', color: '#64748b' };
-
-    const allListings = data?.listings ?? [];
-
-    const filtered = allListings.filter(l => {
-        if (filter === 'sell' && l.type !== 'sell') return false;
-        if (filter === 'rent' && l.type !== 'rent') return false;
-        if (search) {
-            const s = search.toLowerCase();
-            return (
-                (l.title || '').toLowerCase().includes(s) ||
-                (l.location_label || '').toLowerCase().includes(s) ||
-                (l.description || '').toLowerCase().includes(s)
-            );
-        }
-        return true;
+    const filteredProperties = MOCK_PROPERTIES.filter(property => {
+        const matchesFilter = filter === 'all' || property.type === filter;
+        const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              property.type_label.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesFilter && matchesSearch;
     });
 
-    const typeBadge = (listing) => {
-        if (listing.status === 'sold')   return { label: 'Terjual',   style: badgeSold };
-        if (listing.status === 'rented') return { label: 'Tersewa',   style: badgeSold };
-        return listing.type === 'sell'
-            ? { label: listing.type_label || 'Dijual',    style: badgeSell }
-            : { label: listing.type_label || 'Disewakan', style: badgeRent };
-    };
-
-    const filterBtns = [
-        { key: 'all',  label: 'Semua' },
-        { key: 'sell', label: 'Dijual' },
-        { key: 'rent', label: 'Disewakan' },
-    ];
-
     return (
-        <div className="font-sans" style={{ backgroundColor: C.surface, color: C.primary, minHeight: '100vh', transition: 'background-color 0.3s, color 0.3s' }}>
-            <Header isDark={isDark} toggleDark={toggleDark} />
-            <main className="pt-20">
-                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+        <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300 min-h-screen flex flex-col">
+            <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
 
-                    {/* Page heading */}
-                    <div className="mb-10">
-                        <Link to="/"
-                            className="inline-flex items-center gap-1.5 text-sm mb-4 transition-opacity hover:opacity-70"
-                            style={{ color: '#D4AF37', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                        >
-                            <span className="material-symbols-outlined text-sm">arrow_back</span>
-                            {' '}Back to Home
-                        </Link>
-                        <h1
-                            className="text-3xl md:text-5xl font-medium tracking-tight"
-                            style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                        >
-                            Properti
-                        </h1>
+            <main className="flex-grow pt-24 pb-section-gap max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop">
+                {/* Header & Breadcrumb */}
+                <div className="mb-12">
+                    <div className="flex items-center space-x-2 text-text-muted font-label-sm text-label-sm mb-4">
+                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" to="/">Home</Link>
+                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span className="text-on-surface dark:text-on-primary">Properties</span>
                     </div>
+                    <h1 className="font-display-md-mobile text-display-md-mobile md:font-display-md md:text-display-md text-primary dark:text-primary-fixed-dim">
+                        Available Properties
+                    </h1>
+                </div>
 
-                    {/* Filter bar */}
-                    <div className="flex flex-col sm:flex-row gap-3 mb-8">
-                        {/* Search */}
-                        <div className="relative flex-1 sm:max-w-sm">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base pointer-events-none" style={{ color: C.muted }}>search</span>
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                                placeholder="Cari properti..."
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all"
-                                style={{ background: C.input, color: C.primary, border: `1px solid ${C.inputBorder}`, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                            />
-                        </div>
-
-                        {/* Type filter pills */}
-                        <div className="flex gap-2">
-                            {filterBtns.map(b => (
-                                <button
-                                    key={b.key}
-                                    onClick={() => setFilter(b.key)}
-                                    className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                                    style={filter === b.key
-                                        ? { background: '#D4AF37', color: '#1C2D27', fontFamily: "'Plus Jakarta Sans', sans-serif" }
-                                        : { background: C.surfaceVar, color: C.muted, fontFamily: "'Plus Jakarta Sans', sans-serif" }
-                                    }
-                                >
-                                    {b.label}
-                                </button>
-                            ))}
-                        </div>
+                {/* Filter and Search */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+                        {['all', 'sell', 'rent'].map(f => (
+                            <button 
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className={`px-4 py-2 rounded-full font-label-md text-label-md transition-colors whitespace-nowrap ${
+                                    filter === f 
+                                    ? 'bg-primary text-on-primary dark:bg-primary-fixed-dim dark:text-primary' 
+                                    : 'bg-surface dark:bg-primary-container text-on-surface dark:text-on-primary border border-border-subtle dark:border-primary-container/50 hover:bg-surface-variant dark:hover:bg-primary-container'
+                                }`}
+                            >
+                                {f === 'all' ? 'All Properties' : f === 'sell' ? 'For Sale' : 'For Rent'}
+                            </button>
+                        ))}
                     </div>
+                    <div className="relative w-full md:w-64">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">search</span>
+                        <input 
+                            type="text" 
+                            placeholder="Search properties..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 rounded-lg bg-surface dark:bg-primary-container border border-border-subtle dark:border-primary-container/50 text-on-surface dark:text-on-primary placeholder:text-text-muted focus:outline-none focus:border-primary dark:focus:border-primary-fixed-dim"
+                        />
+                    </div>
+                </div>
 
-                    {/* Grid */}
-                    {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {[1,2,3,4,5,6].map(i => <SkeletonCard key={i} isDark={isDark} />)}
-                        </div>
-                    ) : filtered.length === 0 ? (
-                        <div className="py-20 text-center">
-                            <span className="material-symbols-outlined text-5xl mb-3 block" style={{ color: C.muted }}>home_work</span>
-                            <p className="text-sm font-medium" style={{ color: C.muted }}>
-                                {search ? 'Tidak ada properti yang cocok.' : 'Belum ada iklan aktif saat ini.'}
-                            </p>
-                            {search && (
-                                <button onClick={() => setSearch('')} className="mt-3 text-sm underline transition-opacity hover:opacity-70" style={{ color: '#D4AF37' }}>
-                                    Hapus pencarian
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filtered.map((listing, i) => {
-                                const image = listing.images?.[0] || PLACEHOLDER_IMAGES[i % PLACEHOLDER_IMAGES.length];
-                                const badge = typeBadge(listing);
-                                const isSoldOrRented = listing.status === 'sold' || listing.status === 'rented';
-                                const waLink = listing.contact_phone
-                                    ? `https://wa.me/${listing.contact_phone.replace(/\D/g, '')}`
-                                    : null;
-
-                                return (
-                                    <article
-                                        key={listing.id || i}
-                                        className="rounded-2xl overflow-hidden flex flex-col transition-transform hover:-translate-y-1 hover:shadow-xl"
-                                        style={{ background: C.card, border: `1px solid ${C.cardBorder}` }}
-                                    >
-                                        {/* Image gallery (first image large, dots for rest) */}
-                                        <Link to={`/property/${listing.id}`} className="block relative w-full h-56 overflow-hidden flex-shrink-0">
-                                            <img
-                                                src={image}
-                                                alt={listing.title}
-                                                className="w-full h-full object-cover"
-                                                style={{ filter: isSoldOrRented ? 'grayscale(60%)' : 'none' }}
-                                            />
-                                            <span
-                                                className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
-                                                style={badge.style}
-                                            >
-                                                {badge.label}
-                                            </span>
-                                            {listing.images?.length > 1 && (
-                                                <span
-                                                    className="absolute bottom-3 right-3 px-2 py-1 rounded-lg text-xs font-medium"
-                                                    style={{ background: 'rgba(0,0,0,0.5)', color: '#fff' }}
-                                                >
-                                                    +{listing.images.length - 1} foto
-                                                </span>
-                                            )}
-                                        </Link>
-
-                                        {/* Body */}
-                                        <div className="p-5 flex flex-col flex-1 gap-2">
-                                            <Link to={`/property/${listing.id}`} className="font-semibold text-base leading-snug hover:underline" style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                                {listing.title}
-                                            </Link>
-
-                                            <p className="text-xl font-bold" style={{ color: '#D4AF37', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                                {listing.formatted_price || '—'}
-                                            </p>
-
-                                            {listing.location_label && (
-                                                <p className="text-xs flex items-center gap-1" style={{ color: C.muted }}>
-                                                    <span className="material-symbols-outlined text-xs">location_on</span>
-                                                    {listing.location_label}
-                                                </p>
-                                            )}
-
-                                            {(listing.bedrooms != null || listing.bathrooms != null || listing.land_area || listing.building_area) && (
-                                                <div className="flex items-center gap-3 text-xs" style={{ color: C.muted }}>
-                                                    {listing.bedrooms != null && (
-                                                        <span className="flex items-center gap-1">
-                                                            <span className="material-symbols-outlined text-xs">bed</span> {listing.bedrooms} KT
-                                                        </span>
-                                                    )}
-                                                    {listing.bathrooms != null && (
-                                                        <span className="flex items-center gap-1">
-                                                            <span className="material-symbols-outlined text-xs">bathroom</span> {listing.bathrooms} KM
-                                                        </span>
-                                                    )}
-                                                    {listing.land_area && <span>LT {Math.round(listing.land_area)}mÂ²</span>}
-                                                    {listing.building_area && <span>LB {Math.round(listing.building_area)}mÂ²</span>}
-                                                </div>
-                                            )}
-
-                                            {listing.description && (
-                                                <p className="text-xs line-clamp-2 mt-1" style={{ color: C.muted }}>
-                                                    {listing.description}
-                                                </p>
-                                            )}
-
-                                            <div className="flex-1" />
-
-                                            <div className="flex gap-2 mt-3">
-                                                <Link
-                                                    to={`/property/${listing.id}`}
-                                                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-                                                    style={{ background: isDark ? 'rgba(212,175,55,0.15)' : '#fefce8', color: '#D4AF37', border: `1px solid ${isDark ? 'rgba(212,175,55,0.3)' : '#fde68a'}`, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                                                >
-                                                    <span className="material-symbols-outlined text-sm">open_in_new</span>
-                                                    Lihat Detail
-                                                </Link>
-                                                {!isSoldOrRented && listing.contact_phone && (
-                                                    <a
-                                                        href={waLink || `tel:${listing.contact_phone}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-                                                        style={{ background: isDark ? 'rgba(212,175,55,0.15)' : '#f8f9fa', color: C.primary, border: `1px solid ${C.cardBorder}`, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">call</span>
-                                                    </a>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </article>
-                                );
-                            })}
-                        </div>
-                    )}
-                </section>
+                {/* Grid */}
+                {filteredProperties.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredProperties.map(property => (
+                            <div key={property.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden flex flex-col group">
+                                <div className="h-56 overflow-hidden relative">
+                                    <img alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={property.image_url} />
+                                    <div className={`absolute top-4 left-4 text-white px-3 py-1 rounded text-label-sm font-bold uppercase ${property.type === 'sell' ? 'bg-[#b45309]' : 'bg-[#15803d]'}`}>
+                                        {property.type_label}
+                                    </div>
+                                </div>
+                                <div className="p-6 flex flex-col flex-grow">
+                                    <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">{property.title}</h3>
+                                    <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">{property.price}</p>
+                                    <div className="flex gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
+                                        <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {property.bedrooms} Beds</div>
+                                        <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {property.bathrooms} Baths</div>
+                                        <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {property.area} sqft</div>
+                                    </div>
+                                    <Link to={`/property/${property.id}`} className="mt-auto w-full block text-center py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">
+                                        View Details
+                                    </Link>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-16">
+                        <span className="material-symbols-outlined text-6xl text-text-muted mb-4">search_off</span>
+                        <h3 className="text-headline-md font-headline-md text-primary dark:text-on-primary mb-2">No properties found</h3>
+                        <p className="text-body-md text-text-muted dark:text-on-primary/70">Try adjusting your filters or search query.</p>
+                    </div>
+                )}
             </main>
-            <Footer footer={data?.footer} isDark={isDark} />
+
+            <Footer />
         </div>
     );
 }

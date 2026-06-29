@@ -78,11 +78,12 @@ export default function GalleryDetailPage() {
             
             <main className="flex-grow pt-32 pb-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
                 {/* Header Section */}
-                <div className="mb-12 text-center md:text-left">
-                    <Link to="/gallery" className="inline-flex items-center gap-1.5 text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider mb-6 group">
-                        <span className="material-symbols-outlined text-sm">arrow_back</span>
-                        <span className="group-hover:underline">Back to Albums</span>
-                    </Link>
+                <div className="mb-12 text-left">
+                    <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-6">
+                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" to="/gallery">Gallery</Link>
+                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span className="text-on-surface dark:text-on-primary truncate max-w-[200px] sm:max-w-xs">{album.title}</span>
+                    </div>
                     <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">{album.title}</h1>
                     <p className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/70 max-w-2xl">
                         {album.description}
@@ -90,10 +91,10 @@ export default function GalleryDetailPage() {
                 </div>
 
                 {/* Bento Grid Gallery */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter auto-rows-[300px] md:auto-rows-[400px]">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter md:auto-rows-[400px]">
                     {images.map((img, idx) => (
-                        <div key={idx} className={`group relative rounded-2xl overflow-hidden ${img.colSpan} shadow-sm hover:shadow-lg border border-border-subtle/50 dark:border-primary-container/50 bg-surface-container-lowest dark:bg-primary-container`}>
-                            <img alt={img.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={img.image_url} />
+                        <div key={idx} className={`group relative rounded-2xl overflow-hidden ${img.colSpan} h-[300px] md:h-full shadow-sm hover:shadow-lg border border-border-subtle/50 dark:border-primary-container/50 bg-surface-container-lowest dark:bg-primary-container`}>
+                            <img alt={img.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={img.image_url} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
                             <div className="absolute bottom-0 left-0 w-full p-6 bg-surface-glass dark:bg-black/60 backdrop-blur-md border-t border-border-subtle/20 dark:border-white/10 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                                 <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary mb-1">{img.title}</h3>

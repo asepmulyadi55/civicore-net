@@ -125,7 +125,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col transition-colors duration-400">
+    <div className={`admin-theme min-h-screen bg-surface flex flex-col transition-colors duration-400 ${dark ? 'dark' : ''}`}>
       <main className="flex-grow flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">

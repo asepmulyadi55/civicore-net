@@ -49,10 +49,11 @@ export default function BulletinDetailPage() {
             <main className="flex-grow px-margin-mobile md:px-margin-desktop pt-32 pb-section-gap max-w-container-max mx-auto w-full">
                 {/* Back Button */}
                 <div className="mb-8">
-                    <Link to="/buletin" className="inline-flex items-center text-on-surface-variant dark:text-on-primary/70 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors font-label-md text-label-md group">
-                        <span className="material-symbols-outlined mr-2 group-hover:-translate-x-1 transition-transform">arrow_back</span>
-                        Back to Bulletins
-                    </Link>
+                    <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm">
+                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" to="/buletin">Bulletins</Link>
+                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span className="text-on-surface dark:text-on-primary truncate max-w-[200px] sm:max-w-xs">{bulletin.title}</span>
+                    </div>
                 </div>
 
                 {/* Article Header */}

@@ -23,7 +23,7 @@ import Reports from './pages/admin/Reports';
 import Roles from './pages/admin/Roles';
 import Settings from './pages/admin/Settings';
 import PropertyAdmin from './pages/admin/PropertyAdmin';
-import HomepageCMS from './pages/admin/HomepageCMS';
+import AdminHomepage from './pages/admin/Homepage';
 import Media from './pages/admin/Media';
 // Public pages
 import EventsPage from './pages/EventsPage';
@@ -34,6 +34,9 @@ import BuletinPage from './pages/BuletinPage';
 import BulletinDetailPage from './pages/BulletinDetailPage';
 import PropertyPage from './pages/PropertyPage';
 import PropertyDetailPage from './pages/PropertyDetailPage';
+import ResidentReportPage from './pages/ResidentReportPage';
+import ScheduleVisitPage from './pages/ScheduleVisitPage';
+import AdminLayout from './admin/AdminLayout';
 import ScrollToTop from './components/ScrollToTop';
 import RequireAuth from './admin/RequireAuth';
 
@@ -76,6 +79,9 @@ export default function Router() {
         <Route path="/buletin/:id" element={<BulletinDetailPage />} />
         <Route path="/property" element={<PropertyPage />} />
         <Route path="/property/:id" element={<PropertyDetailPage />} />
+        <Route path="/report" element={<ResidentReportPage />} />
+        <Route path="/schedule-visit" element={<ScheduleVisitPage />} />
+        <Route path="/admin/*" element={<AdminLayout />} />
 
         {/* Auth pages */}
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
@@ -107,7 +113,7 @@ export default function Router() {
         <Route path="/admin/settings/:tab" element={<RequireAuth><Settings /></RequireAuth>} />
         <Route path="/admin/property" element={<RequireAuth><PropertyAdmin /></RequireAuth>} />
         <Route path="/admin/homepage" element={<Navigate to="/admin/homepage/featured" replace />} />
-        <Route path="/admin/homepage/:tab" element={<RequireAuth><HomepageCMS /></RequireAuth>} />
+        <Route path="/admin/homepage/:tab" element={<RequireAuth><AdminHomepage /></RequireAuth>} />
         <Route path="/admin/media" element={<RequireAuth><Media /></RequireAuth>} />
 
         {/* Stubs for remaining modules */}

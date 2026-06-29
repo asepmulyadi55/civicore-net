@@ -16,7 +16,7 @@ export default function ScrollToTop() {
     <button
       onClick={() => globalThis.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Scroll to top"
-      className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-95 transition-all duration-200 cursor-pointer"
+      className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white flex items-center justify-center shadow-lg active:scale-95 transition-all duration-200 cursor-pointer"
     >
       <span className="material-icons text-lg">arrow_upward</span>
     </button>

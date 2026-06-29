@@ -51,10 +51,11 @@ export default function GalleryPage() {
             
             <main className="flex-grow pt-32 pb-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
                 <div className="mb-12">
-                    <Link to="/" className="inline-flex items-center gap-1.5 text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider mb-4 group">
-                        <span className="material-symbols-outlined text-sm">arrow_back</span>
-                        <span className="group-hover:underline">Back to Home</span>
-                    </Link>
+                    <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
+                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" to="/">Home</Link>
+                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span className="text-on-surface dark:text-on-primary">Gallery</span>
+                    </div>
                     <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">Gallery</h1>
                     <p className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/70 max-w-2xl">
                         Explore life at Dwipapuri through our curated photo albums.

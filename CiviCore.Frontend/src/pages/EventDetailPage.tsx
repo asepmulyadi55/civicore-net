@@ -26,6 +26,9 @@ export default function EventDetailPage() {
         });
     };
 
+    const [guests, setGuests] = useState('1 (Just me)');
+    const [isGuestsOpen, setIsGuestsOpen] = useState(false);
+
     useEffect(() => { window.scrollTo(0, 0); }, [id]);
 
     const event = MOCK_EVENTS.find(e => e.id === id);
@@ -65,14 +68,15 @@ export default function EventDetailPage() {
 
                 {/* Event Details Container */}
                 <section className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop -mt-32 relative z-20 pb-section-gap">
-                    <div className="bg-surface-container-lowest dark:bg-primary-container rounded-2xl shadow-xl shadow-primary-container/5 overflow-hidden flex flex-col lg:flex-row border border-border-subtle dark:border-primary-container/50 backdrop-blur-xl bg-surface-glass dark:bg-surface-glass">
+                    <div className="bg-surface-container-lowest/90 dark:bg-primary-container/90 rounded-2xl shadow-xl shadow-primary-container/5 overflow-visible flex flex-col lg:flex-row border border-border-subtle dark:border-primary-container/50 backdrop-blur-xl">
                         
                         {/* Main Info Column */}
                         <div className="p-8 md:p-12 lg:w-2/3 flex flex-col justify-center">
-                            <Link to="/events" className="inline-flex items-center gap-1.5 text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider mb-8 group self-start">
-                                <span className="material-symbols-outlined text-sm">arrow_back</span>
-                                <span className="group-hover:underline">Back to Events</span>
-                            </Link>
+                            <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-8">
+                                <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" to="/events">Events</Link>
+                                <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                <span className="text-on-surface dark:text-on-primary truncate max-w-[200px] sm:max-w-xs">{event.title}</span>
+                            </div>
 
                             <div className="mb-6 flex flex-wrap gap-3">
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed-dim/20 text-on-primary-fixed dark:text-primary-fixed-dim font-label-sm text-label-sm uppercase tracking-wider">
@@ -160,12 +164,30 @@ export default function EventDetailPage() {
                                     </div>
                                     <div>
                                         <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/80 mb-1" htmlFor="guests">Number of Guests</label>
-                                        <select className="w-full rounded-lg border-border-subtle dark:border-primary-container bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary focus:border-primary dark:focus:border-primary-fixed-dim focus:ring-primary dark:focus:ring-primary-fixed-dim shadow-sm py-2 px-3 outline-none" id="guests">
-                                            <option>1 (Just me)</option>
-                                            <option>2</option>
-                                            <option>3</option>
-                                            <option>4</option>
-                                        </select>
+                                        <div className="relative">
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setIsGuestsOpen(!isGuestsOpen)} 
+                                                className="w-full flex items-center justify-between rounded-lg border-border-subtle dark:border-primary-container bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary focus:border-primary dark:focus:border-primary-fixed-dim focus:ring-primary dark:focus:ring-primary-fixed-dim shadow-sm py-2 px-3 outline-none text-left"
+                                            >
+                                                <span>{guests}</span>
+                                                <span className="material-symbols-outlined text-[20px] text-text-muted pointer-events-none transition-transform duration-200" style={{ transform: isGuestsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
+                                            </button>
+                                            
+                                            {isGuestsOpen && (
+                                                <ul className="absolute z-50 w-full bottom-full mb-1 bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
+                                                    {['1 (Just me)', '2', '3', '4'].map((option) => (
+                                                        <li 
+                                                            key={option} 
+                                                            onClick={() => { setGuests(option); setIsGuestsOpen(false); }}
+                                                            className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate"
+                                                        >
+                                                            {option}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
                                     </div>
                                     <button className="w-full bg-[#064e3b] dark:bg-primary-fixed-dim text-white dark:text-primary hover:bg-primary-container/90 dark:hover:bg-primary-fixed transition-colors py-3 px-6 rounded-lg font-label-md text-label-md shadow-md hover:shadow-lg mt-4" type="submit">
                                         Submit RSVP

@@ -175,7 +175,6 @@ function FeaturedEventTab() {
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Event Date</label>
               <input type="date" value={data.date || ''} onChange={e => set('date', e.target.value)}
-                onClick={e => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
                 className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none cursor-pointer dark:[color-scheme:dark]" />
             </div>
           </div>
@@ -294,7 +293,6 @@ function EventsTab() {
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date</label>
               <input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))}
-                onClick={e => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
                 className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
             </div>
             <div>
@@ -334,7 +332,6 @@ function EventsTab() {
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date</label>
                 <input type="date" value={addForm.date} onChange={e => setAddForm(f => ({ ...f, date: e.target.value }))}
-                  onClick={e => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
                   className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
               </div>
               <div>
@@ -958,7 +955,7 @@ function MetadataTab() {
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
-export default function HomepageCMS() {
+export default function AdminHomepage() {
   const { tab } = useParams();
   const activeTab = tab || 'featured';
 

@@ -99,7 +99,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400">
+    <div className={`admin-theme min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400 ${dark ? 'dark' : ''}`}>
       <button onClick={toggleDark}
         className="fixed bottom-6 right-6 p-3 rounded-full bg-surface shadow-lg border border-surface-var text-on-surface hover:text-primary hover:scale-105 hover:shadow-xl transition-all duration-200 cursor-pointer">
         <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>

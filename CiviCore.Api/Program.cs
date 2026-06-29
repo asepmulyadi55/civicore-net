@@ -106,6 +106,16 @@ app.UseMiddleware<RequireTwoFactorMiddleware>();
 app.UseMiddleware<RequirePermissionMiddleware>();
 
 app.MapControllers();
+
+app.MapWhen(context => context.Request.Path.StartsWithSegments("/admin"), adminApp =>
+{
+    adminApp.UseRouting();
+    adminApp.UseEndpoints(endpoints =>
+    {
+        endpoints.MapFallbackToFile("admin.html");
+    });
+});
+
 app.MapFallbackToFile("index.html");
 
 using (var scope = app.Services.CreateScope())

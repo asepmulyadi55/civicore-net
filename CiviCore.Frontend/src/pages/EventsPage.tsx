@@ -114,7 +114,9 @@ function getPaginationPages(current: number, total: number) {
 export default function EventsPage() {
     const [search, setSearch]     = useState('');
     const [category, setCategory] = useState('');
-    const [status, setStatus]     = useState('');
+    const [status, setStatus] = useState('upcoming');
+    const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+    const [isStatusOpen, setIsStatusOpen] = useState(false);
     const [page, setPage]         = useState(1);
     const [activeTab, setActiveTab] = useState('events');
 
@@ -158,8 +160,8 @@ export default function EventsPage() {
 
     useEffect(() => { setPage(1); }, [search, category, status]);
 
-    const clearFilters = () => { setSearch(''); setCategory(''); setStatus(''); };
-    const hasFilters   = !!(search || category || status);
+    const clearFilters = () => { setSearch(''); setCategory(''); setStatus('all'); };
+    const hasFilters   = !!(search || category || (status !== 'all' && status !== ''));
 
     return (
         <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300 min-h-screen flex flex-col">
@@ -170,10 +172,11 @@ export default function EventsPage() {
 
                     {/* Page heading */}
                     <div className="mb-10">
-                        <Link to="/" className="inline-flex items-center gap-1.5 text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider mb-4 group">
-                            <span className="material-symbols-outlined text-sm">arrow_back</span>
-                            <span className="group-hover:underline">Back to Home</span>
-                        </Link>
+                        <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
+                            <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" to="/">Home</Link>
+                            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                            <span className="text-on-surface dark:text-on-primary">Events</span>
+                        </div>
                         <h1 className="text-display-lg-mobile md:text-display-lg font-display-lg text-primary dark:text-primary-fixed-dim">
                             Community Events
                         </h1>
@@ -191,28 +194,45 @@ export default function EventsPage() {
                                 className="w-full pl-11 pr-4 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-primary dark:text-on-primary focus:outline-none focus:border-primary dark:focus:border-primary-fixed-dim transition-all shadow-sm"
                             />
                         </div>
+                        <div className="relative">
+                            <button 
+                                type="button" 
+                                onClick={() => { setIsCategoryOpen(!isCategoryOpen); setIsStatusOpen(false); }} 
+                                className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-48 shadow-sm text-left flex items-center justify-between"
+                            >
+                                <span className="truncate">{category ? CATEGORIES.find(c => c === category)?.charAt(0).toUpperCase() + (CATEGORIES.find(c => c === category)?.slice(1) || "") : "All Categories"}</span>
+                                <span className="material-symbols-outlined absolute right-3 pointer-events-none transition-transform duration-200" style={{ transform: isCategoryOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
+                            </button>
+                            {isCategoryOpen && (
+                                <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                    <li onClick={() => { setCategory(''); setIsCategoryOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">All Categories</li>
+                                    {CATEGORIES.map(c => (
+                                        <li key={c} onClick={() => { setCategory(c); setIsCategoryOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">
+                                            {c.charAt(0).toUpperCase() + c.slice(1)}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
 
-                        <select
-                            value={category}
-                            onChange={e => setCategory(e.target.value)}
-                            className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-auto shadow-sm appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231C2D27%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] dark:bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F0EDE8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.75rem_auto] bg-no-repeat bg-[position:right_1rem_center]"
-                        >
-                            <option value="">All Categories</option>
-                            {CATEGORIES.map(c => (
-                                <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
-                            ))}
-                        </select>
-
-                        <select
-                            value={status}
-                            onChange={e => setStatus(e.target.value)}
-                            className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-auto shadow-sm appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231C2D27%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] dark:bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23F0EDE8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.75rem_auto] bg-no-repeat bg-[position:right_1rem_center]"
-                        >
-                            <option value="">All Status</option>
-                            <option value="upcoming">Upcoming</option>
-                            <option value="ongoing">Ongoing</option>
-                            <option value="past">Past</option>
-                        </select>
+                        <div className="relative">
+                            <button 
+                                type="button" 
+                                onClick={() => { setIsStatusOpen(!isStatusOpen); setIsCategoryOpen(false); }} 
+                                className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-48 shadow-sm text-left flex items-center justify-between"
+                            >
+                                <span className="truncate">{status === 'upcoming' ? 'Upcoming' : status === 'past' ? 'Past' : status === 'ongoing' ? 'Ongoing' : 'All Events'}</span>
+                                <span className="material-symbols-outlined absolute right-3 pointer-events-none transition-transform duration-200" style={{ transform: isStatusOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
+                            </button>
+                            {isStatusOpen && (
+                                <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                    <li onClick={() => { setStatus('all'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">All Events</li>
+                                    <li onClick={() => { setStatus('upcoming'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Upcoming</li>
+                                    <li onClick={() => { setStatus('ongoing'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Ongoing</li>
+                                    <li onClick={() => { setStatus('past'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Past</li>
+                                </ul>
+                            )}
+                        </div>
 
                         {hasFilters && (
                             <button onClick={clearFilters}

@@ -1,51 +1,28 @@
-﻿// @ts-nocheck
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import TopNavBar from '../components/TopNavBar';
 import Footer from '../components/Footer';
-
-const PLACEHOLDER = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80&auto=format';
-
-function SkeletonDetail(props: any) /* fixme: param types */ {
-    const sk   = isDark ? '#1C2D27' : '#f1f5f9';
-    const card = isDark ? '#142920' : '#ffffff';
-    return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-pulse">
-            <div className="h-4 w-32 rounded mb-6" style={{ background: sk }} />
-            <div className="flex flex-col lg:flex-row gap-8">
-                <div className="flex-1">
-                    <div className="w-full rounded-2xl overflow-hidden" style={{ background: sk, height: '420px' }} />
-                    <div className="flex gap-2 mt-3">
-                        {[0,1,2].map(i => (
-                            <div key={i} className="w-20 h-16 rounded-xl" style={{ background: sk }} />
-                        ))}
-                    </div>
-                </div>
-                <div className="w-full lg:w-80 xl:w-96 space-y-4">
-                    <div className="rounded-2xl p-6 space-y-4" style={{ background: card }}>
-                        <div className="h-3 w-20 rounded" style={{ background: sk }} />
-                        <div className="h-7 w-4/5 rounded" style={{ background: sk }} />
-                        <div className="h-9 w-2/3 rounded" style={{ background: sk }} />
-                        <div className="h-px w-full" style={{ background: sk }} />
-                        <div className="h-12 rounded-xl" style={{ background: sk }} />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
+import { MOCK_PROPERTIES } from './PropertyPage';
 
 export default function PropertyDetailPage() {
-    const { id }                        = useParams();
-    const navigate                      = useNavigate();
-    const [data, setData]               = useState<any>(null);
-    const [loading, setLoading]         = useState(true);
-    const [notFound, setNotFound]       = useState(false);
-    const [activeImg, setActiveImg]     = useState(0);
-    const [lightboxOpen, setLightbox]   = useState(false);
-    const [isDark, setIsDark]           = useState(() => {
+    const { id } = useParams();
+    const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
+    const [activeTab, setActiveTab] = useState('');
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [id]);
+
+    useEffect(() => {
+        const html = document.documentElement;
+        if (isDark) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+    }, [isDark]);
 
     const toggleDark = () => {
         setIsDark(prev => {
@@ -55,382 +32,250 @@ export default function PropertyDetailPage() {
         });
     };
 
-    useEffect(() => { window.scrollTo(0, 0); }, [id]);
+    const property = MOCK_PROPERTIES.find(p => p.id === id) || MOCK_PROPERTIES[0];
 
-    useEffect(() => {
-        const apiBase = document.querySelector('meta[name="api-base"]')?.content ?? '';
-        const apiKey  = document.querySelector('meta[name="api-key"]')?.content ?? '';
-        setLoading(true);
-        fetch(`${apiBase}/api/property/${id}`, { headers: { 'X-Api-Key': apiKey } })
-            .then(r => {
-                if (r.status === 404) { setNotFound(true); setLoading(false); return null; }
-                return r.json();
-            })
-            .then(d => {
-                if (d) { setData(d); setLoading(false); }
-            })
-            .catch(() => setLoading(false));
-    }, [id]);
+    const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-    // Keyboard navigation for gallery
-    const handleKey = useCallback((e) => {
-        if (!listing) return;
-        const imgs = listing.images?.length ? listing.images : [PLACEHOLDER];
-        if (e.key === 'ArrowRight') setActiveImg(i => (i + 1) % imgs.length);
-        if (e.key === 'ArrowLeft')  setActiveImg(i => (i - 1 + imgs.length) % imgs.length);
-        if (e.key === 'Escape')     setLightbox(false);
-    }, [data]);
-
-    useEffect(() => {
-        window.addEventListener('keydown', handleKey);
-        return () => window.removeEventListener('keydown', handleKey);
-    }, [handleKey]);
-
-    const C = isDark ? {
-        primary:    '#F0EDE8',
-        secondary:  '#D4AF37',
-        surface:    '#0D1A17',
-        surfaceVar: '#1C2D27',
-        card:       '#142920',
-        cardBorder: '#1C2D27',
-        muted:      '#9E9C97',
-        divider:    '#1C2D27',
-    } : {
-        primary:    '#1C2D27',
-        secondary:  '#D4AF37',
-        surface:    '#f8f9fa',
-        surfaceVar: '#f1f5f9',
-        card:       '#ffffff',
-        cardBorder: 'rgba(198,197,212,0.15)',
-        muted:      '#6b7280',
-        divider:    '#e5e7eb',
+    const openGallery = (index: number = 0) => {
+        setCurrentImageIndex(index);
+        setIsGalleryOpen(true);
     };
-
-    const listing = data?.listing;
-
-    const images = listing?.images?.length ? listing.images : [PLACEHOLDER];
-
-    const typeBadgeStyle = listing?.type === 'sell'
-        ? (isDark ? { bg: '#92711a', color: '#fde68a' } : { bg: '#fefce8', color: '#b45309' })
-        : (isDark ? { bg: '#0e5c4a', color: '#6ee7b7' } : { bg: '#f0fdf4', color: '#15803d' });
-
-    const isSoldOrRented = listing?.status === 'sold' || listing?.status === 'rented';
-    const waLink = listing?.contact_phone
-        ? `https://wa.me/${listing.contact_phone.replace(/\D/g, '')}`
-        : null;
-
-    const prevImg = () => setActiveImg(i => (i - 1 + images.length) % images.length);
-    const nextImg = () => setActiveImg(i => (i + 1) % images.length);
-
+    
+    const nextImage = () => {
+        setCurrentImageIndex((prev) => (prev + 1) % property.images.length);
+    };
+    
+    const prevImage = () => {
+        setCurrentImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
+    };
     return (
-        <div className="font-sans" style={{ backgroundColor: C.surface, color: C.primary, minHeight: '100vh', transition: 'background-color 0.3s, color 0.3s' }}>
-            <Header isDark={isDark} toggleDark={toggleDark} />
+        <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300 min-h-screen flex flex-col">
+            <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
 
-            <main className="pt-20">
-                {loading ? (
-                    <SkeletonDetail isDark={isDark} />
-                ) : notFound || !listing ? (
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-                        <span className="material-symbols-outlined text-6xl mb-4 block" style={{ color: C.muted }}>home_work</span>
-                        <p className="text-lg font-semibold mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Properti tidak ditemukan.</p>
-                        <p className="text-sm mb-6" style={{ color: C.muted }}>Properti ini mungkin sudah tidak tersedia.</p>
-                        <Link to="/property" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-80"
-                            style={{ background: '#D4AF37', color: '#1C2D27', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                            <span className="material-symbols-outlined text-sm">arrow_back</span>
-                            Kembali ke Daftar Properti
-                        </Link>
+            <main className="flex-grow pt-24 pb-section-gap max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop w-full">
+                {/* Breadcrumb & Title */}
+                <div className="mb-8 mt-4">
+                    <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
+                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" to="/property">Properties</Link>
+                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span className="text-on-surface dark:text-on-primary">{property.title}</span>
                     </div>
-                ) : (
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div>
+                            <div className="flex items-center gap-3 mb-2">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed dark:bg-primary-fixed-dim dark:text-primary font-label-sm text-label-sm">
+                                    <span className="material-symbols-outlined text-[14px] mr-1">fiber_new</span> {property.type_label}
+                                </span>
+                            </div>
+                            <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-2">{property.title}</h1>
+                            <p className="flex items-center text-text-muted dark:text-on-primary/70 font-body-md text-body-md">
+                                <span className="material-symbols-outlined mr-2">location_on</span>
+                                Dwipapuri Estate
+                            </p>
+                        </div>
+                        <div className="text-left md:text-right">
+                            <p className="font-headline-md text-headline-md text-[#b45309] dark:text-[#d97706]">{property.price}</p>
+                            {property.type === 'sell' && (
+                                <p className="text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mt-1">Est. Mortgage: $11,500/mo</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
 
-                        {/* Back link */}
-                        <Link to="/property"
-                            className="inline-flex items-center gap-1.5 text-sm mb-6 transition-opacity hover:opacity-70"
-                            style={{ color: '#D4AF37', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                            <span className="material-symbols-outlined text-sm">arrow_back</span>
-                            Kembali ke Daftar Properti
-                        </Link>
+                {/* Mobile Gallery Carousel */}
+                <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory rounded-2xl h-[40vh] mb-8" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <style>{`
+                        .md\\:hidden::-webkit-scrollbar { display: none; }
+                    `}</style>
+                    {property.images.map((img, i) => (
+                        <div key={i} className="min-w-full h-full snap-center relative cursor-pointer" onClick={() => openGallery(i)}>
+                            <img src={img} className="w-full h-full object-cover" alt={`${property.title} - ${i + 1}`} />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+                            <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white font-label-sm text-xs pointer-events-none flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[14px]">photo_library</span>
+                                {i + 1} / {property.images.length}
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
-                        <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
+                {/* Hero Gallery (Bento Grid) - Desktop Only */}
+                <div className="hidden md:grid md:grid-cols-4 gap-4 mb-16 h-[50vh] lg:h-[70vh]">
+                    {/* Main Featured Image */}
+                    <div className="md:col-span-3 md:row-span-2 relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
+                        <img alt={property.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={property.images[0]} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60"></div>
+                    </div>
+                    {/* Side Images */}
+                    {property.images[1] && (
+                        <div className="hidden md:block relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
+                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={property.images[1]} />
+                        </div>
+                    )}
+                    {property.images[2] && (
+                        <div onClick={() => openGallery(0)} className="hidden md:block relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50 block cursor-pointer">
+                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={property.images[2]} />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <span className="bg-black/60 dark:bg-black/80 backdrop-blur-md px-4 py-2 rounded-lg text-white font-label-md">Explore Gallery</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
-                            {/* â”€â”€ Left: Gallery + Details â”€â”€ */}
-                            <div className="flex-1 min-w-0">
-
-                                {/* Main image */}
-                                <div className="relative rounded-2xl overflow-hidden bg-black" style={{ height: '400px', cursor: images.length > 1 ? 'pointer' : 'default' }}
-                                    onClick={() => images.length > 1 && setLightbox(true)}>
-                                    <img
-                                        src={images[activeImg]}
-                                        alt={listing.title}
-                                        className="w-full h-full object-cover transition-opacity duration-300"
-                                        style={{ filter: isSoldOrRented ? 'grayscale(50%)' : 'none' }}
-                                    />
-
-                                    {/* Sold/rented overlay */}
-                                    {isSoldOrRented && (
-                                        <div className="absolute inset-0 flex items-center justify-center"
-                                            style={{ background: 'rgba(0,0,0,0.4)' }}>
-                                            <span className="px-5 py-2 rounded-full text-base font-bold uppercase tracking-widest"
-                                                style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
-                                                {listing.status === 'sold' ? 'Terjual' : 'Tersewa'}
-                                            </span>
-                                        </div>
-                                    )}
-
-                                    {/* Type badge */}
-                                    {!isSoldOrRented && (
-                                        <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
-                                            style={{ background: typeBadgeStyle.bg, color: typeBadgeStyle.color }}>
-                                            {listing.type_label}
-                                        </span>
-                                    )}
-
-                                    {/* Prev / Next arrows */}
-                                    {images.length > 1 && (
-                                        <>
-                                            <button onClick={(e) => { e.stopPropagation(); prevImg(); }}
-                                                className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                                                style={{ background: 'rgba(0,0,0,0.45)', color: '#fff' }}>
-                                                <span className="material-symbols-outlined text-xl">chevron_left</span>
-                                            </button>
-                                            <button onClick={(e) => { e.stopPropagation(); nextImg(); }}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                                                style={{ background: 'rgba(0,0,0,0.45)', color: '#fff' }}>
-                                                <span className="material-symbols-outlined text-xl">chevron_right</span>
-                                            </button>
-
-                                            {/* Counter */}
-                                            <span className="absolute bottom-4 right-4 px-2.5 py-1 rounded-lg text-xs font-medium"
-                                                style={{ background: 'rgba(0,0,0,0.5)', color: '#fff' }}>
-                                                {activeImg + 1} / {images.length}
-                                            </span>
-                                        </>
-                                    )}
+                {/* Two Column Layout: Details & Form */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Left Column: Details (8 cols) */}
+                    <div className="lg:col-span-8 space-y-12">
+                        {/* Quick Specs Glass Card */}
+                        <div className="bg-surface dark:bg-primary-container rounded-2xl p-6 flex flex-wrap justify-between items-center gap-6 shadow-sm border border-border-subtle/50 dark:border-primary-container/50 relative overflow-hidden">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-primary-container/10 dark:bg-primary-fixed-dim/10 flex items-center justify-center text-primary dark:text-primary-fixed-dim">
+                                    <span className="material-symbols-outlined">bed</span>
                                 </div>
-
-                                {/* Thumbnails */}
-                                {images.length > 1 && (
-                                    <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-                                        {images.map((img, i) => (
-                                            <button
-                                                key={i}
-                                                onClick={() => setActiveImg(i)}
-                                                className="flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden transition-all"
-                                                style={{
-                                                    outline: i === activeImg ? `2px solid #D4AF37` : `2px solid transparent`,
-                                                    outlineOffset: '2px',
-                                                    opacity: i === activeImg ? 1 : 0.6,
-                                                }}
-                                            >
-                                                <img src={img} alt={`foto ${i + 1}`} className="w-full h-full object-cover" />
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Property Info Card */}
-                                <div className="mt-6 rounded-2xl p-6" style={{ background: C.card, border: `1px solid ${C.cardBorder}` }}>
-                                    <h1 className="text-2xl md:text-3xl font-bold leading-snug mb-1"
-                                        style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                        {listing.title}
-                                    </h1>
-
-                                    {listing.location_label && (
-                                        <p className="flex items-center gap-1.5 text-sm mt-2" style={{ color: C.muted }}>
-                                            <span className="material-symbols-outlined text-sm">location_on</span>
-                                            {listing.location_label}
-                                        </p>
-                                    )}
-
-                                    {listing.block_name && (
-                                        <p className="flex items-center gap-1.5 text-xs mt-1" style={{ color: C.muted }}>
-                                            <span className="material-symbols-outlined text-xs">home_work</span>
-                                            Blok {listing.block_name}
-                                        </p>
-                                    )}
-
-                                    {/* Specs */}
-                                    {(listing.bedrooms != null || listing.bathrooms != null || listing.land_area || listing.building_area) && (
-                                        <>
-                                            <div className="h-px my-4" style={{ background: C.divider }} />
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                                {listing.bedrooms != null && (
-                                                    <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: C.surfaceVar }}>
-                                                        <span className="material-symbols-outlined text-2xl" style={{ color: '#D4AF37' }}>bed</span>
-                                                        <span className="text-lg font-bold" style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{listing.bedrooms}</span>
-                                                        <span className="text-xs" style={{ color: C.muted }}>Kamar Tidur</span>
-                                                    </div>
-                                                )}
-                                                {listing.bathrooms != null && (
-                                                    <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: C.surfaceVar }}>
-                                                        <span className="material-symbols-outlined text-2xl" style={{ color: '#D4AF37' }}>bathroom</span>
-                                                        <span className="text-lg font-bold" style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{listing.bathrooms}</span>
-                                                        <span className="text-xs" style={{ color: C.muted }}>Kamar Mandi</span>
-                                                    </div>
-                                                )}
-                                                {listing.land_area && (
-                                                    <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: C.surfaceVar }}>
-                                                        <span className="material-symbols-outlined text-2xl" style={{ color: '#D4AF37' }}>square_foot</span>
-                                                        <span className="text-lg font-bold" style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{Math.round(listing.land_area)}<span className="text-xs font-normal">mÂ²</span></span>
-                                                        <span className="text-xs" style={{ color: C.muted }}>Luas Tanah</span>
-                                                    </div>
-                                                )}
-                                                {listing.building_area && (
-                                                    <div className="flex flex-col items-center gap-1 rounded-xl py-3" style={{ background: C.surfaceVar }}>
-                                                        <span className="material-symbols-outlined text-2xl" style={{ color: '#D4AF37' }}>roofing</span>
-                                                        <span className="text-lg font-bold" style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{Math.round(listing.building_area)}<span className="text-xs font-normal">mÂ²</span></span>
-                                                        <span className="text-xs" style={{ color: C.muted }}>Luas Bangunan</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {/* Description */}
-                                    {listing.description && (
-                                        <>
-                                            <div className="h-px my-4" style={{ background: C.divider }} />
-                                            <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: C.muted }}>Deskripsi</h2>
-                                            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: C.primary }}>
-                                                {listing.description}
-                                            </p>
-                                        </>
-                                    )}
+                                <div>
+                                    <p className="text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm">Bedrooms</p>
+                                    <p className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary">{property.bedrooms}</p>
                                 </div>
                             </div>
-
-                            {/* â”€â”€ Right: Price + Contact (sticky) â”€â”€ */}
-                            <div className="w-full lg:w-80 xl:w-96 flex-shrink-0">
-                                <div className="rounded-2xl p-6 lg:sticky lg:top-24" style={{ background: C.card, border: `1px solid ${C.cardBorder}` }}>
-
-                                    {/* Type badge */}
-                                    <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-3"
-                                        style={{ background: typeBadgeStyle.bg, color: typeBadgeStyle.color }}>
-                                        {isSoldOrRented ? listing.status_label : listing.type_label}
-                                    </span>
-
-                                    {/* Price */}
-                                    <p className="text-3xl font-bold mb-1" style={{ color: '#D4AF37', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                        {listing.formatted_price || '—'}
-                                    </p>
-                                    {listing.type === 'rent' && (
-                                        <p className="text-xs mb-4" style={{ color: C.muted }}>per bulan</p>
-                                    )}
-
-                                    <div className="h-px my-4" style={{ background: C.divider }} />
-
-                                    {/* Contact */}
-                                    {!isSoldOrRented && (listing.contact_name || listing.contact_phone) && (
-                                        <div className="space-y-3">
-                                            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.muted }}>Hubungi Penjual</p>
-
-                                            {listing.contact_name && (
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                                                        style={{ background: isDark ? '#1C2D27' : '#f1f5f9' }}>
-                                                        <span className="material-symbols-outlined text-xl" style={{ color: C.muted }}>person</span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-semibold" style={{ color: C.primary, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                                            {listing.contact_name}
-                                                        </p>
-                                                        {listing.contact_phone && (
-                                                            <p className="text-xs" style={{ color: C.muted }}>{listing.contact_phone}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {waLink && (
-                                                <a href={waLink}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold transition-all hover:opacity-80 active:scale-95"
-                                                    style={{ background: '#25D366', color: '#fff', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                                    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                                                    Chat via WhatsApp
-                                                </a>
-                                            )}
-
-                                            {!waLink && listing.contact_phone && (
-                                                <a href={`tel:${listing.contact_phone}`}
-                                                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold transition-all hover:opacity-80"
-                                                    style={{ background: C.surfaceVar, color: C.primary, border: `1px solid ${C.cardBorder}`, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                                    <span className="material-symbols-outlined text-sm">call</span>
-                                                    {listing.contact_phone}
-                                                </a>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {isSoldOrRented && (
-                                        <div className="text-center py-4">
-                                            <span className="material-symbols-outlined text-4xl mb-2 block" style={{ color: C.muted }}>
-                                                {listing.status === 'sold' ? 'sell' : 'key_off'}
-                                            </span>
-                                            <p className="text-sm font-semibold" style={{ color: C.muted }}>
-                                                {listing.status === 'sold' ? 'Properti ini sudah terjual.' : 'Properti ini sudah tersewa.'}
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    <div className="h-px my-4" style={{ background: C.divider }} />
-
-                                    <Link to="/property"
-                                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-                                        style={{ background: C.surfaceVar, color: C.muted, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                        <span className="material-symbols-outlined text-sm">arrow_back</span>
-                                        Lihat Properti Lainnya
-                                    </Link>
+                            <div className="w-px h-12 bg-border-subtle dark:bg-primary-container/50 hidden sm:block"></div>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-primary-container/10 dark:bg-primary-fixed-dim/10 flex items-center justify-center text-primary dark:text-primary-fixed-dim">
+                                    <span className="material-symbols-outlined">bathtub</span>
+                                </div>
+                                <div>
+                                    <p className="text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm">Bathrooms</p>
+                                    <p className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary">{property.bathrooms}</p>
                                 </div>
                             </div>
+                            <div className="w-px h-12 bg-border-subtle dark:bg-primary-container/50 hidden sm:block"></div>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-primary-container/10 dark:bg-primary-fixed-dim/10 flex items-center justify-center text-primary dark:text-primary-fixed-dim">
+                                    <span className="material-symbols-outlined">square_foot</span>
+                                </div>
+                                <div>
+                                    <p className="text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm">Living Area</p>
+                                    <p className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary">{property.area} <span className="text-body-md font-body-md text-text-muted dark:text-on-primary/50">sqft</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <section>
+                            <h2 className="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim mb-6">About This Property</h2>
+                            <div className="prose prose-lg max-w-none text-on-surface-variant dark:text-on-primary/80 font-body-lg text-body-lg leading-relaxed space-y-4">
+                                <p>
+                                    {property.description}
+                                </p>
+                                <p>
+                                    Upon entry, you are greeted by a soaring double-height foyer that seamlessly transitions into an expansive open-concept living and dining area. Floor-to-ceiling glass panels retract fully, dissolving the boundary between the pristine interior and the lush, meticulously landscaped private garden.
+                                </p>
+                            </div>
+                        </section>
+
+                        <hr className="border-border-subtle dark:border-primary-container/50" />
+
+                        {/* Amenities List */}
+                        <section>
+                            <h2 className="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim mb-6">Premium Amenities</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                {/* Amenity Items */}
+                                <div className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
+                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">pool</span>
+                                    <span className="font-body-md text-body-md text-on-surface dark:text-on-primary">Infinity Lap Pool</span>
+                                </div>
+                                <div className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
+                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">directions_car</span>
+                                    <span className="font-body-md text-body-md text-on-surface dark:text-on-primary">Smart Garage</span>
+                                </div>
+                                <div className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
+                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">local_florist</span>
+                                    <span className="font-body-md text-body-md text-on-surface dark:text-on-primary">Landscaped Garden</span>
+                                </div>
+                                <div className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
+                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">security</span>
+                                    <span className="font-body-md text-body-md text-on-surface dark:text-on-primary">24/7 Estate Security</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    {/* Right Column: Sticky Inquiry Form (4 cols) */}
+                    <div className="lg:col-span-4">
+                        <div className="sticky top-28 bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 p-6 md:p-8">
+                            <h3 className="font-headline-sm text-headline-sm text-primary dark:text-on-primary mb-2">Interested in this property?</h3>
+                            <p className="text-text-muted dark:text-on-primary/70 font-body-md text-body-md mb-6">Schedule a private viewing or request more details.</p>
+                            
+                            <form className="space-y-4">
+                                <div>
+                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="name">Full Name</label>
+                                    <input type="text" id="name" placeholder="John Doe" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="email">Email Address</label>
+                                    <input type="email" id="email" placeholder="john@example.com" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="phone">Phone Number</label>
+                                    <input type="tel" id="phone" placeholder="+1 (555) 000-0000" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="message">Message</label>
+                                    <textarea id="message" placeholder="I would like to schedule a viewing..." rows={3} className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 resize-none focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors"></textarea>
+                                </div>
+                                
+                                <Link to="/schedule-visit" className="w-full bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 mt-4 flex justify-center items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+                                    Schedule a Visit
+                                </Link>
+                                
+                                <button type="button" className="w-full bg-transparent border border-border-subtle dark:border-primary-container/50 text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-primary-container font-label-md text-label-md py-3 rounded-lg transition-all duration-300 mt-2">
+                                    Request Brochure
+                                </button>
+                            </form>
+
+                            <div className="mt-6 pt-6 border-t border-border-subtle dark:border-primary-container/50 flex items-center gap-4">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd10O6kzfY7B-aZVNu3M9Oo0Q-wAibYX561w0waoJEPSAxLZICTcqE7mpoYhcisKosGX2rY4SxW-0gMSssENOcwT9hzCkqPwhG3CLXpYEExSOKEN64-vzIf-FthydLsHtSgWrMz6oktpWoiUetI5EHDdDdq6mxuOcidXKgMpH-qpSpfK0N94NtznAXYmmD7SSS4oRZTQmVHqLLqU0CRtiIbSYaF7HM3j6xVlXIveZ3rCHSstpGNzRDI1Q67_adu6aA4Yq87Xj50uQ" className="w-12 h-12 rounded-full object-cover" alt="Sarah Jenkins" />
+                                <div>
+                                    <p className="font-label-md text-label-md text-on-surface dark:text-on-primary">Sarah Jenkins</p>
+                                    <p className="font-label-sm text-label-sm text-text-muted dark:text-on-primary/50">Senior Property Consultant</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {isGalleryOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" onClick={() => setIsGalleryOpen(false)}>
+                        <button onClick={(e) => { e.stopPropagation(); setIsGalleryOpen(false); }} className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full w-12 h-12 flex items-center justify-center z-50">
+                            <span className="material-symbols-outlined text-[28px]">close</span>
+                        </button>
+                        
+                        <div className="relative w-full max-w-6xl px-4 flex items-center justify-center h-full">
+                            <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute left-4 md:left-8 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full w-14 h-14 flex items-center justify-center z-50">
+                                <span className="material-symbols-outlined text-[32px]">chevron_left</span>
+                            </button>
+                            
+                            <img src={property.images[currentImageIndex]} alt={property.title} className="max-h-[85vh] max-w-full object-contain shadow-2xl rounded-lg" onClick={(e) => e.stopPropagation()} />
+                            
+                            <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-4 md:right-8 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full w-14 h-14 flex items-center justify-center z-50">
+                                <span className="material-symbols-outlined text-[32px]">chevron_right</span>
+                            </button>
+                        </div>
+                        
+                        <div className="absolute bottom-8 left-0 w-full flex justify-center gap-2 px-4 z-50" onClick={(e) => e.stopPropagation()}>
+                            {property.images.map((_, idx) => (
+                                <button 
+                                    key={idx} 
+                                    onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
+                                    className={`w-3 h-3 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white scale-110' : 'bg-white/30 hover:bg-white/50'}`}
+                                />
+                            ))}
                         </div>
                     </div>
                 )}
             </main>
 
-            {/* Lightbox */}
-            {lightboxOpen && images.length > 1 && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center"
-                    style={{ background: 'rgba(0,0,0,0.9)' }}
-                    onClick={() => setLightbox(false)}
-                >
-                    <button
-                        onClick={(e) => { e.stopPropagation(); prevImg(); }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center"
-                        style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
-                        <span className="material-symbols-outlined text-2xl">chevron_left</span>
-                    </button>
-                    <img
-                        src={images[activeImg]}
-                        alt={listing?.title}
-                        className="max-w-[90vw] max-h-[85vh] rounded-xl object-contain"
-                        onClick={e => e.stopPropagation()}
-                    />
-                    <button
-                        onClick={(e) => { e.stopPropagation(); nextImg(); }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center"
-                        style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
-                        <span className="material-symbols-outlined text-2xl">chevron_right</span>
-                    </button>
-                    <button
-                        onClick={() => setLightbox(false)}
-                        className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center"
-                        style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
-                        <span className="material-symbols-outlined">close</span>
-                    </button>
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5">
-                        {images.map((_, i) => (
-                            <button key={i} onClick={(e) => { e.stopPropagation(); setActiveImg(i); }}
-                                className="w-2 h-2 rounded-full transition-all"
-                                style={{ background: i === activeImg ? '#D4AF37' : 'rgba(255,255,255,0.4)' }} />
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            <Footer footer={data?.footer} isDark={isDark} />
+            <Footer />
         </div>
     );
 }

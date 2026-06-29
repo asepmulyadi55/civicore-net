@@ -105,7 +105,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Birth Date</label>
-            <input type="date" value={form.birthDate} onClick={e => (e.target as any).showPicker?.()} onChange={e => setForm(p => ({ ...p, birthDate: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all cursor-pointer [color-scheme:light_dark]" />
+            <input type="date" value={form.birthDate} onChange={e => setForm(p => ({ ...p, birthDate: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all cursor-pointer [color-scheme:light_dark]" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Gender</label>
@@ -389,7 +389,7 @@ export default function EditHouseholder() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Effective From</label>
-                  <input type="month" value={data.effectiveFrom || ''} onClick={e => (e.target as any).showPicker?.()} onChange={e => setData({...data, effectiveFrom: e.target.value})} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none cursor-pointer [color-scheme:light_dark]" />
+                  <input type="month" value={data.effectiveFrom || ''} onChange={e => setData({...data, effectiveFrom: e.target.value})} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none cursor-pointer [color-scheme:light_dark]" />
                 </div>
               </div>
             </div>

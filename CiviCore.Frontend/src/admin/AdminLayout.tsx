@@ -143,7 +143,7 @@ export default function AdminLayout({ children, title, subtitle }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className={`admin-theme min-h-screen bg-slate-50 dark:bg-surface flex ${dark ? 'dark' : ''}`}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div

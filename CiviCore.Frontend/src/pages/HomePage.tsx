@@ -98,9 +98,9 @@ export default function HomePage() {
                         <p className="text-body-lg font-body-lg text-on-primary/90 mb-10 max-w-2xl font-light tracking-wide">
                             Modern Living in Harmony. Experience tranquility and luxury in every detail.
                         </p>
-                        <a className="inline-flex items-center justify-center px-8 py-4 bg-[#b45309] text-white font-label-md text-label-md rounded-lg hover:bg-[#8b4006] transition-colors shadow-lg hover:shadow-xl scale-95 active:scale-90" href="#contact">
-                            Schedule a Visit
-                        </a>
+                            <Link to="/schedule-visit" className="bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white px-8 py-4 rounded-lg font-label-md text-label-md transition-colors shadow-lg shadow-[#b45309]/20 flex items-center justify-center">
+                                Schedule a Visit
+                            </Link>
                     </div>
                 </section>
 
@@ -188,22 +188,22 @@ export default function HomePage() {
                             </Link>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-auto md:h-[600px]">
-                            <Link to="/gallery/clubhouse" className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[400px] md:h-full">
+                            <Link to="/gallery/clubhouse" className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full">
                                 <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD55aFz8NDn0tXi_fzmIam_RZaFwDhAczD1L4kTGDx3sbMlR0oF0fEJB5qFaP04Btkcj6aHz6QlpxgzjIYCilYWKVHAUZys336usIkE5SzFmXdvI3NvErNZ0g2TMOrUu1c-4tth-d3jBfcLR85PhiVZ-By3Hj2sgF0VsRp1fP7NyU97aIp0YyjjBQkx4-gGQIjtxX_CFAevCygShudFFGofPbQX20yTk7WXTZJxCtg4SvhN88iP29cXUKzOB9OXHuNDpxl0_s61314')" }}></div>
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 <div className="absolute bottom-0 left-0 p-8 w-full translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                                     <h3 className="font-headline-sm text-headline-sm text-white">Clubhouse</h3>
                                 </div>
                             </Link>
-                            <div className="grid grid-rows-2 gap-6 h-[600px] md:h-full">
-                                <Link to="/gallery/community-life" className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50" style={{ transitionDelay: '0.1s' }}>
+                            <div className="flex flex-col md:grid md:grid-rows-2 gap-6 h-auto md:h-full">
+                                <Link to="/gallery/community-life" className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full" style={{ transitionDelay: '0.1s' }}>
                                     <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDqmJbXJfWPbdc2pd8BtFwTYl1KGyL-YtzdJWtn6C-PLLYeGND0o9idmDEkCLCNadXGgEk1D4fczrphhSJwrRdQFTxhjEbSgye3NmOeVIuhT_QKw2fGu1lpXSl9gMn2R9scg5z09MOxMCxYoOf7LkuNdi34YzT6Q_VfZ3fAk7YiLbqlQlkcyb2qZoN9Be7w8EFfFiF5sZZCo46zPenk5RHo29Pk2H9rHqSZhvXUM0t5VHWRyzss9ONZBqgL1jCs8vK7MrpVHPNY1Og')" }}></div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                     <div className="absolute bottom-0 left-0 p-6 w-full translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                                         <h3 className="font-headline-sm text-headline-sm text-white">Community Life</h3>
                                     </div>
                                 </Link>
-                                <Link to="/gallery/clubhouse" className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50" style={{ transitionDelay: '0.2s' }}>
+                                <Link to="/gallery/clubhouse" className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full" style={{ transitionDelay: '0.2s' }}>
                                     <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAcYSxDLk_010u5mOyR_cijkXwWyIyptM-8yp5_4RAe6ZRQtodAbNSdHc80FooCWs9ykxeHdHLmLfIjpcGeZ-OXAN1f6bMyV0rpLYvBVnRktdK_B8EOFmp6JryCf9e7giLDFQGO5heJirDMTp6yQh2Q6umMQkmduc12_7S2HsFcPWX8wuAdf1GCtzCWfmn9P7XiZbVNUINPPQ5Z2c70y9eKeijUWwn-bFTTd2AI-P9MXrgXBehO0bMFqxGV4tLwuzGrD7GdGWcXw-w')" }}></div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                     <div className="absolute bottom-0 left-0 p-6 w-full translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
@@ -257,10 +257,10 @@ export default function HomePage() {
                                 <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Find Your Home</span>
                                 <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Available Properties</h2>
                             </div>
-                            <a className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="#">
+                            <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" to="/property">
                                 View All
                                 <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                            </a>
+                            </Link>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
                             {/* Property 1 */}
@@ -279,7 +279,7 @@ export default function HomePage() {
                                         <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> 3.5 Baths</div>
                                         <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> 3,200 sqft</div>
                                     </div>
-                                    <button className="mt-auto w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</button>
+                                    <Link to="/property/1" className="mt-auto block text-center w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</Link>
                                 </div>
                             </div>
                             {/* Property 2 */}
@@ -298,7 +298,7 @@ export default function HomePage() {
                                         <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> 2.5 Baths</div>
                                         <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> 2,100 sqft</div>
                                     </div>
-                                    <button className="mt-auto w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</button>
+                                    <Link to="/property/2" className="mt-auto block text-center w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</Link>
                                 </div>
                             </div>
                             {/* Property 3 */}
@@ -317,7 +317,7 @@ export default function HomePage() {
                                         <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> 2 Baths</div>
                                         <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> 1,400 sqft</div>
                                     </div>
-                                    <button className="mt-auto w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</button>
+                                    <Link to="/property/3" className="mt-auto block text-center w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</Link>
                                 </div>
                             </div>
                         </div>

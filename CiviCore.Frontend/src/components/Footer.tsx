@@ -32,21 +32,16 @@ export default function Footer({ setActiveTab }: any) {
                     </ul>
                 </div>
                 <div>
-                    <h4 className="font-headline-sm text-headline-sm mb-6">Submit Feedback</h4>
-                    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                        <div>
-                            <input className="w-full bg-transparent border-0 border-b border-on-primary/30 text-on-primary placeholder:text-on-primary/50 focus:ring-0 focus:border-on-primary transition-colors px-0 py-2 font-body-md" placeholder="Subject" type="text" />
-                        </div>
-                        <div>
-                            <textarea className="w-full bg-transparent border-0 border-b border-on-primary/30 text-on-primary placeholder:text-on-primary/50 focus:ring-0 focus:border-on-primary transition-colors px-0 py-2 font-body-md resize-none" placeholder="Your message..." rows={3}></textarea>
-                        </div>
-                        <div className="flex justify-end">
-                            <button className="group flex items-center gap-2 text-label-md font-label-md text-[#b45309] dark:text-[#d97706] hover:text-[#d97706] dark:hover:text-[#f59e0b] transition-colors uppercase tracking-wider" type="submit">
-                                Send
-                                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                            </button>
-                        </div>
-                    </form>
+                    <h4 className="font-headline-sm text-headline-sm mb-6">Need Help?</h4>
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                        <p className="font-body-md text-body-md text-on-primary/80 mb-6">
+                            Have an issue, complaint, or feedback for the community? Let us know.
+                        </p>
+                        <Link to="/report" className="group flex items-center justify-between w-full bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-3 px-4 rounded-lg transition-colors">
+                            File a Resident Report
+                            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </Link>
+                    </div>
                 </div>
             </div>
             <div className="px-margin-desktop max-w-container-max mx-auto border-t border-on-primary/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
