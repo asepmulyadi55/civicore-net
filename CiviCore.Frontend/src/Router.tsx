@@ -31,6 +31,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import GalleryPage from './pages/GalleryPage';
 import GalleryDetailPage from './pages/GalleryDetailPage';
 import BuletinPage from './pages/BuletinPage';
+import BulletinDetailPage from './pages/BulletinDetailPage';
 import PropertyPage from './pages/PropertyPage';
 import PropertyDetailPage from './pages/PropertyDetailPage';
 import ScrollToTop from './components/ScrollToTop';
@@ -72,6 +73,7 @@ export default function Router() {
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/gallery/:id" element={<GalleryDetailPage />} />
         <Route path="/buletin" element={<BuletinPage />} />
+        <Route path="/buletin/:id" element={<BulletinDetailPage />} />
         <Route path="/property" element={<PropertyPage />} />
         <Route path="/property/:id" element={<PropertyDetailPage />} />
 
