@@ -28,6 +28,8 @@ import Media from './pages/admin/Media';
 // Public pages
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
+import GalleryPage from './pages/GalleryPage';
+import GalleryDetailPage from './pages/GalleryDetailPage';
 import BuletinPage from './pages/BuletinPage';
 import PropertyPage from './pages/PropertyPage';
 import PropertyDetailPage from './pages/PropertyDetailPage';
@@ -67,6 +69,8 @@ export default function Router() {
         <Route path="/" element={<HomePage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:id" element={<EventDetailPage />} />
+        <Route path="/gallery" element={<GalleryPage />} />
+        <Route path="/gallery/:id" element={<GalleryDetailPage />} />
         <Route path="/buletin" element={<BuletinPage />} />
         <Route path="/property" element={<PropertyPage />} />
         <Route path="/property/:id" element={<PropertyDetailPage />} />
