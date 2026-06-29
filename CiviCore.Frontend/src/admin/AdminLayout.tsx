@@ -36,7 +36,6 @@ const NAV_GROUPS = [
     items: [
       { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/admin/users', roles: ['admin'] },
       { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/admin/roles', roles: ['admin'] },
-      { key: 'property', label: 'Property', icon: 'home_work', path: '/admin/property', roles: ['admin'] },
       { key: 'media', label: 'Media', icon: 'perm_media', path: '/admin/media', roles: ['admin'] },
     ],
   },
@@ -44,11 +43,11 @@ const NAV_GROUPS = [
     label: 'Homepage',
     icon: 'public',
     items: [
-      { key: 'featured', label: 'Featured Event', icon: 'star', path: '/admin/homepage/featured', roles: ['admin'] },
+      { key: 'hero', label: 'Hero Section', icon: 'star', path: '/admin/homepage/hero', roles: ['admin'] },
       { key: 'events', label: 'Events', icon: 'event', path: '/admin/homepage/events', roles: ['admin'] },
-      { key: 'moments', label: 'Memorable Moments', icon: 'photo_library', path: '/admin/homepage/moments', roles: ['admin'] },
+      { key: 'gallery', label: 'Gallery', icon: 'photo_library', path: '/admin/homepage/gallery', roles: ['admin'] },
       { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/admin/homepage/bulletin', roles: ['admin'] },
-      { key: 'about', label: 'About Section', icon: 'info', path: '/admin/homepage/about', roles: ['admin'] },
+      { key: 'property', label: 'Properties', icon: 'home_work', path: '/admin/property', roles: ['admin'] },
       { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/admin/homepage/footer', roles: ['admin'] },
       { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/admin/homepage/metadata', roles: ['admin'] },
     ],
@@ -143,7 +142,7 @@ export default function AdminLayout({ children, title, subtitle }) {
   };
 
   return (
-    <div className={`admin-theme min-h-screen bg-slate-50 dark:bg-surface flex ${dark ? 'dark' : ''}`}>
+    <div className={`admin-theme min-h-screen bg-slate-50 dark:bg-surface ${dark ? 'dark' : ''}`}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div

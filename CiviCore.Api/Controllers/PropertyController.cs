@@ -38,6 +38,7 @@ public class PropertyController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? search,
         [FromQuery] string? type,

@@ -2,18 +2,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import AdminLayout from '../../admin/AdminLayout';
-import { PageHeader, Modal, ConfirmModal, FormInput, SearchInput, Pagination, TableWrapper, Th, EmptyState } from '../../admin/components/ui';
+import { PageHeader, Modal, ConfirmModal, FormInput, FormSelect, SearchInput, SelectFilter, FilterBar, Pagination, TableWrapper, Th, EmptyState, StatusBadge } from '../../admin/components/ui';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TABS CONFIG
    ═══════════════════════════════════════════════════════════════════════════ */
 const TABS = [
-  { key: 'featured', label: 'Featured Event', icon: 'star' },
-  { key: 'events',   label: 'Events',         icon: 'event' },
-  { key: 'moments',  label: 'Memorable Moments', icon: 'photo_library' },
+  { key: 'hero',     label: 'Hero Section',    icon: 'star' },
+  { key: 'events',   label: 'Events',          icon: 'event' },
+  { key: 'gallery',  label: 'Gallery',         icon: 'photo_library' },
   { key: 'bulletin', label: 'Bulletin',        icon: 'article' },
-  { key: 'about',    label: 'About Section',   icon: 'info' },
   { key: 'footer',   label: 'Footer',          icon: 'web_asset' },
   { key: 'metadata', label: 'SEO & Metadata',  icon: 'manage_search' },
 ];
@@ -109,86 +110,50 @@ function SuccessBanner({ show }) {
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 1: FEATURED EVENT
    ═══════════════════════════════════════════════════════════════════════════ */
-function FeaturedEventTab() {
+function HeroTab() {
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [mobileImageFile, setMobileImageFile] = useState(null);
+  const [bgImage, setBgImage] = useState(null);
 
   useEffect(() => {
-    axios.get('/api/homepage/featured-event').then(r => setData(r.data || {})).catch(() => {}).finally(() => setLoading(false));
+    axios.get('/api/homepage/hero').then(r => setData(r.data || {})).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const save = async () => {
     setSaving(true);
     const fd = new FormData();
-    fd.append('type', data.type || 'full');
     fd.append('title', data.title || '');
-    fd.append('youtube_id', data.youtube_id || '');
-    fd.append('date', data.date || '');
-    fd.append('featured_eyebrow', data.featured_eyebrow || '');
-    if (imageFile) fd.append('image_file', imageFile);
-    if (mobileImageFile) fd.append('mobile_image_file', mobileImageFile);
+    fd.append('subtitle', data.subtitle || '');
+    fd.append('cta_label', data.cta_label || '');
+    if (bgImage) fd.append('background_image', bgImage);
     try {
-      await axios.put('/api/homepage/featured-event', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await axios.put('/api/homepage/hero', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess(true); setTimeout(() => setSuccess(false), 3000);
-      setImageFile(null); setMobileImageFile(null);
+      setBgImage(null);
     } catch {}
     setSaving(false);
   };
 
   const set = (k, v) => setData(d => ({ ...d, [k]: v }));
-  const isSimple = data.type === 'simple';
 
   if (loading) return <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>;
 
   return (
-    <SectionCard icon="star" iconBg="bg-amber-100 dark:bg-amber-900/30" iconColor="text-amber-500" title="Featured Event" subtitle="Highlighted event shown prominently on the public homepage">
+    <SectionCard icon="star" iconBg="bg-amber-100 dark:bg-amber-900/30" iconColor="text-amber-500" title="Hero Section" subtitle="The main header on the public homepage">
       <SuccessBanner show={success} />
       <div className="p-6 space-y-5">
-        {/* Display Type */}
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Display Type</label>
-          <div className="flex flex-wrap gap-3">
-            {[{ v: 'full', icon: 'play_circle', label: 'Full (YouTube video + date)' }, { v: 'simple', icon: 'image', label: 'Simple (Title & Image only)' }].map(opt => (
-              <label key={opt.v} className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border cursor-pointer transition-all ${data.type === opt.v ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-primary/40'}`}>
-                <input type="radio" className="sr-only" checked={data.type === opt.v} onChange={() => set('type', opt.v)} />
-                <span className="material-icons text-[18px]">{opt.icon}</span>
-                <span className="text-sm font-semibold">{opt.label}</span>
-              </label>
-            ))}
-          </div>
+        <FormInput label="Main Title" id="hero-title" value={data.title || ''} onChange={e => set('title', e.target.value)} placeholder="e.g. Welcome to Dwipapuri Residence" />
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Subtitle</label>
+          <textarea value={data.subtitle || ''} onChange={e => set('subtitle', e.target.value)} rows={3} placeholder="e.g. Modern Living in Harmony..."
+            className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none resize-none" />
         </div>
-
-        {/* Title */}
-        <FormInput label="Event Title" id="fe-title" value={data.title || ''} onChange={e => set('title', e.target.value)} placeholder="e.g. Dwipapuri Anniversary Gala" />
-
-        {/* Full-type fields */}
-        {!isSimple && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="md:col-span-2">
-              <FormInput label="Eyebrow Label" id="fe-eyebrow" value={data.featured_eyebrow || ''} onChange={e => set('featured_eyebrow', e.target.value)} placeholder="Featured Event" />
-            </div>
-            <FormInput label="YouTube Video ID" id="fe-yt" value={data.youtube_id || ''} onChange={e => set('youtube_id', e.target.value)} placeholder="e.g. dQw4w9WgXcQ" />
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Event Date</label>
-              <input type="date" value={data.date || ''} onChange={e => set('date', e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none cursor-pointer dark:[color-scheme:dark]" />
-            </div>
-          </div>
-        )}
-
-        {/* Simple-type fields: images */}
-        {isSimple && (
-          <div className="space-y-4">
-            <ImageUploadBox label="Desktop Image (≥768px)" currentUrl={data.image_url} file={imageFile} onFileChange={setImageFile} />
-            <ImageUploadBox label="Mobile Image (<768px)" currentUrl={data.mobile_image_url} file={mobileImageFile} onFileChange={setMobileImageFile} />
-          </div>
-        )}
+        <FormInput label="CTA Button Text" id="hero-cta" value={data.cta_label || ''} onChange={e => set('cta_label', e.target.value)} placeholder="e.g. Schedule a Visit" />
+        <ImageUploadBox label="Background Image" currentUrl={data.background_image_url} file={bgImage} onFileChange={setBgImage} />
       </div>
-      <SaveButton onClick={save} loading={saving} label="Save Featured Event" />
+      <SaveButton onClick={save} loading={saving} label="Save Hero Section" />
     </SectionCard>
   );
 }
@@ -201,16 +166,19 @@ function EventsTab() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('');
-  const [addForm, setAddForm] = useState({ title: '', description: '', date: '', category: '', url: '' });
-  const [addImage, setAddImage] = useState(null);
-  const [addLoading, setAddLoading] = useState(false);
-  const [editModal, setEditModal] = useState({ open: false, data: null });
-  const [editForm, setEditForm] = useState({ title: '', description: '', date: '', category: '', url: '' });
-  const [editImage, setEditImage] = useState(null);
-  const [editLoading, setEditLoading] = useState(false);
+  const [modal, setModal] = useState({ open: false, data: null });
+  const [form, setForm] = useState({ title: '', description: '', date: '', category: '', status: '', url: '' });
+  const [image, setImage] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
   const [success, setSuccess] = useState(false);
   const [page, setPage] = useState(1);
+
+  const STATUS_OPTIONS = [
+    { value: 'upcoming', label: 'Upcoming' },
+    { value: 'ongoing', label: 'Ongoing' },
+    { value: 'past', label: 'Past' },
+  ];
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -233,39 +201,33 @@ function EventsTab() {
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
   const meta = { current_page: page, last_page: lastPage, from: total === 0 ? 0 : (page - 1) * perPage + 1, to: Math.min(page * perPage, total), total };
 
-  const addEvent = async () => {
-    if (!addForm.title.trim()) return;
-    setAddLoading(true);
+  const openModal = (ev = null) => {
+    setModal({ open: true, data: ev });
+    if (ev) {
+      setForm({ title: ev.title || '', description: ev.description || '', date: ev.date || '', category: ev.category || '', status: ev.status || '', url: ev.url || '' });
+    } else {
+      setForm({ title: '', description: '', date: '', category: '', status: '', url: '' });
+    }
+    setImage(null);
+  };
+
+  const saveEvent = async () => {
+    if (!form.title.trim()) return;
+    setSaving(true);
     const fd = new FormData();
-    Object.entries(addForm).forEach(([k, v]) => fd.append(k, v));
-    if (addImage) fd.append('image_file', addImage);
+    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+    if (image) fd.append('image_file', image);
     try {
-      await axios.post('/api/homepage/events', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setAddForm({ title: '', description: '', date: '', category: '', url: '' }); setAddImage(null);
+      if (modal.data) {
+        await axios.put(`/api/homepage/events/${modal.data.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        await axios.post('/api/homepage/events', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      setModal({ open: false, data: null });
       setSuccess(true); setTimeout(() => setSuccess(false), 3000);
       fetchEvents();
     } catch {}
-    setAddLoading(false);
-  };
-
-  const openEdit = (ev) => {
-    setEditModal({ open: true, data: ev });
-    setEditForm({ title: ev.title || '', description: ev.description || '', date: ev.date || '', category: ev.category || '', url: ev.url || '' });
-    setEditImage(null);
-  };
-
-  const saveEdit = async () => {
-    setEditLoading(true);
-    const fd = new FormData();
-    Object.entries(editForm).forEach(([k, v]) => fd.append(k, v));
-    if (editImage) fd.append('image_file', editImage);
-    try {
-      await axios.put(`/api/homepage/events/${editModal.data.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setEditModal({ open: false, data: null });
-      setSuccess(true); setTimeout(() => setSuccess(false), 3000);
-      fetchEvents();
-    } catch {}
-    setEditLoading(false);
+    setSaving(false);
   };
 
   const deleteEvent = async () => {
@@ -275,42 +237,32 @@ function EventsTab() {
   };
 
   const catLabel = (c) => CATEGORY_OPTIONS.find(o => o.value === c)?.label || c || '—';
-  const statusBadge = (ev) => {
-    const today = new Date().toISOString().split('T')[0];
-    const s = ev.date && ev.date < today ? 'past' : 'upcoming';
-    return s === 'past'
-      ? <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">Past</span>
-      : <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">Upcoming</span>;
-  };
 
   return (
     <>
-      {/* Edit Modal */}
-      <Modal open={editModal.open} onClose={() => setEditModal({ open: false, data: null })} title="Edit Event" size="lg">
+      <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })} title={modal.data ? "Edit Event" : "Add Event"} size="lg">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormInput label="Title" id="ee-title" value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} required placeholder="Event title..." />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormInput label="Title" id="ev-title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required placeholder="Event title..." />
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date</label>
-              <input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))}
+              <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                 className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Category</label>
-              <select value={editForm.category} onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer">
-                <option value="">None</option>
-                {CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
+            <FormSelect label="Category" id="ev-cat" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} options={CATEGORY_OPTIONS} placeholder="None" />
+            <FormSelect label="Status" id="ev-status" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} options={STATUS_OPTIONS} placeholder="Auto (based on date)" />
           </div>
-          <FormInput label="Description" id="ee-desc" value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} placeholder="Description... (optional)" />
-          <FormInput label="URL" id="ee-url" value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
-          <ImageUploadBox label="Event Image" currentUrl={editModal.data?.image_url} file={editImage} onFileChange={setEditImage} />
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
+            <ReactQuill theme="snow" value={form.description || ''} onChange={v => setForm(f => ({ ...f, description: v }))} className="bg-white text-slate-900 rounded-lg" />
+          </div>
+          <FormInput label="URL" id="ev-url" value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
+          <ImageUploadBox label="Event Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} />
+          
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
-            <button onClick={() => setEditModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            <button onClick={saveEdit} disabled={editLoading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-              {editLoading ? 'Saving...' : 'Save Changes'}
+            <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+            <button onClick={saveEvent} disabled={saving} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+              {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>
@@ -322,176 +274,257 @@ function EventsTab() {
 
       <SectionCard icon="event" iconBg="bg-emerald-100 dark:bg-emerald-900/30" iconColor="text-emerald-500" title="Events" subtitle="Manage community events displayed on the homepage" badge={events.length}>
         <SuccessBanner show={success} />
-
-        {/* Add Event Form */}
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Add New Event</p>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormInput label="Title" id="ae-title" value={addForm.title} onChange={e => setAddForm(f => ({ ...f, title: e.target.value }))} required placeholder="Event title..." />
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date</label>
-                <input type="date" value={addForm.date} onChange={e => setAddForm(f => ({ ...f, date: e.target.value }))}
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Category</label>
-                <select value={addForm.category} onChange={e => setAddForm(f => ({ ...f, category: e.target.value }))}
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer">
-                  <option value="">None</option>
-                  {CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </div>
-            </div>
-            <FormInput label="Description" id="ae-desc" value={addForm.description} onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))} placeholder="Description... (optional)" />
-            <FormInput label="URL" id="ae-url" value={addForm.url} onChange={e => setAddForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
-            <ImageUploadBox label="Event Image" file={addImage} onFileChange={setAddImage} />
-            <div className="flex justify-end">
-              <button onClick={addEvent} disabled={addLoading}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-                <span className="material-icons text-base">add</span> {addLoading ? 'Adding...' : 'Add Event'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Search & Filter */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 items-center">
-          <div className="relative flex-1 min-w-[200px]">
+        
+        <div className="p-6">
+          <FilterBar>
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search events..." />
-          </div>
-          <select value={catFilter} onChange={e => { setCatFilter(e.target.value); setPage(1); }}
-            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none cursor-pointer text-slate-700 dark:text-white">
-            <option value="">All Categories</option>
-            {CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-          {(search || catFilter) && (
-            <button onClick={() => { setSearch(''); setCatFilter(''); setPage(1); }}
-              className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
-              <span className="material-icons text-sm">close</span> Clear
+            <SelectFilter value={catFilter} onChange={v => { setCatFilter(v); setPage(1); }} options={CATEGORY_OPTIONS} placeholder="All Categories" />
+            <div className="flex-grow"></div>
+            <button onClick={() => openModal()} className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap">
+              <span className="material-icons text-[18px]">add</span> Add Event
             </button>
-          )}
-        </div>
+          </FilterBar>
 
-        {/* Table */}
-        {loading ? <div className="flex items-center justify-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div> : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                  <Th>Title</Th><Th>Category</Th><Th>Date</Th><Th>Status</Th><Th className="text-center">Actions</Th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {paged.length === 0 ? (
-                  <tr><td colSpan={5}><EmptyState icon="event_busy" title="No events found" subtitle={search || catFilter ? 'Try adjusting your filters' : 'Add your first event above'} /></td></tr>
-                ) : paged.map(ev => (
-                  <tr key={ev.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="px-6 py-3.5">
-                      <div className="flex items-center gap-3">
-                        {ev.image_url ? <img src={ev.image_url} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" /> : (
-                          <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0"><span className="material-icons text-emerald-500 text-[15px]">event</span></div>
-                        )}
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-xs">{ev.title}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5">{ev.category ? <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary">{catLabel(ev.category)}</span> : <span className="text-slate-400 text-xs">—</span>}</td>
-                    <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{ev.date ? new Date(ev.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
-                    <td className="px-4 py-3.5">{statusBadge(ev)}</td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => openEdit(ev)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>
-                        <button onClick={() => setDeleteModal({ open: true, id: ev.id, title: ev.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>
-                      </div>
-                    </td>
+          <TableWrapper>
+            {loading ? (
+              <tbody><tr><td colSpan={5} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                    <Th>Title</Th><Th>Category</Th><Th>Date</Th><Th>Status</Th><Th className="text-center">Actions</Th>
                   </tr>
-                ))}
-              </tbody>
-              {meta.last_page > 1 && <tfoot><tr><td colSpan={5}><Pagination meta={meta} onChange={p => setPage(p)} /></td></tr></tfoot>}
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {paged.length === 0 ? (
+                    <tr><td colSpan={5}><EmptyState icon="event_busy" title="No events found" subtitle={search || catFilter ? 'Try adjusting your filters' : 'Add your first event above'} /></td></tr>
+                  ) : paged.map(ev => (
+                    <tr key={ev.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-3">
+                          {ev.image_url ? <img src={ev.image_url} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" /> : (
+                            <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0"><span className="material-icons text-emerald-500 text-[15px]">event</span></div>
+                          )}
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-xs">{ev.title}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">{ev.category ? <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary">{catLabel(ev.category)}</span> : <span className="text-slate-400 text-xs">—</span>}</td>
+                      <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{ev.date ? new Date(ev.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                      <td className="px-4 py-3.5">
+                        <StatusBadge status={ev.status === 'upcoming' ? 'pending' : (ev.status === 'ongoing' ? 'active' : 'inactive')} />
+                        {ev.status && <span className="ml-1 text-xs text-slate-400">({ev.status})</span>}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => openModal(ev)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>
+                          <button onClick={() => setDeleteModal({ open: true, id: ev.id, title: ev.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                {meta.last_page > 1 && <tfoot><tr><td colSpan={5}><Pagination meta={meta} onChange={p => setPage(p)} /></td></tr></tfoot>}
+              </>
+            )}
+          </TableWrapper>
+        </div>
       </SectionCard>
     </>
   );
 }
-
 /* ═══════════════════════════════════════════════════════════════════════════
-   TAB 3: MEMORABLE MOMENTS
+   TAB 3: GALLERY
    ═══════════════════════════════════════════════════════════════════════════ */
-function MomentsTab() {
-  const [data, setData] = useState<any>({});
+function GalleryTab() {
+  const [settings, setSettings] = useState<any>({});
+  const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [imageFiles, setImageFiles] = useState([null, null, null, null]);
+  const [search, setSearch] = useState('');
+  
+  const [modal, setModal] = useState({ open: false, data: null });
+  const [form, setForm] = useState({ title: '', description: '', count: '' });
+  const [image, setImage] = useState(null);
+  
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [savingAlbum, setSavingAlbum] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
+  const [success, setSuccess] = useState('');
+  const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    axios.get('/api/homepage/memorable-moments').then(r => setData(r.data || {})).catch(() => {}).finally(() => setLoading(false));
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try { 
+      const [sRes, aRes] = await Promise.all([
+        axios.get('/api/homepage/gallery-settings'),
+        axios.get('/api/homepage/gallery')
+      ]);
+      setSettings(sRes.data || {});
+      setAlbums(aRes.data || []);
+    } catch { }
+    finally { setLoading(false); }
   }, []);
 
-  const set = (k, v) => setData(d => ({ ...d, [k]: v }));
-  const setCaption = (i, v) => {
-    const imgs = [...(data.images || [{}, {}, {}, {}])];
-    while (imgs.length < 4) imgs.push({});
-    imgs[i] = { ...imgs[i], caption: v };
-    setData(d => ({ ...d, images: imgs }));
-  };
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const save = async () => {
-    setSaving(true);
+  const filtered = albums.filter(a => {
+    const s = search.toLowerCase();
+    if (s && !(a.title?.toLowerCase().includes(s) || a.description?.toLowerCase().includes(s))) return false;
+    return true;
+  });
+
+  const perPage = 10;
+  const total = filtered.length;
+  const lastPage = Math.max(1, Math.ceil(total / perPage));
+  const paged = filtered.slice((page - 1) * perPage, page * perPage);
+  const meta = { current_page: page, last_page: lastPage, from: total === 0 ? 0 : (page - 1) * perPage + 1, to: Math.min(page * perPage, total), total };
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
     const fd = new FormData();
-    fd.append('eyebrow', data.eyebrow || '');
-    fd.append('title', data.title || '');
-    fd.append('subtitle', data.subtitle || '');
-    fd.append('archive_url', data.archive_url || '');
-    for (let i = 0; i < 4; i++) {
-      fd.append(`caption_${i}`, data.images?.[i]?.caption || '');
-      if (imageFiles[i]) fd.append(`image_${i}`, imageFiles[i]);
-    }
+    fd.append('eyebrow', settings.eyebrow || '');
+    fd.append('title', settings.title || '');
+    fd.append('subtitle', settings.subtitle || '');
+    fd.append('archive_url', settings.archive_url || '');
     try {
-      await axios.put('/api/homepage/memorable-moments', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setSuccess(true); setTimeout(() => setSuccess(false), 3000);
-      setImageFiles([null, null, null, null]);
+      await axios.put('/api/homepage/gallery-settings', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setSuccess('settings'); setTimeout(() => setSuccess(''), 3000);
     } catch {}
-    setSaving(false);
+    setSavingSettings(false);
   };
 
-  const slotLabels = ['1 — Large (left, spans 2 rows)', '2 — Wide (top-right)', '3 — Small (bottom-right)', '4 — Small (bottom-right)'];
+  const openModal = (item = null) => {
+    setModal({ open: true, data: item });
+    if (item) {
+      setForm({ title: item.title || '', description: item.description || '', count: item.count || '' });
+    } else {
+      setForm({ title: '', description: '', count: '' });
+    }
+    setImage(null);
+  };
 
-  if (loading) return <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>;
+  const saveAlbum = async () => {
+    if (!form.title.trim()) return;
+    setSavingAlbum(true);
+    const fd = new FormData();
+    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+    if (image) fd.append('image_file', image);
+    try {
+      if (modal.data) {
+        await axios.put(`/api/homepage/gallery/${modal.data.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        await axios.post('/api/homepage/gallery', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      setModal({ open: false, data: null });
+      setSuccess('album'); setTimeout(() => setSuccess(''), 3000);
+      fetchData();
+    } catch {}
+    setSavingAlbum(false);
+  };
+
+  const deleteAlbum = async () => {
+    setDeleteModal(d => ({ ...d, loading: true }));
+    try { await axios.delete(`/api/homepage/gallery/${deleteModal.id}`); fetchData(); } catch {}
+    setDeleteModal({ open: false, id: null, title: '', loading: false });
+  };
 
   return (
-    <SectionCard icon="photo_library" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Memorable Moments" subtitle="Manage the photo gallery section on the homepage">
-      <SuccessBanner show={success} />
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <FormInput label="Eyebrow Label" id="mm-ey" value={data.eyebrow || ''} onChange={e => set('eyebrow', e.target.value)} placeholder="e.g. The Gallery" />
-          <FormInput label="Section Title" id="mm-title" value={data.title || ''} onChange={e => set('title', e.target.value)} placeholder="e.g. Memorable Moments" />
-          <div className="md:col-span-2"><FormInput label="Subtitle" id="mm-sub" value={data.subtitle || ''} onChange={e => set('subtitle', e.target.value)} placeholder="A look back at the experiences..." /></div>
-          <div className="md:col-span-2"><FormInput label="Archive URL" id="mm-url" value={data.archive_url || ''} onChange={e => set('archive_url', e.target.value)} placeholder="https://..." /></div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Gallery Images</label>
-          <p className="text-xs text-slate-400">Upload up to 4 images for the gallery grid. Leave empty to keep existing images.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {slotLabels.map((lbl, i) => (
-              <div key={i} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4 space-y-3">
-                <div className="flex items-center gap-2"><span className="material-icons text-slate-400 text-[18px]">crop_landscape</span><span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{lbl}</span></div>
-                <ImageUploadBox currentUrl={data.images?.[i]?.url} file={imageFiles[i]} onFileChange={f => { const files = [...imageFiles]; files[i] = f; setImageFiles(files); }} />
-                <input type="text" value={data.images?.[i]?.caption || ''} onChange={e => setCaption(i, e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-slate-900 dark:text-white" placeholder="Caption (optional)" />
-              </div>
-            ))}
+    <>
+      <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })} title={modal.data ? "Edit Album" : "Add Album"} size="lg">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormInput label="Album Title" id="a-title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required placeholder="e.g. Clubhouse Inauguration" />
+            <FormInput label="Photo Count" id="a-count" value={form.count} onChange={e => setForm(f => ({ ...f, count: e.target.value }))} placeholder="e.g. 24 Photos" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
+            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Album description..."
+              className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none resize-none" />
+          </div>
+          <ImageUploadBox label="Cover Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} />
+          
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
+            <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+            <button onClick={saveAlbum} disabled={savingAlbum} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+              {savingAlbum ? 'Saving...' : 'Save Changes'}
+            </button>
           </div>
         </div>
-      </div>
-      <SaveButton onClick={save} loading={saving} label="Save Moments" />
-    </SectionCard>
+      </Modal>
+
+      <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
+        onConfirm={deleteAlbum} loading={deleteModal.loading} icon="delete_outline"
+        title="Delete Album?" message={`Delete <strong>${deleteModal.title}</strong>? This cannot be undone.`} confirmLabel="Yes, Delete" />
+
+      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Gallery Settings" subtitle="Configure the main gallery header">
+        <SuccessBanner show={success === 'settings'} />
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <FormInput label="Eyebrow Label" id="g-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Visual Tour" />
+            <FormInput label="Section Title" id="g-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Gallery" />
+            <div className="md:col-span-2"><FormInput label="Subtitle" id="g-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore..." /></div>
+            <div className="md:col-span-2"><FormInput label="Archive URL" id="g-url" value={settings.archive_url || ''} onChange={e => setSettings(d => ({ ...d, archive_url: e.target.value }))} placeholder="https://..." /></div>
+          </div>
+        </div>
+        <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
+      </SectionCard>
+
+      <div className="h-6"></div>
+
+      <SectionCard icon="photo_library" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Albums" subtitle="Manage gallery albums" badge={albums.length}>
+        <SuccessBanner show={success === 'album'} />
+        
+        <div className="p-6">
+          <FilterBar>
+            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search albums..." />
+            <div className="flex-grow"></div>
+            <button onClick={() => openModal()} className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap">
+              <span className="material-icons text-[18px]">add</span> Add Album
+            </button>
+          </FilterBar>
+
+          <TableWrapper>
+            {loading ? (
+              <tbody><tr><td colSpan={4} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                    <Th>Title</Th><Th>Description</Th><Th>Photos</Th><Th className="text-center">Actions</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {paged.length === 0 ? (
+                    <tr><td colSpan={4}><EmptyState icon="photo_library" title="No albums found" subtitle={search ? 'Try adjusting your filters' : 'Add your first album above'} /></td></tr>
+                  ) : paged.map(a => (
+                    <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-3">
+                          {a.image_url ? <img src={a.image_url} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" /> : (
+                            <div className="w-9 h-9 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0"><span className="material-icons text-indigo-500 text-[15px]">photo_library</span></div>
+                          )}
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-xs">{a.title}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-500 truncate max-w-xs">{a.description || '—'}</td>
+                      <td className="px-4 py-3.5 text-slate-500 whitespace-nowrap">{a.count || '—'}</td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => openModal(a)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>
+                          <button onClick={() => setDeleteModal({ open: true, id: a.id, title: a.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                {meta.last_page > 1 && <tfoot><tr><td colSpan={4}><Pagination meta={meta} onChange={p => setPage(p)} /></td></tr></tfoot>}
+              </>
+            )}
+          </TableWrapper>
+        </div>
+      </SectionCard>
+    </>
   );
 }
-
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 4: BULLETIN
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -584,7 +617,10 @@ function BulletinTab() {
                 className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
             </div>
           </div>
-          <FormInput label="Description" id="eb-desc" value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} placeholder="Description... (optional)" />
+          <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
+              <ReactQuill theme="snow" value={editForm.description || ''} onChange={v => setEditForm(f => ({ ...f, description: v }))} className="bg-white text-slate-900 rounded-lg" />
+            </div>
           <FormInput label="URL" id="eb-url" value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
           <ImageUploadBox label="Bulletin Image" currentUrl={editModal.data?.image_url} file={editImage} onFileChange={setEditImage} />
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
@@ -614,7 +650,10 @@ function BulletinTab() {
                   className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
               </div>
             </div>
-            <FormInput label="Description" id="ab-desc" value={addForm.description} onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))} placeholder="Description... (optional)" />
+            <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
+            <ReactQuill theme="snow" value={addForm.description || ''} onChange={v => setAddForm(f => ({ ...f, description: v }))} className="bg-white text-slate-900 rounded-lg mb-4" />
+          </div>
             <FormInput label="URL" id="ab-url" value={addForm.url} onChange={e => setAddForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
             <ImageUploadBox label="Bulletin Image" file={addImage} onFileChange={setAddImage} />
             <div className="flex justify-end">
@@ -671,86 +710,7 @@ function BulletinTab() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   TAB 5: ABOUT SECTION
-   ═══════════════════════════════════════════════════════════════════════════ */
-function AboutTab() {
-  const [data, setData] = useState<any>({});
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    axios.get('/api/homepage/about').then(r => setData(r.data || {})).catch(() => {}).finally(() => setLoading(false));
-  }, []);
-
-  const set = (k, v) => setData(d => ({ ...d, [k]: v }));
-  const setStat = (i, field, v) => {
-    const stats = [...(data.stats || [{ value: '', label: '' }, { value: '', label: '' }, { value: '', label: '' }, { value: '', label: '' }])];
-    while (stats.length < 4) stats.push({ value: '', label: '' });
-    stats[i] = { ...stats[i], [field]: v };
-    setData(d => ({ ...d, stats }));
-  };
-
-  const save = async () => {
-    setSaving(true);
-    try {
-      await axios.put('/api/homepage/about', data);
-      setSuccess(true); setTimeout(() => setSuccess(false), 3000);
-    } catch {}
-    setSaving(false);
-  };
-
-  if (loading) return <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>;
-
-  const stats = data.stats || [{ value: '', label: '' }, { value: '', label: '' }, { value: '', label: '' }, { value: '', label: '' }];
-  while (stats.length < 4) stats.push({ value: '', label: '' });
-
-  return (
-    <SectionCard icon="info" iconBg="bg-violet-100 dark:bg-violet-900/30" iconColor="text-violet-500" title="About Section" subtitle="Manage the about section on the homepage">
-      <SuccessBanner show={success} />
-      <div className="p-6 space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormInput label="Badge Text" id="ab-badge" value={data.badge || ''} onChange={e => set('badge', e.target.value)} placeholder="e.g. Our Identity" />
-          <FormInput label="Section Heading" id="ab-heading" value={data.heading || ''} onChange={e => set('heading', e.target.value)} placeholder="e.g. Elevating Residential Living..." required />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <FormInput label="Primary Button Label" id="ab-btn1" value={data.btn1_label || ''} onChange={e => set('btn1_label', e.target.value)} placeholder="e.g. Explore Amenities" />
-            <FormInput label="" id="ab-btn1u" value={data.btn1_url || ''} onChange={e => set('btn1_url', e.target.value)} placeholder="https://... (leave blank = no link)" />
-          </div>
-          <div className="space-y-1.5">
-            <FormInput label="Secondary Button Label" id="ab-btn2" value={data.btn2_label || ''} onChange={e => set('btn2_label', e.target.value)} placeholder="e.g. Our History" />
-            <FormInput label="" id="ab-btn2u" value={data.btn2_url || ''} onChange={e => set('btn2_url', e.target.value)} placeholder="https://... (leave blank = no link)" />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Content <span className="text-rose-500">*</span></label>
-          <textarea value={data.content || ''} onChange={e => set('content', e.target.value)} rows={6} placeholder="Write about the community, its history, values, and vision..."
-            className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
-          <p className="text-xs text-slate-400 mt-1">HTML is supported for rich formatting.</p>
-        </div>
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Stats Cards</label>
-          <p className="text-xs text-slate-400">Up to 4 stat cards shown below the about content. Leave blank to hide.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {stats.map((s, i) => (
-              <div key={i} className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                <div className="flex-1 space-y-1.5">
-                  <input type="text" value={s.value || ''} onChange={e => setStat(i, 'value', e.target.value)} placeholder="e.g. 500+"
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-slate-900 dark:text-white" />
-                  <input type="text" value={s.label || ''} onChange={e => setStat(i, 'label', e.target.value)} placeholder="e.g. Residents"
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-500 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none dark:text-slate-300" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <SaveButton onClick={save} loading={saving} label="Save About Section" />
-    </SectionCard>
-  );
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 6: FOOTER
@@ -815,7 +775,10 @@ function FooterTab() {
           <FormInput label="Contact Email" id="ft-email" value={data.contact_email || ''} onChange={e => set('contact_email', e.target.value)} placeholder="e.g. hello@dwipapuri.com" />
           <FormInput label="Contact Phone" id="ft-phone" value={data.contact_phone || ''} onChange={e => set('contact_phone', e.target.value)} placeholder="e.g. +62 123 4567 890" />
         </div>
-        <FormInput label="Location" id="ft-loc" value={data.location || ''} onChange={e => set('location', e.target.value)} placeholder="e.g. 101 Dwipapuri Blvd, Serene Valley" />
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Contact Information / Location</label>
+          <ReactQuill theme="snow" value={data.location || ''} onChange={v => set('location', v)} className="bg-white text-slate-900 rounded-lg mb-4" />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput label="Facebook URL" id="ft-fb" value={data.facebook_url || ''} onChange={e => set('facebook_url', e.target.value)} placeholder="https://facebook.com/..." />
           <FormInput label="Instagram URL" id="ft-ig" value={data.instagram_url || ''} onChange={e => set('instagram_url', e.target.value)} placeholder="https://instagram.com/..." />
@@ -957,18 +920,17 @@ function MetadataTab() {
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function AdminHomepage() {
   const { tab } = useParams();
-  const activeTab = tab || 'featured';
+  const activeTab = tab || 'hero';
 
   const token = localStorage.getItem('admin_token');
   if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'featured': return <FeaturedEventTab />;
+      case 'hero': return <HeroTab />;
       case 'events':   return <EventsTab />;
-      case 'moments':  return <MomentsTab />;
+      case 'gallery':  return <GalleryTab />;
       case 'bulletin': return <BulletinTab />;
-      case 'about':    return <AboutTab />;
       case 'footer':   return <FooterTab />;
       case 'metadata': return <MetadataTab />;
       default: return null;

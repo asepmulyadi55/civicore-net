@@ -60,61 +60,44 @@ public class HomepageCmsController : ControllerBase
         return $"/uploads/homepage/{subFolder}/{fileName}";
     }
 
-    // ── Featured Event ───────────────────────────────────────────────────────
+    // ── Hero Section ─────────────────────────────────────────────────────────
 
-    [HttpGet("featured-event")]
-    public async Task<IActionResult> GetFeaturedEvent()
+    [HttpGet("hero")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetHero()
     {
-        var json = await GetSettingValue("homepage_featured_event");
+        var json = await GetSettingValue("homepage_hero");
         if (string.IsNullOrEmpty(json)) return Ok(new { });
         return Content(json, "application/json");
     }
 
-    [HttpPut("featured-event")]
-    public async Task<IActionResult> UpdateFeaturedEvent([FromForm] string? type, [FromForm] string? title,
-        [FromForm] string? youtube_id, [FromForm] string? date, [FromForm] string? featured_eyebrow,
-        IFormFile? image_file, IFormFile? mobile_image_file)
+    [HttpPut("hero")]
+    public async Task<IActionResult> UpdateHero([FromForm] string? title, [FromForm] string? subtitle,
+        [FromForm] string? cta_label, IFormFile? background_image)
     {
         var existing = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
-            await GetSettingValue("homepage_featured_event") ?? "{}") ?? new();
+            await GetSettingValue("homepage_hero") ?? "{}") ?? new();
 
         var data = new Dictionary<string, object?>
         {
-            ["type"] = type ?? "full",
             ["title"] = title,
-            ["youtube_id"] = youtube_id,
-            ["date"] = date,
+            ["subtitle"] = subtitle,
+            ["cta_label"] = cta_label,
         };
 
-        if (image_file != null)
-            data["image_url"] = await SaveUploadedFile(image_file, "featured");
-        else if (existing.TryGetValue("image_url", out var img))
-            data["image_url"] = img.GetString();
+        if (background_image != null)
+            data["background_image_url"] = await SaveUploadedFile(background_image, "hero");
+        else if (existing.TryGetValue("background_image_url", out var img))
+            data["background_image_url"] = img.GetString();
 
-        if (mobile_image_file != null)
-            data["mobile_image_url"] = await SaveUploadedFile(mobile_image_file, "featured");
-        else if (existing.TryGetValue("mobile_image_url", out var mImg))
-            data["mobile_image_url"] = mImg.GetString();
-
-        if (type == "simple") { data["youtube_id"] = null; data["date"] = null; }
-
-        await SaveSetting("homepage_featured_event", JsonSerializer.Serialize(data));
-
-        // Save eyebrow label
-        if (featured_eyebrow != null)
-        {
-            var labels = JsonSerializer.Deserialize<Dictionary<string, string>>(
-                await GetSettingValue("homepage_section_labels") ?? "{}") ?? new();
-            labels["featured_eyebrow"] = featured_eyebrow;
-            await SaveSetting("homepage_section_labels", JsonSerializer.Serialize(labels));
-        }
-
-        return Ok(new { message = "Featured event saved." });
+        await SaveSetting("homepage_hero", JsonSerializer.Serialize(data));
+        return Ok(new { message = "Hero section saved." });
     }
 
     // ── Events (CRUD) ────────────────────────────────────────────────────────
 
     [HttpGet("events")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetEvents()
     {
         var json = await GetSettingValue("homepage_events");
@@ -124,7 +107,7 @@ public class HomepageCmsController : ControllerBase
 
     [HttpPost("events")]
     public async Task<IActionResult> StoreEvent([FromForm] string title, [FromForm] string? description,
-        [FromForm] string? date, [FromForm] string? category, [FromForm] string? url, IFormFile? image_file)
+        [FromForm] string? date, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
             await GetSettingValue("homepage_events") ?? "[]") ?? new();
@@ -132,7 +115,11 @@ public class HomepageCmsController : ControllerBase
         string? imageUrl = null;
         if (image_file != null) imageUrl = await SaveUploadedFile(image_file, "events");
 
-        var status = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, out var d) && d < DateTime.Today ? "past" : "upcoming";
+        var eventStatus = status;
+        if (string.IsNullOrEmpty(eventStatus))
+        {
+            eventStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, out var d) && d < DateTime.Today ? "past" : "upcoming";
+        }
 
         events.Add(new Dictionary<string, object?>
         {
@@ -143,7 +130,7 @@ public class HomepageCmsController : ControllerBase
             ["category"] = category,
             ["url"] = url,
             ["image_url"] = imageUrl,
-            ["status"] = status,
+            ["status"] = eventStatus,
         });
 
         await SaveSetting("homepage_events", JsonSerializer.Serialize(events));
@@ -152,7 +139,7 @@ public class HomepageCmsController : ControllerBase
 
     [HttpPut("events/{id}")]
     public async Task<IActionResult> UpdateEvent(string id, [FromForm] string title, [FromForm] string? description,
-        [FromForm] string? date, [FromForm] string? category, [FromForm] string? url, IFormFile? image_file)
+        [FromForm] string? date, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
             await GetSettingValue("homepage_events") ?? "[]") ?? new();
@@ -162,6 +149,12 @@ public class HomepageCmsController : ControllerBase
         {
             if (events[i].TryGetValue("id", out var idEl) && idEl.GetString() == id)
             {
+                var eventStatus = status;
+                if (string.IsNullOrEmpty(eventStatus))
+                {
+                    eventStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, out var d) && d < DateTime.Today ? "past" : "upcoming";
+                }
+
                 var updated = new Dictionary<string, object?>
                 {
                     ["id"] = id,
@@ -170,7 +163,7 @@ public class HomepageCmsController : ControllerBase
                     ["date"] = date,
                     ["category"] = category,
                     ["url"] = url,
-                    ["status"] = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, out var d) && d < DateTime.Today ? "past" : "upcoming",
+                    ["status"] = eventStatus,
                 };
 
                 if (image_file != null)
@@ -202,59 +195,119 @@ public class HomepageCmsController : ControllerBase
         return Ok(new { message = "Event removed." });
     }
 
-    // ── Memorable Moments ────────────────────────────────────────────────────
+    // ── Gallery Settings ──────────────────────────────────────────────────────
 
-    [HttpGet("memorable-moments")]
-    public async Task<IActionResult> GetMemorableMoments()
+    [HttpGet("gallery-settings")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetGallerySettings()
     {
-        var json = await GetSettingValue("homepage_memorable_moments");
-        if (string.IsNullOrEmpty(json)) return Ok(new { });
+        var json = await GetSettingValue("homepage_gallery_settings");
+        if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Visual Tour", title = "Gallery", subtitle = "", archive_url = "/gallery" });
         return Content(json, "application/json");
     }
 
-    [HttpPut("memorable-moments")]
-    public async Task<IActionResult> UpdateMemorableMoments([FromForm] string? eyebrow, [FromForm] string? title,
-        [FromForm] string? subtitle, [FromForm] string? archive_url,
-        [FromForm] string? caption_0, [FromForm] string? caption_1, [FromForm] string? caption_2, [FromForm] string? caption_3,
-        IFormFile? image_0, IFormFile? image_1, IFormFile? image_2, IFormFile? image_3)
+    [HttpPut("gallery-settings")]
+    public async Task<IActionResult> UpdateGallerySettings([FromForm] string? eyebrow, [FromForm] string? title,
+        [FromForm] string? subtitle, [FromForm] string? archive_url)
     {
-        var existing = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
-            await GetSettingValue("homepage_memorable_moments") ?? "{}") ?? new();
-
-        var existingImages = new List<Dictionary<string, string?>>();
-        if (existing.TryGetValue("images", out var imgsEl))
-        {
-            existingImages = JsonSerializer.Deserialize<List<Dictionary<string, string?>>>(imgsEl.GetRawText()) ?? new();
-        }
-        while (existingImages.Count < 4) existingImages.Add(new Dictionary<string, string?> { ["url"] = null, ["caption"] = null });
-
-        var imageFiles = new IFormFile?[] { image_0, image_1, image_2, image_3 };
-        var captions = new string?[] { caption_0, caption_1, caption_2, caption_3 };
-
-        for (int i = 0; i < 4; i++)
-        {
-            if (imageFiles[i] != null)
-                existingImages[i]["url"] = await SaveUploadedFile(imageFiles[i]!, "moments");
-            if (captions[i] != null)
-                existingImages[i]["caption"] = captions[i];
-        }
-
         var data = new Dictionary<string, object?>
         {
-            ["eyebrow"] = eyebrow ?? (existing.TryGetValue("eyebrow", out var ey) ? ey.GetString() : "The Gallery"),
-            ["title"] = title,
+            ["eyebrow"] = eyebrow ?? "Visual Tour",
+            ["title"] = title ?? "Gallery",
             ["subtitle"] = subtitle,
-            ["archive_url"] = archive_url,
-            ["images"] = existingImages,
+            ["archive_url"] = archive_url ?? "/gallery"
         };
+        await SaveSetting("homepage_gallery_settings", JsonSerializer.Serialize(data));
+        return Ok(new { message = "Gallery settings saved." });
+    }
 
-        await SaveSetting("homepage_memorable_moments", JsonSerializer.Serialize(data));
-        return Ok(new { message = "Memorable moments saved." });
+    // ── Gallery Albums (CRUD) ────────────────────────────────────────────────
+
+    [HttpGet("gallery")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetGallery()
+    {
+        var json = await GetSettingValue("homepage_gallery");
+        if (string.IsNullOrEmpty(json)) return Ok(new List<object>());
+        return Content(json, "application/json");
+    }
+
+    [HttpPost("gallery")]
+    public async Task<IActionResult> StoreAlbum([FromForm] string title, [FromForm] string? description,
+        [FromForm] string? count, IFormFile? image_file)
+    {
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
+            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+
+        string? imageUrl = null;
+        if (image_file != null) imageUrl = await SaveUploadedFile(image_file, "gallery");
+
+        items.Add(new Dictionary<string, object?>
+        {
+            ["id"] = Guid.NewGuid().ToString(),
+            ["title"] = title,
+            ["description"] = description,
+            ["count"] = count,
+            ["image_url"] = imageUrl,
+        });
+
+        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        return Ok(new { message = "Album added." });
+    }
+
+    [HttpPut("gallery/{id}")]
+    public async Task<IActionResult> UpdateAlbum(string id, [FromForm] string title, [FromForm] string? description,
+        [FromForm] string? count, IFormFile? image_file)
+    {
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
+            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+
+        var found = false;
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i].TryGetValue("id", out var idEl) && idEl.GetString() == id)
+            {
+                var updated = new Dictionary<string, object?>
+                {
+                    ["id"] = id,
+                    ["title"] = title,
+                    ["description"] = description,
+                    ["count"] = count,
+                };
+
+                if (image_file != null)
+                    updated["image_url"] = await SaveUploadedFile(image_file, "gallery");
+                else if (items[i].TryGetValue("image_url", out var img))
+                    updated["image_url"] = img.GetString();
+
+                items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(updated))!;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) return NotFound(new { message = "Album not found." });
+
+        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        return Ok(new { message = "Album updated." });
+    }
+
+    [HttpDelete("gallery/{id}")]
+    public async Task<IActionResult> DestroyAlbum(string id)
+    {
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
+            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+
+        items = items.Where(e => !(e.TryGetValue("id", out var idEl) && idEl.GetString() == id)).ToList();
+
+        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        return Ok(new { message = "Album removed." });
     }
 
     // ── Bulletin (CRUD) ──────────────────────────────────────────────────────
 
     [HttpGet("bulletin")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetBulletin()
     {
         var json = await GetSettingValue("homepage_buletin");
@@ -264,7 +317,7 @@ public class HomepageCmsController : ControllerBase
 
     [HttpPost("bulletin")]
     public async Task<IActionResult> StoreBulletin([FromForm] string title, [FromForm] string? description,
-        [FromForm] string? date, [FromForm] string? url, IFormFile? image_file)
+        [FromForm] string? date, [FromForm] string? category, [FromForm] string? url, IFormFile? image_file)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
             await GetSettingValue("homepage_buletin") ?? "[]") ?? new();
@@ -278,6 +331,7 @@ public class HomepageCmsController : ControllerBase
             ["title"] = title,
             ["description"] = description,
             ["date"] = date,
+            ["category"] = category,
             ["url"] = url,
             ["image_url"] = imageUrl,
         });
@@ -288,7 +342,7 @@ public class HomepageCmsController : ControllerBase
 
     [HttpPut("bulletin/{id}")]
     public async Task<IActionResult> UpdateBulletin(string id, [FromForm] string title, [FromForm] string? description,
-        [FromForm] string? date, [FromForm] string? url, IFormFile? image_file)
+        [FromForm] string? date, [FromForm] string? category, [FromForm] string? url, IFormFile? image_file)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
             await GetSettingValue("homepage_buletin") ?? "[]") ?? new();
@@ -304,6 +358,7 @@ public class HomepageCmsController : ControllerBase
                     ["title"] = title,
                     ["description"] = description,
                     ["date"] = date,
+                    ["category"] = category,
                     ["url"] = url,
                 };
 
@@ -336,26 +391,10 @@ public class HomepageCmsController : ControllerBase
         return Ok(new { message = "Bulletin removed." });
     }
 
-    // ── About Section ────────────────────────────────────────────────────────
-
-    [HttpGet("about")]
-    public async Task<IActionResult> GetAbout()
-    {
-        var json = await GetSettingValue("homepage_about");
-        if (string.IsNullOrEmpty(json)) return Ok(new { });
-        return Content(json, "application/json");
-    }
-
-    [HttpPut("about")]
-    public async Task<IActionResult> UpdateAbout([FromBody] JsonElement body)
-    {
-        await SaveSetting("homepage_about", body.GetRawText());
-        return Ok(new { message = "About section saved." });
-    }
-
     // ── Footer ───────────────────────────────────────────────────────────────
 
     [HttpGet("footer")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetFooter()
     {
         var json = await GetSettingValue("homepage_footer");
@@ -373,6 +412,7 @@ public class HomepageCmsController : ControllerBase
     // ── SEO & Metadata ──────────────────────────────────────────────────────
 
     [HttpGet("metadata")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetMetadata()
     {
         var json = await GetSettingValue("homepage_metadata");
@@ -404,6 +444,7 @@ public class HomepageCmsController : ControllerBase
     // ── Section Labels ───────────────────────────────────────────────────────
 
     [HttpGet("section-labels")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetSectionLabels()
     {
         var json = await GetSettingValue("homepage_section_labels");
@@ -430,6 +471,7 @@ public class HomepageCmsController : ControllerBase
     // ── Legacy endpoint (keep backward compat) ──────────────────────────────
 
     [HttpGet("content")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetContent()
     {
         var keys = new[] { "hero_title", "hero_subtitle", "hero_cta_label", "about_title", "about_body", "contact_phone", "contact_email", "contact_address" };
