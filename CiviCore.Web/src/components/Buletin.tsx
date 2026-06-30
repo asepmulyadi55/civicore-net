@@ -26,7 +26,15 @@ function SkeletonCard({ isDark }) {
     );
 }
 
-export default function Buletin({ buletin = [], loading, isDark = false, eyebrow = 'Informasi', heading = 'Buletin' }) {
+interface BuletinProps {
+    buletin?: any[];
+    loading?: boolean;
+    isDark?: boolean;
+    eyebrow?: string;
+    heading?: string;
+}
+
+export default function Buletin({ buletin = [], loading, isDark = false, eyebrow = 'Informasi', heading = 'Buletin' }: BuletinProps) {
     const headingColor = isDark ? '#F0EDE8' : '#1C2D27';
     const bodyColor    = isDark ? '#9E9C97' : '#595959';
     const cardBg       = isDark ? '#142920' : '#ffffff';

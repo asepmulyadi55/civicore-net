@@ -25,7 +25,15 @@ function SkeletonCard({ isDark }) {
     );
 }
 
-export default function PropertyListings({ listings = [], loading, isDark = false, eyebrow = 'Properties', heading = 'For Sale & Rent' }) {
+interface PropertyListingsProps {
+    listings?: any[];
+    loading?: boolean;
+    isDark?: boolean;
+    eyebrow?: string;
+    heading?: string;
+}
+
+export default function PropertyListings({ listings = [], loading, isDark = false, eyebrow = 'Properties', heading = 'For Sale & Rent' }: PropertyListingsProps) {
     const headingColor       = isDark ? '#F0EDE8' : '#1C2D27';
     const bodyColor          = isDark ? '#9E9C97' : '#595959';
     const cardBg             = isDark ? '#142920' : '#ffffff';
@@ -104,7 +112,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
                             style={{ background: cardBg, border: `1px solid ${cardBorder}` }}
                         >
                             {/* Image */}
-                            <Link to={`/property/${listing.id}`} className="block relative w-full h-52 overflow-hidden flex-shrink-0">
+                            <Link href={`/property/${listing.id}`} className="block relative w-full h-52 overflow-hidden flex-shrink-0">
                                 <img
                                     src={image}
                                     alt={listing.title}
@@ -126,7 +134,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
 
                             {/* Body */}
                             <div className="p-5 flex flex-col flex-1 gap-2">
-                                <Link to={`/property/${listing.id}`} className="font-semibold text-base leading-snug hover:underline" style={{ color: headingColor, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                <Link href={`/property/${listing.id}`} className="font-semibold text-base leading-snug hover:underline" style={{ color: headingColor, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                     {listing.title}
                                 </Link>
 
@@ -170,7 +178,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
 
                                 <div className="flex gap-2 mt-2">
                                     <Link
-                                        to={`/property/${listing.id}`}
+                                        href={`/property/${listing.id}`}
                                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
                                         style={{ background: isDark ? 'rgba(212,175,55,0.15)' : '#fefce8', color: '#D4AF37', border: `1px solid ${isDark ? 'rgba(212,175,55,0.3)' : '#fde68a'}`, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                     >
@@ -199,7 +207,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
             {listings.length > 3 && (
                 <div className="mt-10 flex justify-center md:hidden">
                     <Link
-                        to="/property"
+                        href="/property"
                         className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold border transition-all"
                         style={{ color: viewAllColor, borderColor: viewAllBorderColor, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >

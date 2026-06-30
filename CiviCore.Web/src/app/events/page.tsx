@@ -236,7 +236,7 @@ export default function EventsPage() {
                                             
                                             <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
                                                 <span className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link">
-                                                    <span className="group-hover/link:underline">{isPast ? 'View Gallery' : 'View Details'}</span> 
+                                                    <span className="group-hover/link:underline">View Details</span> 
                                                     <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
                                                 </span>
                                                 <span className="text-label-sm text-text-muted dark:text-on-primary/50">

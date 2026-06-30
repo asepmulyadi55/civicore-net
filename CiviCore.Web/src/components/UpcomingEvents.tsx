@@ -4,12 +4,12 @@ import React from 'react';
 import Link from 'next/link';
 
 const CATEGORY_BADGE_STYLES = {
-    wellness:  { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
-    meetings:  { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
+    wellness: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
+    meetings: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
     education: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
-    cultural:  { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
-    sports:    { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
-    other:     { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
+    cultural: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
+    sports: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
+    other: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
 };
 
 const PLACEHOLDER_IMAGES = [
@@ -35,11 +35,19 @@ function SkeletonCard({ isDark }) {
     );
 }
 
-export default function UpcomingEvents({ events = [], loading, isDark = false, eyebrow = 'Discover More', heading = 'Upcoming Community Events' }) {
+interface UpcomingEventsProps {
+    events?: any[];
+    loading?: boolean;
+    isDark?: boolean;
+    eyebrow?: string;
+    heading?: string;
+}
+
+export default function UpcomingEvents({ events = [], loading, isDark = false, eyebrow = 'Discover More', heading = 'Upcoming Community Events' }: UpcomingEventsProps) {
     const headingColor = isDark ? '#F0EDE8' : '#1C2D27';
-    const bodyColor    = isDark ? '#9E9C97' : '#595959';
-    const cardBg       = isDark ? '#142920' : '#ffffff';
-    const cardBorder   = isDark ? '#1C2D27' : 'rgba(198,197,212,0.10)';
+    const bodyColor = isDark ? '#9E9C97' : '#595959';
+    const cardBg = isDark ? '#142920' : '#ffffff';
+    const cardBorder = isDark ? '#1C2D27' : 'rgba(198,197,212,0.10)';
     const dividerColor = isDark ? '#1C2D27' : '#E8E6E1';
     const viewAllColor = isDark ? '#D4AF37' : '#1C2D27';
     const viewAllBorderColor = isDark ? 'rgba(212,175,55,0.4)' : 'rgba(28,45,39,0.3)';
@@ -84,9 +92,9 @@ export default function UpcomingEvents({ events = [], loading, isDark = false, e
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {events.map((event, i) => {
-                        const category   = (event.category || 'other').toLowerCase();
+                        const category = (event.category || 'other').toLowerCase();
                         const badgeStyle = CATEGORY_BADGE_STYLES[category] || CATEGORY_BADGE_STYLES.other;
-                        const image      = event.image_url || PLACEHOLDER_IMAGES[i % PLACEHOLDER_IMAGES.length];
+                        const image = event.image_url || PLACEHOLDER_IMAGES[i % PLACEHOLDER_IMAGES.length];
 
                         return (
                             <Link key={event.id || i} href={`/event/${event.id}`}
@@ -149,7 +157,7 @@ export default function UpcomingEvents({ events = [], loading, isDark = false, e
                                         )}
                                     </div>
                                 </div>
-                            </article>
+                            </Link>
                         );
                     })}
                 </div>

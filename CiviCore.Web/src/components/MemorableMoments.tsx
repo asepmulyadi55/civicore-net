@@ -9,7 +9,14 @@ const PLACEHOLDER_IMAGES = [
     'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80&auto=format',
 ];
 
-export default function MemorableMoments({ moments = {}, pastEvents = [], loading, isDark = false }) {
+interface MemorableMomentsProps {
+    moments?: any;
+    pastEvents?: any[];
+    loading?: boolean;
+    isDark?: boolean;
+}
+
+export default function MemorableMoments({ moments = {}, pastEvents = [], loading, isDark = false }: MemorableMomentsProps) {
     const headingColor = isDark ? '#F0EDE8' : '#1C2D27';
     const bodyColor    = isDark ? '#9E9C97' : '#595959';
     const sectionBg    = isDark ? '#0A1510' : '#F4F3EF';

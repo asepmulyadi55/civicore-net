@@ -9,7 +9,12 @@ const DEFAULTS = {
     bg_image: '',
 };
 
-export default function HeroSection({ hero = {}, loading }) {
+interface HeroSectionProps {
+    hero?: any;
+    loading?: boolean;
+}
+
+export default function HeroSection({ hero = {}, loading }: HeroSectionProps) {
     const title    = hero?.title    || DEFAULTS.title;
     const subtitle = hero?.subtitle || DEFAULTS.subtitle;
     const ctaText  = hero?.cta_text || DEFAULTS.cta_text;

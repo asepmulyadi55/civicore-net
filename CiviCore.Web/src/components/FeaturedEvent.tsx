@@ -2,7 +2,14 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function FeaturedEvent({ featuredEvent = {}, loading, isDark = false, eyebrow = 'Featured Event' }) {
+interface FeaturedEventProps {
+    featuredEvent?: any;
+    loading?: boolean;
+    isDark?: boolean;
+    eyebrow?: string;
+}
+
+export default function FeaturedEvent({ featuredEvent = {}, loading, isDark = false, eyebrow = 'Featured Event' }: FeaturedEventProps) {
     const dropdownBg = isDark ? '#1A2E28' : '#ffffff';
     const dropdownBorder = isDark ? '#1C2D27' : '#f1f5f9';
     const dropdownText = isDark ? '#F0EDE8' : '#374151';
@@ -36,8 +43,8 @@ export default function FeaturedEvent({ featuredEvent = {}, loading, isDark = fa
     const [shareOpen, setShareOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const [copiedPlatform, setCopiedPlatform] = useState(null);
-    const calRef = useRef(null);
-    const shareRef = useRef(null);
+    const calRef = useRef<HTMLDivElement>(null);
+    const shareRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         function handleClick(e) {

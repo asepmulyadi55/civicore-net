@@ -9,7 +9,12 @@ const PLACEHOLDER_IMAGES = [
     'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80&auto=format',
 ];
 
-export default function PastHighlights({ pastEvents = [], loading }) {
+interface PastHighlightsProps {
+    pastEvents?: any[];
+    loading?: boolean;
+}
+
+export default function PastHighlights({ pastEvents = [], loading }: PastHighlightsProps) {
     const hasEvents = !loading && pastEvents.length > 0;
 
     return (

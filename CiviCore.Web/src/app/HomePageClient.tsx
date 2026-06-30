@@ -147,7 +147,7 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                                         <div className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow prose prose-sm dark:prose-invert max-w-none line-clamp-3" dangerouslySetInnerHTML={{ __html: ev.description || '' }} />
                                         <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
                                             <Link className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" href={ev.url || `/events/${ev.id}`}>
-                                                <span className="group-hover/link:underline">{isPast ? 'View Gallery' : 'View Details'}</span> 
+                                                <span className="group-hover/link:underline">View Details</span> 
                                                 <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
                                             </Link>
                                         </div>

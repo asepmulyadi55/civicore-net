@@ -15,7 +15,24 @@ const STAT_CARD_STYLES = [
 
 const STAT_ICONS = ['group', 'shield', 'park', 'event_note'];
 
-export default function AboutSection({ about = {}, loading, isDark = false }) {
+interface AboutData {
+    content?: string;
+    stats?: { value: string | number; label: string }[];
+    badge?: string;
+    heading?: string;
+    btn1_label?: string;
+    btn1_url?: string;
+    btn2_label?: string;
+    btn2_url?: string;
+}
+
+interface AboutSectionProps {
+    about?: AboutData | any;
+    loading?: boolean;
+    isDark?: boolean;
+}
+
+export default function AboutSection({ about = {}, loading, isDark = false }: AboutSectionProps) {
     const headingColor = isDark ? '#F0EDE8' : '#1C2D27';
     const bodyColor    = isDark ? '#9E9C97' : '#454652';
     const skBg         = isDark ? '#1C2D27' : '#f1f5f9';

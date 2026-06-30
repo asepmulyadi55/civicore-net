@@ -2,7 +2,12 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function Footer({ setActiveTab, footerData }: any) {
+interface FooterProps {
+    setActiveTab?: (tab: string) => void;
+    footerData?: any;
+}
+
+export default function Footer({ setActiveTab, footerData }: FooterProps) {
     const data = footerData || {};
     
     // Quick Links logic

@@ -2,7 +2,12 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
 
-export default function Header({ isDark = false, toggleDark }) {
+interface HeaderProps {
+    isDark?: boolean;
+    toggleDark?: () => void;
+}
+
+export default function Header({ isDark = false, toggleDark }: HeaderProps) {
   const C = isDark ? {
     primary: '#D4AF37',
     secondary: '#D4AF37',
@@ -31,7 +36,7 @@ export default function Header({ isDark = false, toggleDark }) {
   const hamburgerColor = scrolled ? C.primary : 'rgba(255,255,255,0.85)';
 
   const getAssetUrl = () => {
-    const meta = document.querySelector('meta[name="asset-url"]');
+    const meta = document.querySelector('meta[name="asset-url"]') as HTMLMetaElement;
     return meta ? meta.content : '/';
   };
   const logoImg = `${getAssetUrl()}logo.png`;
