@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
-import { MOCK_EVENTS } from '../page';
+import { API_URL } from '../page';
 
 export default function EventDetailPage() {
     const { id } = useParams();
@@ -33,7 +33,31 @@ export default function EventDetailPage() {
 
     useEffect(() => { window.scrollTo(0, 0); }, [id]);
 
-    const event = MOCK_EVENTS.find(e => e.id === id);
+    const [loading, setLoading] = useState(true);
+    const [event, setEvent] = useState<any>(null);
+
+    useEffect(() => {
+        setLoading(true);
+        fetch('/api/homepage/events')
+            .then(res => res.json())
+            .then(data => {
+                const found = data.find((e: any) => e.id === id || e.url === `/events/${id}` || e.url === id);
+                setEvent(found || null);
+                setLoading(false);
+            })
+            .catch((err) => {
+                console.error(err);
+                setLoading(false);
+            });
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="bg-surface-container-lowest dark:bg-primary min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
 
     if (!event) {
         return (
@@ -48,7 +72,7 @@ export default function EventDetailPage() {
         );
     }
 
-    const eventDate = event.date ? new Date(event.date + 'T00:00:00') : new Date();
+    const eventDate = event.date ? new Date(event.date) : new Date();
     const formattedDate = eventDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const isPast = (event.status !== 'ongoing') && !!event.date && event.date < new Date().toISOString().slice(0, 10);
 
@@ -63,7 +87,7 @@ export default function EventDetailPage() {
                     <img 
                         alt={event.title} 
                         className={`w-full h-full object-cover object-center absolute inset-0 z-0 ${isPast ? 'grayscale opacity-80' : ''}`} 
-                        src={event.image_url} 
+                        src={event.image_url ? (event.image_url.startsWith('http') ? event.image_url : `${API_URL}${event.image_url}`) : '/placeholder-event.png'} 
                     />
                     <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-surface-container-lowest dark:from-primary to-transparent h-48 z-10"></div>
                 </section>
@@ -103,10 +127,7 @@ export default function EventDetailPage() {
                                 {event.title}
                             </h1>
                             
-                            <p className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/80 mb-8 leading-relaxed">
-                                {event.description}
-                                {event.id === '1' && " Enjoy an evening of live acoustic music, curated local refreshments, and wonderful company beneath the ancient oaks."}
-                            </p>
+                            <div className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/80 mb-8 leading-relaxed space-y-4" dangerouslySetInnerHTML={{ __html: event.description || '' }}></div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                                 <div className="flex items-start gap-4 p-4 rounded-xl bg-surface-bright dark:bg-[#002117] border border-border-subtle/50 dark:border-primary-container/50">
@@ -124,7 +145,7 @@ export default function EventDetailPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-label-md text-label-md text-on-surface dark:text-on-primary/70 mb-1">Time</h3>
-                                        <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary">4:00 PM - 8:00 PM</p>
+                                        <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary">{event.date && event.date.includes('T') ? new Date(event.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4 p-4 rounded-xl bg-surface-bright dark:bg-[#002117] border border-border-subtle/50 dark:border-primary-container/50 sm:col-span-2">
@@ -133,7 +154,7 @@ export default function EventDetailPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-label-md text-label-md text-on-surface dark:text-on-primary/70 mb-1">Location</h3>
-                                        <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary">Dwipapuri Residence</p>
+                                        <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary">{event.location || '—'}</p>
                                     </div>
                                 </div>
                             </div>

@@ -55,6 +55,29 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
         return `${apiUrl}${url}`;
     };
 
+    const sortedEvents = (events || []).slice().sort((a: any, b: any) => {
+        const today = new Date().toISOString().slice(0, 10);
+        const getStatusWeight = (e: any) => {
+            if (e.status === 'ongoing') return 0;
+            return (!!e.date && e.date < today) ? 2 : 1;
+        };
+
+        const weightA = getStatusWeight(a);
+        const weightB = getStatusWeight(b);
+
+        if (weightA !== weightB) return weightA - weightB;
+
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+
+        if (weightA === 2) {
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+        } else {
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
+        }
+    });
+
     return (
         <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300">
             <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
@@ -92,32 +115,45 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
                             </Link>
                         )}
                     </div>
-                    {events && events.length > 0 ? (
+                    {sortedEvents.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
-                            {events.slice(0, 3).map((ev: any) => (
-                                <div key={ev.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
-                                    {ev.image_url && (
-                                        <div className="h-48 overflow-hidden relative">
-                                            <img alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={getImageUrl(ev.image_url)} />
-                                            {ev.date && (
-                                                <div className="absolute top-4 left-4 bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
-                                                    {new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            {sortedEvents.slice(0, 3).map((ev: any) => {
+                                const today = new Date().toISOString().slice(0, 10);
+                                const isPast = (ev.status !== 'ongoing') && !!ev.date && ev.date < today;
+                                return (
+                                    <div key={ev.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
+                                        {ev.image_url && (
+                                            <div className="h-48 overflow-hidden relative bg-surface-container-low dark:bg-primary/30">
+                                                <div className="absolute inset-0 bg-primary/10 dark:bg-primary/40 mix-blend-multiply z-10 group-hover:opacity-50 transition-opacity"></div>
+                                                <img alt={ev.title} className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isPast ? 'grayscale opacity-80' : ''}`} src={getImageUrl(ev.image_url)} />
+                                                <div className="absolute top-4 left-4 flex gap-2 z-20">
+                                                    {ev.date && (
+                                                        <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
+                                                            {new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                        </div>
+                                                    )}
+                                                    {isPast && (
+                                                        <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">Past</div>
+                                                    )}
+                                                    {ev.status === 'ongoing' && (
+                                                        <div className="bg-[#b45309] text-white px-3 py-1 rounded font-bold text-sm">Ongoing</div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    )}
+                                            </div>
+                                        )}
                                     <div className="p-6 flex flex-col flex-grow">
                                         <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">{ev.title}</h3>
-                                        <div className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: ev.description || '' }} />
+                                        <div className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow prose prose-sm dark:prose-invert max-w-none line-clamp-3" dangerouslySetInnerHTML={{ __html: ev.description || '' }} />
                                         <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
                                             <Link className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" href={ev.url || `/events/${ev.id}`}>
-                                                <span className="group-hover/link:underline">View Details</span> 
+                                                <span className="group-hover/link:underline">{isPast ? 'View Gallery' : 'View Details'}</span> 
                                                 <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
                                             </Link>
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            );
+                        })}
                         </div>
                     ) : (
                         <div className="text-center py-12 text-text-muted dark:text-on-primary/70 bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50">

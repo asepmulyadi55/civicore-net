@@ -12,12 +12,12 @@ namespace CiviCore.Api.Controllers;
 [ApiController]
 [Route("api/homepage")]
 [Authorize]
-public class HomepageCmsController : ControllerBase
+public class HomepageController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILocalStorageService _storageService;
 
-    public HomepageCmsController(AppDbContext context, ILocalStorageService storageService)
+    public HomepageController(AppDbContext context, ILocalStorageService storageService)
     {
         _context = context;
         _storageService = storageService;
@@ -104,7 +104,7 @@ public class HomepageCmsController : ControllerBase
 
     [HttpPost("events")]
     public async Task<IActionResult> StoreEvent([FromForm] string title, [FromForm] string? description,
-        [FromForm] string? date, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
+        [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
             await GetSettingValue("homepage_events") ?? "[]") ?? new();
@@ -124,6 +124,7 @@ public class HomepageCmsController : ControllerBase
             ["title"] = title,
             ["description"] = description,
             ["date"] = date,
+            ["location"] = location,
             ["category"] = category,
             ["url"] = url,
             ["image_url"] = imageUrl,
@@ -136,7 +137,7 @@ public class HomepageCmsController : ControllerBase
 
     [HttpPut("events/{id}")]
     public async Task<IActionResult> UpdateEvent(string id, [FromForm] string title, [FromForm] string? description,
-        [FromForm] string? date, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
+        [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
             await GetSettingValue("homepage_events") ?? "[]") ?? new();
@@ -158,6 +159,7 @@ public class HomepageCmsController : ControllerBase
                     ["title"] = title,
                     ["description"] = description,
                     ["date"] = date,
+                    ["location"] = location,
                     ["category"] = category,
                     ["url"] = url,
                     ["status"] = eventStatus,

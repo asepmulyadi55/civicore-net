@@ -8,6 +8,13 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var wwwrootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+if (!Directory.Exists(wwwrootPath))
+{
+    Directory.CreateDirectory(wwwrootPath);
+}
+builder.Environment.WebRootPath = wwwrootPath;
+
 // Add services to the container.
 builder.Services.AddControllers(options => {
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
@@ -89,6 +96,7 @@ if (!app.Environment.IsDevelopment())
     app.UseRateLimiter();
 }
 
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -102,16 +110,13 @@ app.UseMiddleware<RequireTwoFactorMiddleware>();
 app.UseMiddleware<RequirePermissionMiddleware>();
 
 app.MapControllers();
-
-app.MapWhen(context => context.Request.Path.StartsWithSegments("/admin"), adminApp =>
-{
-    adminApp.UseRouting();
-    adminApp.UseEndpoints(endpoints =>
-    {
-        endpoints.MapFallbackToFile("admin.html");
-    });
+app.MapGet("/debug-env", (IWebHostEnvironment env) => new { 
+    env.WebRootPath, 
+    env.ContentRootPath, 
+    env.EnvironmentName 
 });
 
+app.MapFallbackToFile("admin/{**slug}", "admin.html");
 app.MapFallbackToFile("index.html");
 
 using (var scope = app.Services.CreateScope())

@@ -167,7 +167,7 @@ function EventsTab() {
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('');
   const [modal, setModal] = useState({ open: false, data: null });
-  const [form, setForm] = useState({ title: '', description: '', date: '', category: '', status: '', url: '' });
+  const [form, setForm] = useState({ title: '', description: '', date: '', location: '', category: '', status: '', url: '' });
   const [image, setImage] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
@@ -204,9 +204,9 @@ function EventsTab() {
   const openModal = (ev = null) => {
     setModal({ open: true, data: ev });
     if (ev) {
-      setForm({ title: ev.title || '', description: ev.description || '', date: ev.date || '', category: ev.category || '', status: ev.status || '', url: ev.url || '' });
+      setForm({ title: ev.title || '', description: ev.description || '', date: ev.date ? (ev.date.includes('T') ? ev.date.slice(0, 16) : ev.date + 'T00:00') : '', location: ev.location || '', category: ev.category || '', status: ev.status || '', url: ev.url || '' });
     } else {
-      setForm({ title: '', description: '', date: '', category: '', status: '', url: '' });
+      setForm({ title: '', description: '', date: '', location: '', category: '', status: '', url: '' });
     }
     setImage(null);
   };
@@ -243,20 +243,27 @@ function EventsTab() {
       <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })} title={modal.data ? "Edit Event" : "Add Event"} size="lg">
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormInput label="Title" id="ev-title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required placeholder="Event title..." />
+            <FormInput label="Title" id="ev-title" value={form.title} onChange={e => {
+              const title = e.target.value;
+              const slug = '/events/' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+              setForm(f => ({ ...f, title, url: (!f.url || f.url.startsWith('/events/')) ? slug : f.url }));
+            }} required placeholder="Event title..." />
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date</label>
-              <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date & Time</label>
+              <input type="datetime-local" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                 className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
             </div>
+            <FormInput label="Location" id="ev-location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="e.g. Central Garden" />
             <FormSelect label="Category" id="ev-cat" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} options={CATEGORY_OPTIONS} placeholder="None" />
-            <FormSelect label="Status" id="ev-status" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} options={STATUS_OPTIONS} placeholder="Auto (based on date)" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-            <ReactQuill theme="snow" value={form.description || ''} onChange={v => setForm(f => ({ ...f, description: v }))} className="bg-white text-slate-900 rounded-lg" />
+            <ReactQuill theme="snow" value={form.description || ''} onChange={v => setForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
           </div>
-          <FormInput label="URL" id="ev-url" value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">URL</label>
+            <input type="text" readOnly disabled value={form.url} placeholder="Auto-generated from title" className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-500 cursor-not-allowed" />
+          </div>
           <ImageUploadBox label="Event Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} recommendedSize="1000x600" />
           
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
@@ -280,24 +287,24 @@ function EventsTab() {
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search events..." />
             <SelectFilter value={catFilter} onChange={v => { setCatFilter(v); setPage(1); }} options={CATEGORY_OPTIONS} placeholder="All Categories" />
             <div className="flex-grow"></div>
-            <button onClick={() => openModal()} className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap">
+            <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> Add Event
             </button>
           </FilterBar>
 
           <TableWrapper>
             {loading ? (
-              <tbody><tr><td colSpan={5} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
+              <tbody><tr><td colSpan={7} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
             ) : (
               <>
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                    <Th>Title</Th><Th>Category</Th><Th>Date</Th><Th>Status</Th><Th className="text-center">Actions</Th>
+                    <Th>Title</Th><Th>Category</Th><Th>Date</Th><Th>Time</Th><Th>Location</Th><Th>Status</Th><Th className="text-center">Actions</Th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {paged.length === 0 ? (
-                    <tr><td colSpan={5}><EmptyState icon="event_busy" title="No events found" subtitle={search || catFilter ? 'Try adjusting your filters' : 'Add your first event above'} /></td></tr>
+                    <tr><td colSpan={7}><EmptyState icon="event_busy" title="No events found" subtitle={search || catFilter ? 'Try adjusting your filters' : 'Add your first event above'} /></td></tr>
                   ) : paged.map(ev => (
                     <tr key={ev.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-3.5">
@@ -310,6 +317,8 @@ function EventsTab() {
                       </td>
                       <td className="px-4 py-3.5">{ev.category ? <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-primary/10 text-primary">{catLabel(ev.category)}</span> : <span className="text-slate-400 text-xs">—</span>}</td>
                       <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{ev.date ? new Date(ev.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                      <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{ev.date && ev.date.includes('T') ? new Date(ev.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                      <td className="px-4 py-3.5 text-slate-500 text-xs">{ev.location || '—'}</td>
                       <td className="px-4 py-3.5">
                         <StatusBadge status={ev.status === 'upcoming' ? 'pending' : (ev.status === 'ongoing' ? 'active' : 'inactive')} />
                         {ev.status && <span className="ml-1 text-xs text-slate-400">({ev.status})</span>}
@@ -477,7 +486,7 @@ function GalleryTab() {
           <FilterBar>
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search albums..." />
             <div className="flex-grow"></div>
-            <button onClick={() => openModal()} className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap">
+            <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> Add Album
             </button>
           </FilterBar>
@@ -619,7 +628,7 @@ function BulletinTab() {
           </div>
           <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-              <ReactQuill theme="snow" value={editForm.description || ''} onChange={v => setEditForm(f => ({ ...f, description: v }))} className="bg-white text-slate-900 rounded-lg" />
+              <ReactQuill theme="snow" value={editForm.description || ''} onChange={v => setEditForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
             </div>
           <FormInput label="URL" id="eb-url" value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
           <ImageUploadBox label="Bulletin Image" currentUrl={editModal.data?.image_url} file={editImage} onFileChange={setEditImage} recommendedSize="800x600" />
@@ -652,7 +661,7 @@ function BulletinTab() {
             </div>
             <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-            <ReactQuill theme="snow" value={addForm.description || ''} onChange={v => setAddForm(f => ({ ...f, description: v }))} className="bg-white text-slate-900 rounded-lg mb-4" />
+            <ReactQuill theme="snow" value={addForm.description || ''} onChange={v => setAddForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg mb-4" />
           </div>
             <FormInput label="URL" id="ab-url" value={addForm.url} onChange={e => setAddForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
             <ImageUploadBox label="Bulletin Image" file={addImage} onFileChange={setAddImage} recommendedSize="800x600" />
@@ -777,7 +786,7 @@ function FooterTab() {
         </div>
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Contact Information / Location</label>
-          <ReactQuill theme="snow" value={data.location || ''} onChange={v => set('location', v)} className="bg-white text-slate-900 rounded-lg mb-4" />
+          <ReactQuill theme="snow" value={data.location || ''} onChange={v => set('location', v)} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg mb-4" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput label="Facebook URL" id="ft-fb" value={data.facebook_url || ''} onChange={e => set('facebook_url', e.target.value)} placeholder="https://facebook.com/..." />
