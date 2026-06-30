@@ -16,7 +16,7 @@ async function getData(endpoint: string) {
 
 async function getProperties() {
     try {
-        const res = await fetch(`${API_URL}/api/property?status=Available`, { next: { revalidate: 60 } });
+        const res = await fetch(`${API_URL}/api/property?status=available`, { next: { revalidate: 60 } });
         if (!res.ok) return { data: [] };
         return res.json();
     } catch {
@@ -32,6 +32,7 @@ export default async function Page() {
     const gallery = await getData('gallery');
     const bulletinSettings = await getData('bulletin-settings');
     const bulletin = await getData('bulletin');
+    const propertySettings = await getData('property-settings');
     const footer = await getData('footer');
     const propertiesData = await getProperties();
     
@@ -47,6 +48,7 @@ export default async function Page() {
             gallery={gallery || []} 
             bulletinSettings={bulletinSettings || {}}
             bulletins={bulletin || []} 
+            propertySettings={propertySettings || {}}
             properties={properties} 
             footerData={footer || {}}
             apiUrl={API_URL}

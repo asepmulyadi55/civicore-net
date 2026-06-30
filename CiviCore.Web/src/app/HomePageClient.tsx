@@ -4,7 +4,7 @@ import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-export default function HomePageClient({ hero, events, eventSettings, gallerySettings, gallery, bulletinSettings, bulletins, properties, footerData, apiUrl }: any) {
+export default function HomePageClient({ hero, events, eventSettings, gallerySettings, gallery, bulletinSettings, bulletins, propertySettings, properties, footerData, apiUrl }: any) {
     const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
@@ -259,8 +259,9 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                     <div className="max-w-container-max mx-auto">
                         <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
                             <div>
-                                <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Find Your Home</span>
-                                <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Available Properties</h2>
+                                <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">{propertySettings?.eyebrow || 'Find Your Home'}</span>
+                                <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">{propertySettings?.title || 'Available Properties'}</h2>
+                                {propertySettings?.subtitle && <p className="mt-2 text-text-muted dark:text-on-primary/70">{propertySettings.subtitle}</p>}
                             </div>
                             {properties && properties.length > 0 && (
                                 <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/property">
@@ -275,17 +276,19 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                                     <div key={p.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden flex flex-col group">
                                         <div className="h-56 overflow-hidden relative">
                                             <img alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={p.thumbnail_url ? getImageUrl(p.thumbnail_url) : 'https://lh3.googleusercontent.com/aida-public/AB6AXuBgQjp1zRS5bEW5kyJnCdZ1pKGLloPZ3aw2373P7YoJQxR38ckj8iywKwVpF_nfQx4Au2Pz06PyEa2J6icsa32JDPt89qDrrHUAgT8vrKg7v8uPHFMdQxiA_FQYzphaZlRonLb8CCp2GShtlfCPZgN3XvnCw3SgU_6a3cWY87CrCwnMHBFbgalIS-_U1l1WYLifoKpzrqiVFNudotHA7dWlTuGTlKnH8kl3CxjZk5nKDLy_ErWLfM8D79Ub5FFHIGLRaZddPTLri7c'} />
-                                            <div className={`absolute top-4 left-4 ${p.listing_type === 'For Sale' ? 'bg-[#b45309] text-white' : 'bg-primary dark:bg-primary-fixed-dim text-white dark:text-primary'} px-3 py-1 rounded text-label-sm font-bold uppercase`}>
-                                                {p.listing_type}
+                                            <div className={`absolute top-4 left-4 ${p.listing_type === 'For Sale' || p.status === 'available' ? 'bg-[#b45309] text-white' : 'bg-primary dark:bg-primary-fixed-dim text-white dark:text-primary'} px-3 py-1 rounded text-label-sm font-bold uppercase`}>
+                                                {p.listing_type || p.status || p.type}
                                             </div>
                                         </div>
                                         <div className="p-6 flex flex-col flex-grow">
                                             <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2 line-clamp-1">{p.title}</h3>
-                                            <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">${p.price?.toLocaleString()} {p.listing_type === 'For Rent' && <span className="text-body-md text-text-muted dark:text-on-primary/70">/mo</span>}</p>
-                                            <div className="flex gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
-                                                <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {p.bedrooms} Beds</div>
-                                                <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {p.bathrooms} Baths</div>
-                                                <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {p.area_sqft} sqft</div>
+                                            <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">${p.price?.toLocaleString()} {p.listing_type === 'For Rent' || p.status === 'rented' ? <span className="text-body-md text-text-muted dark:text-on-primary/70">/mo</span> : null}</p>
+                                            <div className="flex flex-wrap gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
+                                                {p.bedrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {p.bedrooms} Beds</div>}
+                                                {p.bathrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {p.bathrooms} Baths</div>}
+                                                {p.area_sqft !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {p.area_sqft} sqft</div>}
+                                                {p.location && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">location_on</span> {p.location}</div>}
+                                                {p.type && <div className="flex items-center gap-1 capitalize"><span className="material-symbols-outlined text-sm">home</span> {p.type}</div>}
                                             </div>
                                             <Link href={`/property/${p.id}`} className="mt-auto block text-center w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</Link>
                                         </div>

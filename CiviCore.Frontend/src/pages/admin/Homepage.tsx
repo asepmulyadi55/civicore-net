@@ -16,6 +16,7 @@ const TABS = [
   { key: 'events', label: 'Events', icon: 'event' },
   { key: 'gallery', label: 'Gallery', icon: 'photo_library' },
   { key: 'bulletin', label: 'Bulletin', icon: 'article' },
+  { key: 'property', label: 'Properties', icon: 'home_work' },
   { key: 'footer', label: 'Footer', icon: 'web_asset' },
   { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search' },
 ];
@@ -24,6 +25,14 @@ const CATEGORY_OPTIONS = [
   { value: 'wellness', label: 'Wellness' }, { value: 'meetings', label: 'Meetings' },
   { value: 'education', label: 'Education' }, { value: 'cultural', label: 'Cultural' },
   { value: 'sports', label: 'Sports' }, { value: 'other', label: 'Other' },
+];
+
+const PROPERTY_TYPE_OPTIONS = [
+  { value: 'house', label: 'House' }
+];
+
+const PROPERTY_STATUS_OPTIONS = [
+  { value: 'available', label: 'Available' }, { value: 'sold', label: 'Sold' }, { value: 'rented', label: 'Rented' },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -959,6 +968,200 @@ function BulletinTab() {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   TAB 5: PROPERTY
+   ═══════════════════════════════════════════════════════════════════════════ */
+function PropertyTab() {
+  const [data, setData] = useState<any[]>([]);
+  const [meta, setMeta] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({ search: '', type: '', status: '', page: 1 });
+  const [modal, setModal] = useState<{ open: boolean; data: any }>({ open: false, data: null });
+  const [confirm, setConfirm] = useState<{ open: boolean; item: any; loading: boolean }>({ open: false, item: null, loading: false });
+  const [settings, setSettings] = useState<any>({});
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [success, setSuccess] = useState<string | false>(false);
+
+  const [form, setForm] = useState({ title: '', type: 'house', price: '', status: 'available', description: '', location: '' });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [savingProperty, setSavingProperty] = useState(false);
+  const isEdit = !!modal.data?.id;
+
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [r, s] = await Promise.all([
+        axios.get('/api/property', { params: filters }),
+        axios.get('/api/homepage/property-settings').catch(() => ({ data: {} }))
+      ]);
+      const d = r.data;
+      setData(Array.isArray(d) ? d : (d.data || []));
+      setMeta(d.meta || null);
+      setSettings(s.data || {});
+    } catch { setData([]); }
+    finally { setLoading(false); }
+  }, [filters]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  const setFilter = (k: string, v: string | number) => setFilters((p) => ({ ...p, [k]: v, page: 1 }));
+
+  const doDelete = async () => {
+    setConfirm((c) => ({ ...c, loading: true }));
+    try { await axios.delete(`/api/property/${confirm.item!.id}`); fetch(); setConfirm({ open: false, item: null, loading: false }); }
+    catch { setConfirm((c) => ({ ...c, loading: false })); }
+  };
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    const fd = new FormData();
+    Object.entries(settings).forEach(([k, v]) => fd.append(k, v as string));
+    try {
+      await axios.put('/api/homepage/property-settings', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setSuccess('settings'); setTimeout(() => setSuccess(false), 3000);
+    } catch { }
+    setSavingSettings(false);
+  };
+
+  const openModal = (p = null) => {
+    setModal({ open: true, data: p });
+    if (p) {
+      setForm({ title: p.title, type: p.type, price: String(p.price), status: p.status, description: p.description || '', location: p.location || '' });
+    } else {
+      setForm({ title: '', type: 'house', price: '', status: 'available', description: '', location: '' });
+    }
+    setErrors({});
+  };
+
+  const setFormValue = (f: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((p) => ({ ...p, [f]: e.target.value }));
+
+  const saveProperty = async () => {
+    setSavingProperty(true); setErrors({});
+    try {
+      const payload = { ...form, price: Number(form.price) };
+      if (isEdit) await axios.put(`/api/property/${modal.data!.id}`, payload);
+      else await axios.post('/api/property', payload);
+      setSuccess('item'); setTimeout(() => setSuccess(false), 3000);
+      setModal({ open: false, data: null });
+      fetch();
+    } catch (err: any) {
+      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+    } finally { setSavingProperty(false); }
+  };
+
+  return (
+    <>
+      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Property Settings" subtitle="Configure the main properties header">
+        <SuccessBanner show={success === 'settings'} />
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <FormInput label="Eyebrow Label" id="p-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Properties" />
+            <FormInput label="Section Title" id="p-title-set" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Featured Listings" />
+            <div className="md:col-span-2"><FormInput label="Subtitle" id="p-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore available properties..." /></div>
+          </div>
+        </div>
+        <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
+      </SectionCard>
+
+      <div className="h-6"></div>
+
+      <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })} title={isEdit ? 'Edit Property' : 'Add Property'} size="lg">
+        <div className="space-y-4">
+          {errors.general && <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
+          <FormInput label="Title" id="p-title" value={form.title} onChange={setFormValue('title')} error={errors.title} required placeholder="e.g. Unit A-01 For Rent" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormSelect label="Status" id="p-status" value={form.status} onChange={setFormValue('status')} options={PROPERTY_STATUS_OPTIONS} />
+            <FormInput label="Price (Rp)" id="p-price" type="number" value={form.price} onChange={setFormValue('price')} error={errors.price} placeholder="0" />
+          </div>
+          <FormInput label="Location" id="p-loc" value={form.location} onChange={setFormValue('location')} placeholder="Block & unit, e.g. Block A No. 5" />
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
+            <textarea value={form.description} onChange={setFormValue('description')} rows={3} placeholder="Property details..."
+              className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
+          </div>
+          <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-white/5 px-2 mt-4">
+            <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+            <button onClick={saveProperty} disabled={savingProperty} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+              {savingProperty ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Property'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
+        onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
+        title="Delete Property?" message={`Delete <strong>${confirm.item?.title}</strong>? This cannot be undone.`}
+        confirmLabel="Yes, Delete" />
+
+      <SectionCard icon="home_work" iconBg="bg-teal-100 dark:bg-teal-900/30" iconColor="text-teal-500" title="Property Listings" subtitle="Manage available, sold, and rented properties" badge={data.length}>
+        <SuccessBanner show={success === 'item'} />
+
+        <div className="p-6">
+          <FilterBar>
+            <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search title, location…" />
+            <SelectFilter value={filters.status} onChange={(v) => setFilter('status', v)} options={PROPERTY_STATUS_OPTIONS} placeholder="All Status" />
+            <button onClick={() => setFilters({ search: '', type: '', status: '', page: 1 })}
+              className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
+              <span className="material-icons text-sm">close</span> Clear
+            </button>
+            <div className="flex-grow"></div>
+            <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+              <span className="material-icons text-[18px]">add</span> Add Property
+            </button>
+          </FilterBar>
+
+          <TableWrapper>
+            {loading ? (
+              <tbody><tr><td colSpan={5} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                    <Th>Property</Th>
+                    <Th className="text-right">Price</Th>
+                    <Th>Status</Th>
+                    <Th>Listed</Th>
+                    <Th className="text-center">Actions</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {data.length === 0 ? (
+                    <tr><td colSpan={5}><EmptyState icon="home_work" title="No properties found" subtitle="Add your first property listing" /></td></tr>
+                  ) : data.map((p) => (
+                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{p.title}</p>
+                        {p.location && <p className="text-xs text-slate-400 mt-0.5">{p.location}</p>}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white text-right">Rp {p.price.toLocaleString('id-ID')}</td>
+                      <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
+                      <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
+                        {new Date(p.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => openModal(p)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer">
+                            <span className="material-icons text-lg">edit</span>
+                          </button>
+                          <button onClick={() => setConfirm({ open: true, item: p, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer">
+                            <span className="material-icons text-lg">delete_outline</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                {meta && meta.last_page > 1 && <tfoot><tr><td colSpan={6}><Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} /></td></tr></tfoot>}
+              </>
+            )}
+          </TableWrapper>
+        </div>
+      </SectionCard>
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    TAB 6: FOOTER
    ═══════════════════════════════════════════════════════════════════════════ */
 function FooterTab() {
@@ -1177,6 +1380,7 @@ export default function AdminHomepage() {
       case 'events': return <EventsTab />;
       case 'gallery': return <GalleryTab />;
       case 'bulletin': return <BulletinTab />;
+      case 'property': return <PropertyTab />;
       case 'footer': return <FooterTab />;
       case 'metadata': return <MetadataTab />;
       default: return null;

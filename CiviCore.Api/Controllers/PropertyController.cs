@@ -105,6 +105,37 @@ public class PropertyController : ControllerBase
         });
     }
 
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var listing = await _context.PropertyListings
+            .Include(p => p.Block)
+            .FirstOrDefaultAsync(p => p.Id == id);
+            
+        if (listing == null) return NotFound();
+
+        return Ok(new
+        {
+            listing.Id,
+            listing.Title,
+            type = listing.Type,
+            listing.Price,
+            status = listing.Status,
+            description = listing.Description,
+            location = listing.LocationLabel,
+            block_name = listing.Block?.Name,
+            listing.ContactName,
+            listing.ContactPhone,
+            listing.Bedrooms,
+            listing.Bathrooms,
+            listing.LandArea,
+            listing.BuildingArea,
+            listing.IsActive,
+            created_at = listing.CreatedAt
+        });
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PropertyCreateDto dto)
     {

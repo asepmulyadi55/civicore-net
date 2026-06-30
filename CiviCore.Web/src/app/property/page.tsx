@@ -4,111 +4,6 @@ import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-export const MOCK_PROPERTIES = [
-    {
-        id: '1',
-        title: 'The Emerald Villa',
-        price: '$2,450,000',
-        type: 'sell',
-        type_label: 'New Launch',
-        bedrooms: 4,
-        bathrooms: 3.5,
-        area: 4200,
-        image_url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-        images: [
-            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-            'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80',
-            'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80'
-        ],
-        description: 'Experience unparalleled luxury in this contemporary masterpiece. Featuring soaring ceilings, panoramic floor-to-ceiling windows, and premium finishes throughout.'
-    },
-    {
-        id: '2',
-        title: 'Modern Townhouse',
-        price: '$850,000',
-        type: 'sell',
-        type_label: 'For Sale',
-        bedrooms: 3,
-        bathrooms: 2.5,
-        area: 2100,
-        image_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
-        images: [
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
-            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80',
-            'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80'
-        ],
-        description: 'A beautiful modern townhouse with great community access.'
-    },
-    {
-        id: '3',
-        title: 'Garden Apartment',
-        price: '$3,500/mo',
-        type: 'rent',
-        type_label: 'For Rent',
-        bedrooms: 2,
-        bathrooms: 2,
-        area: 1200,
-        image_url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-        images: [
-            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80',
-            'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80'
-        ],
-        description: 'Enjoy the view of the central garden from your balcony.'
-    },
-    {
-        id: '4',
-        title: 'Penthouse Suite',
-        price: '$2,500,000',
-        type: 'sell',
-        type_label: 'For Sale',
-        bedrooms: 4,
-        bathrooms: 4,
-        area: 4500,
-        image_url: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80',
-        images: [
-            'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80',
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
-            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80'
-        ],
-        description: 'Luxury penthouse living at its finest.'
-    },
-    {
-        id: '5',
-        title: 'Cozy Studio',
-        price: '$1,200/mo',
-        type: 'rent',
-        type_label: 'For Rent',
-        bedrooms: 1,
-        bathrooms: 1,
-        area: 600,
-        image_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
-        images: [
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
-            'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80',
-            'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80'
-        ],
-        description: 'Perfect for young professionals.'
-    },
-    {
-        id: '6',
-        title: 'Family Home',
-        price: '$950,000',
-        type: 'sell',
-        type_label: 'For Sale',
-        bedrooms: 4,
-        bathrooms: 3,
-        area: 2800,
-        image_url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-        images: [
-            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-            'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80',
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80'
-        ],
-        description: 'Spacious family home with a large backyard.'
-    }
-];
-
 export default function PropertyPage() {
     const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
@@ -117,9 +12,16 @@ export default function PropertyPage() {
     const [filter, setFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('');
+    const [properties, setProperties] = useState<any[]>([]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        fetch('/api/property')
+            .then(res => res.json())
+            .then(res => {
+                if(res.data) setProperties(res.data);
+            })
+            .catch(console.error);
     }, []);
 
     useEffect(() => {
@@ -139,10 +41,10 @@ export default function PropertyPage() {
         });
     };
 
-    const filteredProperties = MOCK_PROPERTIES.filter(property => {
-        const matchesFilter = filter === 'all' || property.type === filter;
+    const filteredProperties = properties.filter(property => {
+        const matchesFilter = filter === 'all' || property.status === filter;
         const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              property.type_label.toLowerCase().includes(searchQuery.toLowerCase());
+                              (property.location || '').toLowerCase().includes(searchQuery.toLowerCase());
         return matchesFilter && matchesSearch;
     });
 
@@ -166,7 +68,7 @@ export default function PropertyPage() {
                 {/* Filter and Search */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-                        {['all', 'sell', 'rent'].map(f => (
+                        {['all', 'available', 'rented', 'sold'].map(f => (
                             <button 
                                 key={f}
                                 onClick={() => setFilter(f)}
@@ -176,7 +78,7 @@ export default function PropertyPage() {
                                     : 'bg-surface dark:bg-primary-container text-on-surface dark:text-on-primary border border-border-subtle dark:border-primary-container/50 hover:bg-surface-variant dark:hover:bg-primary-container'
                                 }`}
                             >
-                                {f === 'all' ? 'All Properties' : f === 'sell' ? 'For Sale' : 'For Rent'}
+                                {f === 'all' ? 'All Properties' : f.charAt(0).toUpperCase() + f.slice(1)}
                             </button>
                         ))}
                     </div>
@@ -198,18 +100,20 @@ export default function PropertyPage() {
                         {filteredProperties.map(property => (
                             <div key={property.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden flex flex-col group">
                                 <div className="h-56 overflow-hidden relative">
-                                    <img alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={property.image_url} />
-                                    <div className={`absolute top-4 left-4 text-white px-3 py-1 rounded text-label-sm font-bold uppercase ${property.type === 'sell' ? 'bg-[#b45309]' : 'bg-[#15803d]'}`}>
-                                        {property.type_label}
+                                    <img alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={property.thumbnail_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBgQjp1zRS5bEW5kyJnCdZ1pKGLloPZ3aw2373P7YoJQxR38ckj8iywKwVpF_nfQx4Au2Pz06PyEa2J6icsa32JDPt89qDrrHUAgT8vrKg7v8uPHFMdQxiA_FQYzphaZlRonLb8CCp2GShtlfCPZgN3XvnCw3SgU_6a3cWY87CrCwnMHBFbgalIS-_U1l1WYLifoKpzrqiVFNudotHA7dWlTuGTlKnH8kl3CxjZk5nKDLy_ErWLfM8D79Ub5FFHIGLRaZddPTLri7c'} />
+                                    <div className={`absolute top-4 left-4 text-white px-3 py-1 rounded text-label-sm font-bold uppercase ${property.status === 'available' ? 'bg-[#b45309]' : 'bg-[#15803d]'}`}>
+                                        {property.status || property.type}
                                     </div>
                                 </div>
                                 <div className="p-6 flex flex-col flex-grow">
-                                    <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">{property.title}</h3>
-                                    <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">{property.price}</p>
-                                    <div className="flex gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
-                                        <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {property.bedrooms} Beds</div>
-                                        <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {property.bathrooms} Baths</div>
-                                        <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {property.area} sqft</div>
+                                    <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2 line-clamp-1">{property.title}</h3>
+                                    <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">${property.price?.toLocaleString()}</p>
+                                    <div className="flex flex-wrap gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
+                                        {property.bedrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {property.bedrooms} Beds</div>}
+                                        {property.bathrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {property.bathrooms} Baths</div>}
+                                        {property.landArea !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {property.landArea} sqft</div>}
+                                        {property.location && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">location_on</span> {property.location}</div>}
+                                        {property.type && <div className="flex items-center gap-1 capitalize"><span className="material-symbols-outlined text-sm">home</span> {property.type}</div>}
                                     </div>
                                     <Link href={`/property/${property.id}`} className="mt-auto w-full block text-center py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">
                                         View Details

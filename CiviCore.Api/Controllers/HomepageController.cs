@@ -647,6 +647,30 @@ public class HomepageController : ControllerBase
         await SaveSetting("homepage_footer", body.GetRawText());
         return Ok(new { message = "Footer saved." });
     }
+    // ── Property Settings ─────────────────────────────────────────────────────
+
+    [HttpGet("property-settings")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPropertySettings()
+    {
+        var json = await GetSettingValue("homepage_property_settings");
+        if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Find Your Home", title = "Available Properties", subtitle = "" });
+        return Content(json, "application/json");
+    }
+
+    [HttpPut("property-settings")]
+    public async Task<IActionResult> UpdatePropertySettings([FromForm] string? eyebrow, [FromForm] string? title, [FromForm] string? subtitle)
+    {
+        var data = new Dictionary<string, object?>
+        {
+            ["eyebrow"] = eyebrow ?? "Find Your Home",
+            ["title"] = title ?? "Available Properties",
+            ["subtitle"] = subtitle
+        };
+
+        await SaveSetting("homepage_property_settings", JsonSerializer.Serialize(data));
+        return Ok(new { message = "Property settings saved." });
+    }
 
     // ── SEO & Metadata ──────────────────────────────────────────────────────
 
