@@ -51,10 +51,16 @@ export default function EventsPage() {
     useEffect(() => { window.scrollTo(0, 0); }, []);
 
     const [eventsList, setEventsList] = useState<any[]>([]);
+    const [settings, setSettings] = useState<any>({});
     useEffect(() => {
         fetch('/api/homepage/events')
             .then(res => res.json())
             .then(data => setEventsList(data))
+            .catch(console.error);
+            
+        fetch('/api/homepage/event-settings')
+            .then(res => res.json())
+            .then(data => setSettings(data))
             .catch(console.error);
     }, []);
 
@@ -118,8 +124,9 @@ export default function EventsPage() {
                             <span className="text-on-surface dark:text-on-primary">Events</span>
                         </div>
                         <h1 className="text-display-lg-mobile md:text-display-lg font-display-lg text-primary dark:text-primary-fixed-dim">
-                            Community Events
+                            {settings.title || 'Community Events'}
                         </h1>
+                        {settings.subtitle && <p className="mt-2 text-body-lg text-text-muted dark:text-on-primary/70">{settings.subtitle}</p>}
                     </div>
 
                     {/* Filters */}

@@ -27,6 +27,7 @@ async function getProperties() {
 export default async function Page() {
     const hero = await getData('hero');
     const events = await getData('events');
+    const eventSettings = await getData('event-settings');
     const gallerySettings = await getData('gallery-settings');
     const gallery = await getData('gallery');
     const bulletin = await getData('bulletin');
@@ -40,6 +41,7 @@ export default async function Page() {
         <HomePageClient 
             hero={hero || {}} 
             events={events || []} 
+            eventSettings={eventSettings || {}} 
             gallerySettings={gallerySettings || {}} 
             gallery={gallery || []} 
             bulletins={bulletin || []} 

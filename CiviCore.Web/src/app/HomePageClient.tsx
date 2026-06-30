@@ -4,7 +4,7 @@ import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-export default function HomePageClient({ hero, events, gallerySettings, gallery, bulletins, properties, footerData, apiUrl }: any) {
+export default function HomePageClient({ hero, events, eventSettings, gallerySettings, gallery, bulletins, properties, footerData, apiUrl }: any) {
     const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
@@ -95,7 +95,7 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
                         <p className="text-body-lg font-body-lg text-on-primary/90 mb-10 max-w-2xl font-light tracking-wide">
                             {hero.subtitle || 'Modern Living in Harmony. Experience tranquility and luxury in every detail.'}
                         </p>
-                        <Link href="/schedule-visit" className="bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white px-8 py-4 rounded-lg font-label-md text-label-md transition-colors shadow-lg shadow-[#b45309]/20 flex items-center justify-center">
+                        <Link href={hero.cta_url || '/schedule-visit'} className="bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white px-8 py-4 rounded-lg font-label-md text-label-md transition-colors shadow-lg shadow-[#b45309]/20 flex items-center justify-center">
                             {hero.cta_label || 'Schedule a Visit'}
                         </Link>
                     </div>
@@ -105,11 +105,12 @@ export default function HomePageClient({ hero, events, gallerySettings, gallery,
                 <section className="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="events">
                     <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
                         <div>
-                            <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Discover More</span>
-                            <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Events</h2>
+                            <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">{eventSettings?.eyebrow || 'Discover More'}</span>
+                            <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">{eventSettings?.title || 'Events'}</h2>
+                            {eventSettings?.subtitle && <p className="mt-2 text-body-md text-text-muted dark:text-on-primary/70">{eventSettings.subtitle}</p>}
                         </div>
                         {events && events.length > 0 && (
-                            <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/events">
+                            <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href={eventSettings?.archive_url || '/events'}>
                                 View All 
                                 <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </Link>

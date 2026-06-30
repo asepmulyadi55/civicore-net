@@ -127,6 +127,7 @@ function HeroTab() {
     fd.append('title', data.title || '');
     fd.append('subtitle', data.subtitle || '');
     fd.append('cta_label', data.cta_label || '');
+    fd.append('cta_url', data.cta_url || '');
     if (bgImage) fd.append('background_image', bgImage);
     try {
       await axios.put('/api/homepage/hero', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -150,7 +151,10 @@ function HeroTab() {
           <textarea value={data.subtitle || ''} onChange={e => set('subtitle', e.target.value)} rows={3} placeholder="e.g. Modern Living in Harmony..."
             className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none resize-none" />
         </div>
-        <FormInput label="CTA Button Text" id="hero-cta" value={data.cta_label || ''} onChange={e => set('cta_label', e.target.value)} placeholder="e.g. Schedule a Visit" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormInput label="CTA Button Text" id="hero-cta" value={data.cta_label || ''} onChange={e => set('cta_label', e.target.value)} placeholder="e.g. Schedule a Visit" />
+          <FormInput label="CTA Button URL" id="hero-cta-url" value={data.cta_url || ''} onChange={e => set('cta_url', e.target.value)} placeholder="e.g. /schedule-visit" />
+        </div>
         <ImageUploadBox label="Background Image" currentUrl={data.background_image_url} file={bgImage} onFileChange={setBgImage} recommendedSize="1920x1080" />
       </div>
       <SaveButton onClick={save} loading={saving} label="Save Hero Section" />
@@ -171,8 +175,10 @@ function EventsTab() {
   const [image, setImage] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState('');
   const [page, setPage] = useState(1);
+  const [settings, setSettings] = useState({ eyebrow: '', title: '', subtitle: '', archive_url: '' });
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const STATUS_OPTIONS = [
     { value: 'upcoming', label: 'Upcoming' },
@@ -186,7 +192,25 @@ function EventsTab() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchEvents(); }, [fetchEvents]);
+  const fetchSettings = useCallback(async () => {
+    try { const r = await axios.get('/api/homepage/event-settings'); setSettings(r.data); } catch {}
+  }, []);
+
+  useEffect(() => { fetchEvents(); fetchSettings(); }, [fetchEvents, fetchSettings]);
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    const fd = new FormData();
+    fd.append('eyebrow', settings.eyebrow || '');
+    fd.append('title', settings.title || '');
+    fd.append('subtitle', settings.subtitle || '');
+    fd.append('archive_url', settings.archive_url || '');
+    try {
+      await axios.put('/api/homepage/event-settings', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setSuccess('settings'); setTimeout(() => setSuccess(''), 3000);
+    } catch {}
+    setSavingSettings(false);
+  };
 
   const filtered = events.filter(e => {
     const s = search.toLowerCase();
@@ -224,7 +248,7 @@ function EventsTab() {
         await axios.post('/api/homepage/events', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       }
       setModal({ open: false, data: null });
-      setSuccess(true); setTimeout(() => setSuccess(false), 3000);
+      setSuccess('event'); setTimeout(() => setSuccess(''), 3000);
       fetchEvents();
     } catch {}
     setSaving(false);
@@ -279,8 +303,23 @@ function EventsTab() {
         onConfirm={deleteEvent} loading={deleteModal.loading} icon="delete_outline"
         title="Delete Event?" message={`Delete <strong>${deleteModal.title}</strong>? This cannot be undone.`} confirmLabel="Yes, Delete" />
 
+      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Event Settings" subtitle="Configure the main events header">
+        <SuccessBanner show={success === 'settings'} />
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <FormInput label="Eyebrow Label" id="e-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Discover More" />
+            <FormInput label="Section Title" id="e-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Events" />
+            <div className="md:col-span-2"><FormInput label="Subtitle" id="e-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore..." /></div>
+            <div className="md:col-span-2"><FormInput label="Archive URL" id="e-url" value={settings.archive_url || ''} onChange={e => setSettings(d => ({ ...d, archive_url: e.target.value }))} placeholder="https://..." /></div>
+          </div>
+        </div>
+        <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
+      </SectionCard>
+
+      <div className="h-6"></div>
+
       <SectionCard icon="event" iconBg="bg-emerald-100 dark:bg-emerald-900/30" iconColor="text-emerald-500" title="Events" subtitle="Manage community events displayed on the homepage" badge={events.length}>
-        <SuccessBanner show={success} />
+        <SuccessBanner show={success === 'event'} />
         
         <div className="p-6">
           <FilterBar>
@@ -341,6 +380,116 @@ function EventsTab() {
     </>
   );
 }
+
+function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  
+  const [file, setFile] = useState<any>(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  const fetchPhotos = useCallback(async () => {
+    if (!album?.id) return;
+    setLoading(true);
+    try {
+      const res = await axios.get(`/api/homepage/gallery/${album.id}`);
+      setPhotos(res.data?.photos || []);
+    } catch {}
+    setLoading(false);
+  }, [album?.id]);
+
+  useEffect(() => {
+    if (open) {
+      setFile(null);
+      setTitle('');
+      setDescription('');
+      fetchPhotos();
+    }
+  }, [open, fetchPhotos]);
+
+  const uploadPhoto = async () => {
+    if (!file || !album?.id) return;
+    setUploading(true);
+    const fd = new FormData();
+    fd.append('image_file', file);
+    if (title) fd.append('title', title);
+    if (description) fd.append('description', description);
+    
+    try {
+      await axios.post(`/api/homepage/gallery/${album.id}/photos`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setFile(null);
+      setTitle('');
+      setDescription('');
+      await fetchPhotos();
+      if (onRefresh) onRefresh();
+    } catch {}
+    setUploading(false);
+  };
+
+  const deletePhoto = async (photoId: string) => {
+    if (!album?.id) return;
+    if (!confirm('Are you sure you want to delete this photo?')) return;
+    setDeleting(photoId);
+    try {
+      await axios.delete(`/api/homepage/gallery/${album.id}/photos/${photoId}`);
+      await fetchPhotos();
+      if (onRefresh) onRefresh();
+    } catch {}
+    setDeleting(null);
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title={`Manage Photos - ${album?.title}`} size="xl">
+      <div className="space-y-6">
+        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+          <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Upload New Photo</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <FormInput label="Title (Optional)" id="p-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Pool Area" />
+            <FormInput label="Description (Optional)" id="p-desc" value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Enjoying the sunset..." />
+          </div>
+          <div className="flex items-end gap-4">
+            <div className="flex-1">
+              <ImageUploadBox label="" currentUrl="" file={file} onFileChange={setFile} recommendedSize="Any" />
+            </div>
+            <button onClick={uploadPhoto} disabled={!file || uploading} className="px-5 h-[100px] rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed mb-1.5 flex flex-col items-center justify-center gap-1">
+              {uploading ? <span className="material-icons animate-spin">autorenew</span> : <span className="material-icons">cloud_upload</span>}
+              {uploading ? 'Uploading...' : 'Upload'}
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Album Photos ({photos.length})</h4>
+          {loading ? (
+             <div className="flex justify-center py-8"><span className="material-icons animate-spin text-primary text-3xl">autorenew</span></div>
+          ) : photos.length === 0 ? (
+             <EmptyState icon="photo_library" title="No photos yet" subtitle="Upload your first photo above" />
+          ) : (
+             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                {photos.map(p => (
+                   <div key={p.id} className="relative group rounded-xl overflow-hidden aspect-[4/3] border border-slate-200 dark:border-slate-700">
+                      <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                         <div>
+                            {p.title && <p className="text-white text-xs font-bold truncate">{p.title}</p>}
+                            {p.description && <p className="text-white/80 text-[10px] truncate">{p.description}</p>}
+                         </div>
+                         <button onClick={() => deletePhoto(p.id)} disabled={deleting === p.id} className="self-end p-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors cursor-pointer disabled:opacity-50">
+                            {deleting === p.id ? <span className="material-icons animate-spin text-sm">autorenew</span> : <span className="material-icons text-sm">delete_outline</span>}
+                         </button>
+                      </div>
+                   </div>
+                ))}
+             </div>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+}
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 3: GALLERY
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -351,7 +500,8 @@ function GalleryTab() {
   const [search, setSearch] = useState('');
   
   const [modal, setModal] = useState({ open: false, data: null });
-  const [form, setForm] = useState({ title: '', description: '', count: '' });
+  const [managePhotosModal, setManagePhotosModal] = useState({ open: false, album: null });
+  const [form, setForm] = useState({ title: '', description: '' });
   const [image, setImage] = useState(null);
   
   const [savingSettings, setSavingSettings] = useState(false);
@@ -404,9 +554,9 @@ function GalleryTab() {
   const openModal = (item = null) => {
     setModal({ open: true, data: item });
     if (item) {
-      setForm({ title: item.title || '', description: item.description || '', count: item.count || '' });
+      setForm({ title: item.title || '', description: item.description || '' });
     } else {
-      setForm({ title: '', description: '', count: '' });
+      setForm({ title: '', description: '' });
     }
     setImage(null);
   };
@@ -440,9 +590,8 @@ function GalleryTab() {
     <>
       <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })} title={modal.data ? "Edit Album" : "Add Album"} size="lg">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <FormInput label="Album Title" id="a-title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required placeholder="e.g. Clubhouse Inauguration" />
-            <FormInput label="Photo Count" id="a-count" value={form.count} onChange={e => setForm(f => ({ ...f, count: e.target.value }))} placeholder="e.g. 24 Photos" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
@@ -459,6 +608,13 @@ function GalleryTab() {
           </div>
         </div>
       </Modal>
+
+      <ManagePhotosModal 
+        open={managePhotosModal.open} 
+        album={managePhotosModal.album} 
+        onClose={() => setManagePhotosModal({ open: false, album: null })} 
+        onRefresh={fetchData} 
+      />
 
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
         onConfirm={deleteAlbum} loading={deleteModal.loading} icon="delete_outline"
@@ -515,9 +671,10 @@ function GalleryTab() {
                         </div>
                       </td>
                       <td className="px-4 py-3.5 text-slate-500 truncate max-w-xs">{a.description || '—'}</td>
-                      <td className="px-4 py-3.5 text-slate-500 whitespace-nowrap">{a.count || '—'}</td>
+                      <td className="px-4 py-3.5 text-slate-500 whitespace-nowrap">{a.photos?.length || 0} Photos</td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => setManagePhotosModal({ open: true, album: a })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title="Manage Photos"><span className="material-icons text-lg">photo_library</span></button>
                           <button onClick={() => openModal(a)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>
                           <button onClick={() => setDeleteModal({ open: true, id: a.id, title: a.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>
                         </div>

@@ -70,7 +70,7 @@ public class HomepageController : ControllerBase
 
     [HttpPut("hero")]
     public async Task<IActionResult> UpdateHero([FromForm] string? title, [FromForm] string? subtitle,
-        [FromForm] string? cta_label, IFormFile? background_image)
+        [FromForm] string? cta_label, [FromForm] string? cta_url, IFormFile? background_image)
     {
         var existing = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
             await GetSettingValue("homepage_hero") ?? "{}") ?? new();
@@ -80,6 +80,7 @@ public class HomepageController : ControllerBase
             ["title"] = title,
             ["subtitle"] = subtitle,
             ["cta_label"] = cta_label,
+            ["cta_url"] = cta_url,
         };
 
         if (background_image != null)
@@ -194,6 +195,32 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Event removed." });
     }
 
+    // ── Event Settings ────────────────────────────────────────────────────────
+
+    [HttpGet("event-settings")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetEventSettings()
+    {
+        var json = await GetSettingValue("homepage_event_settings");
+        if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Discover More", title = "Events", subtitle = "", archive_url = "/events" });
+        return Content(json, "application/json");
+    }
+
+    [HttpPut("event-settings")]
+    public async Task<IActionResult> UpdateEventSettings([FromForm] string? eyebrow, [FromForm] string? title,
+        [FromForm] string? subtitle, [FromForm] string? archive_url)
+    {
+        var data = new Dictionary<string, object?>
+        {
+            ["eyebrow"] = eyebrow ?? "Discover More",
+            ["title"] = title ?? "Events",
+            ["subtitle"] = subtitle,
+            ["archive_url"] = archive_url ?? "/events"
+        };
+        await SaveSetting("homepage_event_settings", JsonSerializer.Serialize(data));
+        return Ok(new { message = "Event settings saved." });
+    }
+
     // ── Gallery Settings ──────────────────────────────────────────────────────
 
     [HttpGet("gallery-settings")]
@@ -232,8 +259,7 @@ public class HomepageController : ControllerBase
     }
 
     [HttpPost("gallery")]
-    public async Task<IActionResult> StoreAlbum([FromForm] string title, [FromForm] string? description,
-        [FromForm] string? count, IFormFile? image_file)
+    public async Task<IActionResult> StoreAlbum([FromForm] string title, [FromForm] string? description, IFormFile? image_file)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
             await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
@@ -246,8 +272,8 @@ public class HomepageController : ControllerBase
             ["id"] = Guid.NewGuid().ToString(),
             ["title"] = title,
             ["description"] = description,
-            ["count"] = count,
             ["image_url"] = imageUrl,
+            ["photos"] = new List<object>(),
         });
 
         await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
@@ -255,8 +281,7 @@ public class HomepageController : ControllerBase
     }
 
     [HttpPut("gallery/{id}")]
-    public async Task<IActionResult> UpdateAlbum(string id, [FromForm] string title, [FromForm] string? description,
-        [FromForm] string? count, IFormFile? image_file)
+    public async Task<IActionResult> UpdateAlbum(string id, [FromForm] string title, [FromForm] string? description, IFormFile? image_file)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
             await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
@@ -271,8 +296,16 @@ public class HomepageController : ControllerBase
                     ["id"] = id,
                     ["title"] = title,
                     ["description"] = description,
-                    ["count"] = count,
                 };
+
+                if (items[i].TryGetValue("photos", out var photosEl))
+                {
+                    updated["photos"] = photosEl;
+                }
+                else
+                {
+                    updated["photos"] = new List<object>();
+                }
 
                 if (image_file != null)
                     updated["image_url"] = await SaveUploadedFile(image_file, "gallery");
@@ -301,6 +334,96 @@ public class HomepageController : ControllerBase
 
         await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
         return Ok(new { message = "Album removed." });
+    }
+
+    [HttpGet("gallery/{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAlbum(string id)
+    {
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
+            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+
+        var album = items.FirstOrDefault(a => a.TryGetValue("id", out var idEl) && idEl.GetString() == id || 
+                                              a.TryGetValue("title", out var titleEl) && titleEl.GetString()?.ToLower().Replace(" ", "-") == id);
+
+        if (album == null) return NotFound(new { message = "Album not found." });
+        return Ok(album);
+    }
+
+    [HttpPost("gallery/{id}/photos")]
+    public async Task<IActionResult> StorePhoto(string id, [FromForm] string? title, [FromForm] string? description, IFormFile image_file)
+    {
+        if (image_file == null) return BadRequest(new { message = "Image file is required." });
+
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
+            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+
+        var found = false;
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i].TryGetValue("id", out var idEl) && idEl.GetString() == id)
+            {
+                var albumDict = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(items[i]))!;
+                var photosList = new List<object>();
+
+                if (items[i].TryGetValue("photos", out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
+                {
+                    photosList = JsonSerializer.Deserialize<List<object>>(photosEl.GetRawText()) ?? new List<object>();
+                }
+
+                var imageUrl = await SaveUploadedFile(image_file, "gallery_photos");
+                photosList.Add(new Dictionary<string, object?>
+                {
+                    ["id"] = Guid.NewGuid().ToString(),
+                    ["title"] = title,
+                    ["description"] = description,
+                    ["image_url"] = imageUrl,
+                    ["created_at"] = DateTime.UtcNow.ToString("O")
+                });
+
+                albumDict["photos"] = photosList;
+                items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(albumDict))!;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) return NotFound(new { message = "Album not found." });
+
+        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        return Ok(new { message = "Photo added." });
+    }
+
+    [HttpDelete("gallery/{id}/photos/{photoId}")]
+    public async Task<IActionResult> DestroyPhoto(string id, string photoId)
+    {
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
+            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+
+        var found = false;
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i].TryGetValue("id", out var idEl) && idEl.GetString() == id)
+            {
+                var albumDict = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(items[i]))!;
+                
+                if (items[i].TryGetValue("photos", out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
+                {
+                    var photosList = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(photosEl.GetRawText()) ?? new();
+                    photosList = photosList.Where(p => !p.TryGetValue("id", out var pId) || pId.ToString() != photoId).ToList();
+                    albumDict["photos"] = photosList;
+                }
+
+                items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(albumDict))!;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) return NotFound(new { message = "Album not found." });
+
+        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        return Ok(new { message = "Photo removed." });
     }
 
     // ── Bulletin (CRUD) ──────────────────────────────────────────────────────
