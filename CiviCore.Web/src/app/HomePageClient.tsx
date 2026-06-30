@@ -182,29 +182,32 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                         
                         {gallery && gallery.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-auto md:h-[600px]">
-                                <Link href={gallerySettings?.archive_url || "/gallery"} className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full">
+                                <Link href={`/gallery/${gallery[0].id}`} className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full">
                                     <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url('${getImageUrl(gallery[0]?.image_url) || "https://lh3.googleusercontent.com/aida-public/AB6AXuD55aFz8NDn0tXi_fzmIam_RZaFwDhAczD1L4kTGDx3sbMlR0oF0fEJB5qFaP04Btkcj6aHz6QlpxgzjIYCilYWKVHAUZys336usIkE5SzFmXdvI3NvErNZ0g2TMOrUu1c-4tth-d3jBfcLR85PhiVZ-By3Hj2sgF0VsRp1fP7NyU97aIp0YyjjBQkx4-gGQIjtxX_CFAevCygShudFFGofPbQX20yTk7WXTZJxCtg4SvhN88iP29cXUKzOB9OXHuNDpxl0_s61314"}')` }}></div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                     <div className="absolute bottom-0 left-0 p-8 w-full translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                                        <h3 className="font-headline-sm text-headline-sm text-white">{gallery[0]?.title || 'Clubhouse'}</h3>
+                                        <h3 className="font-headline-sm text-headline-sm text-white mb-2">{gallery[0]?.title || 'Clubhouse'}</h3>
+                                        <p className="font-body-md text-body-md text-white/80 line-clamp-2">{gallery[0]?.description || 'Explore the amenities of our clubhouse.'}</p>
                                     </div>
                                 </Link>
                                 <div className="flex flex-col md:grid md:grid-rows-2 gap-6 h-auto md:h-full">
                                     {gallery.length > 1 && (
-                                        <Link href={gallerySettings?.archive_url || "/gallery"} className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full" style={{ transitionDelay: '0.1s' }}>
+                                        <Link href={`/gallery/${gallery[1].id}`} className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full" style={{ transitionDelay: '0.1s' }}>
                                             <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url('${getImageUrl(gallery[1]?.image_url) || "https://lh3.googleusercontent.com/aida-public/AB6AXuDqmJbXJfWPbdc2pd8BtFwTYl1KGyL-YtzdJWtn6C-PLLYeGND0o9idmDEkCLCNadXGgEk1D4fczrphhSJwrRdQFTxhjEbSgye3NmOeVIuhT_QKw2fGu1lpXSl9gMn2R9scg5z09MOxMCxYoOf7LkuNdi34YzT6Q_VfZ3fAk7YiLbqlQlkcyb2qZoN9Be7w8EFfFiF5sZZCo46zPenk5RHo29Pk2H9rHqSZhvXUM0t5VHWRyzss9ONZBqgL1jCs8vK7MrpVHPNY1Og"}')` }}></div>
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             <div className="absolute bottom-0 left-0 p-6 w-full translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                                                <h3 className="font-headline-sm text-headline-sm text-white">{gallery[1]?.title || 'Community Life'}</h3>
+                                                <h3 className="font-headline-sm text-headline-sm text-white mb-2">{gallery[1]?.title || 'Community Life'}</h3>
+                                                <p className="font-body-md text-body-md text-white/80 line-clamp-2">{gallery[1]?.description || 'A vibrant and welcoming neighborhood.'}</p>
                                             </div>
                                         </Link>
                                     )}
                                     {gallery.length > 2 && (
-                                        <Link href={gallerySettings?.archive_url || "/gallery"} className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full" style={{ transitionDelay: '0.2s' }}>
+                                        <Link href={`/gallery/${gallery[2].id}`} className="block rounded-2xl overflow-hidden relative group reveal shadow-sm border border-border-subtle/50 dark:border-primary-container/50 h-[300px] md:h-full" style={{ transitionDelay: '0.2s' }}>
                                             <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url('${getImageUrl(gallery[2]?.image_url) || "https://lh3.googleusercontent.com/aida-public/AB6AXuAcYSxDLk_010u5mOyR_cijkXwWyIyptM-8yp5_4RAe6ZRQtodAbNSdHc80FooCWs9ykxeHdHLmLfIjpcGeZ-OXAN1f6bMyV0rpLYvBVnRktdK_B8EOFmp6JryCf9e7giLDFQGO5heJirDMTp6yQh2Q6umMQkmduc12_7S2HsFcPWX8wuAdf1GCtzCWfmn9P7XiZbVNUINPPQ5Z2c70y9eKeijUWwn-bFTTd2AI-P9MXrgXBehO0bMFqxGV4tLwuzGrD7GdGWcXw-w"}')` }}></div>
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             <div className="absolute bottom-0 left-0 p-6 w-full translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                                                <h3 className="font-headline-sm text-headline-sm text-white">{gallery[2]?.title || 'Pool Area'}</h3>
+                                                <h3 className="font-headline-sm text-headline-sm text-white mb-2">{gallery[2]?.title || 'Pool Area'}</h3>
+                                                <p className="font-body-md text-body-md text-white/80 line-clamp-2">{gallery[2]?.description || 'Relax and enjoy the sunshine.'}</p>
                                             </div>
                                         </Link>
                                     )}

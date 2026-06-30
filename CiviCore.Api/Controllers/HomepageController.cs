@@ -57,6 +57,16 @@ public class HomepageController : ControllerBase
         return await _storageService.UploadFileAsync(false, filePath, stream);
     }
 
+    private async Task DeleteUploadedFile(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return;
+        if (url.StartsWith("/public-media/"))
+        {
+            var filePath = url.Substring("/public-media/".Length);
+            await _storageService.RemoveFileAsync(false, filePath);
+        }
+    }
+
     // ── Hero Section ─────────────────────────────────────────────────────────
 
     [HttpGet("hero")]
@@ -84,9 +94,17 @@ public class HomepageController : ControllerBase
         };
 
         if (background_image != null)
+        {
+            if (existing.TryGetValue("background_image_url", out var img) && img.ValueKind != JsonValueKind.Null)
+            {
+                await DeleteUploadedFile(img.GetString());
+            }
             data["background_image_url"] = await SaveUploadedFile(background_image, "hero");
+        }
         else if (existing.TryGetValue("background_image_url", out var img))
+        {
             data["background_image_url"] = img.GetString();
+        }
 
         await SaveSetting("homepage_hero", JsonSerializer.Serialize(data));
         return Ok(new { message = "Hero section saved." });
@@ -167,9 +185,17 @@ public class HomepageController : ControllerBase
                 };
 
                 if (image_file != null)
+                {
+                    if (events[i].TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+                    {
+                        await DeleteUploadedFile(imgEl.GetString());
+                    }
                     updated["image_url"] = await SaveUploadedFile(image_file, "events");
+                }
                 else if (events[i].TryGetValue("image_url", out var img))
+                {
                     updated["image_url"] = img.GetString();
+                }
 
                 events[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(updated))!;
                 found = true;
@@ -188,6 +214,12 @@ public class HomepageController : ControllerBase
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
             await GetSettingValue("homepage_events") ?? "[]") ?? new();
+
+        var eventToRemove = events.FirstOrDefault(e => e.TryGetValue("id", out var idEl) && idEl.GetString() == id);
+        if (eventToRemove != null && eventToRemove.TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+        {
+            await DeleteUploadedFile(imgEl.GetString());
+        }
 
         events = events.Where(e => !(e.TryGetValue("id", out var idEl) && idEl.GetString() == id)).ToList();
 
@@ -308,9 +340,17 @@ public class HomepageController : ControllerBase
                 }
 
                 if (image_file != null)
+                {
+                    if (items[i].TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+                    {
+                        await DeleteUploadedFile(imgEl.GetString());
+                    }
                     updated["image_url"] = await SaveUploadedFile(image_file, "gallery");
+                }
                 else if (items[i].TryGetValue("image_url", out var img))
+                {
                     updated["image_url"] = img.GetString();
+                }
 
                 items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(updated))!;
                 found = true;
@@ -329,6 +369,29 @@ public class HomepageController : ControllerBase
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
             await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+
+        var albumToRemove = items.FirstOrDefault(e => e.TryGetValue("id", out var idEl) && idEl.GetString() == id);
+        if (albumToRemove != null)
+        {
+            if (albumToRemove.TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+            {
+                await DeleteUploadedFile(imgEl.GetString());
+            }
+            if (albumToRemove.TryGetValue("photos", out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
+            {
+                var photosList = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(photosEl.GetRawText());
+                if (photosList != null)
+                {
+                    foreach (var photo in photosList)
+                    {
+                        if (photo.TryGetValue("image_url", out var pImgEl) && pImgEl.ValueKind != JsonValueKind.Null)
+                        {
+                            await DeleteUploadedFile(pImgEl.GetString());
+                        }
+                    }
+                }
+            }
+        }
 
         items = items.Where(e => !(e.TryGetValue("id", out var idEl) && idEl.GetString() == id)).ToList();
 
@@ -409,9 +472,14 @@ public class HomepageController : ControllerBase
                 
                 if (items[i].TryGetValue("photos", out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
                 {
-                    var photosList = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(photosEl.GetRawText()) ?? new();
-                    photosList = photosList.Where(p => !p.TryGetValue("id", out var pId) || pId.ToString() != photoId).ToList();
-                    albumDict["photos"] = photosList;
+                    var photosList = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(photosEl.GetRawText()) ?? new();
+                    var photoToRemove = photosList.FirstOrDefault(p => p.TryGetValue("id", out var pId) && pId.GetString() == photoId);
+                    if (photoToRemove != null && photoToRemove.TryGetValue("image_url", out var pImg) && pImg.ValueKind != JsonValueKind.Null)
+                    {
+                        await DeleteUploadedFile(pImg.GetString());
+                    }
+                    var updatedPhotosList = photosList.Where(p => !(p.TryGetValue("id", out var pId) && pId.GetString() == photoId)).ToList();
+                    albumDict["photos"] = updatedPhotosList;
                 }
 
                 items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(albumDict))!;
@@ -485,9 +553,17 @@ public class HomepageController : ControllerBase
                 };
 
                 if (image_file != null)
+                {
+                    if (items[i].TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+                    {
+                        await DeleteUploadedFile(imgEl.GetString());
+                    }
                     updated["image_url"] = await SaveUploadedFile(image_file, "bulletin");
+                }
                 else if (items[i].TryGetValue("image_url", out var img))
+                {
                     updated["image_url"] = img.GetString();
+                }
 
                 items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(updated))!;
                 found = true;
@@ -506,6 +582,12 @@ public class HomepageController : ControllerBase
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
             await GetSettingValue("homepage_buletin") ?? "[]") ?? new();
+
+        var bulletinToRemove = items.FirstOrDefault(e => e.TryGetValue("id", out var idEl) && idEl.GetString() == id);
+        if (bulletinToRemove != null && bulletinToRemove.TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+        {
+            await DeleteUploadedFile(imgEl.GetString());
+        }
 
         items = items.Where(e => !(e.TryGetValue("id", out var idEl) && idEl.GetString() == id)).ToList();
 
@@ -557,7 +639,13 @@ public class HomepageController : ControllerBase
         if (og_description != null) existing["og_description"] = og_description;
 
         if (og_image != null)
+        {
+            if (existing.TryGetValue("og_image", out var oldOgImage) && !string.IsNullOrEmpty(oldOgImage))
+            {
+                await DeleteUploadedFile(oldOgImage);
+            }
             existing["og_image"] = await SaveUploadedFile(og_image, "seo");
+        }
 
         await SaveSetting("homepage_metadata", JsonSerializer.Serialize(existing));
         return Ok(new { message = "Metadata saved." });

@@ -99,6 +99,8 @@ export default function EventDetailPage() {
                         {/* Main Info Column */}
                         <div className="p-8 md:p-12 lg:w-2/3 flex flex-col justify-center">
                             <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-8">
+                                <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Home</Link>
+                                <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                                 <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/events">Events</Link>
                                 <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                                 <span className="text-on-surface dark:text-on-primary truncate max-w-[200px] sm:max-w-xs">{event.title}</span>

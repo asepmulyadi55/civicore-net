@@ -31,17 +31,59 @@
     {
       "id": 1,
       "title": "The Clubhouse",
-      "image_url": "https://images.unsplash.com/photo-1582719478250-c8940cebf8ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+      "image_url": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "photos": [
+        {
+          "id": "1-1",
+          "title": "Main Hall",
+          "description": "The elegant main hall for resident gatherings.",
+          "image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        },
+        {
+          "id": "1-2",
+          "title": "Fitness Center",
+          "description": "State-of-the-art fitness equipment.",
+          "image_url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        }
+      ]
     },
     {
       "id": 2,
       "title": "Community Pool",
-      "image_url": "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+      "image_url": "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "photos": [
+        {
+          "id": "2-1",
+          "title": "Poolside View",
+          "description": "Relaxing poolside area with sunbeds.",
+          "image_url": "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        },
+        {
+          "id": "2-2",
+          "title": "Evening Swim",
+          "description": "The pool beautifully lit up in the evening.",
+          "image_url": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        }
+      ]
     },
     {
       "id": 3,
       "title": "Children's Playground",
-      "image_url": "https://images.unsplash.com/photo-1595085444645-566b7ea4a1e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+      "image_url": "https://images.unsplash.com/photo-1595085444645-566b7ea4a1e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "photos": [
+        {
+          "id": "3-1",
+          "title": "Swing Set",
+          "description": "Safe and fun swing sets for kids.",
+          "image_url": "https://images.unsplash.com/photo-1566373722971-8bc43f07a507?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        },
+        {
+          "id": "3-2",
+          "title": "Sandbox",
+          "description": "A clean sandbox for creative play.",
+          "image_url": "https://images.unsplash.com/photo-1602078693006-2533ba17f7da?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        }
+      ]
     }
   ],
   "bulletins": [

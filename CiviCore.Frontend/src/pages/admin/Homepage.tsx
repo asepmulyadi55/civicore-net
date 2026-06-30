@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import { compressImage } from '../../utils/imageCompressor';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, Modal, ConfirmModal, FormInput, FormSelect, SearchInput, SelectFilter, FilterBar, Pagination, TableWrapper, Th, EmptyState, StatusBadge } from '../../admin/components/ui';
 
@@ -89,7 +90,7 @@ function ImageUploadBox({ id, label, currentUrl, onFileChange, file, recommended
       ) : (
         <label className="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer">
           <span className="material-icons text-slate-400 text-2xl">cloud_upload</span>
-          <span className="text-xs font-semibold text-slate-500">Upload New Image <span className="text-slate-400 font-normal">(optional · max 5 MB{recommendedSize ? ` · rec: ${recommendedSize}` : ''})</span></span>
+          <span className="text-xs font-semibold text-slate-500">Upload New Image <span className="text-slate-400 font-normal">(optional · max 1 MB auto-compressed{recommendedSize ? ` · rec: ${recommendedSize}` : ''})</span></span>
           <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={e => onFileChange(e.target.files?.[0] || null)} />
         </label>
       )}
@@ -128,7 +129,7 @@ function HeroTab() {
     fd.append('subtitle', data.subtitle || '');
     fd.append('cta_label', data.cta_label || '');
     fd.append('cta_url', data.cta_url || '');
-    if (bgImage) fd.append('background_image', bgImage);
+    if (bgImage) fd.append('background_image', await compressImage(bgImage));
     try {
       await axios.put('/api/homepage/hero', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess(true); setTimeout(() => setSuccess(false), 3000);
@@ -240,7 +241,7 @@ function EventsTab() {
     setSaving(true);
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    if (image) fd.append('image_file', image);
+    if (image) fd.append('image_file', await compressImage(image));
     try {
       if (modal.data) {
         await axios.put(`/api/homepage/events/${modal.data.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -386,6 +387,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   
   const [file, setFile] = useState<any>(null);
   const [title, setTitle] = useState('');
@@ -414,7 +416,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
     if (!file || !album?.id) return;
     setUploading(true);
     const fd = new FormData();
-    fd.append('image_file', file);
+    fd.append('image_file', await compressImage(file));
     if (title) fd.append('title', title);
     if (description) fd.append('description', description);
     
@@ -429,16 +431,16 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
     setUploading(false);
   };
 
-  const deletePhoto = async (photoId: string) => {
-    if (!album?.id) return;
-    if (!confirm('Are you sure you want to delete this photo?')) return;
-    setDeleting(photoId);
+  const deletePhoto = async () => {
+    if (!album?.id || !deleteConfirmId) return;
+    setDeleting(deleteConfirmId);
     try {
-      await axios.delete(`/api/homepage/gallery/${album.id}/photos/${photoId}`);
+      await axios.delete(`/api/homepage/gallery/${album.id}/photos/${deleteConfirmId}`);
       await fetchPhotos();
       if (onRefresh) onRefresh();
     } catch {}
     setDeleting(null);
+    setDeleteConfirmId(null);
   };
 
   return (
@@ -477,7 +479,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
                             {p.title && <p className="text-white text-xs font-bold truncate">{p.title}</p>}
                             {p.description && <p className="text-white/80 text-[10px] truncate">{p.description}</p>}
                          </div>
-                         <button onClick={() => deletePhoto(p.id)} disabled={deleting === p.id} className="self-end p-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors cursor-pointer disabled:opacity-50">
+                         <button onClick={() => setDeleteConfirmId(p.id)} disabled={deleting === p.id} className="self-end p-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors cursor-pointer disabled:opacity-50">
                             {deleting === p.id ? <span className="material-icons animate-spin text-sm">autorenew</span> : <span className="material-icons text-sm">delete_outline</span>}
                          </button>
                       </div>
@@ -487,6 +489,14 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
           )}
         </div>
       </div>
+      <ConfirmModal 
+        open={!!deleteConfirmId} 
+        onClose={() => setDeleteConfirmId(null)} 
+        onConfirm={deletePhoto} 
+        title="Delete Photo" 
+        message="Are you sure you want to delete this photo? This action cannot be undone." 
+        loading={!!deleting} 
+      />
     </Modal>
   );
 }
@@ -566,7 +576,7 @@ function GalleryTab() {
     setSavingAlbum(true);
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    if (image) fd.append('image_file', image);
+    if (image) fd.append('image_file', await compressImage(image));
     try {
       if (modal.data) {
         await axios.put(`/api/homepage/gallery/${modal.data.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -734,7 +744,7 @@ function BulletinTab() {
     setAddLoading(true);
     const fd = new FormData();
     Object.entries(addForm).forEach(([k, v]) => fd.append(k, v));
-    if (addImage) fd.append('image_file', addImage);
+    if (addImage) fd.append('image_file', await compressImage(addImage));
     try {
       await axios.post('/api/homepage/bulletin', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setAddForm({ title: '', description: '', date: '', url: '' }); setAddImage(null);
@@ -754,7 +764,7 @@ function BulletinTab() {
     setEditLoading(true);
     const fd = new FormData();
     Object.entries(editForm).forEach(([k, v]) => fd.append(k, v));
-    if (editImage) fd.append('image_file', editImage);
+    if (editImage) fd.append('image_file', await compressImage(editImage));
     try {
       await axios.put(`/api/homepage/bulletin/${editModal.data.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setEditModal({ open: false, data: null });
@@ -989,7 +999,7 @@ function MetadataTab() {
     fd.append('meta_keywords', data.meta_keywords || '');
     fd.append('og_title', data.og_title || '');
     fd.append('og_description', data.og_description || '');
-    if (ogFile) fd.append('og_image', ogFile);
+    if (ogFile) fd.append('og_image', await compressImage(ogFile));
     try {
       await axios.put('/api/homepage/metadata', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess(true); setTimeout(() => setSuccess(false), 3000);

@@ -75,6 +75,8 @@ export default function GalleryDetailPage() {
                 {/* Header Section */}
                 <div className="mb-12 text-left">
                     <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-6">
+                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Home</Link>
+                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                         <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/gallery">Gallery</Link>
                         <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                         <span className="text-on-surface dark:text-on-primary truncate max-w-[200px] sm:max-w-xs">{album.title}</span>
