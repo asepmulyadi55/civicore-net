@@ -12,12 +12,12 @@ import { PageHeader, Modal, ConfirmModal, FormInput, FormSelect, SearchInput, Se
    TABS CONFIG
    ═══════════════════════════════════════════════════════════════════════════ */
 const TABS = [
-  { key: 'hero',     label: 'Hero Section',    icon: 'star' },
-  { key: 'events',   label: 'Events',          icon: 'event' },
-  { key: 'gallery',  label: 'Gallery',         icon: 'photo_library' },
-  { key: 'bulletin', label: 'Bulletin',        icon: 'article' },
-  { key: 'footer',   label: 'Footer',          icon: 'web_asset' },
-  { key: 'metadata', label: 'SEO & Metadata',  icon: 'manage_search' },
+  { key: 'hero', label: 'Hero Section', icon: 'star' },
+  { key: 'events', label: 'Events', icon: 'event' },
+  { key: 'gallery', label: 'Gallery', icon: 'photo_library' },
+  { key: 'bulletin', label: 'Bulletin', icon: 'article' },
+  { key: 'footer', label: 'Footer', icon: 'web_asset' },
+  { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search' },
 ];
 
 const CATEGORY_OPTIONS = [
@@ -119,7 +119,7 @@ function HeroTab() {
   const [bgImage, setBgImage] = useState(null);
 
   useEffect(() => {
-    axios.get('/api/homepage/hero').then(r => setData(r.data || {})).catch(() => {}).finally(() => setLoading(false));
+    axios.get('/api/homepage/hero').then(r => setData(r.data || {})).catch(() => { }).finally(() => setLoading(false));
   }, []);
 
   const save = async () => {
@@ -134,7 +134,7 @@ function HeroTab() {
       await axios.put('/api/homepage/hero', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess(true); setTimeout(() => setSuccess(false), 3000);
       setBgImage(null);
-    } catch {}
+    } catch { }
     setSaving(false);
   };
 
@@ -178,8 +178,9 @@ function EventsTab() {
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
   const [success, setSuccess] = useState('');
   const [page, setPage] = useState(1);
-  const [settings, setSettings] = useState({ eyebrow: '', title: '', subtitle: '', archive_url: '' });
+  const [settings, setSettings] = useState({ eyebrow: '', title: '', subtitle: '' });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [htmlMode, setHtmlMode] = useState(false);
 
   const STATUS_OPTIONS = [
     { value: 'upcoming', label: 'Upcoming' },
@@ -194,7 +195,7 @@ function EventsTab() {
   }, []);
 
   const fetchSettings = useCallback(async () => {
-    try { const r = await axios.get('/api/homepage/event-settings'); setSettings(r.data); } catch {}
+    try { const r = await axios.get('/api/homepage/event-settings'); setSettings(r.data); } catch { }
   }, []);
 
   useEffect(() => { fetchEvents(); fetchSettings(); }, [fetchEvents, fetchSettings]);
@@ -205,11 +206,10 @@ function EventsTab() {
     fd.append('eyebrow', settings.eyebrow || '');
     fd.append('title', settings.title || '');
     fd.append('subtitle', settings.subtitle || '');
-    fd.append('archive_url', settings.archive_url || '');
     try {
       await axios.put('/api/homepage/event-settings', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess('settings'); setTimeout(() => setSuccess(''), 3000);
-    } catch {}
+    } catch { }
     setSavingSettings(false);
   };
 
@@ -251,13 +251,13 @@ function EventsTab() {
       setModal({ open: false, data: null });
       setSuccess('event'); setTimeout(() => setSuccess(''), 3000);
       fetchEvents();
-    } catch {}
+    } catch { }
     setSaving(false);
   };
 
   const deleteEvent = async () => {
     setDeleteModal(d => ({ ...d, loading: true }));
-    try { await axios.delete(`/api/homepage/events/${deleteModal.id}`); fetchEvents(); } catch {}
+    try { await axios.delete(`/api/homepage/events/${deleteModal.id}`); fetchEvents(); } catch { }
     setDeleteModal({ open: false, id: null, title: '', loading: false });
   };
 
@@ -282,15 +282,24 @@ function EventsTab() {
             <FormSelect label="Category" id="ev-cat" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} options={CATEGORY_OPTIONS} placeholder="None" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-            <ReactQuill theme="snow" value={form.description || ''} onChange={v => setForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
+            <div className="flex justify-between items-end mb-1.5">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
+              <button onClick={() => setHtmlMode(!htmlMode)} className="text-xs text-primary hover:underline bg-transparent border-none cursor-pointer">
+                {htmlMode ? 'Use Rich Text' : 'Edit HTML'}
+              </button>
+            </div>
+            {htmlMode ? (
+              <textarea value={form.description || ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none min-h-[200px]" />
+            ) : (
+              <ReactQuill theme="snow" value={form.description || ''} onChange={v => setForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
+            )}
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">URL</label>
             <input type="text" readOnly disabled value={form.url} placeholder="Auto-generated from title" className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-500 cursor-not-allowed" />
           </div>
           <ImageUploadBox label="Event Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} recommendedSize="1000x600" />
-          
+
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
             <button onClick={saveEvent} disabled={saving} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
@@ -311,7 +320,6 @@ function EventsTab() {
             <FormInput label="Eyebrow Label" id="e-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Discover More" />
             <FormInput label="Section Title" id="e-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Events" />
             <div className="md:col-span-2"><FormInput label="Subtitle" id="e-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore..." /></div>
-            <div className="md:col-span-2"><FormInput label="Archive URL" id="e-url" value={settings.archive_url || ''} onChange={e => setSettings(d => ({ ...d, archive_url: e.target.value }))} placeholder="https://..." /></div>
           </div>
         </div>
         <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
@@ -321,7 +329,7 @@ function EventsTab() {
 
       <SectionCard icon="event" iconBg="bg-emerald-100 dark:bg-emerald-900/30" iconColor="text-emerald-500" title="Events" subtitle="Manage community events displayed on the homepage" badge={events.length}>
         <SuccessBanner show={success === 'event'} />
-        
+
         <div className="p-6">
           <FilterBar>
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search events..." />
@@ -388,7 +396,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  
+
   const [file, setFile] = useState<any>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -399,7 +407,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
     try {
       const res = await axios.get(`/api/homepage/gallery/${album.id}`);
       setPhotos(res.data?.photos || []);
-    } catch {}
+    } catch { }
     setLoading(false);
   }, [album?.id]);
 
@@ -419,7 +427,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
     fd.append('image_file', await compressImage(file));
     if (title) fd.append('title', title);
     if (description) fd.append('description', description);
-    
+
     try {
       await axios.post(`/api/homepage/gallery/${album.id}/photos`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setFile(null);
@@ -427,7 +435,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
       setDescription('');
       await fetchPhotos();
       if (onRefresh) onRefresh();
-    } catch {}
+    } catch { }
     setUploading(false);
   };
 
@@ -438,7 +446,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
       await axios.delete(`/api/homepage/gallery/${album.id}/photos/${deleteConfirmId}`);
       await fetchPhotos();
       if (onRefresh) onRefresh();
-    } catch {}
+    } catch { }
     setDeleting(null);
     setDeleteConfirmId(null);
   };
@@ -466,36 +474,36 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
         <div>
           <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Album Photos ({photos.length})</h4>
           {loading ? (
-             <div className="flex justify-center py-8"><span className="material-icons animate-spin text-primary text-3xl">autorenew</span></div>
+            <div className="flex justify-center py-8"><span className="material-icons animate-spin text-primary text-3xl">autorenew</span></div>
           ) : photos.length === 0 ? (
-             <EmptyState icon="photo_library" title="No photos yet" subtitle="Upload your first photo above" />
+            <EmptyState icon="photo_library" title="No photos yet" subtitle="Upload your first photo above" />
           ) : (
-             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2">
-                {photos.map(p => (
-                   <div key={p.id} className="relative group rounded-xl overflow-hidden aspect-[4/3] border border-slate-200 dark:border-slate-700">
-                      <img src={p.image_url} alt="" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
-                         <div>
-                            {p.title && <p className="text-white text-xs font-bold truncate">{p.title}</p>}
-                            {p.description && <p className="text-white/80 text-[10px] truncate">{p.description}</p>}
-                         </div>
-                         <button onClick={() => setDeleteConfirmId(p.id)} disabled={deleting === p.id} className="self-end p-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors cursor-pointer disabled:opacity-50">
-                            {deleting === p.id ? <span className="material-icons animate-spin text-sm">autorenew</span> : <span className="material-icons text-sm">delete_outline</span>}
-                         </button>
-                      </div>
-                   </div>
-                ))}
-             </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2">
+              {photos.map(p => (
+                <div key={p.id} className="relative group rounded-xl overflow-hidden aspect-[4/3] border border-slate-200 dark:border-slate-700">
+                  <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                    <div>
+                      {p.title && <p className="text-white text-xs font-bold truncate">{p.title}</p>}
+                      {p.description && <p className="text-white/80 text-[10px] truncate">{p.description}</p>}
+                    </div>
+                    <button onClick={() => setDeleteConfirmId(p.id)} disabled={deleting === p.id} className="self-end p-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors cursor-pointer disabled:opacity-50">
+                      {deleting === p.id ? <span className="material-icons animate-spin text-sm">autorenew</span> : <span className="material-icons text-sm">delete_outline</span>}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
-      <ConfirmModal 
-        open={!!deleteConfirmId} 
-        onClose={() => setDeleteConfirmId(null)} 
-        onConfirm={deletePhoto} 
-        title="Delete Photo" 
-        message="Are you sure you want to delete this photo? This action cannot be undone." 
-        loading={!!deleting} 
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={deletePhoto}
+        title="Delete Photo"
+        message="Are you sure you want to delete this photo? This action cannot be undone."
+        loading={!!deleting}
       />
     </Modal>
   );
@@ -508,12 +516,12 @@ function GalleryTab() {
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  
+
   const [modal, setModal] = useState({ open: false, data: null });
   const [managePhotosModal, setManagePhotosModal] = useState({ open: false, album: null });
   const [form, setForm] = useState({ title: '', description: '' });
   const [image, setImage] = useState(null);
-  
+
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingAlbum, setSavingAlbum] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
@@ -522,7 +530,7 @@ function GalleryTab() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    try { 
+    try {
       const [sRes, aRes] = await Promise.all([
         axios.get('/api/homepage/gallery-settings'),
         axios.get('/api/homepage/gallery')
@@ -557,7 +565,7 @@ function GalleryTab() {
     try {
       await axios.put('/api/homepage/gallery-settings', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess('settings'); setTimeout(() => setSuccess(''), 3000);
-    } catch {}
+    } catch { }
     setSavingSettings(false);
   };
 
@@ -586,13 +594,13 @@ function GalleryTab() {
       setModal({ open: false, data: null });
       setSuccess('album'); setTimeout(() => setSuccess(''), 3000);
       fetchData();
-    } catch {}
+    } catch { }
     setSavingAlbum(false);
   };
 
   const deleteAlbum = async () => {
     setDeleteModal(d => ({ ...d, loading: true }));
-    try { await axios.delete(`/api/homepage/gallery/${deleteModal.id}`); fetchData(); } catch {}
+    try { await axios.delete(`/api/homepage/gallery/${deleteModal.id}`); fetchData(); } catch { }
     setDeleteModal({ open: false, id: null, title: '', loading: false });
   };
 
@@ -609,7 +617,7 @@ function GalleryTab() {
               className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none resize-none" />
           </div>
           <ImageUploadBox label="Cover Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} recommendedSize="1000x800" />
-          
+
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
             <button onClick={saveAlbum} disabled={savingAlbum} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
@@ -619,11 +627,11 @@ function GalleryTab() {
         </div>
       </Modal>
 
-      <ManagePhotosModal 
-        open={managePhotosModal.open} 
-        album={managePhotosModal.album} 
-        onClose={() => setManagePhotosModal({ open: false, album: null })} 
-        onRefresh={fetchData} 
+      <ManagePhotosModal
+        open={managePhotosModal.open}
+        album={managePhotosModal.album}
+        onClose={() => setManagePhotosModal({ open: false, album: null })}
+        onRefresh={fetchData}
       />
 
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
@@ -637,7 +645,6 @@ function GalleryTab() {
             <FormInput label="Eyebrow Label" id="g-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Visual Tour" />
             <FormInput label="Section Title" id="g-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Gallery" />
             <div className="md:col-span-2"><FormInput label="Subtitle" id="g-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore..." /></div>
-            <div className="md:col-span-2"><FormInput label="Archive URL" id="g-url" value={settings.archive_url || ''} onChange={e => setSettings(d => ({ ...d, archive_url: e.target.value }))} placeholder="https://..." /></div>
           </div>
         </div>
         <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
@@ -647,7 +654,7 @@ function GalleryTab() {
 
       <SectionCard icon="photo_library" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Albums" subtitle="Manage gallery albums" badge={albums.length}>
         <SuccessBanner show={success === 'album'} />
-        
+
         <div className="p-6">
           <FilterBar>
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search albums..." />
@@ -709,19 +716,30 @@ function BulletinTab() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [addForm, setAddForm] = useState({ title: '', description: '', date: '', url: '' });
-  const [addImage, setAddImage] = useState(null);
+  const [addImage, setAddImage] = useState<any>(null);
   const [addLoading, setAddLoading] = useState(false);
-  const [editModal, setEditModal] = useState({ open: false, data: null });
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editModal, setEditModal] = useState({ open: false, data: null as any });
   const [editForm, setEditForm] = useState({ title: '', description: '', date: '', url: '' });
+  const [htmlMode, setHtmlMode] = useState(false);
   const [editImage, setEditImage] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
-  const [success, setSuccess] = useState(false);
+  const [settings, setSettings] = useState<any>({});
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [success, setSuccess] = useState<string | false>(false);
   const [page, setPage] = useState(1);
 
   const fetch = useCallback(async () => {
     setLoading(true);
-    try { const r = await axios.get('/api/homepage/bulletin'); setItems(r.data || []); } catch { setItems([]); }
+    try {
+      const [r, s] = await Promise.all([
+        axios.get('/api/homepage/bulletin'),
+        axios.get('/api/homepage/bulletin-settings')
+      ]);
+      setItems(r.data || []);
+      setSettings(s.data || {});
+    } catch { setItems([]); }
     finally { setLoading(false); }
   }, []);
 
@@ -748,9 +766,10 @@ function BulletinTab() {
     try {
       await axios.post('/api/homepage/bulletin', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setAddForm({ title: '', description: '', date: '', url: '' }); setAddImage(null);
-      setSuccess(true); setTimeout(() => setSuccess(false), 3000);
+      setAddModalOpen(false);
+      setSuccess('item'); setTimeout(() => setSuccess(false), 3000);
       fetch();
-    } catch {}
+    } catch { }
     setAddLoading(false);
   };
 
@@ -768,20 +787,81 @@ function BulletinTab() {
     try {
       await axios.put(`/api/homepage/bulletin/${editModal.data.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setEditModal({ open: false, data: null });
-      setSuccess(true); setTimeout(() => setSuccess(false), 3000);
+      setSuccess('item'); setTimeout(() => setSuccess(false), 3000);
       fetch();
-    } catch {}
+    } catch { }
     setEditLoading(false);
   };
 
   const deleteBulletin = async () => {
     setDeleteModal(d => ({ ...d, loading: true }));
-    try { await axios.delete(`/api/homepage/bulletin/${deleteModal.id}`); fetch(); } catch {}
+    try { await axios.delete(`/api/homepage/bulletin/${deleteModal.id}`); fetch(); } catch { }
     setDeleteModal({ open: false, id: null, title: '', loading: false });
+  };
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    const fd = new FormData();
+    Object.entries(settings).forEach(([k, v]) => fd.append(k, v as string));
+    try {
+      await axios.put('/api/homepage/bulletin-settings', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setSuccess('settings'); setTimeout(() => setSuccess(false), 3000);
+    } catch { }
+    setSavingSettings(false);
   };
 
   return (
     <>
+      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Bulletin Settings" subtitle="Configure the main bulletin header">
+        <SuccessBanner show={success === 'settings'} />
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <FormInput label="Eyebrow Label" id="b-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Informasi" />
+            <FormInput label="Section Title" id="b-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Buletin" />
+            <div className="md:col-span-2"><FormInput label="Subtitle" id="b-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore our bulletins..." /></div>
+          </div>
+        </div>
+        <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
+      </SectionCard>
+
+      <div className="h-6"></div>
+
+      <Modal open={addModalOpen} onClose={() => setAddModalOpen(false)} title="Add New Bulletin" size="lg">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormInput label="Title" id="ab-title" value={addForm.title} onChange={e => setAddForm(f => ({ ...f, title: e.target.value }))} required placeholder="Bulletin title..." />
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date</label>
+              <input type="date" value={addForm.date} onChange={e => setAddForm(f => ({ ...f, date: e.target.value }))}
+                onClick={e => 'showPicker' in e.target && (e.target as any).showPicker()}
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
+            </div>
+          </div>
+          <div>
+            <div className="flex justify-between items-end mb-1.5">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
+              <button onClick={() => setHtmlMode(!htmlMode)} className="text-xs text-primary hover:underline bg-transparent border-none cursor-pointer">
+                {htmlMode ? 'Use Rich Text' : 'Edit HTML'}
+              </button>
+            </div>
+            {htmlMode ? (
+              <textarea value={addForm.description || ''} onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none min-h-[200px]" />
+            ) : (
+              <ReactQuill theme="snow" value={addForm.description || ''} onChange={v => setAddForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
+            )}
+          </div>
+          <FormInput label="URL" id="ab-url" value={addForm.url} onChange={e => setAddForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
+          <ImageUploadBox label="Bulletin Image" file={addImage} onFileChange={setAddImage} recommendedSize="800x600" />
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
+            <button onClick={() => setAddModalOpen(false)} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+            <button onClick={addBulletin} disabled={addLoading}
+              className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+              <span className="material-icons text-base">add</span> {addLoading ? 'Adding...' : 'Add Bulletin'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       <Modal open={editModal.open} onClose={() => setEditModal({ open: false, data: null })} title="Edit Bulletin" size="lg">
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -794,9 +874,18 @@ function BulletinTab() {
             </div>
           </div>
           <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-              <ReactQuill theme="snow" value={editForm.description || ''} onChange={v => setEditForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
+            <div className="flex justify-between items-end mb-1.5">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
+              <button onClick={() => setHtmlMode(!htmlMode)} className="text-xs text-primary hover:underline bg-transparent border-none cursor-pointer">
+                {htmlMode ? 'Use Rich Text' : 'Edit HTML'}
+              </button>
             </div>
+            {htmlMode ? (
+              <textarea value={editForm.description || ''} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none min-h-[200px]" />
+            ) : (
+              <ReactQuill theme="snow" value={editForm.description || ''} onChange={v => setEditForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
+            )}
+          </div>
           <FormInput label="URL" id="eb-url" value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
           <ImageUploadBox label="Bulletin Image" currentUrl={editModal.data?.image_url} file={editImage} onFileChange={setEditImage} recommendedSize="800x600" />
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
@@ -813,74 +902,55 @@ function BulletinTab() {
         title="Delete Bulletin?" message={`Delete <strong>${deleteModal.title}</strong>? This cannot be undone.`} confirmLabel="Yes, Delete" />
 
       <SectionCard icon="article" iconBg="bg-sky-100 dark:bg-sky-900/30" iconColor="text-sky-500" title="Bulletin" subtitle="Manage information bulletins" badge={items.length}>
-        <SuccessBanner show={success} />
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Add New Bulletin</p>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormInput label="Title" id="ab-title" value={addForm.title} onChange={e => setAddForm(f => ({ ...f, title: e.target.value }))} required placeholder="Bulletin title..." />
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date</label>
-                <input type="date" value={addForm.date} onChange={e => setAddForm(f => ({ ...f, date: e.target.value }))}
-                  onClick={e => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
-              </div>
-            </div>
-            <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-            <ReactQuill theme="snow" value={addForm.description || ''} onChange={v => setAddForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg mb-4" />
-          </div>
-            <FormInput label="URL" id="ab-url" value={addForm.url} onChange={e => setAddForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
-            <ImageUploadBox label="Bulletin Image" file={addImage} onFileChange={setAddImage} recommendedSize="800x600" />
-            <div className="flex justify-end">
-              <button onClick={addBulletin} disabled={addLoading}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-                <span className="material-icons text-base">add</span> {addLoading ? 'Adding...' : 'Add Bulletin'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <SuccessBanner show={success === 'item'} />
 
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 items-center">
-          <div className="relative flex-1 min-w-[200px]"><SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search bulletins..." /></div>
-          {search && (
-            <button onClick={() => { setSearch(''); setPage(1); }} className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
-              <span className="material-icons text-sm">close</span> Clear
+        <div className="p-6">
+          <FilterBar>
+            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search bulletins..." />
+            <div className="flex-grow"></div>
+            <button onClick={() => setAddModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+              <span className="material-icons text-[18px]">add</span> Add Bulletin
             </button>
-          )}
-        </div>
+          </FilterBar>
 
-        {loading ? <div className="flex items-center justify-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div> : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead><tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800"><Th>Title</Th><Th>Date</Th><Th className="text-center">Actions</Th></tr></thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {paged.length === 0 ? (
-                  <tr><td colSpan={3}><EmptyState icon="article" title="No bulletins found" subtitle="Add your first bulletin above" /></td></tr>
-                ) : paged.map(b => (
-                  <tr key={b.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="px-6 py-3.5">
-                      <div className="flex items-center gap-3">
-                        {b.image_url ? <img src={b.image_url} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" /> : (
-                          <div className="w-9 h-9 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0"><span className="material-icons text-sky-500 text-[15px]">article</span></div>
-                        )}
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-xs">{b.title}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{b.date ? new Date(b.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => openEdit(b)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>
-                        <button onClick={() => setDeleteModal({ open: true, id: b.id, title: b.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>
-                      </div>
-                    </td>
+          <TableWrapper>
+            {loading ? (
+              <tbody><tr><td colSpan={3} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                    <Th>Title</Th><Th>Date</Th><Th className="text-center">Actions</Th>
                   </tr>
-                ))}
-              </tbody>
-              {meta.last_page > 1 && <tfoot><tr><td colSpan={3}><Pagination meta={meta} onChange={p => setPage(p)} /></td></tr></tfoot>}
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {paged.length === 0 ? (
+                    <tr><td colSpan={3}><EmptyState icon="article" title="No bulletins found" subtitle={search ? 'Try adjusting your search' : 'Add your first bulletin above'} /></td></tr>
+                  ) : paged.map((b: any) => (
+                    <tr key={b.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-3">
+                          {b.image_url ? <img src={b.image_url} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" /> : (
+                            <div className="w-9 h-9 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0"><span className="material-icons text-sky-500 text-[15px]">article</span></div>
+                          )}
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-xs">{b.title}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{b.date ? new Date(b.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => openEdit(b)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>
+                          <button onClick={() => setDeleteModal({ open: true, id: b.id, title: b.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                {meta.last_page > 1 && <tfoot><tr><td colSpan={3}><Pagination meta={meta} onChange={(p: any) => setPage(p)} /></td></tr></tfoot>}
+              </>
+            )}
+          </TableWrapper>
+        </div>
       </SectionCard>
     </>
   );
@@ -898,7 +968,7 @@ function FooterTab() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    axios.get('/api/homepage/footer').then(r => setData(r.data || {})).catch(() => {}).finally(() => setLoading(false));
+    axios.get('/api/homepage/footer').then(r => setData(r.data || {})).catch(() => { }).finally(() => setLoading(false));
   }, []);
 
   const set = (k, v) => setData(d => ({ ...d, [k]: v }));
@@ -914,7 +984,7 @@ function FooterTab() {
     try {
       await axios.put('/api/homepage/footer', data);
       setSuccess(true); setTimeout(() => setSuccess(false), 3000);
-    } catch {}
+    } catch { }
     setSaving(false);
   };
 
@@ -986,7 +1056,7 @@ function MetadataTab() {
   const [ogFile, setOgFile] = useState(null);
 
   useEffect(() => {
-    axios.get('/api/homepage/metadata').then(r => setData(r.data || {})).catch(() => {}).finally(() => setLoading(false));
+    axios.get('/api/homepage/metadata').then(r => setData(r.data || {})).catch(() => { }).finally(() => setLoading(false));
   }, []);
 
   const set = (k, v) => setData(d => ({ ...d, [k]: v }));
@@ -1004,7 +1074,7 @@ function MetadataTab() {
       await axios.put('/api/homepage/metadata', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess(true); setTimeout(() => setSuccess(false), 3000);
       setOgFile(null);
-    } catch {}
+    } catch { }
     setSaving(false);
   };
 
@@ -1104,10 +1174,10 @@ export default function AdminHomepage() {
   const renderTab = () => {
     switch (activeTab) {
       case 'hero': return <HeroTab />;
-      case 'events':   return <EventsTab />;
-      case 'gallery':  return <GalleryTab />;
+      case 'events': return <EventsTab />;
+      case 'gallery': return <GalleryTab />;
       case 'bulletin': return <BulletinTab />;
-      case 'footer':   return <FooterTab />;
+      case 'footer': return <FooterTab />;
       case 'metadata': return <MetadataTab />;
       default: return null;
     }

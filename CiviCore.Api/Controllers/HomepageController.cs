@@ -234,23 +234,22 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> GetEventSettings()
     {
         var json = await GetSettingValue("homepage_event_settings");
-        if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Discover More", title = "Events", subtitle = "", archive_url = "/events" });
+        if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Discover More", title = "Events", subtitle = "" });
         return Content(json, "application/json");
     }
 
     [HttpPut("event-settings")]
     public async Task<IActionResult> UpdateEventSettings([FromForm] string? eyebrow, [FromForm] string? title,
-        [FromForm] string? subtitle, [FromForm] string? archive_url)
+        [FromForm] string? subtitle)
     {
         var data = new Dictionary<string, object?>
         {
             ["eyebrow"] = eyebrow ?? "Discover More",
             ["title"] = title ?? "Events",
-            ["subtitle"] = subtitle,
-            ["archive_url"] = archive_url ?? "/events"
+            ["subtitle"] = subtitle
         };
         await SaveSetting("homepage_event_settings", JsonSerializer.Serialize(data));
-        return Ok(new { message = "Event settings saved." });
+        return Ok(new { message = "Settings updated." });
     }
 
     // ── Gallery Settings ──────────────────────────────────────────────────────
@@ -260,20 +259,19 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> GetGallerySettings()
     {
         var json = await GetSettingValue("homepage_gallery_settings");
-        if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Visual Tour", title = "Gallery", subtitle = "", archive_url = "/gallery" });
+        if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Visual Tour", title = "Gallery", subtitle = "" });
         return Content(json, "application/json");
     }
 
     [HttpPut("gallery-settings")]
     public async Task<IActionResult> UpdateGallerySettings([FromForm] string? eyebrow, [FromForm] string? title,
-        [FromForm] string? subtitle, [FromForm] string? archive_url)
+        [FromForm] string? subtitle)
     {
         var data = new Dictionary<string, object?>
         {
             ["eyebrow"] = eyebrow ?? "Visual Tour",
             ["title"] = title ?? "Gallery",
-            ["subtitle"] = subtitle,
-            ["archive_url"] = archive_url ?? "/gallery"
+            ["subtitle"] = subtitle
         };
         await SaveSetting("homepage_gallery_settings", JsonSerializer.Serialize(data));
         return Ok(new { message = "Gallery settings saved." });
@@ -494,6 +492,30 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Photo removed." });
     }
 
+    // ── Bulletin Settings ────────────────────────────────────────────────────
+
+    [HttpGet("bulletin-settings")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetBulletinSettings()
+    {
+        var json = await GetSettingValue("homepage_bulletin_settings");
+        if (string.IsNullOrEmpty(json)) return Ok(new { });
+        return Content(json, "application/json");
+    }
+
+    [HttpPut("bulletin-settings")]
+    public async Task<IActionResult> UpdateBulletinSettings([FromForm] string? eyebrow, [FromForm] string? title, [FromForm] string? subtitle)
+    {
+        var data = new
+        {
+            eyebrow,
+            title,
+            subtitle
+        };
+        await SaveSetting("homepage_bulletin_settings", JsonSerializer.Serialize(data));
+        return Ok(new { message = "Settings updated." });
+    }
+
     // ── Bulletin (CRUD) ──────────────────────────────────────────────────────
 
     [HttpGet("bulletin")]
@@ -575,6 +597,19 @@ public class HomepageController : ControllerBase
 
         await SaveSetting("homepage_buletin", JsonSerializer.Serialize(items));
         return Ok(new { message = "Bulletin updated." });
+    }
+
+    [HttpGet("bulletin/{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetBulletinById(string id)
+    {
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
+            await GetSettingValue("homepage_buletin") ?? "[]") ?? new();
+
+        var bulletin = items.FirstOrDefault(a => a.TryGetValue("id", out var idEl) && idEl.GetString() == id);
+        if (bulletin == null) return NotFound(new { message = "Bulletin not found." });
+        
+        return Ok(bulletin);
     }
 
     [HttpDelete("bulletin/{id}")]

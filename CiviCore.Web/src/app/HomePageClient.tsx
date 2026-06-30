@@ -4,7 +4,7 @@ import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-export default function HomePageClient({ hero, events, eventSettings, gallerySettings, gallery, bulletins, properties, footerData, apiUrl }: any) {
+export default function HomePageClient({ hero, events, eventSettings, gallerySettings, gallery, bulletinSettings, bulletins, properties, footerData, apiUrl }: any) {
     const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
@@ -110,7 +110,7 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                             {eventSettings?.subtitle && <p className="mt-2 text-body-md text-text-muted dark:text-on-primary/70">{eventSettings.subtitle}</p>}
                         </div>
                         {events && events.length > 0 && (
-                            <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href={eventSettings?.archive_url || '/events'}>
+                            <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/events">
                                 View All 
                                 <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </Link>
@@ -173,7 +173,7 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                                 {gallerySettings?.subtitle && <p className="mt-2 text-text-muted dark:text-on-primary/70">{gallerySettings?.subtitle}</p>}
                             </div>
                             {gallery && gallery.length > 0 && (
-                                <Link className="inline-flex items-center gap-2 font-label-md text-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors mt-4 md:mt-0 group" href={gallerySettings?.archive_url || "/gallery"}>
+                                <Link className="inline-flex items-center gap-2 font-label-md text-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors mt-4 md:mt-0 group" href="/gallery">
                                     View All
                                     <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                                 </Link>
@@ -225,11 +225,12 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                 <section className="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="bulletins">
                     <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
                         <div>
-                            <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Informasi</span>
-                            <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Buletin</h2>
+                            <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">{bulletinSettings?.eyebrow || 'Informasi'}</span>
+                            <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">{bulletinSettings?.title || 'Buletin'}</h2>
+                            {bulletinSettings?.subtitle && <p className="mt-2 text-text-muted dark:text-on-primary/70">{bulletinSettings?.subtitle}</p>}
                         </div>
                         {bulletins && bulletins.length > 0 && (
-                            <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/buletin">
+                            <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/bulletins">
                                 View All 
                                 <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </Link>
@@ -241,8 +242,8 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                                 <div key={b.id} className="bg-surface dark:bg-primary-container rounded-2xl p-6 shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
                                     <div className="text-label-sm text-text-muted dark:text-on-primary/50 mb-2">{b.date ? new Date(b.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}</div>
                                     <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-3">{b.title}</h3>
-                                    <div className="text-body-md text-on-surface-variant dark:text-on-primary/80 mb-4 prose prose-sm dark:prose-invert line-clamp-3" dangerouslySetInnerHTML={{ __html: b.description || '' }} />
-                                    <Link className="text-[#b45309] dark:text-[#d97706] font-label-md hover:underline" href={b.url || `/buletin/${b.id}`}>Read Full Bulletin</Link>
+                                    <div className="text-body-md text-on-surface-variant dark:text-on-primary/80 mb-4 prose prose-sm dark:prose-invert max-w-none line-clamp-3 [&>p]:!mb-0" dangerouslySetInnerHTML={{ __html: b.description || '' }} />
+                                    <Link className="text-[#b45309] dark:text-[#d97706] font-label-md hover:underline mt-auto inline-block" href={b.url || `/bulletins/${b.id}`}>Read Full Bulletin</Link>
                                 </div>
                             ))}
                         </div>

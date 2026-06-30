@@ -30,6 +30,7 @@ export default async function Page() {
     const eventSettings = await getData('event-settings');
     const gallerySettings = await getData('gallery-settings');
     const gallery = await getData('gallery');
+    const bulletinSettings = await getData('bulletin-settings');
     const bulletin = await getData('bulletin');
     const footer = await getData('footer');
     const propertiesData = await getProperties();
@@ -44,6 +45,7 @@ export default async function Page() {
             eventSettings={eventSettings || {}} 
             gallerySettings={gallerySettings || {}} 
             gallery={gallery || []} 
+            bulletinSettings={bulletinSettings || {}}
             bulletins={bulletin || []} 
             properties={properties} 
             footerData={footer || {}}

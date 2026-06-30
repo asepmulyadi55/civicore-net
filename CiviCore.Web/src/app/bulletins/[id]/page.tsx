@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
-import { MOCK_BULLETINS } from '../page';
 
 export default function BulletinDetailPage() {
     const { id } = useParams();
     const [activeTab, setActiveTab] = useState('bulletins');
+    const [bulletin, setBulletin] = useState<any>(null);
+    const [recentBulletins, setRecentBulletins] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
@@ -22,22 +24,41 @@ export default function BulletinDetailPage() {
     const toggleDark = () => {
         setIsDark(prev => {
             const next = !prev;
-            try { localStorage.setItem('homepageDark', String(next)); } catch {}
+            try { localStorage.setItem('homepageDark', String(next)); } catch { }
             return next;
         });
     };
 
-    useEffect(() => { window.scrollTo(0, 0); }, [id]);
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        setLoading(true);
+        fetch(`/api/homepage/bulletin/${id}`)
+            .then(res => res.json())
+            .then(data => setBulletin(data))
+            .catch(() => setBulletin(null))
+            .finally(() => setLoading(false));
 
-    const bulletin = MOCK_BULLETINS.find(b => b.id === id);
+        fetch(`/api/homepage/bulletin`)
+            .then(res => res.json())
+            .then(data => setRecentBulletins(data))
+            .catch(console.error);
+    }, [id]);
 
-    if (!bulletin) {
+    if (loading) {
+        return (
+            <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased min-h-screen flex flex-col justify-center items-center">
+                <span className="material-symbols-outlined text-4xl text-primary animate-spin">autorenew</span>
+            </div>
+        );
+    }
+
+    if (!bulletin || bulletin.message) {
         return (
             <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased min-h-screen flex flex-col">
                 <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
                 <main className="flex-grow pt-32 text-center">
                     <h1 className="text-display-lg text-primary dark:text-primary-fixed-dim mb-4">Bulletin Not Found</h1>
-                    <Link href="/buletin" className="text-[#b45309] hover:underline">Back to Bulletins</Link>
+                    <Link href="/bulletins" className="text-[#b45309] hover:underline">Back to Bulletins</Link>
                 </main>
                 <Footer setActiveTab={setActiveTab} />
             </div>
@@ -47,12 +68,12 @@ export default function BulletinDetailPage() {
     return (
         <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased min-h-screen flex flex-col transition-colors duration-300">
             <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
-            
+
             <main className="flex-grow px-margin-mobile md:px-margin-desktop pt-32 pb-section-gap max-w-container-max mx-auto w-full">
                 {/* Back Button */}
                 <div className="mb-8">
                     <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm">
-                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/buletin">Bulletins</Link>
+                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/bulletins">Bulletins</Link>
                         <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                         <span className="text-on-surface dark:text-on-primary truncate max-w-[200px] sm:max-w-xs">{bulletin.title}</span>
                     </div>
@@ -61,51 +82,34 @@ export default function BulletinDetailPage() {
                 {/* Article Header */}
                 <header className="mb-12 max-w-3xl">
                     <div className="flex items-center space-x-4 mb-4">
-                        <span className="bg-primary-container/10 dark:bg-primary-fixed-dim/10 text-primary-container dark:text-primary-fixed-dim px-3 py-1 rounded-full font-label-sm text-label-sm uppercase tracking-wider">
-                            {bulletin.category}
+                        <span className="bg-primary-container/10 dark:bg-primary-fixed-dim/10 text-primary-container dark:text-primary-fixed-dim px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                            Bulletin
                         </span>
-                        <span className="text-on-surface-variant dark:text-on-primary/70 font-label-sm text-label-sm flex items-center">
-                            <span className="material-symbols-outlined text-sm mr-1">calendar_today</span>
-                            {bulletin.date}
-                        </span>
+                        <div className="flex items-center text-text-muted dark:text-on-primary/50 text-label-sm font-label-sm">
+                            <span className="material-symbols-outlined text-[16px] mr-1.5">calendar_month</span>
+                            {bulletin.date ? new Date(bulletin.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}
+                        </div>
                     </div>
-                    <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-6">
+
+                    {/* Title */}
+                    <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-md md:text-display-md text-primary dark:text-primary-fixed-dim mb-6">
                         {bulletin.title}
                     </h1>
-                    <p className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/80 leading-relaxed">
-                        {bulletin.description}
-                    </p>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
                     {/* Main Text Column */}
                     <article className="lg:col-span-8 space-y-8 font-body-md text-body-md text-on-surface dark:text-on-primary/90 leading-relaxed">
-                        <img 
-                            alt="Bulletin Cover" 
-                            className="w-full h-auto max-h-[400px] rounded-xl shadow-sm object-cover mb-10" 
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFQFlNpD4ACjGn8bP3mgEfVzZcP0SqRsKzNYQx_Zog8Wt5CBOKEiOlGiRb5qzYakDSQecNn-_aa2JWdx-iv1wmtpPU3FExVclc7lJ_KvTFRtGRu4OYjqtYdjP1WDFC1iWY9tceoA4s3Biw6MdRdxSfuSfRD3EUXScKPh9znm9PX42fqNr33bJ-a1PlNPZ21lLhDhHCzjrG57ma2gWNVnTXvIUhk7TTJiHf7Ngyzb1fmi-yJviWFYuMha5a-qF-kyNVtI9yrDufpRQ"
-                        />
-                        <p>Dear Residents,</p>
-                        <p>As part of our ongoing commitment to maintaining Dwipapuri Residence as a premier, secure, and serene community, we are rolling out significant upgrades to our infrastructure this month. These enhancements are designed to seamlessly integrate with your daily life while providing robust support.</p>
-                        
-                        <h2 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mt-10 mb-4">Key Upgrades & Information</h2>
-                        <p>Starting next month, we will transition to state-of-the-art systems to ensure maximum efficiency. Please review the following points:</p>
-                        <ul className="list-disc pl-6 space-y-2 mt-4 text-on-surface-variant dark:text-on-primary/80">
-                            <li><strong>Efficiency:</strong> Faster processing and response times.</li>
-                            <li><strong>Security:</strong> All personal data is encrypted and securely managed.</li>
-                            <li><strong>Convenience:</strong> Mobile access for all critical resident services.</li>
-                        </ul>
+                        {bulletin.image_url && (
+                            <img
+                                alt={bulletin.title || "Bulletin Cover"}
+                                className="w-full h-auto max-h-[400px] rounded-xl shadow-sm object-cover mb-10"
+                                src={bulletin.image_url.startsWith('http') ? bulletin.image_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5075'}${bulletin.image_url}`}
+                            />
+                        )}
 
-                        <h2 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mt-10 mb-4">Action Required</h2>
-                        <div className="bg-surface-container-low dark:bg-primary-container/30 p-6 rounded-lg border border-border-subtle dark:border-primary-container my-8 shadow-sm">
-                            <h3 className="font-label-md text-label-md font-bold mb-2 flex items-center text-primary dark:text-primary-fixed-dim">
-                                <span className="material-symbols-outlined mr-2 text-primary dark:text-primary-fixed-dim">info</span>
-                                Important Notice
-                            </h3>
-                            <p className="text-sm dark:text-on-primary/80">Please ensure your contact information is up to date in the resident portal before the end of the month.</p>
-                        </div>
-                        
-                        <p>We appreciate your cooperation during this transition period. These upgrades are a crucial step in future-proofing our community and safeguarding the tranquility we all cherish at Dwipapuri Residence.</p>
+                        {/* Description */}
+                        <div dangerouslySetInnerHTML={{ __html: bulletin.description || '' }} />
                     </article>
 
                     {/* Sidebar */}
@@ -146,10 +150,10 @@ export default function BulletinDetailPage() {
                         <div className="bg-surface dark:bg-primary-container rounded-xl p-6 border border-border-subtle dark:border-primary-container/50">
                             <h3 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mb-6">Recent Announcements</h3>
                             <div className="space-y-6">
-                                {MOCK_BULLETINS.filter(b => b.id !== id).slice(0, 3).map((related, idx) => (
+                                {recentBulletins.filter(b => b.id !== id).slice(0, 3).map((related, idx) => (
                                     <React.Fragment key={related.id}>
-                                        <Link href={`/buletin/${related.id}`} className="block group">
-                                            <p className="font-label-sm text-label-sm text-on-surface-variant dark:text-on-primary/60 mb-1">{related.date}</p>
+                                        <Link href={related.url || `/bulletins/${related.id}`} className="block group">
+                                            <p className="font-label-sm text-label-sm text-on-surface-variant dark:text-on-primary/60 mb-1">{related.date ? new Date(related.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</p>
                                             <h4 className="font-body-md text-body-md font-semibold dark:text-on-primary/90 group-hover:text-primary dark:group-hover:text-primary-fixed-dim transition-colors">
                                                 {related.title}
                                             </h4>

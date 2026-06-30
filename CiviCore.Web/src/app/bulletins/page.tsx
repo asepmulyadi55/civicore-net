@@ -4,92 +4,7 @@ import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-export const MOCK_BULLETINS = [
-    {
-        id: '1',
-        title: 'Monthly Security Update',
-        date: 'October 12, 2026',
-        category: 'Security',
-        description: 'A brief overview of the new gate access protocols and updated patrol schedules for this month.',
-    },
-    {
-        id: '2',
-        title: 'Landscaping Schedule',
-        date: 'September 28, 2026',
-        category: 'Maintenance',
-        description: 'Details on the upcoming seasonal planting and maintenance work across common areas.',
-    },
-    {
-        id: '3',
-        title: 'Community Board Nominations',
-        date: 'September 15, 2026',
-        category: 'HOA',
-        description: 'Call for nominations for the upcoming HOA board elections. Submit your candidates by Oct 1st.',
-    },
-    {
-        id: '4',
-        title: 'Pool Maintenance Closure',
-        date: 'September 05, 2026',
-        category: 'Facilities',
-        description: 'The main clubhouse pool will be closed for routine deep cleaning and tile repair.',
-    },
-    {
-        id: '5',
-        title: 'New Recycling Guidelines',
-        date: 'August 20, 2026',
-        category: 'Community',
-        description: 'Updated guidelines on separating recyclables and the introduction of new compost bins.',
-    },
-    {
-        id: '6',
-        title: 'Visitor Parking Rules',
-        date: 'August 10, 2026',
-        category: 'Security',
-        description: 'Reminder regarding overnight visitor parking passes and designated zones.',
-    },
-    {
-        id: '7',
-        title: 'Fitness Center Equipment Upgrades',
-        date: 'July 25, 2026',
-        category: 'Facilities',
-        description: 'We are installing new treadmills and weight stations. The gym will be closed for 2 days.',
-    },
-    {
-        id: '8',
-        title: 'Neighborhood Watch Meeting',
-        date: 'July 12, 2026',
-        category: 'Security',
-        description: 'Join the quarterly neighborhood watch meeting at the central pavilion.',
-    },
-    {
-        id: '9',
-        title: 'Annual HOA Dues Notice',
-        date: 'June 30, 2026',
-        category: 'HOA',
-        description: 'Information regarding the upcoming annual HOA dues and payment options.',
-    },
-    {
-        id: '10',
-        title: 'Summer Festival Road Closures',
-        date: 'June 15, 2026',
-        category: 'Events',
-        description: 'Temporary road closures for the upcoming summer festival parade route.',
-    },
-    {
-        id: '11',
-        title: 'Pet Registration Drive',
-        date: 'June 01, 2026',
-        category: 'Community',
-        description: 'All resident pets must be registered with the management office by the end of the month.',
-    },
-    {
-        id: '12',
-        title: 'Smart Home Integration Guide',
-        date: 'May 20, 2026',
-        category: 'Maintenance',
-        description: 'A comprehensive guide to integrating your unit\'s smart thermostat and lighting systems.',
-    }
-];
+// Removed MOCK_BULLETINS
 
 export default function BuletinPage() {
     const [activeTab, setActiveTab] = useState('bulletins');
@@ -98,6 +13,8 @@ export default function BuletinPage() {
     });
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [bulletins, setBulletins] = useState<any[]>([]);
+    const [settings, setSettings] = useState<any>({});
     const itemsPerPage = 9;
 
     useEffect(() => {
@@ -114,13 +31,23 @@ export default function BuletinPage() {
         });
     };
 
-    useEffect(() => { window.scrollTo(0, 0); }, []);
+    useEffect(() => { 
+        window.scrollTo(0, 0); 
+        fetch('/api/homepage/bulletin')
+            .then(res => res.json())
+            .then(data => setBulletins(data))
+            .catch(console.error);
+
+        fetch('/api/homepage/bulletin-settings')
+            .then(res => res.json())
+            .then(data => setSettings(data))
+            .catch(console.error);
+    }, []);
 
     // Filter and Pagination
-    const filteredBulletins = MOCK_BULLETINS.filter(b => 
-        b.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        b.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.category.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredBulletins = bulletins.filter((b: any) => 
+        (b.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (b.description || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const totalPages = Math.max(1, Math.ceil(filteredBulletins.length / itemsPerPage));
@@ -145,9 +72,9 @@ export default function BuletinPage() {
                             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                             <span className="text-on-surface dark:text-on-primary">Bulletins</span>
                         </div>
-                        <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">Bulletins</h1>
+                        <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">{settings.title || 'Bulletins'}</h1>
                         <p className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/70 max-w-2xl">
-                            Stay updated with the latest announcements, schedules, and community news.
+                            {settings.subtitle || 'Stay updated with the latest announcements, schedules, and community news.'}
                         </p>
                     </div>
 
@@ -175,10 +102,10 @@ export default function BuletinPage() {
                             <div key={bulletin.id} className="bg-surface dark:bg-primary-container rounded-2xl p-6 shadow-sm border border-border-subtle/50 dark:border-primary-container/50 flex flex-col group hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-start mb-4">
                                     <span className="bg-primary-container/10 dark:bg-primary-fixed-dim/10 text-primary-container dark:text-primary-fixed-dim px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
-                                        {bulletin.category}
+                                        Bulletin
                                     </span>
                                     <div className="text-label-sm font-label-sm text-text-muted dark:text-on-primary/50">
-                                        {bulletin.date}
+                                        {bulletin.date ? new Date(bulletin.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}
                                     </div>
                                 </div>
                                 
@@ -186,12 +113,10 @@ export default function BuletinPage() {
                                     {bulletin.title}
                                 </h3>
                                 
-                                <p className="text-body-md text-on-surface-variant dark:text-on-primary/80 mb-6 flex-grow">
-                                    {bulletin.description}
-                                </p>
+                                <div className="text-body-md text-on-surface-variant dark:text-on-primary/80 mb-6 flex-grow prose prose-sm dark:prose-invert max-w-none line-clamp-3 [&>p]:!mb-0" dangerouslySetInnerHTML={{ __html: bulletin.description || '' }} />
                                 
                                 <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
-                                    <Link className="text-[#b45309] dark:text-[#d97706] font-label-md inline-flex items-center group/link" href={`/buletin/${bulletin.id}`}>
+                                    <Link className="text-[#b45309] dark:text-[#d97706] font-label-md inline-flex items-center group/link" href={bulletin.url || `/bulletins/${bulletin.id}`}>
                                         <span className="group-hover/link:underline">Read Full Bulletin</span> 
                                         <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
                                     </Link>

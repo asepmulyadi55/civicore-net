@@ -92,14 +92,14 @@
       "title": "Scheduled Water Maintenance",
       "description": "<p>Please be advised that water will be temporarily shut off for maintenance this upcoming Saturday from 10:00 AM to 2:00 PM.</p>",
       "date": "2024-06-25T10:00:00Z",
-      "url": "/buletin/1"
+      "url": "/bulletins/1"
     },
     {
       "id": 2,
       "title": "New Trash Collection Schedule",
       "description": "<p>Starting next month, trash collection will be moved to Tuesdays and Fridays.</p>",
       "date": "2024-06-28T08:00:00Z",
-      "url": "/buletin/2"
+      "url": "/bulletins/2"
     }
   ],
   "properties": [
