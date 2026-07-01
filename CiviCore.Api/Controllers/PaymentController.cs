@@ -108,7 +108,7 @@ public class PaymentController : ControllerBase
         }
 
         var allRecords = await query
-            .OrderByDescending(p => p.PaymentMonth)
+            .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 
         var grouped = allRecords
@@ -139,7 +139,7 @@ public class PaymentController : ControllerBase
             })
             .OrderByDescending(x => x.status == "pending")
             .ThenByDescending(x => x.status == "rejected")
-            .ThenByDescending(x => x.paymentMonth)
+            .ThenByDescending(x => x.createdAt)
             .ToList();
 
         int pageSize = per_page;
@@ -267,8 +267,15 @@ public class PaymentController : ControllerBase
             
         if (!records.Any()) return NotFound("Batch not found");
 
+        var oldProofPath = records.First().ProofPath;
+        if (!string.IsNullOrEmpty(oldProofPath) && oldProofPath.StartsWith("/api/media/path/"))
+        {
+            var internalPath = oldProofPath.Replace("/api/media/path/", "");
+            try { await _storageService.RemoveFileAsync(true, internalPath); } catch {}
+        }
+
         var ext = Path.GetExtension(file.FileName);
-        var filePath = $"proofs/{batchId}{ext}";
+        var filePath = $"payments/{Guid.NewGuid()}{ext}";
 
         using var stream = file.OpenReadStream();
         await _storageService.UploadFileAsync(true, filePath, stream);

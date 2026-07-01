@@ -249,7 +249,7 @@ public class MeetingController : ControllerBase
         if (file == null || file.Length == 0) return BadRequest("No file uploaded");
 
         var extension = System.IO.Path.GetExtension(file.FileName);
-        var filePath = $"meetings/{id}/{Guid.NewGuid()}{extension}";
+        var filePath = $"meetings/{Guid.NewGuid()}{extension}";
 
         using var stream = file.OpenReadStream();
         await _storageService.UploadFileAsync(true, filePath, stream);

@@ -16,12 +16,14 @@ public class SettingsController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
+    private readonly ILocalStorageService _storage;
 
-    public SettingsController(UserManager<ApplicationUser> userManager, AppDbContext context, IConfiguration config)
+    public SettingsController(UserManager<ApplicationUser> userManager, AppDbContext context, IConfiguration config, ILocalStorageService storage)
     {
         _userManager = userManager;
         _context = context;
         _config = config;
+        _storage = storage;
     }
 
     // ── Profile ───────────────────────────────────────────────────────────
@@ -71,11 +73,20 @@ public class SettingsController : ControllerBase
             if (!allowedTypes.Contains(dto.Avatar.ContentType))
                 return BadRequest(new { message = "Only JPG, PNG and WEBP files are allowed." });
 
-            // Store as base64 data URL for simplicity
-            using var ms = new MemoryStream();
-            await dto.Avatar.CopyToAsync(ms);
-            var base64 = Convert.ToBase64String(ms.ToArray());
-            user.Avatar = $"data:{dto.Avatar.ContentType};base64,{base64}";
+            var oldAvatarPath = user.Avatar;
+            if (!string.IsNullOrEmpty(oldAvatarPath) && oldAvatarPath.StartsWith("/api/media/path/"))
+            {
+                var internalPath = oldAvatarPath.Replace("/api/media/path/", "");
+                try { await _storage.RemoveFileAsync(true, internalPath); } catch {}
+            }
+
+            var ext = System.IO.Path.GetExtension(dto.Avatar.FileName);
+            var filePath = $"profiles/{Guid.NewGuid()}{ext}";
+
+            using var ms = dto.Avatar.OpenReadStream();
+            await _storage.UploadFileAsync(true, filePath, ms);
+            
+            user.Avatar = $"/api/media/path/{filePath}";
         }
 
         var result = await _userManager.UpdateAsync(user);

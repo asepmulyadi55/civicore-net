@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
-import { PageHeader, SearchInput, SelectFilter, EmptyState, Pagination, Modal, ConfirmModal, FormInput, FormSelect, SearchableSelect } from '../../admin/components/ui';
+import { PageHeader, SearchInput, SelectFilter, EmptyState, Pagination, Modal, ConfirmModal, FormInput, FormSelect, SearchableSelect, SecureImage } from '../../admin/components/ui';
 import { compressImage } from '../../utils/imageCompressor';
 
 interface Meeting {
@@ -123,6 +123,7 @@ function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: ()
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const fetchImages = useCallback(async () => {
     if (!data) return;
@@ -152,7 +153,6 @@ function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: ()
   };
 
   const handleDelete = async (imageId: string) => {
-    if (!confirm('Delete this image?')) return;
     try {
       await axios.delete(`/api/meetings/images/${imageId}`);
       fetchImages();
@@ -178,8 +178,8 @@ function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: ()
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
             {images.map(img => (
               <div key={img.id} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 aspect-video bg-slate-100 dark:bg-slate-800">
-                <img src={`/api/media/path/${img.imagePath}`} alt="Meeting" className="w-full h-full object-cover" />
-                <button onClick={() => handleDelete(img.id)} className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-rose-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                <SecureImage src={`/api/media/path/${img.imagePath}`} alt="Meeting" className="w-full h-full object-cover" />
+                <button onClick={() => setDeleteConfirm(img.id)} className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-rose-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
                   <span className="material-icons text-sm">delete</span>
                 </button>
               </div>
@@ -187,6 +187,7 @@ function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: ()
           </div>
         )}
       </div>
+      <ConfirmModal open={!!deleteConfirm} title="Delete Image" message="Are you sure you want to delete this meeting image?" onConfirm={() => { if (deleteConfirm) handleDelete(deleteConfirm); setDeleteConfirm(null); }} onCancel={() => setDeleteConfirm(null)} />
     </Modal>
   );
 }
@@ -391,7 +392,7 @@ export default function Meetings() {
                         {m.attendees.map(a => (
                           <div key={a.id} className="flex items-center gap-1.5 pl-0.5 pr-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm" title={`${a.name} (${a.type})`}>
                             {a.photoPath ? (
-                               <img src={`/api/media/path/${a.photoPath}`} alt={a.name} className="w-5 h-5 rounded-full object-cover border border-slate-200 dark:border-slate-600" />
+                               <SecureImage src={`/api/media/path/${a.photoPath}`} alt={a.name} className="w-5 h-5 rounded-full object-cover border border-slate-200 dark:border-slate-600" />
                             ) : (
                                <div className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold border border-primary/20">
                                  {a.name.charAt(0).toUpperCase()}

@@ -5,7 +5,8 @@ import AdminLayout from '../../admin/AdminLayout';
 import {
   StatusBadge, EmptyState, Pagination, Modal, ConfirmModal,
   Avatar, PageHeader, FilterBar, SearchInput, SelectFilter,
-  BulkActionBar, TableWrapper, Th, FormInput, FormSelect
+  BulkActionBar, TableWrapper, Th, FormInput, FormSelect,
+  SecureImage
 } from '../../admin/components/ui';
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -39,7 +40,7 @@ function ReviewModal({ open, onClose, payment, onApprove, onReject }) {
 
   if (!payment) return null;
   return (
-    <Modal open={open} onClose={onClose} title="Review Payment" size="md">
+    <Modal open={open} onClose={onClose} title={payment.status === 'pending' ? "Review Payment" : "Payment Details"} size="md">
       <div className="space-y-4">
         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-slate-500">Resident</span><span className="font-semibold text-slate-900 dark:text-white">{payment.householderName || '—'}</span></div>
@@ -52,28 +53,36 @@ function ReviewModal({ open, onClose, payment, onApprove, onReject }) {
           <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <p className="text-xs font-semibold text-slate-500 mb-2">Payment Proof</p>
             {payment.proofPath.startsWith('/') || payment.proofPath.startsWith('http') ? (
-              <img src={payment.proofPath} alt="Payment proof" className="rounded-lg max-h-48 object-contain w-full" onError={e => e.target.style.display = 'none'} />
+              <SecureImage src={payment.proofPath} alt="Payment proof" className="rounded-lg max-h-48 object-contain w-full" />
             ) : (
               <p className="text-xs text-rose-500 italic">Image unavailable (uploaded before migration).</p>
             )}
           </div>
         )}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Rejection Reason (if rejecting)</label>
-          <textarea value={reason} onChange={e => setReason(e.target.value)} rows={2} placeholder="Enter reason for rejection..."
-            className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
-        </div>
-        <div className="flex gap-3 pt-2">
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
-          <button onClick={() => handle('reject')} disabled={!!loading || reason.trim().length === 0}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-sm font-bold transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
-            {loading === 'reject' ? 'Rejecting...' : 'Reject'}
-          </button>
-          <button onClick={() => handle('approve')} disabled={!!loading}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow-sm transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
-            {loading === 'approve' ? 'Approving...' : 'Approve'}
-          </button>
-        </div>
+        {payment.status === 'pending' ? (
+          <>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Rejection Reason (if rejecting)</label>
+              <textarea value={reason} onChange={e => setReason(e.target.value)} rows={2} placeholder="Enter reason for rejection..."
+                className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+              <button onClick={() => handle('reject')} disabled={!!loading || reason.trim().length === 0}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-sm font-bold transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                {loading === 'reject' ? 'Rejecting...' : 'Reject'}
+              </button>
+              <button onClick={() => handle('approve')} disabled={!!loading}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow-sm transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                {loading === 'approve' ? 'Approving...' : 'Approve'}
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex gap-3 pt-2">
+            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Close</button>
+          </div>
+        )}
       </div>
     </Modal>
   );
@@ -715,11 +724,16 @@ export default function Payments() {
                         <span className="material-icons text-lg">edit</span>
                       </button>
 
-                      {/* Review button for pending payments */}
-                      {isPending && (
+                      {/* View / Review button */}
+                      {isPending ? (
                         <button onClick={() => setReviewItem(p)}
                           className="text-amber-600 border border-amber-500/40 bg-amber-50/60 hover:bg-amber-500 hover:text-white dark:bg-amber-500/10 dark:text-amber-400 font-semibold text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer">
                           Review
+                        </button>
+                      ) : (
+                        <button onClick={() => setReviewItem(p)}
+                          className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title="View Details">
+                          <span className="material-icons text-lg">visibility</span>
                         </button>
                       )}
 

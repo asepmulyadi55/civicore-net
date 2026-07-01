@@ -99,7 +99,7 @@ public class MediaController : ControllerBase
 
     [HttpPost("upload")]
     [Authorize]
-    public async Task<IActionResult> UploadMedia(List<IFormFile>? files, IFormFile? file, [FromForm] string? replacePath = null)
+    public async Task<IActionResult> UploadMedia(List<IFormFile>? files, IFormFile? file, [FromForm] string? replacePath = null, [FromForm] string? module = null)
     {
         // Support both single file upload and multi-file upload (files[] or file)
         var fileList = new List<IFormFile>();
@@ -120,7 +120,17 @@ public class MediaController : ControllerBase
         foreach (var f in fileList)
         {
             var extension = System.IO.Path.GetExtension(f.FileName);
-            var filePath = $"uploads/{Guid.NewGuid()}{extension}";
+            string filePath;
+            
+            if (!string.IsNullOrEmpty(module))
+            {
+                var safeModule = string.Join("_", module.Split(Path.GetInvalidFileNameChars())).ToLower();
+                filePath = $"{safeModule}/{Guid.NewGuid()}{extension}";
+            }
+            else
+            {
+                filePath = $"uploads/{Guid.NewGuid()}{extension}";
+            }
 
             using var stream = f.OpenReadStream();
             await _storageService.UploadFileAsync(true, filePath, stream);

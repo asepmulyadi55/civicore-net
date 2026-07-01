@@ -74,6 +74,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
                   const compressedFile = await compressImage(e.target.files[0]);
                   formData.append('file', compressedFile);
                   if (form.photoPath) formData.append('replacePath', form.photoPath);
+                  formData.append('module', 'residents');
                   const res = await axios.post('/api/media/upload', formData);
                   setForm(p => ({ ...p, photoPath: res.data.filePath }));
                 } catch (err) { console.error(err); }
@@ -105,7 +106,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Birth Date</label>
-            <input type="date" value={form.birthDate} onChange={e => setForm(p => ({ ...p, birthDate: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all cursor-pointer [color-scheme:light_dark]" />
+            <input type="date" value={form.birthDate} onChange={e => setForm(p => ({ ...p, birthDate: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all cursor-pointer dark:[color-scheme:dark]" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Gender</label>
@@ -269,6 +270,7 @@ export default function EditHouseholder() {
                       const compressedFile = await compressImage(e.target.files[0]);
                       formData.append('file', compressedFile);
                       if (data.photoPath) formData.append('replacePath', data.photoPath);
+                      formData.append('module', 'householders');
                       const res = await axios.post('/api/media/upload', formData);
                       setData((p: any) => ({ ...p, photoPath: res.data.filePath }));
                     } catch (err) { console.error(err); }
