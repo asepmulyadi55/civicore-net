@@ -32,3 +32,4 @@ dist-ssr/
 Thumbs.db
 CiviCore.Api/appsettings.json
 CiviCore.Api/App_Data/
+/CiviCore.Frontend/doc/

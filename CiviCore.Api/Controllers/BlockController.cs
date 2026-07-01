@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
 using CiviCore.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using ClosedXML.Excel;
 
 namespace CiviCore.Api.Controllers;
 
@@ -163,6 +164,108 @@ public class BlockController : ControllerBase
         
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+    [HttpPost("import")]
+    public async Task<IActionResult> ImportExcel([FromForm] IFormFile excel_file)
+    {
+        if (excel_file == null || excel_file.Length == 0)
+            return BadRequest(new { message = "Please choose an Excel file to upload." });
+
+        using var stream = new MemoryStream();
+        await excel_file.CopyToAsync(stream);
+        using var workbook = new XLWorkbook(stream);
+        var worksheet = workbook.Worksheet(1);
+        var rowCount = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+
+        int blocksCreated = 0;
+        int blocksSkipped = 0;
+        int unitsCreated = 0;
+        int unitsSkipped = 0;
+        var blockCache = new Dictionary<string, Block>();
+
+        string lastBlockLetter = "";
+
+        for (int row = 2; row <= rowCount; row++)
+        {
+            var blockLetter = (worksheet.Cell(row, 1).Value.ToString() ?? "").Trim().ToUpper();
+            if (!string.IsNullOrEmpty(blockLetter))
+            {
+                lastBlockLetter = blockLetter;
+            }
+            else
+            {
+                blockLetter = lastBlockLetter;
+            }
+
+            var unitNum = (worksheet.Cell(row, 2).Value.ToString() ?? "").Trim();
+            var rawStatus = System.Text.RegularExpressions.Regex.Replace(
+                (worksheet.Cell(row, 4).Value.ToString() ?? "").Trim().ToLower(), 
+                @"\s+", " ");
+
+            if (string.IsNullOrEmpty(blockLetter) || string.IsNullOrEmpty(unitNum)) continue;
+
+            if (!blockCache.ContainsKey(blockLetter))
+            {
+                var block = await _context.Set<Block>().FirstOrDefaultAsync(b => b.Name == blockLetter);
+                if (block == null)
+                {
+                    block = new Block { Name = blockLetter };
+                    _context.Set<Block>().Add(block);
+                    await _context.SaveChangesAsync();
+                    blocksCreated++;
+                }
+                else
+                {
+                    blocksSkipped++;
+                }
+                blockCache[blockLetter] = block;
+            }
+
+            var currentBlock = blockCache[blockLetter];
+
+            var houseStatus = CiviCore.Domain.Enums.HouseStatus.Vacant;
+            switch (rawStatus)
+            {
+                case "pemilik":
+                case "warga":
+                    houseStatus = CiviCore.Domain.Enums.HouseStatus.OwnerOccupied;
+                    break;
+                case "pemilik/kosong":
+                case "pemilik kosong":
+                case "kavling":
+                case "":
+                    houseStatus = CiviCore.Domain.Enums.HouseStatus.Vacant;
+                    break;
+                case "pengontrak":
+                    houseStatus = CiviCore.Domain.Enums.HouseStatus.Rented;
+                    break;
+                case "developer":
+                    houseStatus = CiviCore.Domain.Enums.HouseStatus.Developer;
+                    break;
+                case "fasum":
+                case "fasilitasumum":
+                    houseStatus = CiviCore.Domain.Enums.HouseStatus.PublicFacility;
+                    break;
+            }
+
+            var unit = await _context.Set<Unit>().FirstOrDefaultAsync(u => u.BlockId == currentBlock.Id && u.UnitNumber == unitNum);
+            if (unit == null)
+            {
+                unit = new Unit { BlockId = currentBlock.Id, UnitNumber = unitNum, HouseStatus = houseStatus };
+                _context.Set<Unit>().Add(unit);
+                unitsCreated++;
+            }
+            else
+            {
+                unit.HouseStatus = houseStatus;
+                unitsSkipped++;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        var summary = $"Import complete — {blocksCreated} block(s) created, {blocksSkipped} already existed | {unitsCreated} unit(s) created, {unitsSkipped} already existed.";
+        return Ok(new { message = summary });
     }
 }
 

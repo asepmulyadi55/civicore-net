@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import {
@@ -186,7 +186,8 @@ export default function Blocks() {
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState({ open: false, data: null });
   const [confirm, setConfirm] = useState({ open: false, item: null, loading: false });
-
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef(null);
   const token = localStorage.getItem('admin_token');
   if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
@@ -213,6 +214,28 @@ export default function Blocks() {
     catch { setConfirm(c => ({ ...c, loading: false })); }
   };
 
+  const handleImportExcel = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const formData = new FormData();
+    formData.append('excel_file', file);
+
+    try {
+      const res = await axios.post('/api/blocks/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      alert(res.data.message || 'Import successful!');
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to import Excel file.');
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const filtered = blocks.filter(b => !search || b.name?.toLowerCase().includes(search.toLowerCase()));
 
   return (
@@ -227,10 +250,17 @@ export default function Blocks() {
         title="Blocks Management"
         subtitle="Manage residential blocks and their coordinators"
         actions={
-          <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">add</span> Add Block
-          </button>
+          <div className="flex items-center gap-2">
+            <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="hidden" onChange={handleImportExcel} />
+            <button onClick={() => fileInputRef.current?.click()} disabled={importing}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#059669] hover:bg-[#047857] text-white text-sm font-bold rounded-lg shadow-lg shadow-emerald-600/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-50">
+              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : 'Import Excel'}
+            </button>
+            <button onClick={() => setModal({ open: true, data: null })}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+              <span className="material-icons text-sm">add</span> Add Block
+            </button>
+          </div>
         }
       />
 
