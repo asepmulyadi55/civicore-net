@@ -980,8 +980,14 @@ function PropertyTab() {
   const [settings, setSettings] = useState<any>({});
   const [savingSettings, setSavingSettings] = useState(false);
   const [success, setSuccess] = useState<string | false>(false);
+  
+  const [imageModal, setImageModal] = useState<{ open: boolean; property: any }>({ open: false, property: null });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
-  const [form, setForm] = useState({ title: '', type: 'house', price: '', status: 'available', description: '', location: '' });
+  const [form, setForm] = useState({ 
+    title: '', type: 'house', price: '', status: 'available', description: '', location: '',
+    bedrooms: '', bathrooms: '', landArea: '', buildingArea: '', amenities: '', contactName: '', contactPhone: ''
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [savingProperty, setSavingProperty] = useState(false);
   const isEdit = !!modal.data?.id;
@@ -1005,6 +1011,31 @@ function PropertyTab() {
 
   const setFilter = (k: string, v: string | number) => setFilters((p) => ({ ...p, [k]: v, page: 1 }));
 
+  const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !imageModal.property) return;
+    setUploadingImage(true);
+    const fd = new FormData();
+    const compressedFile = await compressImage(e.target.files[0]);
+    fd.append('file', compressedFile);
+    try {
+      await axios.post(`/api/property/${imageModal.property.id}/images`, fd);
+      fetch();
+      const res = await axios.get(`/api/property/${imageModal.property.id}`);
+      setImageModal({ ...imageModal, property: res.data });
+    } catch { }
+    setUploadingImage(false);
+  };
+
+  const deleteImage = async (url: string) => {
+    if (!imageModal.property) return;
+    try {
+      await axios.delete(`/api/property/${imageModal.property.id}/images?url=${encodeURIComponent(url)}`);
+      fetch();
+      const res = await axios.get(`/api/property/${imageModal.property.id}`);
+      setImageModal({ ...imageModal, property: res.data });
+    } catch { }
+  };
+
   const doDelete = async () => {
     setConfirm((c) => ({ ...c, loading: true }));
     try { await axios.delete(`/api/property/${confirm.item!.id}`); fetch(); setConfirm({ open: false, item: null, loading: false }); }
@@ -1025,9 +1056,14 @@ function PropertyTab() {
   const openModal = (p = null) => {
     setModal({ open: true, data: p });
     if (p) {
-      setForm({ title: p.title, type: p.type, price: String(p.price), status: p.status, description: p.description || '', location: p.location || '' });
+      setForm({ 
+        title: p.title, type: p.type, price: String(p.price), status: p.status, description: p.description || '', location: p.location || '',
+        bedrooms: p.bedrooms ? String(p.bedrooms) : '', bathrooms: p.bathrooms ? String(p.bathrooms) : '',
+        landArea: p.landArea ? String(p.landArea) : '', buildingArea: p.buildingArea ? String(p.buildingArea) : '',
+        amenities: p.amenities || '', contactName: p.contactName || '', contactPhone: p.contactPhone || ''
+      });
     } else {
-      setForm({ title: '', type: 'house', price: '', status: 'available', description: '', location: '' });
+      setForm({ title: '', type: 'house', price: '', status: 'available', description: '', location: '', bedrooms: '', bathrooms: '', landArea: '', buildingArea: '', amenities: '', contactName: '', contactPhone: '' });
     }
     setErrors({});
   };
@@ -1038,7 +1074,14 @@ function PropertyTab() {
   const saveProperty = async () => {
     setSavingProperty(true); setErrors({});
     try {
-      const payload = { ...form, price: Number(form.price) };
+      const payload = { 
+        ...form, 
+        price: Number(form.price),
+        bedrooms: form.bedrooms ? Number(form.bedrooms) : null,
+        bathrooms: form.bathrooms ? Number(form.bathrooms) : null,
+        landArea: form.landArea ? Number(form.landArea) : null,
+        buildingArea: form.buildingArea ? Number(form.buildingArea) : null
+      };
       if (isEdit) await axios.put(`/api/property/${modal.data!.id}`, payload);
       else await axios.post('/api/property', payload);
       setSuccess('item'); setTimeout(() => setSuccess(false), 3000);
@@ -1074,10 +1117,26 @@ function PropertyTab() {
             <FormInput label="Price (Rp)" id="p-price" type="number" value={form.price} onChange={setFormValue('price')} error={errors.price} placeholder="0" />
           </div>
           <FormInput label="Location" id="p-loc" value={form.location} onChange={setFormValue('location')} placeholder="Block & unit, e.g. Block A No. 5" />
+          
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <FormInput label="Bedrooms" id="p-beds" type="number" value={form.bedrooms} onChange={setFormValue('bedrooms')} placeholder="e.g. 3" />
+            <FormInput label="Bathrooms" id="p-baths" type="number" value={form.bathrooms} onChange={setFormValue('bathrooms')} placeholder="e.g. 2" />
+            <FormInput label="Land Area" id="p-land" type="number" value={form.landArea} onChange={setFormValue('landArea')} placeholder="m²" />
+            <FormInput label="Build Area" id="p-build" type="number" value={form.buildingArea} onChange={setFormValue('buildingArea')} placeholder="m²" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormInput label="Contact Name" id="p-cname" value={form.contactName} onChange={setFormValue('contactName')} placeholder="Agent or owner name" />
+            <FormInput label="Contact Phone" id="p-cphone" value={form.contactPhone} onChange={setFormValue('contactPhone')} placeholder="+62..." />
+          </div>
+
+          <FormInput label="Amenities" id="p-amenities" value={form.amenities} onChange={setFormValue('amenities')} placeholder="e.g. Infinity Pool, Smart Garage, 24/7 Security" />
+
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-            <textarea value={form.description} onChange={setFormValue('description')} rows={3} placeholder="Property details..."
-              className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
+            <div className="flex justify-between items-end mb-1.5">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
+            </div>
+            <ReactQuill theme="snow" value={form.description} onChange={(val) => setForm(p => ({ ...p, description: val }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
           </div>
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-white/5 px-2 mt-4">
             <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
@@ -1092,6 +1151,39 @@ function PropertyTab() {
         onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
         title="Delete Property?" message={`Delete <strong>${confirm.item?.title}</strong>? This cannot be undone.`}
         confirmLabel="Yes, Delete" />
+
+      {imageModal.open && imageModal.property && (
+        <Modal open={imageModal.open} onClose={() => setImageModal({ open: false, property: null })} title="Manage Property Images" icon="image" size="lg">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {(imageModal.property.images || []).map((img: string, i: number) => (
+                <div key={i} className="relative group rounded-xl overflow-hidden aspect-video bg-slate-100 dark:bg-slate-800">
+                  <img src={img} alt="Property" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button onClick={() => deleteImage(img)} className="p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors">
+                      <span className="material-icons text-sm">delete_outline</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <label className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <span className="material-icons text-4xl text-slate-400 mb-2">{uploadingImage ? 'hourglass_empty' : 'cloud_upload'}</span>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                {uploadingImage ? 'Uploading...' : 'Click to upload image'}
+              </p>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed text-center">
+                JPG, PNG, WebP.<br/>Automatically compressed before upload.<br/>(Recommended: 1200x800)
+              </p>
+              <input type="file" className="hidden" accept="image/*" onChange={handleUploadImage} disabled={uploadingImage} />
+            </label>
+          </div>
+          <div className="flex justify-end pt-6 border-t border-slate-100 dark:border-white/5 mt-6">
+            <button onClick={() => setImageModal({ open: false, property: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Done</button>
+          </div>
+        </Modal>
+      )}
 
       <SectionCard icon="home_work" iconBg="bg-teal-100 dark:bg-teal-900/30" iconColor="text-teal-500" title="Property Listings" subtitle="Manage available, sold, and rented properties" badge={data.length}>
         <SuccessBanner show={success === 'item'} />
@@ -1140,6 +1232,9 @@ function PropertyTab() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => setImageModal({ open: true, property: p })} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors cursor-pointer">
+                            <span className="material-icons text-lg">image</span>
+                          </button>
                           <button onClick={() => openModal(p)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer">
                             <span className="material-icons text-lg">edit</span>
                           </button>

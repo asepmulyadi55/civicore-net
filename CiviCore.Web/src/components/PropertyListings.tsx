@@ -140,7 +140,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
 
                                 {/* Price */}
                                 <p className="text-lg font-bold" style={{ color: '#D4AF37', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                    {listing.formatted_price || '—'}
+                                    {listing.price ? `Rp ${listing.price.toLocaleString('id-ID')}` : '—'}
                                 </p>
 
                                 {/* Location */}
@@ -165,10 +165,10 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
                                             </span>
                                         )}
                                         {listing.land_area && (
-                                            <span>LT {Math.round(listing.land_area)}mÂ²</span>
+                                            <span>LT {Math.round(listing.land_area)}m²</span>
                                         )}
                                         {listing.building_area && (
-                                            <span>LB {Math.round(listing.building_area)}mÂ²</span>
+                                            <span>LB {Math.round(listing.building_area)}m²</span>
                                         )}
                                     </div>
                                 )}

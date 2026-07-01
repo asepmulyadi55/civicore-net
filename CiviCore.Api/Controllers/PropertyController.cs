@@ -23,6 +23,7 @@ public class PropertyCreateDto
     public int? Bathrooms { get; set; }
     public decimal? LandArea { get; set; }
     public decimal? BuildingArea { get; set; }
+    public string? Amenities { get; set; }
 }
 
 [ApiController]
@@ -86,6 +87,8 @@ public class PropertyController : ControllerBase
                 p.Bathrooms,
                 p.LandArea,
                 p.BuildingArea,
+                p.Amenities,
+                images = p.Images,
                 p.IsActive,
                 created_at = p.CreatedAt
             })
@@ -131,6 +134,8 @@ public class PropertyController : ControllerBase
             listing.Bathrooms,
             listing.LandArea,
             listing.BuildingArea,
+            listing.Amenities,
+            images = listing.Images,
             listing.IsActive,
             created_at = listing.CreatedAt
         });
@@ -157,6 +162,7 @@ public class PropertyController : ControllerBase
             Bathrooms = dto.Bathrooms,
             LandArea = dto.LandArea,
             BuildingArea = dto.BuildingArea,
+            Amenities = dto.Amenities,
             CreatedById = userId != null ? Guid.Parse(userId) : null
         };
 
@@ -186,6 +192,7 @@ public class PropertyController : ControllerBase
         listing.Bathrooms = dto.Bathrooms;
         listing.LandArea = dto.LandArea;
         listing.BuildingArea = dto.BuildingArea;
+        listing.Amenities = dto.Amenities;
         listing.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
@@ -201,5 +208,51 @@ public class PropertyController : ControllerBase
         _context.PropertyListings.Remove(listing);
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpPost("{id}/images")]
+    public async Task<IActionResult> UploadImage(Guid id, IFormFile file)
+    {
+        var property = await _context.PropertyListings.FindAsync(id);
+        if (property == null) return NotFound();
+
+        if (file == null || file.Length == 0) return BadRequest("File is required");
+
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "properties");
+        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+        
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+        
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+        
+        var request = HttpContext.Request;
+        var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+        var imageUrl = $"{baseUrl}/uploads/properties/{fileName}";
+
+        property.Images.Add(imageUrl);
+        property.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        
+        return Ok(new { url = imageUrl });
+    }
+
+    [HttpDelete("{id}/images")]
+    public async Task<IActionResult> DeleteImage(Guid id, [FromQuery] string url)
+    {
+        var property = await _context.PropertyListings.FindAsync(id);
+        if (property == null) return NotFound();
+
+        if (property.Images.Contains(url))
+        {
+            property.Images.Remove(url);
+            property.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+        return NotFound("Image not found on this property.");
     }
 }

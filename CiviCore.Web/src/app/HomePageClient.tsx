@@ -282,11 +282,11 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                                         </div>
                                         <div className="p-6 flex flex-col flex-grow">
                                             <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2 line-clamp-1">{p.title}</h3>
-                                            <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">${p.price?.toLocaleString()} {p.listing_type === 'For Rent' || p.status === 'rented' ? <span className="text-body-md text-text-muted dark:text-on-primary/70">/mo</span> : null}</p>
+                                            <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">Rp {p.price?.toLocaleString('id-ID')} {p.listing_type === 'For Rent' || p.status === 'rented' ? <span className="text-body-md text-text-muted dark:text-on-primary/70">/mo</span> : null}</p>
                                             <div className="flex flex-wrap gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
                                                 {p.bedrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {p.bedrooms} Beds</div>}
                                                 {p.bathrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {p.bathrooms} Baths</div>}
-                                                {p.area_sqft !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {p.area_sqft} sqft</div>}
+                                                {(p.landArea !== undefined || p.area_sqft !== undefined) && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {p.landArea || p.area_sqft} m²</div>}
                                                 {p.location && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">location_on</span> {p.location}</div>}
                                                 {p.type && <div className="flex items-center gap-1 capitalize"><span className="material-symbols-outlined text-sm">home</span> {p.type}</div>}
                                             </div>

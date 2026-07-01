@@ -93,7 +93,7 @@ export default function PropertyDetailPage() {
                             </p>
                         </div>
                         <div className="text-left md:text-right">
-                            <p className="font-headline-md text-headline-md text-[#b45309] dark:text-[#d97706]">${property.price?.toLocaleString()}</p>
+                            <p className="font-headline-md text-headline-md text-[#b45309] dark:text-[#d97706]">Rp {property.price?.toLocaleString('id-ID')}</p>
                             {property.type === 'rent' || property.status === 'rented' ? (
                                 <p className="text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mt-1">/month</p>
                             ) : null}
@@ -173,7 +173,7 @@ export default function PropertyDetailPage() {
                                 </div>
                                 <div>
                                     <p className="text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm">Living Area</p>
-                                    <p className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary">{property.landArea || property.buildingArea || 0} <span className="text-body-md font-body-md text-text-muted dark:text-on-primary/50">sqft</span></p>
+                                    <p className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary">{property.landArea || property.buildingArea || 0} <span className="text-body-md font-body-md text-text-muted dark:text-on-primary/50">m²</span></p>
                                 </div>
                             </div>
                         </div>
@@ -182,12 +182,11 @@ export default function PropertyDetailPage() {
                         <section>
                             <h2 className="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim mb-6">About This Property</h2>
                             <div className="prose prose-lg max-w-none text-on-surface-variant dark:text-on-primary/80 font-body-lg text-body-lg leading-relaxed space-y-4">
-                                <p>
-                                    {property.description || 'No description provided.'}
-                                </p>
-                                <p>
-                                    Upon entry, you are greeted by a soaring double-height foyer that seamlessly transitions into an expansive open-concept living and dining area. Floor-to-ceiling glass panels retract fully, dissolving the boundary between the pristine interior and the lush, meticulously landscaped private garden.
-                                </p>
+                                {property.description ? (
+                                    <div dangerouslySetInnerHTML={{ __html: property.description }} />
+                                ) : (
+                                    <p>No description provided.</p>
+                                )}
                             </div>
                         </section>
 
@@ -197,23 +196,24 @@ export default function PropertyDetailPage() {
                         <section>
                             <h2 className="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim mb-6">Premium Amenities</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                                {/* Amenity Items */}
-                                <div className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
-                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">pool</span>
-                                    <span className="font-body-md text-body-md text-on-surface dark:text-on-primary">Infinity Lap Pool</span>
-                                </div>
-                                <div className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
-                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">directions_car</span>
-                                    <span className="font-body-md text-body-md text-on-surface dark:text-on-primary">Smart Garage</span>
-                                </div>
-                                <div className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
-                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">local_florist</span>
-                                    <span className="font-body-md text-body-md text-on-surface dark:text-on-primary">Landscaped Garden</span>
-                                </div>
-                                <div className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
-                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">security</span>
-                                    <span className="font-body-md text-body-md text-on-surface dark:text-on-primary">24/7 Estate Security</span>
-                                </div>
+                                {property.amenities ? property.amenities.split(',').map((amenity: string, idx: number) => {
+                                    const text = amenity.trim();
+                                    if (!text) return null;
+                                    let icon = "check_circle";
+                                    if (text.toLowerCase().includes("pool")) icon = "pool";
+                                    else if (text.toLowerCase().includes("garage") || text.toLowerCase().includes("parking")) icon = "directions_car";
+                                    else if (text.toLowerCase().includes("garden") || text.toLowerCase().includes("yard")) icon = "local_florist";
+                                    else if (text.toLowerCase().includes("security") || text.toLowerCase().includes("cctv")) icon = "security";
+                                    
+                                    return (
+                                        <div key={idx} className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
+                                            <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">{icon}</span>
+                                            <span className="font-body-md text-body-md text-on-surface dark:text-on-primary">{text}</span>
+                                        </div>
+                                    );
+                                }) : (
+                                    <p className="text-text-muted dark:text-on-primary/70">No additional amenities listed.</p>
+                                )}
                             </div>
                         </section>
                     </div>
@@ -253,10 +253,12 @@ export default function PropertyDetailPage() {
                             </form>
 
                             <div className="mt-6 pt-6 border-t border-border-subtle dark:border-primary-container/50 flex items-center gap-4">
-                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd10O6kzfY7B-aZVNu3M9Oo0Q-wAibYX561w0waoJEPSAxLZICTcqE7mpoYhcisKosGX2rY4SxW-0gMSssENOcwT9hzCkqPwhG3CLXpYEExSOKEN64-vzIf-FthydLsHtSgWrMz6oktpWoiUetI5EHDdDdq6mxuOcidXKgMpH-qpSpfK0N94NtznAXYmmD7SSS4oRZTQmVHqLLqU0CRtiIbSYaF7HM3j6xVlXIveZ3rCHSstpGNzRDI1Q67_adu6aA4Yq87Xj50uQ" className="w-12 h-12 rounded-full object-cover" alt="Sarah Jenkins" />
+                                <div className="w-12 h-12 rounded-full bg-primary-container/20 dark:bg-primary-fixed-dim/20 flex items-center justify-center text-primary dark:text-primary-fixed-dim shrink-0">
+                                    <span className="material-symbols-outlined text-2xl">person</span>
+                                </div>
                                 <div>
-                                    <p className="font-label-md text-label-md text-on-surface dark:text-on-primary">Sarah Jenkins</p>
-                                    <p className="font-label-sm text-label-sm text-text-muted dark:text-on-primary/50">Senior Property Consultant</p>
+                                    <p className="font-label-md text-label-md text-on-surface dark:text-on-primary">{property.contactName || 'Contact Agent'}</p>
+                                    <p className="font-label-sm text-label-sm text-text-muted dark:text-on-primary/50">{property.contactPhone || 'Property Consultant'}</p>
                                 </div>
                             </div>
                         </div>

@@ -107,11 +107,11 @@ export default function PropertyPage() {
                                 </div>
                                 <div className="p-6 flex flex-col flex-grow">
                                     <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2 line-clamp-1">{property.title}</h3>
-                                    <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">${property.price?.toLocaleString()}</p>
+                                    <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">Rp {property.price?.toLocaleString('id-ID')}</p>
                                     <div className="flex flex-wrap gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
                                         {property.bedrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {property.bedrooms} Beds</div>}
                                         {property.bathrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {property.bathrooms} Baths</div>}
-                                        {property.landArea !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {property.landArea} sqft</div>}
+                                        {property.landArea !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {property.landArea} m²</div>}
                                         {property.location && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">location_on</span> {property.location}</div>}
                                         {property.type && <div className="flex items-center gap-1 capitalize"><span className="material-symbols-outlined text-sm">home</span> {property.type}</div>}
                                     </div>
