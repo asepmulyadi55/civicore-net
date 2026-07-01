@@ -17,7 +17,7 @@ async function getData(endpoint: string) {
 
 async function getProperties() {
     try {
-        const res = await fetch(`${API_URL}/api/property?status=available`, { next: { revalidate: 60 } });
+        const res = await fetch(`${API_URL}/api/property`, { next: { revalidate: 60 } });
         if (!res.ok) return { data: [] };
         return res.json();
     } catch {

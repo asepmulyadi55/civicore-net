@@ -96,7 +96,7 @@ export default function PropertyDetailPage() {
                         <div className="text-left md:text-right">
                             <p className="font-headline-md text-headline-md text-[#b45309] dark:text-[#d97706]">Rp {property.price?.toLocaleString('id-ID')}</p>
                             {property.type === 'rent' || property.status === 'rented' ? (
-                                <p className="text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mt-1">/month</p>
+                                <p className="text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mt-1">/year</p>
                             ) : null}
                         </div>
                     </div>

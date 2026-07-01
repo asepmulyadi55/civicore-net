@@ -524,7 +524,18 @@ public class HomepageController : ControllerBase
     {
         var json = await GetSettingValue("homepage_buletin");
         if (string.IsNullOrEmpty(json)) return Ok(new List<object>());
-        return Content(json, "application/json");
+
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json) ?? new();
+        var sorted = items.OrderByDescending(i =>
+        {
+            if (i.TryGetValue("date", out var d) && d.ValueKind == JsonValueKind.String)
+            {
+                if (DateTime.TryParse(d.GetString(), out var dateVal)) return dateVal;
+            }
+            return DateTime.MinValue;
+        }).ToList();
+
+        return Ok(sorted);
     }
 
     [HttpPost("bulletin")]
