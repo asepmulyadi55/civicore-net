@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-
 export default function EventDetailPage() {
     const { id } = useParams();
     const [activeTab, setActiveTab] = useState('events');
@@ -23,7 +22,7 @@ export default function EventDetailPage() {
     const toggleDark = () => {
         setIsDark(prev => {
             const next = !prev;
-            try { localStorage.setItem('homepageDark', String(next)); } catch {}
+            try { localStorage.setItem('homepageDark', String(next)); } catch { }
             return next;
         });
     };
@@ -84,10 +83,10 @@ export default function EventDetailPage() {
                 {/* Hero Image Section */}
                 <section className="relative w-full h-[60vh] md:h-[70vh] max-h-[800px] overflow-hidden">
                     <div className="absolute inset-0 bg-primary/20 dark:bg-primary/60 z-10 mix-blend-multiply"></div>
-                    <img 
-                        alt={event.title} 
-                        className={`w-full h-full object-cover object-center absolute inset-0 z-0 ${isPast ? 'grayscale opacity-80' : ''}`} 
-                        src={event.image_url ? (event.image_url.startsWith('http') ? event.image_url : event.image_url) : '/placeholder-event.png'} 
+                    <img
+                        alt={event.title}
+                        className={`w-full h-full object-cover object-center absolute inset-0 z-0 ${isPast ? 'grayscale opacity-80' : ''}`}
+                        src={event.image_url ? (event.image_url.startsWith('http') ? event.image_url : event.image_url) : '/placeholder-event.png'}
                     />
                     <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-surface-container-lowest dark:from-primary to-transparent h-48 z-10"></div>
                 </section>
@@ -95,7 +94,7 @@ export default function EventDetailPage() {
                 {/* Event Details Container */}
                 <section className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop -mt-32 relative z-20 pb-section-gap">
                     <div className="bg-surface-container-lowest/90 dark:bg-primary-container/90 rounded-2xl shadow-xl shadow-primary-container/5 overflow-visible flex flex-col lg:flex-row border border-border-subtle dark:border-primary-container/50 backdrop-blur-xl">
-                        
+
                         {/* Main Info Column */}
                         <div className="p-8 md:p-12 lg:w-2/3 flex flex-col justify-center">
                             <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-8">
@@ -128,7 +127,7 @@ export default function EventDetailPage() {
                             <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-background dark:text-on-primary mb-4">
                                 {event.title}
                             </h1>
-                            
+
                             <div className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/80 mb-8 leading-relaxed space-y-4" dangerouslySetInnerHTML={{ __html: event.description || '' }}></div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
@@ -167,16 +166,16 @@ export default function EventDetailPage() {
                             <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 pointer-events-none text-primary dark:text-primary-fixed-dim">
                                 <span className="material-symbols-outlined text-[120px]">local_florist</span>
                             </div>
-                            
+
                             <h2 className="font-headline-sm text-headline-sm text-on-background dark:text-on-primary mb-6 relative z-10">
                                 {isPast ? 'Event Concluded' : 'Reserve Your Spot'}
                             </h2>
                             <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/70 mb-6 relative z-10">
-                                {isPast 
+                                {isPast
                                     ? "This event has already passed. Check back soon for photos in our gallery!"
                                     : "Space is limited for this exclusive resident event. Please RSVP to secure your attendance."}
                             </p>
-                            
+
                             {!isPast && (
                                 <form className="space-y-4 relative z-10" onSubmit={e => e.preventDefault()}>
                                     <div>
@@ -190,20 +189,20 @@ export default function EventDetailPage() {
                                     <div>
                                         <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/80 mb-1" htmlFor="guests">Number of Guests</label>
                                         <div className="relative">
-                                            <button 
-                                                type="button" 
-                                                onClick={() => setIsGuestsOpen(!isGuestsOpen)} 
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsGuestsOpen(!isGuestsOpen)}
                                                 className="w-full flex items-center justify-between rounded-lg border-border-subtle dark:border-primary-container bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary focus:border-primary dark:focus:border-primary-fixed-dim focus:ring-primary dark:focus:ring-primary-fixed-dim shadow-sm py-2 px-3 outline-none text-left"
                                             >
                                                 <span>{guests}</span>
                                                 <span className="material-symbols-outlined text-[20px] text-text-muted pointer-events-none transition-transform duration-200" style={{ transform: isGuestsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
                                             </button>
-                                            
+
                                             {isGuestsOpen && (
                                                 <ul className="absolute z-50 w-full bottom-full mb-1 bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
                                                     {['1 (Just me)', '2', '3', '4'].map((option) => (
-                                                        <li 
-                                                            key={option} 
+                                                        <li
+                                                            key={option}
                                                             onClick={() => { setGuests(option); setIsGuestsOpen(false); }}
                                                             className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate"
                                                         >

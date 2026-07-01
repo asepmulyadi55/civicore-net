@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-
 export default function GalleryDetailPage() {
     const { id } = useParams();
     const [activeTab, setActiveTab] = useState('gallery');
@@ -22,7 +21,7 @@ export default function GalleryDetailPage() {
     const toggleDark = () => {
         setIsDark(prev => {
             const next = !prev;
-            try { localStorage.setItem('homepageDark', String(next)); } catch {}
+            try { localStorage.setItem('homepageDark', String(next)); } catch { }
             return next;
         });
     };
@@ -30,8 +29,8 @@ export default function GalleryDetailPage() {
     const [album, setAlbum] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => { 
-        window.scrollTo(0, 0); 
+    useEffect(() => {
+        window.scrollTo(0, 0);
         if (id) {
             setLoading(true);
             fetch(`/api/homepage/gallery/${id}`)
@@ -70,7 +69,7 @@ export default function GalleryDetailPage() {
     return (
         <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300 min-h-screen flex flex-col">
             <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
-            
+
             <main className="flex-grow pt-32 pb-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
                 {/* Header Section */}
                 <div className="mb-12 text-left">
@@ -96,12 +95,12 @@ export default function GalleryDetailPage() {
                         return (
                             <div key={idx} className={`group relative rounded-2xl overflow-hidden ${span} h-[300px] md:h-full shadow-sm hover:shadow-lg border border-border-subtle/50 dark:border-primary-container/50 bg-surface-container-lowest dark:bg-primary-container`}>
                                 <img alt={img.title || 'Gallery image'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={url} />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
-                            <div className="absolute bottom-0 left-0 w-full p-6 bg-surface-glass dark:bg-black/60 backdrop-blur-md border-t border-border-subtle/20 dark:border-white/10 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary mb-1">{img.title}</h3>
-                                <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/80">{img.description}</p>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
+                                <div className="absolute bottom-0 left-0 w-full p-6 bg-surface-glass dark:bg-black/60 backdrop-blur-md border-t border-border-subtle/20 dark:border-white/10 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                    <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary mb-1">{img.title}</h3>
+                                    <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/80">{img.description}</p>
+                                </div>
                             </div>
-                        </div>
                         );
                     })}
                 </div>

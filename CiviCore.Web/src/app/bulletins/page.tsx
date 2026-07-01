@@ -4,8 +4,6 @@ import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-// Removed MOCK_BULLETINS
-
 export default function BuletinPage() {
     const [activeTab, setActiveTab] = useState('bulletins');
     const [isDark, setIsDark] = useState(() => {
@@ -26,13 +24,13 @@ export default function BuletinPage() {
     const toggleDark = () => {
         setIsDark(prev => {
             const next = !prev;
-            try { localStorage.setItem('homepageDark', String(next)); } catch {}
+            try { localStorage.setItem('homepageDark', String(next)); } catch { }
             return next;
         });
     };
 
-    useEffect(() => { 
-        window.scrollTo(0, 0); 
+    useEffect(() => {
+        window.scrollTo(0, 0);
         fetch('/api/homepage/bulletin')
             .then(res => res.json())
             .then(data => setBulletins(data))
@@ -45,8 +43,8 @@ export default function BuletinPage() {
     }, []);
 
     // Filter and Pagination
-    const filteredBulletins = bulletins.filter((b: any) => 
-        (b.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const filteredBulletins = bulletins.filter((b: any) =>
+        (b.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (b.description || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -63,7 +61,7 @@ export default function BuletinPage() {
     return (
         <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased min-h-screen flex flex-col transition-colors duration-300">
             <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
-            
+
             <main className="flex-grow pt-32 pb-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
                 <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
@@ -80,9 +78,9 @@ export default function BuletinPage() {
 
                     <div className="w-full md:w-auto relative">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-on-primary/50 pointer-events-none">search</span>
-                        <input 
-                            type="text" 
-                            placeholder="Search bulletins..." 
+                        <input
+                            type="text"
+                            placeholder="Search bulletins..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full md:w-80 pl-10 pr-4 py-3 rounded-lg border border-border-subtle dark:border-primary-container bg-surface dark:bg-primary-container text-on-surface dark:text-on-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-all"
@@ -108,16 +106,16 @@ export default function BuletinPage() {
                                         {bulletin.date ? new Date(bulletin.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}
                                     </div>
                                 </div>
-                                
+
                                 <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-3 group-hover:text-[#b45309] dark:group-hover:text-[#d97706] transition-colors">
                                     {bulletin.title}
                                 </h3>
-                                
+
                                 <div className="text-body-md text-on-surface-variant dark:text-on-primary/80 mb-6 flex-grow prose prose-sm dark:prose-invert max-w-none line-clamp-3 [&>p]:!mb-0" dangerouslySetInnerHTML={{ __html: bulletin.description || '' }} />
-                                
+
                                 <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
                                     <Link className="text-[#b45309] dark:text-[#d97706] font-label-md inline-flex items-center group/link" href={bulletin.url || `/bulletins/${bulletin.id}`}>
-                                        <span className="group-hover/link:underline">Read Full Bulletin</span> 
+                                        <span className="group-hover/link:underline">Read Full Bulletin</span>
                                         <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
                                     </Link>
                                 </div>
@@ -129,19 +127,19 @@ export default function BuletinPage() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                     <div className="flex justify-center items-center mt-12 gap-2">
-                        <button 
+                        <button
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             className="p-2 rounded-lg border border-border-subtle dark:border-primary-container disabled:opacity-50 hover:bg-surface dark:hover:bg-primary-container transition-colors"
                         >
                             <span className="material-symbols-outlined text-on-surface dark:text-on-primary">chevron_left</span>
                         </button>
-                        
+
                         {Array.from({ length: totalPages }).map((_, idx) => {
                             const page = idx + 1;
                             const isActive = page === currentPage;
                             return (
-                                <button 
+                                <button
                                     key={page}
                                     onClick={() => setCurrentPage(page)}
                                     className={`w-10 h-10 rounded-lg font-label-md flex items-center justify-center transition-colors ${isActive ? 'bg-primary dark:bg-primary-fixed-dim text-white dark:text-primary' : 'border border-border-subtle dark:border-primary-container hover:bg-surface dark:hover:bg-primary-container text-on-surface dark:text-on-primary'}`}
@@ -151,7 +149,7 @@ export default function BuletinPage() {
                             );
                         })}
 
-                        <button 
+                        <button
                             disabled={currentPage === totalPages}
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             className="p-2 rounded-lg border border-border-subtle dark:border-primary-container disabled:opacity-50 hover:bg-surface dark:hover:bg-primary-container transition-colors"

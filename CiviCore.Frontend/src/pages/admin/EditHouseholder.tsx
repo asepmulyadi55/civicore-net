@@ -7,9 +7,9 @@ import { compressImage } from '../../utils/imageCompressor';
 
 function ResidentModal({ open, onClose, onSaved, data, householderId }) {
   const isEdit = !!data?.id;
-  const [form, setForm] = useState({ 
-    fullname: '', relationship: 'Head of Family', birthDate: '', 
-    gender: '', education: '', occupation: '', photoPath: '' 
+  const [form, setForm] = useState({
+    fullname: '', relationship: 'Head of Family', birthDate: '',
+    gender: '', education: '', occupation: '', photoPath: ''
   });
   const [loading, setLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -54,7 +54,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Full Name <span className="text-rose-500">*</span></label>
           <input type="text" value={form.fullname} onChange={e => setForm(p => ({ ...p, fullname: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all" placeholder="Full Name" />
         </div>
-        
+
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Photo</label>
           <div className="flex items-center gap-4">
@@ -78,9 +78,9 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
                   const res = await axios.post('/api/media/upload', formData);
                   setForm(p => ({ ...p, photoPath: res.data.filePath }));
                 } catch (err) { console.error(err); }
-                finally { 
-                  setUploadingPhoto(false); 
-                  e.target.value = ''; 
+                finally {
+                  setUploadingPhoto(false);
+                  e.target.value = '';
                 }
               }} />
               <button onClick={() => document.getElementById(`residentPhoto-${data?.id || 'new'}`)?.click()} disabled={uploadingPhoto} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-white transition-colors cursor-pointer shadow-sm disabled:opacity-50">
@@ -159,7 +159,7 @@ export default function EditHouseholder() {
   const [blocks, setBlocks] = useState<any[]>([]);
   const [errorModal, setErrorModal] = useState('');
   const [residentModal, setResidentModal] = useState({ open: false, data: null });
-  const [confirmDelete, setConfirmDelete] = useState<{open: boolean, item: any, loading: boolean}>({ open: false, item: null, loading: false });
+  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean, item: any, loading: boolean }>({ open: false, item: null, loading: false });
   const [uploadingHouseholdPhoto, setUploadingHouseholdPhoto] = useState(false);
 
   const fetchData = async () => {
@@ -197,14 +197,14 @@ export default function EditHouseholder() {
 
   const doConfirmDeleteResident = async () => {
     if (!confirmDelete.item) return;
-    setConfirmDelete(prev => ({...prev, loading: true}));
+    setConfirmDelete(prev => ({ ...prev, loading: true }));
     try {
       await axios.delete(`/api/residents/${confirmDelete.item.id}`);
       fetchData();
       setConfirmDelete({ open: false, item: null, loading: false });
     } catch (err) {
       console.error(err);
-      setConfirmDelete(prev => ({...prev, loading: false}));
+      setConfirmDelete(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -224,8 +224,8 @@ export default function EditHouseholder() {
   return (
     <AdminLayout title="Householders" subtitle="Edit Household Details">
       <ResidentModal open={residentModal.open} onClose={() => setResidentModal({ open: false, data: null })} onSaved={fetchData} data={residentModal.data} householderId={id} />
-      <div className="max-w-4xl mx-auto pb-12">
-        
+      <div className="max-w-5xl mx-auto pb-12">
+
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link to="/admin/householders" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
@@ -274,15 +274,15 @@ export default function EditHouseholder() {
                       const res = await axios.post('/api/media/upload', formData);
                       setData((p: any) => ({ ...p, photoPath: res.data.filePath }));
                     } catch (err) { console.error(err); }
-                    finally { 
-                      setUploadingHouseholdPhoto(false); 
-                      e.target.value = ''; 
+                    finally {
+                      setUploadingHouseholdPhoto(false);
+                      e.target.value = '';
                     }
                   }} />
                   <button onClick={() => document.getElementById('householdPhoto')?.click()} disabled={uploadingHouseholdPhoto} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-white transition-colors cursor-pointer shadow-sm disabled:opacity-50">
                     <span className="material-icons text-sm">{uploadingHouseholdPhoto ? 'hourglass_empty' : 'upload'}</span> {uploadingHouseholdPhoto ? 'Uploading...' : 'Upload Photo'}
                   </button>
-                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">JPG, PNG, WebP.<br/>Automatically compressed before upload.<br/>(Recommended: 1000x800)</p>
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">JPG, PNG, WebP.<br />Automatically compressed before upload.<br />(Recommended: 1000x800)</p>
                 </div>
               </div>
             </div>
@@ -294,7 +294,7 @@ export default function EditHouseholder() {
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Block <span className="text-rose-500">*</span></label>
                   <div className="relative">
-                    <select value={data.blockId || ''} onChange={e => setData({...data, blockId: e.target.value, unitId: ''})} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none appearance-none cursor-pointer">
+                    <select value={data.blockId || ''} onChange={e => setData({ ...data, blockId: e.target.value, unitId: '' })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none appearance-none cursor-pointer">
                       <option value="">Select Block</option>
                       {blocks.map(b => (
                         <option key={b.id} value={b.id}>{b.name}</option>
@@ -306,7 +306,7 @@ export default function EditHouseholder() {
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Unit No. <span className="text-rose-500">*</span></label>
                   <div className="relative">
-                    <select value={data.unitId || ''} onChange={e => setData({...data, unitId: e.target.value})} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none appearance-none cursor-pointer">
+                    <select value={data.unitId || ''} onChange={e => setData({ ...data, unitId: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none appearance-none cursor-pointer">
                       <option value="">Select Unit</option>
                       {(blocks.find(b => String(b.id) === String(data.blockId))?.units || []).map(u => {
                         const isCurrent = String(u.id) === String(data.unitId);
@@ -320,12 +320,12 @@ export default function EditHouseholder() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Owner / Contact Name <span className="text-rose-500">*</span></label>
-                  <input type="text" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none" value={data.fullname || ''} onChange={e => setData({...data, fullname: e.target.value})} />
+                  <input type="text" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none" value={data.fullname || ''} onChange={e => setData({ ...data, fullname: e.target.value })} />
                   <p className="text-xs text-slate-500 mt-1.5">Used as fallback when no Head of Family is set.</p>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Email Address <span className="text-slate-400 font-normal">(links to user account)</span></label>
-                  <input type="email" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none" placeholder="household@example.com" value={data.email || ''} onChange={e => setData({...data, email: e.target.value})} />
+                  <input type="email" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none" placeholder="household@example.com" value={data.email || ''} onChange={e => setData({ ...data, email: e.target.value })} />
                 </div>
               </div>
             </div>
@@ -333,7 +333,7 @@ export default function EditHouseholder() {
             {/* Card 3: Classification */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Classification</h3>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">House Status</label>
@@ -342,26 +342,26 @@ export default function EditHouseholder() {
                       {['Owner Occupied', 'Rented', 'Vacant', 'Public Facility', 'Developer'][data.unit?.houseStatus ?? 0] || 'Unknown'}
                     </span>
                     <Link to={`/admin/blocks/${data.blockId}/units`} className="text-primary text-xs flex items-center gap-1 cursor-pointer group">
-                      <span className="material-icons text-[16px]">open_in_new</span> 
+                      <span className="material-icons text-[16px]">open_in_new</span>
                       <span className="group-hover:underline">Go to Unit Management</span>
                     </Link>
                   </div>
                   <p className="text-[10px] text-slate-500 mt-1.5">House status is managed on the unit record.</p>
                 </div>
                 <div className="flex items-center">
-                   <div className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 flex items-start gap-3">
-                     <input type="checkbox" checked={data.is_active ?? true} onChange={e => setData({...data, is_active: e.target.checked})} className="mt-1 w-4 h-4 rounded bg-transparent border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
-                     <div>
-                       <div className="text-sm font-bold text-slate-900 dark:text-white">Active Household</div>
-                       <div className="text-xs text-slate-500 dark:text-slate-400">Uncheck to deactivate this unit.</div>
-                     </div>
-                   </div>
+                  <div className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 flex items-start gap-3">
+                    <input type="checkbox" checked={data.is_active ?? true} onChange={e => setData({ ...data, is_active: e.target.checked })} className="mt-1 w-4 h-4 rounded bg-transparent border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
+                    <div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-white">Active Household</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Uncheck to deactivate this unit.</div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Notes <span className="text-slate-400 font-normal">optional</span></label>
-                <textarea className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none min-h-[80px]" placeholder="Any additional notes about this household or unit..." value={data.notes || ''} onChange={e => setData({...data, notes: e.target.value})} />
+                <textarea className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none min-h-[80px]" placeholder="Any additional notes about this household or unit..." value={data.notes || ''} onChange={e => setData({ ...data, notes: e.target.value })} />
               </div>
             </div>
           </div>
@@ -387,11 +387,11 @@ export default function EditHouseholder() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">New Monthly Fee (Rp)</label>
-                  <input type="number" value={data.newMonthlyFee || ''} onChange={e => setData({...data, newMonthlyFee: e.target.value})} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500" placeholder="Leave blank to keep current" />
+                  <input type="number" value={data.newMonthlyFee || ''} onChange={e => setData({ ...data, newMonthlyFee: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500" placeholder="Leave blank to keep current" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Effective From</label>
-                  <input type="month" value={data.effectiveFrom || ''} onChange={e => setData({...data, effectiveFrom: e.target.value})} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none cursor-pointer [color-scheme:light_dark]" />
+                  <input type="month" value={data.effectiveFrom || ''} onChange={e => setData({ ...data, effectiveFrom: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none cursor-pointer [color-scheme:light_dark]" />
                 </div>
               </div>
             </div>

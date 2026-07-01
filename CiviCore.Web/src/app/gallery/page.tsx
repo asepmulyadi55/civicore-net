@@ -4,8 +4,6 @@ import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-
-
 export default function GalleryPage() {
     const [activeTab, setActiveTab] = useState('gallery');
     const [isDark, setIsDark] = useState(() => {
@@ -21,7 +19,7 @@ export default function GalleryPage() {
     const toggleDark = () => {
         setIsDark(prev => {
             const next = !prev;
-            try { localStorage.setItem('homepageDark', String(next)); } catch {}
+            try { localStorage.setItem('homepageDark', String(next)); } catch { }
             return next;
         });
     };
@@ -29,8 +27,8 @@ export default function GalleryPage() {
     const [albums, setAlbums] = useState<any[]>([]);
     const [settings, setSettings] = useState<any>({});
 
-    useEffect(() => { 
-        window.scrollTo(0, 0); 
+    useEffect(() => {
+        window.scrollTo(0, 0);
         fetch('/api/homepage/gallery')
             .then(r => r.json())
             .then(d => setAlbums(d))
@@ -45,7 +43,7 @@ export default function GalleryPage() {
     return (
         <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased min-h-screen flex flex-col transition-colors duration-300">
             <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
-            
+
             <main className="flex-grow pt-32 pb-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
                 <div className="mb-12">
                     <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
@@ -65,7 +63,7 @@ export default function GalleryPage() {
                             <Link href={`/gallery/${album.title?.toLowerCase().replace(/\s+/g, '-')}`} key={album.id} className="group relative rounded-2xl overflow-hidden h-[400px] shadow-sm hover:shadow-xl border border-border-subtle/50 dark:border-primary-container/50 transition-shadow">
                                 <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url('${url}')` }}></div>
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                
+
                                 <div className="absolute top-4 right-4 bg-surface-glass dark:bg-black/50 backdrop-blur-md px-3 py-1 rounded text-primary dark:text-primary-fixed-dim font-label-sm text-label-sm">
                                     {count} {count === 1 ? 'Photo' : 'Photos'}
                                 </div>

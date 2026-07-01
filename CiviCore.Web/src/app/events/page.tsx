@@ -7,8 +7,6 @@ import Footer from '@/components/Footer';
 const CATEGORIES = ['wellness', 'meetings', 'education', 'cultural', 'sports', 'other'];
 const PER_PAGE = 6;
 
-
-
 function getPaginationPages(current: number, total: number) {
     if (total <= 7) return new Array(total).fill(null).map((_, i) => i + 1);
     const pages: any[] = [1];
@@ -22,12 +20,12 @@ function getPaginationPages(current: number, total: number) {
 }
 
 export default function EventsPage() {
-    const [search, setSearch]     = useState('');
+    const [search, setSearch] = useState('');
     const [category, setCategory] = useState('');
     const [status, setStatus] = useState('all');
     const [isCategoryOpen, setIsCategoryOpen] = useState(false);
     const [isStatusOpen, setIsStatusOpen] = useState(false);
-    const [page, setPage]         = useState(1);
+    const [page, setPage] = useState(1);
     const [activeTab, setActiveTab] = useState('events');
 
     const [isDark, setIsDark] = useState(() => {
@@ -43,7 +41,7 @@ export default function EventsPage() {
     const toggleDark = () => {
         setIsDark(prev => {
             const next = !prev;
-            try { localStorage.setItem('homepageDark', String(next)); } catch {}
+            try { localStorage.setItem('homepageDark', String(next)); } catch { }
             return next;
         });
     };
@@ -57,7 +55,7 @@ export default function EventsPage() {
             .then(res => res.json())
             .then(data => setEventsList(data))
             .catch(console.error);
-            
+
         fetch('/api/homepage/event-settings')
             .then(res => res.json())
             .then(data => setSettings(data))
@@ -67,13 +65,13 @@ export default function EventsPage() {
     // Filter
     const today = new Date().toISOString().slice(0, 10);
     const filtered = eventsList.filter(e => {
-        const matchSearch   = !search || (e.title ?? '').toLowerCase().includes(search.toLowerCase()) || (e.description ?? '').toLowerCase().includes(search.toLowerCase());
+        const matchSearch = !search || (e.title ?? '').toLowerCase().includes(search.toLowerCase()) || (e.description ?? '').toLowerCase().includes(search.toLowerCase());
         const matchCategory = !category || (e.category ?? '').toLowerCase() === category;
 
         let matchStatus = true;
         if (status === 'upcoming') matchStatus = (e.status === 'ongoing') || !e.date || e.date >= today;
-        if (status === 'past')     matchStatus = (e.status !== 'ongoing') && !!e.date && e.date < today;
-        if (status === 'ongoing')  matchStatus = e.status === 'ongoing';
+        if (status === 'past') matchStatus = (e.status !== 'ongoing') && !!e.date && e.date < today;
+        if (status === 'ongoing') matchStatus = e.status === 'ongoing';
 
         return matchSearch && matchCategory && matchStatus;
     });
@@ -101,13 +99,13 @@ export default function EventsPage() {
     });
 
     const totalPages = Math.max(1, Math.ceil(sortedFiltered.length / PER_PAGE));
-    const paginated  = sortedFiltered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-    const pages      = getPaginationPages(page, totalPages);
+    const paginated = sortedFiltered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+    const pages = getPaginationPages(page, totalPages);
 
     useEffect(() => { setPage(1); }, [search, category, status]);
 
     const clearFilters = () => { setSearch(''); setCategory(''); setStatus('all'); };
-    const hasFilters   = !!(search || category || (status !== 'all' && status !== ''));
+    const hasFilters = !!(search || category || (status !== 'all' && status !== ''));
 
     return (
         <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300 min-h-screen flex flex-col">
@@ -142,9 +140,9 @@ export default function EventsPage() {
                             />
                         </div>
                         <div className="relative">
-                            <button 
-                                type="button" 
-                                onClick={() => { setIsCategoryOpen(!isCategoryOpen); setIsStatusOpen(false); }} 
+                            <button
+                                type="button"
+                                onClick={() => { setIsCategoryOpen(!isCategoryOpen); setIsStatusOpen(false); }}
                                 className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-48 shadow-sm text-left flex items-center justify-between"
                             >
                                 <span className="truncate">{category ? CATEGORIES.find(c => c === category)?.charAt(0).toUpperCase() + (CATEGORIES.find(c => c === category)?.slice(1) || "") : "All Categories"}</span>
@@ -163,9 +161,9 @@ export default function EventsPage() {
                         </div>
 
                         <div className="relative">
-                            <button 
-                                type="button" 
-                                onClick={() => { setIsStatusOpen(!isStatusOpen); setIsCategoryOpen(false); }} 
+                            <button
+                                type="button"
+                                onClick={() => { setIsStatusOpen(!isStatusOpen); setIsCategoryOpen(false); }}
                                 className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-48 shadow-sm text-left flex items-center justify-between"
                             >
                                 <span className="truncate">{status === 'upcoming' ? 'Upcoming' : status === 'past' ? 'Past' : status === 'ongoing' ? 'Ongoing' : 'All Events'}</span>
@@ -233,10 +231,10 @@ export default function EventsPage() {
                                             <div className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider mb-2">{ev.category}</div>
                                             <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">{ev.title}</h3>
                                             <div className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow prose prose-sm dark:prose-invert max-w-none line-clamp-3" dangerouslySetInnerHTML={{ __html: ev.description || '' }} />
-                                            
+
                                             <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
                                                 <span className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link">
-                                                    <span className="group-hover/link:underline">View Details</span> 
+                                                    <span className="group-hover/link:underline">View Details</span>
                                                     <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
                                                 </span>
                                                 <span className="text-label-sm text-text-muted dark:text-on-primary/50">
@@ -267,11 +265,10 @@ export default function EventsPage() {
                                     <button
                                         key={i}
                                         onClick={() => setPage(p)}
-                                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors font-label-md ${
-                                            page === p 
-                                            ? 'bg-primary dark:bg-primary-fixed-dim text-white dark:text-primary' 
-                                            : 'border border-border-subtle/50 dark:border-primary-container/50 text-primary dark:text-on-primary hover:bg-surface-container dark:hover:bg-primary-container'
-                                        }`}
+                                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors font-label-md ${page === p
+                                                ? 'bg-primary dark:bg-primary-fixed-dim text-white dark:text-primary'
+                                                : 'border border-border-subtle/50 dark:border-primary-container/50 text-primary dark:text-on-primary hover:bg-surface-container dark:hover:bg-primary-container'
+                                            }`}
                                     >
                                         {p}
                                     </button>

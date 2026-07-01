@@ -24,6 +24,7 @@ import Reports from './pages/admin/Reports';
 // Wave 3
 import Roles from './pages/admin/Roles';
 import Settings from './pages/admin/Settings';
+import Posyandu from './pages/admin/Posyandu';
 import AdminHomepage from './pages/admin/Homepage';
 import Media from './pages/admin/Media';
 
@@ -95,7 +96,7 @@ export default function Router() {
 
         {/* Stubs for remaining modules */}
         <Route path="/admin/residents" element={<RequireAuth><ComingSoon page="Residents" /></RequireAuth>} />
-        <Route path="/admin/posyandu" element={<RequireAuth><ComingSoon page="Posyandu" /></RequireAuth>} />
+        <Route path="/admin/posyandu" element={<RequireAuth><Posyandu /></RequireAuth>} />
         <Route path="/admin/overview" element={<RequireAuth><ComingSoon page="Overview" /></RequireAuth>} />
       </Routes>
     </BrowserRouter>

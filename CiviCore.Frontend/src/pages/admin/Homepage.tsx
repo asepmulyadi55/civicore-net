@@ -1299,9 +1299,6 @@ function FooterTab() {
 
   if (loading) return <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>;
 
-  const links = data.links || [{ label: '', url: '' }, { label: '', url: '' }, { label: '', url: '' }, { label: '', url: '' }];
-  while (links.length < 4) links.push({ label: '', url: '' });
-
   return (
     <SectionCard icon="web_asset" iconBg="bg-slate-100 dark:bg-slate-800" iconColor="text-slate-500" title="Footer" subtitle="Manage footer content and links">
       <SuccessBanner show={success} />
@@ -1310,22 +1307,7 @@ function FooterTab() {
           <FormInput label="Brand Name" id="ft-brand" value={data.brand_name || ''} onChange={e => set('brand_name', e.target.value)} placeholder="e.g. Dwipapuri" />
           <FormInput label="Tagline" id="ft-tag" value={data.tagline || ''} onChange={e => set('tagline', e.target.value)} placeholder="e.g. Cultivating a better lifestyle..." />
         </div>
-        <div className="space-y-3">
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Quick Links</label>
-          <p className="text-xs text-slate-400">Up to 4 quick links in the footer. Leave blank to hide.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {links.map((l, i) => (
-              <div key={i} className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                <div className="flex-1 space-y-1.5">
-                  <input type="text" value={l.label || ''} onChange={e => setLink(i, 'label', e.target.value)} placeholder="Label"
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-slate-900 dark:text-white" />
-                  <input type="url" value={l.url || ''} onChange={e => setLink(i, 'url', e.target.value)} placeholder="https://..."
-                    className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-500 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none dark:text-slate-300" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput label="Contact Email" id="ft-email" value={data.contact_email || ''} onChange={e => set('contact_email', e.target.value)} placeholder="e.g. hello@dwipapuri.com" />
           <FormInput label="Contact Phone" id="ft-phone" value={data.contact_phone || ''} onChange={e => set('contact_phone', e.target.value)} placeholder="e.g. +62 123 4567 890" />
@@ -1334,10 +1316,7 @@ function FooterTab() {
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Contact Information / Location</label>
           <ReactQuill theme="snow" value={data.location || ''} onChange={v => set('location', v)} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg mb-4" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormInput label="Facebook URL" id="ft-fb" value={data.facebook_url || ''} onChange={e => set('facebook_url', e.target.value)} placeholder="https://facebook.com/..." />
-          <FormInput label="Instagram URL" id="ft-ig" value={data.instagram_url || ''} onChange={e => set('instagram_url', e.target.value)} placeholder="https://instagram.com/..." />
-        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <FormInput label="Copyright" id="ft-copy" value={data.copyright || ''} onChange={e => set('copyright', e.target.value)} placeholder="e.g. © 2025 Dwipapuri. All rights reserved." />
@@ -1498,7 +1477,7 @@ export default function AdminHomepage() {
 
   return (
     <AdminLayout title={tabTitle}>
-      <div className="max-w-5xl mx-auto pb-12">
+      <div className="max-w-7xl mx-auto pb-12">
         <PageHeader title={tabTitle} subtitle="Manage homepage content" />
 
         {/* Active Tab Content */}

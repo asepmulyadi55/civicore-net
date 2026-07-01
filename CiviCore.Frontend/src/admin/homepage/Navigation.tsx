@@ -150,12 +150,8 @@ export default function Navigation() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Navigation Settings</h1>
-          <p className="text-slate-500 dark:text-slate-400">Manage main navigation and footer quick links</p>
-        </div>
+    <div className="space-y-6">
+      <div className="flex justify-end mb-4">
         <button
           onClick={() => handleOpenModal()}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap"
@@ -167,8 +163,8 @@ export default function Navigation() {
       <SuccessBanner message={successMsg} />
       <ErrorBanner message={errorMsg} />
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <table className="w-full text-left">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
+        <table className="w-full text-left min-w-[600px]">
           <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
             <tr>
               <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Order</th>

@@ -5,8 +5,6 @@ import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-
-
 export default function PropertyDetailPage() {
     const { id } = useParams();
     const [isDark, setIsDark] = useState(() => {

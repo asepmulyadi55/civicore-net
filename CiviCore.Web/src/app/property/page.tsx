@@ -4,8 +4,6 @@ import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-
-
 export default function PropertyPage() {
     const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
@@ -108,20 +106,20 @@ export default function PropertyPage() {
                                         <div className={`absolute top-4 left-4 text-white px-3 py-1 rounded text-label-sm font-bold uppercase ${property.status === 'available' ? 'bg-[#b45309]' : 'bg-[#15803d]'}`}>
                                             {property.status || property.type}
                                         </div>
-                                </div>
-                                <div className="p-6 flex flex-col flex-grow">
-                                    <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2 line-clamp-1">{property.title}</h3>
-                                    <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">Rp {property.price?.toLocaleString('id-ID')}</p>
-                                    <div className="grid grid-cols-3 gap-2 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
-                                        {property.bedrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {property.bedrooms} Beds</div>}
-                                        {property.bathrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {property.bathrooms} Baths</div>}
-                                        {property.landArea !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {property.landArea} m²</div>}
                                     </div>
-                                    <Link href={`/property/${property.id}`} className="mt-auto w-full block text-center py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">
-                                        View Details
-                                    </Link>
+                                    <div className="p-6 flex flex-col flex-grow">
+                                        <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2 line-clamp-1">{property.title}</h3>
+                                        <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">Rp {property.price?.toLocaleString('id-ID')}</p>
+                                        <div className="grid grid-cols-3 gap-2 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
+                                            {property.bedrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {property.bedrooms} Beds</div>}
+                                            {property.bathrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {property.bathrooms} Baths</div>}
+                                            {property.landArea !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {property.landArea} m²</div>}
+                                        </div>
+                                        <Link href={`/property/${property.id}`} className="mt-auto w-full block text-center py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">
+                                            View Details
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
                             );
                         })}
                     </div>

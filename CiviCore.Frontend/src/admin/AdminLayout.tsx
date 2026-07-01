@@ -19,6 +19,7 @@ const NAV_GROUPS = [
       { key: 'blocks', label: 'Blocks', icon: 'domain', path: '/admin/blocks', roles: ['admin', 'block_coordinator'] },
       { key: 'organization', label: 'Organization', icon: 'account_tree', path: '/admin/organization', roles: ['admin'] },
       { key: 'meetings', label: 'Meetings', icon: 'event_note', path: '/admin/meetings', roles: ['admin', 'block_coordinator'] },
+      { key: 'posyandu', label: 'Posyandu', icon: 'health_and_safety', path: '/admin/posyandu', roles: ['admin', 'posyandu'] },
     ],
   },
   {
