@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
-import { API_URL } from '../page';
+
 
 export default function EventDetailPage() {
     const { id } = useParams();
@@ -87,7 +87,7 @@ export default function EventDetailPage() {
                     <img 
                         alt={event.title} 
                         className={`w-full h-full object-cover object-center absolute inset-0 z-0 ${isPast ? 'grayscale opacity-80' : ''}`} 
-                        src={event.image_url ? (event.image_url.startsWith('http') ? event.image_url : `${API_URL}${event.image_url}`) : '/placeholder-event.png'} 
+                        src={event.image_url ? (event.image_url.startsWith('http') ? event.image_url : event.image_url) : '/placeholder-event.png'} 
                     />
                     <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-surface-container-lowest dark:from-primary to-transparent h-48 z-10"></div>
                 </section>

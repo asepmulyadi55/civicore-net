@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 const CATEGORIES = ['wellness', 'meetings', 'education', 'cultural', 'sports', 'other'];
 const PER_PAGE = 6;
 
-export const API_URL = 'http://localhost:5075';
+
 
 function getPaginationPages(current: number, total: number) {
     if (total <= 7) return new Array(total).fill(null).map((_, i) => i + 1);
@@ -209,7 +209,7 @@ export default function EventsPage() {
                             {paginated.map(ev => {
                                 const evDate = ev.date ? new Date(ev.date) : new Date();
                                 const isPast = (ev.status !== 'ongoing') && !!ev.date && ev.date < today;
-                                const imgUrl = ev.image_url ? (ev.image_url.startsWith('http') ? ev.image_url : `${API_URL}${ev.image_url}`) : '/placeholder-event.png';
+                                const imgUrl = ev.image_url ? (ev.image_url.startsWith('http') ? ev.image_url : ev.image_url) : '/placeholder-event.png';
                                 return (
                                     <Link href={ev.url || `/events/${ev.id}`} key={ev.id} className="group flex flex-col bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                                         <div className="relative h-56 w-full overflow-hidden bg-surface-container-low dark:bg-primary/30">

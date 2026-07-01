@@ -241,7 +241,7 @@ public class MeetingController : ControllerBase
     }
 
     [HttpPost("{id}/images")]
-    public async Task<IActionResult> UploadImage(Guid id, [FromForm] IFormFile file)
+    public async Task<IActionResult> UploadImage(Guid id, IFormFile file)
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null) return NotFound("Meeting not found");

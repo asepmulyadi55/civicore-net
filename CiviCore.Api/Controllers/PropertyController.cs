@@ -4,6 +4,7 @@ using CiviCore.Infrastructure.Data;
 using CiviCore.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using CiviCore.Api.Services;
 
 namespace CiviCore.Api.Controllers;
 
@@ -32,10 +33,12 @@ public class PropertyCreateDto
 public class PropertyController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ILocalStorageService _storageService;
 
-    public PropertyController(AppDbContext context)
+    public PropertyController(AppDbContext context, ILocalStorageService storageService)
     {
         _context = context;
+        _storageService = storageService;
     }
 
     [HttpGet]
@@ -218,20 +221,11 @@ public class PropertyController : ControllerBase
 
         if (file == null || file.Length == 0) return BadRequest("File is required");
 
-        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "properties");
-        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-        
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-        var filePath = Path.Combine(uploadsFolder, fileName);
+        var filePath = $"homepage/properties/{fileName}";
         
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-        
-        var request = HttpContext.Request;
-        var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-        var imageUrl = $"{baseUrl}/uploads/properties/{fileName}";
+        using var stream = file.OpenReadStream();
+        var imageUrl = await _storageService.UploadFileAsync(false, filePath, stream);
 
         property.Images.Add(imageUrl);
         property.UpdatedAt = DateTime.UtcNow;
@@ -249,6 +243,13 @@ public class PropertyController : ControllerBase
         if (property.Images.Contains(url))
         {
             property.Images.Remove(url);
+            
+            if (url.StartsWith("/public-media/"))
+            {
+                var filePath = url.Substring("/public-media/".Length);
+                await _storageService.RemoveFileAsync(false, filePath);
+            }
+
             property.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return Ok();

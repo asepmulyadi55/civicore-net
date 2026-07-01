@@ -104,7 +104,7 @@ export default function BulletinDetailPage() {
                             <img
                                 alt={bulletin.title || "Bulletin Cover"}
                                 className="w-full h-auto max-h-[400px] rounded-xl shadow-sm object-cover mb-10"
-                                src={bulletin.image_url.startsWith('http') ? bulletin.image_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5075'}${bulletin.image_url}`}
+                                src={bulletin.image_url.startsWith('http') ? bulletin.image_url : bulletin.image_url}
                             />
                         )}
 

@@ -4,12 +4,15 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
+
+
+
 export default function PropertyDetailPage() {
     const { id } = useParams();
     const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
-    const [activeTab, setActiveTab] = useState('');
+    const [activeTab, setActiveTab] = useState('properties');
 
     const [property, setProperty] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -37,7 +40,7 @@ export default function PropertyDetailPage() {
         setCurrentImageIndex(index);
         setIsGalleryOpen(true);
     };
-    
+
     const propertyImages = property?.images || [
         'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
         'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80',
@@ -47,11 +50,11 @@ export default function PropertyDetailPage() {
     const nextImage = () => {
         setCurrentImageIndex((prev) => (prev + 1) % propertyImages.length);
     };
-    
+
     const prevImage = () => {
         setCurrentImageIndex((prev) => (prev - 1 + propertyImages.length) % propertyImages.length);
     };
-    
+
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center bg-surface-container-lowest dark:bg-primary text-primary"><span className="material-symbols-outlined animate-spin text-4xl">autorenew</span></div>;
     }
@@ -106,34 +109,37 @@ export default function PropertyDetailPage() {
                     <style>{`
                         .md\\:hidden::-webkit-scrollbar { display: none; }
                     `}</style>
-                    {propertyImages.map((img: string, i: number) => (
-                        <div key={i} className="min-w-full h-full snap-center relative cursor-pointer" onClick={() => openGallery(i)}>
-                            <img src={img} className="w-full h-full object-cover" alt={`${property.title} - ${i + 1}`} />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none"></div>
-                            <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white font-label-sm text-xs pointer-events-none flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[14px]">photo_library</span>
-                                {i + 1} / {propertyImages.length}
+                    {propertyImages.map((img: string, i: number) => {
+                        const url = img?.startsWith('http') ? img : img;
+                        return (
+                            <div key={i} className="min-w-full h-full snap-center relative cursor-pointer" onClick={() => openGallery(i)}>
+                                <img src={url} className="w-full h-full object-cover" alt={`${property.title} - ${i + 1}`} />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+                                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white font-label-sm text-xs pointer-events-none flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[14px]">photo_library</span>
+                                    {i + 1} / {propertyImages.length}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 {/* Hero Gallery (Bento Grid) - Desktop Only */}
                 <div className="hidden md:grid md:grid-cols-4 gap-4 mb-16 h-[50vh] lg:h-[70vh]">
                     {/* Main Featured Image */}
                     <div className="md:col-span-3 md:row-span-2 relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
-                        <img alt={property.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[0]} />
+                        <img alt={property.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[0]?.startsWith('http') ? propertyImages[0] : propertyImages[0]} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60"></div>
                     </div>
                     {/* Side Images */}
                     {propertyImages[1] && (
                         <div className="hidden md:block relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
-                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[1]} />
+                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[1]?.startsWith('http') ? propertyImages[1] : propertyImages[1]} />
                         </div>
                     )}
                     {propertyImages[2] && (
                         <div onClick={() => openGallery(0)} className="hidden md:block relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50 cursor-pointer">
-                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[2]} />
+                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[2]?.startsWith('http') ? propertyImages[2] : propertyImages[2]} />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 <span className="bg-black/60 dark:bg-black/80 backdrop-blur-md px-4 py-2 rounded-lg text-white font-label-md">Explore Gallery</span>
                             </div>
@@ -204,7 +210,7 @@ export default function PropertyDetailPage() {
                                     else if (text.toLowerCase().includes("garage") || text.toLowerCase().includes("parking")) icon = "directions_car";
                                     else if (text.toLowerCase().includes("garden") || text.toLowerCase().includes("yard")) icon = "local_florist";
                                     else if (text.toLowerCase().includes("security") || text.toLowerCase().includes("cctv")) icon = "security";
-                                    
+
                                     return (
                                         <div key={idx} className="flex items-center gap-3 p-4 rounded-xl hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors duration-300 border border-transparent hover:border-border-subtle dark:hover:border-primary-container/50">
                                             <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">{icon}</span>
@@ -223,7 +229,7 @@ export default function PropertyDetailPage() {
                         <div className="sticky top-28 bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 p-6 md:p-8">
                             <h3 className="font-headline-sm text-headline-sm text-primary dark:text-on-primary mb-2">Interested in this property?</h3>
                             <p className="text-text-muted dark:text-on-primary/70 font-body-md text-body-md mb-6">Schedule a private viewing or request more details.</p>
-                            
+
                             <form className="space-y-4">
                                 <div>
                                     <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="name">Full Name</label>
@@ -241,12 +247,12 @@ export default function PropertyDetailPage() {
                                     <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="message">Message</label>
                                     <textarea id="message" placeholder="I would like to schedule a viewing..." rows={3} className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 resize-none focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors"></textarea>
                                 </div>
-                                
+
                                 <Link href="/schedule-visit" className="w-full bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 mt-4 flex justify-center items-center gap-2">
                                     <span className="material-symbols-outlined text-[18px]">calendar_month</span>
                                     Schedule a Visit
                                 </Link>
-                                
+
                                 <button type="button" className="w-full bg-transparent border border-border-subtle dark:border-primary-container/50 text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-primary-container font-label-md text-label-md py-3 rounded-lg transition-all duration-300 mt-2">
                                     Request Brochure
                                 </button>
@@ -269,23 +275,23 @@ export default function PropertyDetailPage() {
                         <button onClick={(e) => { e.stopPropagation(); setIsGalleryOpen(false); }} className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full w-12 h-12 flex items-center justify-center z-50">
                             <span className="material-symbols-outlined text-[28px]">close</span>
                         </button>
-                        
+
                         <div className="relative w-full max-w-6xl px-4 flex items-center justify-center h-full">
                             <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute left-4 md:left-8 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full w-14 h-14 flex items-center justify-center z-50">
                                 <span className="material-symbols-outlined text-[32px]">chevron_left</span>
                             </button>
-                            
-                            <img src={propertyImages[currentImageIndex]} alt={property.title} className="max-w-full max-h-[85vh] object-contain" />
-                            
+
+                            <img src={propertyImages[currentImageIndex]?.startsWith('http') ? propertyImages[currentImageIndex] : propertyImages[currentImageIndex]} alt={property.title} className="max-w-full max-h-[85vh] object-contain" />
+
                             <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors absolute right-4 md:right-12">
                                 <span className="material-symbols-outlined text-[32px]">chevron_right</span>
                             </button>
                         </div>
-                        
+
                         <div className="absolute bottom-8 left-0 w-full flex justify-center gap-3 px-4">
                             {propertyImages.map((_, idx) => (
-                                <button 
-                                    key={idx} 
+                                <button
+                                    key={idx}
                                     onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
                                     className={`w-3 h-3 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white scale-110' : 'bg-white/30 hover:bg-white/50'}`}
                                 />

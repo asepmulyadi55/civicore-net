@@ -983,6 +983,7 @@ function PropertyTab() {
   
   const [imageModal, setImageModal] = useState<{ open: boolean; property: any }>({ open: false, property: null });
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [deleteImageConfirmUrl, setDeleteImageConfirmUrl] = useState<string | null>(null);
 
   const [form, setForm] = useState({ 
     title: '', type: 'house', price: '', status: 'available', description: '', location: '',
@@ -1026,14 +1027,15 @@ function PropertyTab() {
     setUploadingImage(false);
   };
 
-  const deleteImage = async (url: string) => {
-    if (!imageModal.property) return;
+  const deleteImage = async () => {
+    if (!imageModal.property || !deleteImageConfirmUrl) return;
     try {
-      await axios.delete(`/api/property/${imageModal.property.id}/images?url=${encodeURIComponent(url)}`);
+      await axios.delete(`/api/property/${imageModal.property.id}/images?url=${encodeURIComponent(deleteImageConfirmUrl)}`);
       fetch();
       const res = await axios.get(`/api/property/${imageModal.property.id}`);
       setImageModal({ ...imageModal, property: res.data });
     } catch { }
+    setDeleteImageConfirmUrl(null);
   };
 
   const doDelete = async () => {
@@ -1160,7 +1162,7 @@ function PropertyTab() {
                 <div key={i} className="relative group rounded-xl overflow-hidden aspect-video bg-slate-100 dark:bg-slate-800">
                   <img src={img} alt="Property" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button onClick={() => deleteImage(img)} className="p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors">
+                    <button onClick={() => setDeleteImageConfirmUrl(img)} className="p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors cursor-pointer">
                       <span className="material-icons text-sm">delete_outline</span>
                     </button>
                   </div>
@@ -1182,6 +1184,13 @@ function PropertyTab() {
           <div className="flex justify-end pt-6 border-t border-slate-100 dark:border-white/5 mt-6">
             <button onClick={() => setImageModal({ open: false, property: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Done</button>
           </div>
+          <ConfirmModal
+            open={!!deleteImageConfirmUrl}
+            onClose={() => setDeleteImageConfirmUrl(null)}
+            onConfirm={deleteImage}
+            title="Delete Photo"
+            message="Are you sure you want to delete this photo? This action cannot be undone."
+          />
         </Modal>
       )}
 

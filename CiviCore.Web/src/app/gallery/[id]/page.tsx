@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
-const API_URL = 'http://localhost:5075';
+
 
 export default function GalleryDetailPage() {
     const { id } = useParams();
@@ -90,7 +90,7 @@ export default function GalleryDetailPage() {
                 {/* Bento Grid Gallery */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter md:auto-rows-[300px]">
                     {(album.photos || []).map((img: any, idx: number) => {
-                        const url = img.image_url?.startsWith('http') ? img.image_url : `${API_URL}${img.image_url || ''}`;
+                        const url = img.image_url?.startsWith('http') ? img.image_url : img.image_url;
                         // Alternating spans for a dynamic masonry-like look if no colSpan is provided
                         const span = img.colSpan || (idx % 4 === 0 || idx % 4 === 3 ? 'col-span-1 md:col-span-12 lg:col-span-8' : 'col-span-1 md:col-span-6 lg:col-span-4');
                         return (

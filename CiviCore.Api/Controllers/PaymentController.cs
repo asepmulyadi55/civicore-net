@@ -257,7 +257,7 @@ public class PaymentController : ControllerBase
     }
 
     [HttpPost("{batchId}/proof")]
-    public async Task<IActionResult> UploadProof(Guid batchId, [FromForm] IFormFile file, [FromServices] IConfiguration configuration)
+    public async Task<IActionResult> UploadProof(Guid batchId, IFormFile file, [FromServices] IConfiguration configuration)
     {
         if (file == null || file.Length == 0) return BadRequest("No file provided");
 

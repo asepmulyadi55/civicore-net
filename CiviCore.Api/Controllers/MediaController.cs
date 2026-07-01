@@ -99,7 +99,7 @@ public class MediaController : ControllerBase
 
     [HttpPost("upload")]
     [Authorize]
-    public async Task<IActionResult> UploadMedia([FromForm] List<IFormFile>? files, [FromForm] IFormFile? file, [FromForm] string? replacePath = null)
+    public async Task<IActionResult> UploadMedia(List<IFormFile>? files, IFormFile? file, [FromForm] string? replacePath = null)
     {
         // Support both single file upload and multi-file upload (files[] or file)
         var fileList = new List<IFormFile>();
