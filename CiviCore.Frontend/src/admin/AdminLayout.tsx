@@ -48,6 +48,7 @@ const NAV_GROUPS = [
       { key: 'gallery', label: 'Gallery', icon: 'photo_library', path: '/admin/homepage/gallery', roles: ['admin'] },
       { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/admin/homepage/bulletin', roles: ['admin'] },
       { key: 'property', label: 'Properties', icon: 'home_work', path: '/admin/homepage/property', roles: ['admin'] },
+      { key: 'navigation', label: 'Navigation', icon: 'menu', path: '/admin/homepage/navigation', roles: ['admin'] },
       { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/admin/homepage/footer', roles: ['admin'] },
       { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/admin/homepage/metadata', roles: ['admin'] },
     ],

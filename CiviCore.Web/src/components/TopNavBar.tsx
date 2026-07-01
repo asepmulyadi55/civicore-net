@@ -10,16 +10,42 @@ interface TopNavBarProps {
 }
 
 export default function TopNavBar({ activeTab, setActiveTab, isDark, toggleDark }: TopNavBarProps) {
-    const navLinks = [
+    const [navLinks, setNavLinks] = useState([
         { id: 'home', label: 'Home', href: '/' },
         { id: 'properties', label: 'Properties', href: '/#properties' },
         { id: 'events', label: 'Events', href: '/#events' },
         { id: 'gallery', label: 'Gallery', href: '/#gallery' },
         { id: 'bulletins', label: 'Bulletins', href: '/#bulletins' },
         { id: 'contact', label: 'Contact', href: '#contact' },
-    ];
+    ]);
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    React.useEffect(() => {
+        fetch('/api/navigation/public')
+            .then(res => res.json())
+            .then(res => {
+                if (res.data && res.data.length > 0) {
+                    const links = res.data
+                        .filter((l: any) => l.showInNavigation)
+                        .map((l: any) => {
+                            let linkId = l.id;
+                            if (l.url === '/') linkId = 'home';
+                            else if (l.url && l.url.includes('#')) linkId = l.url.split('#').pop();
+                            
+                            return { 
+                                id: linkId, 
+                                label: l.title, 
+                                href: l.url 
+                            };
+                        });
+                    if (links.length > 0) {
+                        setNavLinks(links);
+                    }
+                }
+            })
+            .catch(console.error);
+    }, []);
 
     return (
         <header className="fixed top-0 w-full z-50 bg-surface-glass backdrop-blur-md dark:bg-primary/80 border-b border-border-subtle dark:border-primary-container shadow-sm transition-all duration-300">

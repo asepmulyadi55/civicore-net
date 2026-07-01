@@ -29,6 +29,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<MeetingAttendance> MeetingAttendances { get; set; } = null!;
     public DbSet<MeetingImage> MeetingImages { get; set; } = null!;
     public DbSet<PropertyListing> PropertyListings { get; set; } = null!;
+    public DbSet<NavigationLink> NavigationLinks { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -121,5 +122,15 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             .WithMany()
             .HasForeignKey(ma => ma.HouseholderId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Seed Navigation Links
+        builder.Entity<NavigationLink>().HasData(
+            new NavigationLink { Id = Guid.Parse("11111111-1111-1111-1111-111111111111"), Title = "Home", Url = "/", Order = 1, ShowInNavigation = true, ShowInFooter = true },
+            new NavigationLink { Id = Guid.Parse("22222222-2222-2222-2222-222222222222"), Title = "Properties", Url = "/#properties", Order = 2, ShowInNavigation = true, ShowInFooter = true },
+            new NavigationLink { Id = Guid.Parse("33333333-3333-3333-3333-333333333333"), Title = "Events", Url = "/#events", Order = 3, ShowInNavigation = true, ShowInFooter = true },
+            new NavigationLink { Id = Guid.Parse("44444444-4444-4444-4444-444444444444"), Title = "Gallery", Url = "/#gallery", Order = 4, ShowInNavigation = true, ShowInFooter = true },
+            new NavigationLink { Id = Guid.Parse("55555555-5555-5555-5555-555555555555"), Title = "Bulletins", Url = "/#bulletins", Order = 5, ShowInNavigation = true, ShowInFooter = true },
+            new NavigationLink { Id = Guid.Parse("66666666-6666-6666-6666-666666666666"), Title = "Contact", Url = "#contact", Order = 6, ShowInNavigation = true, ShowInFooter = true }
+        );
     }
 }

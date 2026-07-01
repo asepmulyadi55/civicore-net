@@ -10,16 +10,28 @@ interface FooterProps {
 export default function Footer({ setActiveTab, footerData }: FooterProps) {
     const data = footerData || {};
     
-    // Quick Links logic
-    const defaultLinks = [
+    const [displayLinks, setDisplayLinks] = React.useState([
         { label: 'Home', url: '/' },
         { label: 'Events', url: '/#events' },
         { label: 'Gallery', url: '/#gallery' },
         { label: 'Bulletins', url: '/#bulletins' },
-    ];
-    
-    const validLinks = data.links?.filter((l: any) => l.label) || [];
-    const displayLinks = validLinks.length > 0 ? validLinks : defaultLinks;
+    ]);
+
+    React.useEffect(() => {
+        fetch('/api/navigation/public')
+            .then(res => res.json())
+            .then(res => {
+                if (res.data && res.data.length > 0) {
+                    const links = res.data
+                        .filter((l: any) => l.showInFooter)
+                        .map((l: any) => ({ label: l.title, url: l.url }));
+                    if (links.length > 0) {
+                        setDisplayLinks(links);
+                    }
+                }
+            })
+            .catch(console.error);
+    }, []);
 
     return (
         <footer className="w-full py-section-gap bg-primary dark:bg-[#002117] border-t border-primary-container text-on-primary dark:text-on-primary" id="contact">

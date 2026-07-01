@@ -7,6 +7,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import { compressImage } from '../../utils/imageCompressor';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, Modal, ConfirmModal, FormInput, FormSelect, SearchInput, SelectFilter, FilterBar, Pagination, TableWrapper, Th, EmptyState, StatusBadge } from '../../admin/components/ui';
+import NavigationTab from '../../admin/homepage/Navigation';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TABS CONFIG
@@ -17,6 +18,7 @@ const TABS = [
   { key: 'gallery', label: 'Gallery', icon: 'photo_library' },
   { key: 'bulletin', label: 'Bulletin', icon: 'article' },
   { key: 'property', label: 'Properties', icon: 'home_work' },
+  { key: 'navigation', label: 'Navigation', icon: 'menu' },
   { key: 'footer', label: 'Footer', icon: 'web_asset' },
   { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search' },
 ];
@@ -1485,6 +1487,7 @@ export default function AdminHomepage() {
       case 'gallery': return <GalleryTab />;
       case 'bulletin': return <BulletinTab />;
       case 'property': return <PropertyTab />;
+      case 'navigation': return <NavigationTab />;
       case 'footer': return <FooterTab />;
       case 'metadata': return <MetadataTab />;
       default: return null;
