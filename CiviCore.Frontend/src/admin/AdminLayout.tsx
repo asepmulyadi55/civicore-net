@@ -8,7 +8,7 @@ const NAV_GROUPS = [
   {
     label: null,
     items: [
-      { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard', roles: ['admin', 'treasurer', 'block_coordinator'] },
     ],
   },
   {
@@ -52,6 +52,14 @@ const NAV_GROUPS = [
       { key: 'navigation', label: 'Navigation', icon: 'menu', path: '/admin/homepage/navigation', roles: ['admin'] },
       { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/admin/homepage/footer', roles: ['admin'] },
       { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/admin/homepage/metadata', roles: ['admin'] },
+    ],
+  },
+  {
+    label: 'My Resident Profile',
+    icon: 'house',
+    items: [
+      { key: 'overview', label: 'Overview', icon: 'home', path: '/admin/overview', roles: ['admin', 'resident'] },
+      { key: 'my-household', label: 'My Household', icon: 'family_restroom', path: '/admin/residents', roles: ['admin', 'resident'] },
     ],
   },
   {

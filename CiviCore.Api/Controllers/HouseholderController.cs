@@ -129,6 +129,7 @@ public class HouseholderController : ControllerBase
         public Guid? BlockId { get; set; }
         public Guid? UnitId { get; set; }
         public string? PhotoPath { get; set; }
+        public Guid? UserId { get; set; }
     }
 
     [HttpPut("{id}")]
@@ -146,6 +147,7 @@ public class HouseholderController : ControllerBase
 
         if (dto.BlockId.HasValue) householder.BlockId = dto.BlockId.Value;
         if (dto.UnitId.HasValue) householder.UnitId = dto.UnitId.Value;
+        householder.UserId = dto.UserId;
 
         if (!string.IsNullOrEmpty(dto.FamilyCardNumber))
         {

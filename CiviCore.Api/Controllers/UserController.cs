@@ -74,6 +74,9 @@ public class UserController : ControllerBase
         var users = await query.Skip((page - 1) * per_page).Take(per_page).ToListAsync();
 
         var resultData = new List<object>();
+        var allUserIds = users.Select(u => u.Id).ToList();
+        var householders = await _context.Set<Householder>().Where(h => h.UserId != null && allUserIds.Contains(h.UserId.Value)).ToListAsync();
+
         foreach (var u in users)
         {
             var userRoles = await _userManager.GetRolesAsync(u);
@@ -83,6 +86,8 @@ public class UserController : ControllerBase
             {
                 mainRole = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Name == mainRoleName);
             }
+            
+            var h = householders.FirstOrDefault(x => x.UserId == u.Id);
 
             resultData.Add(new
             {
@@ -95,7 +100,8 @@ public class UserController : ControllerBase
                 role = mainRole,
                 is_active = u.IsActive,
                 email_verified_at = u.EmailConfirmed ? "verified" : null,
-                photo = u.Avatar
+                photo = u.Avatar,
+                householder_id = h?.Id
             });
         }
 
@@ -149,6 +155,8 @@ public class UserController : ControllerBase
             if (role != null && role.Name != null) await _userManager.AddToRoleAsync(user, role.Name);
         }
 
+        await LinkHouseholderAsync(user.Id, dto.HouseholderId);
+
         return Ok(user);
     }
 
@@ -184,6 +192,8 @@ public class UserController : ControllerBase
             }
         }
 
+        await LinkHouseholderAsync(user.Id, dto.HouseholderId);
+
         return Ok(user);
     }
 
@@ -218,6 +228,8 @@ public class UserController : ControllerBase
             }
         }
 
+        await LinkHouseholderAsync(user.Id, dto.HouseholderId);
+
         return Ok(new { message = "User approved" });
     }
 
@@ -250,6 +262,27 @@ public class UserController : ControllerBase
 
         return Ok(new { message = "User reactivated" });
     }
+
+    private async Task LinkHouseholderAsync(Guid userId, Guid? householderId)
+    {
+        // Unlink any existing householders attached to this user
+        var existingLinks = await _context.Set<Householder>().Where(h => h.UserId == userId).ToListAsync();
+        foreach (var h in existingLinks)
+        {
+            h.UserId = null;
+        }
+
+        if (householderId.HasValue)
+        {
+            var newLink = await _context.Set<Householder>().FindAsync(householderId.Value);
+            if (newLink != null)
+            {
+                newLink.UserId = userId;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+    }
 }
 
 public class UserCreateDto
@@ -260,6 +293,7 @@ public class UserCreateDto
     public string Password { get; set; } = string.Empty;
     public string Role_Id { get; set; } = string.Empty;
     public bool Is_Active { get; set; } = true;
+    public Guid? HouseholderId { get; set; }
 }
 
 public class UserUpdateDto
@@ -270,9 +304,11 @@ public class UserUpdateDto
     public string? Password { get; set; }
     public string? Role_Id { get; set; }
     public bool? Is_Active { get; set; }
+    public Guid? HouseholderId { get; set; }
 }
 
 public class ApproveDto
 {
     public string Role_Id { get; set; } = string.Empty;
+    public Guid? HouseholderId { get; set; }
 }

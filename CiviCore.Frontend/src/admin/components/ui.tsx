@@ -256,19 +256,62 @@ export function FormInput({ label, id, type = 'text', value, onChange, placehold
   );
 }
 
-export function FormSelect({ label, id, value, onChange, options, error, required, placeholder = 'Select...' }: { label: string; id: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: { value: string; label: string }[]; error?: string; required?: boolean; placeholder?: string }) {
+export function FormSelect({ label, id, value, onChange, options, error, required, placeholder = 'Select...' }: { label: string; id: string; value: string; onChange: (e: any) => void; options: { value: string; label: string; disabled?: boolean }[]; error?: string; required?: boolean; placeholder?: string }) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedLabel = value === '' ? placeholder : (options.find(o => String(o.value) === String(value))?.label || placeholder);
+
   return (
-    <div>
+    <div ref={ref}>
       <label htmlFor={id} className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
         {label}{required && <span className="text-rose-500 ml-1">*</span>}
       </label>
       <div className="relative">
-        <select id={id} value={value} onChange={onChange}
-          className={`appearance-none block w-full pl-4 pr-9 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'}`}>
-          <option value="">{placeholder}</option>
-          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-        <span className="material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className={`w-full text-left pl-4 pr-9 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'}`}
+        >
+          <span className="truncate block">{selectedLabel}</span>
+        </button>
+        <span className={`material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px] transition-transform ${open ? 'rotate-180' : ''}`}>expand_more</span>
+        
+        {open && (
+          <ul className="absolute z-50 w-full mt-1 max-h-60 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1">
+            <li
+              onClick={() => { onChange({ target: { value: '' } } as any); setOpen(false); }}
+              className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === '' ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+            >
+              {placeholder}
+            </li>
+            {options.map(o => (
+              <li
+                key={o.value}
+                onClick={() => { 
+                  if (o.disabled) return;
+                  if (typeof onChange === 'function') {
+                    onChange({ target: { value: o.value } } as any);
+                  }
+                  setOpen(false); 
+                }}
+                className={`px-4 py-2.5 text-sm transition-colors ${o.disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700'} ${String(value) === String(o.value) && !o.disabled ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+              >
+                {o.label}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       {error && <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{error}</p>}
     </div>

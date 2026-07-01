@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
-import { Modal, FormInput, ConfirmModal, SecureImage } from '../../admin/components/ui';
+import { Modal, FormInput, FormSelect, ConfirmModal, SecureImage } from '../../admin/components/ui';
 import { compressImage } from '../../utils/imageCompressor';
 
 function ResidentModal({ open, onClose, onSaved, data, householderId }) {
@@ -92,15 +92,14 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Relationship <span className="text-rose-500">*</span></label>
-          <div className="relative">
-            <select value={form.relationship} onChange={e => setForm(p => ({ ...p, relationship: e.target.value }))} className="w-full sm:w-1/2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none appearance-none cursor-pointer">
-              {['Head of Family', 'Spouse', 'Child', 'Parent', 'Sibling', 'Other'].map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-            <span className="material-icons absolute right-[52%] sm:right-[52%] top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
-          </div>
+          <FormSelect 
+            label="Relationship" 
+            id="r-rel" 
+            value={form.relationship} 
+            onChange={e => setForm(p => ({ ...p, relationship: e.target.value }))} 
+            options={['Head of Family', 'Spouse', 'Child', 'Parent', 'Sibling', 'Other'].map(opt => ({ value: opt, label: opt }))} 
+            required 
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -109,30 +108,27 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
             <input type="date" value={form.birthDate} onChange={e => setForm(p => ({ ...p, birthDate: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all cursor-pointer dark:[color-scheme:dark]" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Gender</label>
-            <div className="relative">
-              <select value={form.gender} onChange={e => setForm(p => ({ ...p, gender: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none appearance-none cursor-pointer">
-                <option value="">&mdash; Select &mdash;</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-              <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
-            </div>
+            <FormSelect 
+              label="Gender" 
+              id="r-gen" 
+              value={form.gender} 
+              onChange={e => setForm(p => ({ ...p, gender: e.target.value }))} 
+              options={[{value: 'Male', label: 'Male'}, {value: 'Female', label: 'Female'}]} 
+              placeholder="&mdash; Select &mdash;" 
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Education</label>
-            <div className="relative">
-              <select value={form.education} onChange={e => setForm(p => ({ ...p, education: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none appearance-none cursor-pointer">
-                <option value="">&mdash; Select &mdash;</option>
-                {['Elementary', 'Junior High', 'Senior High', 'Diploma', 'Bachelor', 'Master', 'Doctorate'].map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
-              <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
-            </div>
+            <FormSelect 
+              label="Education" 
+              id="r-edu" 
+              value={form.education} 
+              onChange={e => setForm(p => ({ ...p, education: e.target.value }))} 
+              options={['Elementary', 'Junior High', 'Senior High', 'Diploma', 'Bachelor', 'Master', 'Doctorate'].map(opt => ({ value: opt, label: opt }))} 
+              placeholder="&mdash; Select &mdash;" 
+            />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Occupation</label>
@@ -178,20 +174,6 @@ export default function EditHouseholder() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [hRes, bRes] = await Promise.all([
-          axios.get(`/api/householders/${id}`),
-          axios.get('/api/blocks?per_page=100'),
-        ]);
-        setData(hRes.data);
-        setBlocks(Array.isArray(bRes.data) ? bRes.data : (bRes.data?.data || []));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, [id]);
 
@@ -292,31 +274,31 @@ export default function EditHouseholder() {
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Unit Details</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Block <span className="text-rose-500">*</span></label>
-                  <div className="relative">
-                    <select value={data.blockId || ''} onChange={e => setData({ ...data, blockId: e.target.value, unitId: '' })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none appearance-none cursor-pointer">
-                      <option value="">Select Block</option>
-                      {blocks.map(b => (
-                        <option key={b.id} value={b.id}>{b.name}</option>
-                      ))}
-                    </select>
-                    <span className="material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
-                  </div>
+                  <FormSelect 
+                    label="Block" 
+                    id="h-blk" 
+                    value={data.blockId || ''} 
+                    onChange={e => setData({ ...data, blockId: e.target.value, unitId: '' })} 
+                    options={blocks.map(b => ({ value: b.id, label: b.name }))} 
+                    placeholder="Select Block" 
+                    required 
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Unit No. <span className="text-rose-500">*</span></label>
-                  <div className="relative">
-                    <select value={data.unitId || ''} onChange={e => setData({ ...data, unitId: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none appearance-none cursor-pointer">
-                      <option value="">Select Unit</option>
-                      {(blocks.find(b => String(b.id) === String(data.blockId))?.units || []).map(u => {
-                        const isCurrent = String(u.id) === String(data.unitId);
-                        const isOccupied = u.isAssigned && !isCurrent;
-                        const label = isOccupied ? `${u.unitNumber || u.unit_number} (Occupied)` : (u.unitNumber || u.unit_number);
-                        return <option key={u.id} value={u.id} disabled={isOccupied}>{label}</option>;
-                      })}
-                    </select>
-                    <span className="material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
-                  </div>
+                  <FormSelect 
+                    label="Unit No." 
+                    id="h-unt" 
+                    value={data.unitId || ''} 
+                    onChange={e => setData({ ...data, unitId: e.target.value })} 
+                    options={(blocks.find(b => String(b.id) === String(data.blockId))?.units || []).map((u: any) => {
+                      const isCurrent = String(u.id) === String(data.unitId);
+                      const isOccupied = u.isAssigned && !isCurrent;
+                      const label = isOccupied ? `${u.unitNumber || u.unit_number} (Occupied)` : (u.unitNumber || u.unit_number);
+                      return { value: u.id, label, disabled: isOccupied };
+                    })} 
+                    placeholder="Select Unit" 
+                    required 
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Owner / Contact Name <span className="text-rose-500">*</span></label>
@@ -324,7 +306,7 @@ export default function EditHouseholder() {
                   <p className="text-xs text-slate-500 mt-1.5">Used as fallback when no Head of Family is set.</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Email Address <span className="text-slate-400 font-normal">(links to user account)</span></label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Email Address <span className="text-slate-400 font-normal">(auto-links to user account)</span></label>
                   <input type="email" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none" placeholder="household@example.com" value={data.email || ''} onChange={e => setData({ ...data, email: e.target.value })} />
                 </div>
               </div>

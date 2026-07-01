@@ -57,6 +57,7 @@ public class BlockController : ControllerBase
     {
         var block = await _context.Set<Block>()
             .Include(b => b.Units)
+                .ThenInclude(u => u.Householder)
             .Include(b => b.Coordinators).ThenInclude(c => c.Resident)
             .Include(b => b.Coordinators).ThenInclude(c => c.Householder)
             .FirstOrDefaultAsync(b => b.Id == id);
@@ -78,7 +79,12 @@ public class BlockController : ControllerBase
                 id = c.ResidentId ?? c.HouseholderId,
                 name = c.Resident != null ? c.Resident.Fullname : (c.Householder != null ? c.Householder.Fullname : "Unknown")
             }).ToList(),
-            block.Units
+            Units = block.Units.Select(u => new {
+                u.Id,
+                u.UnitNumber,
+                u.HouseStatus,
+                current_householder = u.Householder != null ? new { fullname = u.Householder.Fullname } : null
+            }).ToList()
         });
     }
 

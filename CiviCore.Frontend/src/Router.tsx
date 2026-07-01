@@ -27,6 +27,9 @@ import Settings from './pages/admin/Settings';
 import Posyandu from './pages/admin/Posyandu';
 import AdminHomepage from './pages/admin/Homepage';
 import Media from './pages/admin/Media';
+// Resident Portal
+import Overview from './pages/admin/Overview';
+import ResidentHousehold from './pages/admin/ResidentHousehold';
 
 function GaTracker() {
   const location = useLocation();
@@ -94,10 +97,10 @@ export default function Router() {
         <Route path="/admin/homepage/:tab" element={<RequireAuth><AdminHomepage /></RequireAuth>} />
         <Route path="/admin/media" element={<RequireAuth><Media /></RequireAuth>} />
 
-        {/* Stubs for remaining modules */}
-        <Route path="/admin/residents" element={<RequireAuth><ComingSoon page="Residents" /></RequireAuth>} />
+        {/* Resident Portal */}
+        <Route path="/admin/overview" element={<RequireAuth><Overview /></RequireAuth>} />
+        <Route path="/admin/residents" element={<RequireAuth><ResidentHousehold /></RequireAuth>} />
         <Route path="/admin/posyandu" element={<RequireAuth><Posyandu /></RequireAuth>} />
-        <Route path="/admin/overview" element={<RequireAuth><ComingSoon page="Overview" /></RequireAuth>} />
       </Routes>
     </BrowserRouter>
   );

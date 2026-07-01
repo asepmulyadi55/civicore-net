@@ -91,7 +91,7 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
               {form.coordinators.map(c => (
                 <div key={c.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
                   <span className="text-primary font-bold">{c.type === 'resident' ? 'R' : 'H'}</span>
-                  <span>{c.name}</span>
+                  <span className="text-slate-800 dark:text-slate-200">{c.name}</span>
                   <button type="button" onClick={() => handleRemoveCoord(c.id)} className="material-icons text-[14px] text-slate-400 hover:text-rose-500 cursor-pointer ml-1">close</button>
                 </div>
               ))}

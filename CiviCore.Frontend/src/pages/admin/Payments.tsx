@@ -88,6 +88,47 @@ function ReviewModal({ open, onClose, payment, onApprove, onReject }) {
   );
 }
 
+function CustomSelect({ label, value, onChange, options, disabled, icon }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  
+  const selected = options.find(o => String(o.value) === String(value));
+
+  return (
+    <div ref={ref} className="relative">
+      {label && <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{label}</label>}
+      <div className="relative">
+        {icon && <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px] z-10 pointer-events-none">{icon}</span>}
+        
+        <div onClick={() => !disabled && setOpen(!open)} 
+             className={`w-full ${icon ? 'pl-10' : 'pl-4'} pr-10 py-3 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-semibold text-slate-700 dark:text-white flex justify-between items-center transition-all ${disabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:border-primary/50'}`}>
+          <span className="truncate select-none">{selected ? selected.label : '— None —'}</span>
+          <span className={`material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none transition-transform ${open ? 'rotate-180' : ''}`}>expand_more</span>
+        </div>
+        
+        {open && !disabled && (
+          <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl max-h-48 overflow-y-auto py-1">
+             {options.map(o => (
+              <div key={o.value} onClick={() => { onChange(o.value); setOpen(false); }}
+                className={`px-4 py-2.5 cursor-pointer text-sm border-b border-slate-100 dark:border-white/5 last:border-0 transition-colors flex items-center ${String(value) === String(o.value) ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'}`}>
+                {o.label}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PaymentModal({ open, onClose, onSaved, editData = null }) {
   const [form, setForm] = useState({ householderId: '', amount: 0, notes: '', year: new Date().getFullYear(), paymentMethodId: '' });
   const [householders, setHouseholders] = useState([]);
@@ -303,16 +344,14 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
           </div>
 
           {/* Year */}
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">YEAR</label>
-            <div className="relative">
-               <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">calendar_today</span>
-               <select disabled={!!editData} value={form.year} onChange={e => setForm(f => ({ ...f, year: Number(e.target.value) }))} className={`w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-semibold text-slate-700 dark:text-white appearance-none outline-none focus:border-primary transition-all ${!!editData ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}>
-                 {[0, 1, 2].map(i => <option key={i} value={new Date().getFullYear() - i}>{new Date().getFullYear() - i}</option>)}
-               </select>
-               <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">expand_more</span>
-            </div>
-          </div>
+          <CustomSelect 
+            label="YEAR" 
+            icon="calendar_today"
+            disabled={!!editData} 
+            value={form.year} 
+            onChange={(val) => setForm(f => ({ ...f, year: Number(val) }))} 
+            options={[0, 1, 2].map(i => ({ value: new Date().getFullYear() - i, label: String(new Date().getFullYear() - i) }))}
+          />
         </div>
 
         {/* Months */}
@@ -364,19 +403,17 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
         {/* Method & Status and Proof & Notes */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6 border-t border-slate-100 dark:border-white/5 pt-6 px-2">
           {/* Payment Method */}
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">PAYMENT METHOD</label>
-            <div className="relative">
-               <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">account_balance</span>
-               <select value={form.paymentMethodId} onChange={e => setForm(f => ({ ...f, paymentMethodId: e.target.value }))} className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-semibold text-slate-700 dark:text-white appearance-none outline-none focus:border-primary transition-all cursor-pointer">
-                 <option value="">— None —</option>
-                 {paymentMethods.map(m => (
-                   <option key={m.id} value={m.id}>{m.name}</option>
-                 ))}
-               </select>
-               <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">expand_more</span>
-            </div>
-          </div>
+          {/* Payment Method */}
+          <CustomSelect 
+            label="PAYMENT METHOD" 
+            icon="account_balance"
+            value={form.paymentMethodId} 
+            onChange={(val) => setForm(f => ({ ...f, paymentMethodId: val }))} 
+            options={[
+              { value: '', label: '— None —' },
+              ...paymentMethods.map(m => ({ value: m.id, label: m.name }))
+            ]}
+          />
 
           {/* Proof of Payment */}
           <div>

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import {
@@ -60,16 +60,71 @@ function PasswordStrength({ password }: { password?: string }) {
   );
 }
 
-function UserModal({ open, onClose, onSaved, data, roles }: { open: boolean; onClose: () => void; onSaved: () => void; data: User | null; roles: UserRole[] }) {
+function HouseholderSelect({ label, value, onChange, options, error }: { label: string, value: string, onChange: (val: string) => void, options: {value: string, label: string}[], error?: string }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch('');
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  
+  const selected = options.find(o => o.value === value);
+  const filtered = options.filter(o => o.label.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div ref={ref} className="relative">
+      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>
+      <div className="relative">
+        {open ? (
+            <input 
+              type="text" autoFocus
+              placeholder="Search householder..."
+              value={search} onChange={e => setSearch(e.target.value)}
+              className={`block w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all`}
+            />
+        ) : (
+            <div onClick={() => setOpen(true)} className={`block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg text-sm text-slate-900 dark:text-white cursor-pointer select-none flex justify-between items-center`}>
+              <span className="truncate">{selected ? selected.label : '-- None --'}</span>
+              <span className="material-icons text-slate-400 text-sm">expand_more</span>
+            </div>
+        )}
+        {open && <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none rotate-180">expand_more</span>}
+        
+        {open && (
+          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#1B2236] border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+            {filtered.length === 0 ? <div className="p-3 text-sm text-slate-500 text-center">No results found</div> : 
+             filtered.map(o => (
+              <div key={o.value} onClick={() => { onChange(o.value); setOpen(false); setSearch(''); }}
+                className={`px-4 py-2.5 cursor-pointer text-sm border-b border-slate-100 dark:border-slate-700/50 last:border-0 transition-colors ${value === o.value ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
+                {o.label}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      {error && <p className="mt-1.5 text-xs text-rose-600">{error}</p>}
+    </div>
+  );
+}
+
+function UserModal({ open, onClose, onSaved, data, roles, householders }: { open: boolean; onClose: () => void; onSaved: () => void; data: User | null; roles: UserRole[]; householders: any[] }) {
   const isEdit = !!data?.id;
-  const [form, setForm] = useState({ name: '', username: '', email: '', role_id: '', password: '', password_confirmation: '', is_active: true });
+  const [form, setForm] = useState({ name: '', username: '', email: '', role_id: '', password: '', password_confirmation: '', is_active: true, HouseholderId: '' });
   const [showPw, setShowPw] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (data) setForm({ name: data.name || '', username: data.username || '', email: data.email || '', role_id: String(data.role_id) || '', password: '', password_confirmation: '', is_active: data.is_active !== false });
-    else setForm({ name: '', username: '', email: '', role_id: '', password: '', password_confirmation: '', is_active: true });
+    if (data) setForm({ name: data.name || '', username: data.username || '', email: data.email || '', role_id: String(data.role_id) || '', password: '', password_confirmation: '', is_active: data.is_active !== false, HouseholderId: (data as any).householder_id || '' });
+    else setForm({ name: '', username: '', email: '', role_id: '', password: '', password_confirmation: '', is_active: true, HouseholderId: '' });
     setErrors({}); setShowPw(false);
   }, [data, open]);
 
@@ -79,6 +134,7 @@ function UserModal({ open, onClose, onSaved, data, roles }: { open: boolean; onC
     setLoading(true); setErrors({});
     try {
       const payload: any = { ...form };
+      if (!payload.HouseholderId) payload.HouseholderId = null;
       if (isEdit && !payload.password) { delete payload.password; delete payload.password_confirmation; }
       if (isEdit) await axios.put(`/api/users/${data!.id}`, payload);
       else await axios.post('/api/users', payload);
@@ -89,6 +145,7 @@ function UserModal({ open, onClose, onSaved, data, roles }: { open: boolean; onC
   };
 
   const roleOptions = (roles || []).map(r => ({ value: String(r.id), label: r.name }));
+  const hhOptions = [{ value: '', label: '-- None --' }, ...householders.map(h => ({ value: h.id, label: `${h.fullname} (Block ${h.block?.name || '-'}, Unit ${h.unit?.unitNumber || '-'})` }))];
 
   return (
     <Modal open={open} onClose={onClose} title={isEdit ? 'Edit User' : 'Create User'} size="lg">
@@ -101,6 +158,9 @@ function UserModal({ open, onClose, onSaved, data, roles }: { open: boolean; onC
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput label="Email" id="u-email" type="email" value={form.email} onChange={set('email')} error={errors.email} required />
           <FormSelect label="Role" id="u-role" value={form.role_id} onChange={set('role_id')} options={roleOptions} error={errors.role_id} required placeholder="Select Role" />
+        </div>
+        <div>
+          <HouseholderSelect label="Linked Householder (Optional)" value={form.HouseholderId} onChange={(val) => setForm(p => ({ ...p, HouseholderId: val }))} options={hhOptions} error={errors.HouseholderId} />
         </div>
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -136,28 +196,38 @@ function UserModal({ open, onClose, onSaved, data, roles }: { open: boolean; onC
   );
 }
 
-function ApproveModal({ open, onClose, user, onApproved }: { open: boolean; onClose: () => void; user: User | null; onApproved: () => void }) {
+function ApproveModal({ open, onClose, user, onApproved, householders }: { open: boolean; onClose: () => void; user: User | null; onApproved: () => void; householders: any[] }) {
   const [roleId, setRoleId] = useState('');
+  const [householderId, setHouseholderId] = useState('');
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    if (open) axios.get('/api/roles').then(r => setRoles(Array.isArray(r.data) ? r.data : (r.data?.data || []))).catch(() => {});
-  }, [open]);
+    if (open) {
+        axios.get('/api/roles').then(r => setRoles(Array.isArray(r.data) ? r.data : (r.data?.data || []))).catch(() => {});
+        setHouseholderId((user as any)?.householder_id || '');
+    }
+  }, [open, user]);
 
   const handle = async () => {
     setLoading(true);
     try {
-      await axios.post(`/api/users/${user!.id}/approve`, { role_id: roleId });
+      await axios.post(`/api/users/${user!.id}/approve`, { 
+        role_id: roleId, 
+        HouseholderId: householderId || null 
+      });
       onApproved(); onClose();
     } catch {} finally { setLoading(false); }
   };
 
   if (!user) return null;
+  const hhOptions = [{ value: '', label: '-- None --' }, ...householders.map(h => ({ value: h.id, label: `${h.fullname} (Block ${h.block?.name || '-'}, Unit ${h.unit?.unitNumber || '-'})` }))];
+
   return (
     <Modal open={open} onClose={onClose} title="Approve User" size="sm">
       <div className="space-y-4">
         <p className="text-sm text-slate-600 dark:text-slate-400">Approve <strong className="text-slate-900 dark:text-white">{user.name}</strong> and assign a role.</p>
         <FormSelect label="Assign Role" id="approve-role" value={roleId} onChange={e => setRoleId(e.target.value)} options={(roles || []).map(r => ({ value: String(r.id), label: r.name }))} placeholder="Select Role" required />
+        <HouseholderSelect label="Linked Householder (Optional)" value={householderId} onChange={setHouseholderId} options={hhOptions} />
         <div className="flex justify-end gap-3 pt-2">
           <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
           <button onClick={handle} disabled={!roleId || loading} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold flex justify-center items-center gap-2 cursor-pointer hover:scale-[1.02] shadow-lg shadow-emerald-500/20 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all duration-200">
@@ -173,6 +243,7 @@ export default function Users() {
   const [data, setData] = useState<User[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
+  const [householders, setHouseholders] = useState<any[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ search: '', role: '', status: '', page: 1 });
@@ -186,16 +257,18 @@ export default function Users() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [uRes, rRes, sRes] = await Promise.all([
+      const [uRes, rRes, sRes, hRes] = await Promise.all([
         axios.get('/api/users', { params: filters }),
         axios.get('/api/roles').catch(() => ({ data: [] })),
         axios.get('/api/users/stats').catch(() => ({ data: {} })),
+        axios.get('/api/householders?per_page=1000').catch(() => ({ data: { data: [] } })),
       ]);
       const u = uRes.data;
       setData(Array.isArray(u) ? u : (u.data || []));
       setMeta(u.meta || null);
       setRoles(Array.isArray(rRes.data) ? rRes.data : (rRes.data?.data || []));
       setStats(sRes.data);
+      setHouseholders(Array.isArray(hRes.data) ? hRes.data : (hRes.data?.data || []));
     } catch { setData([]); }
     finally { setLoading(false); }
   }, [filters]);
@@ -220,8 +293,8 @@ export default function Users() {
 
   return (
     <AdminLayout title="User Management">
-      <UserModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} roles={roles} />
-      <ApproveModal open={approveModal.open} onClose={() => setApproveModal({ open: false, user: null })} user={approveModal.user} onApproved={fetchData} />
+      <UserModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} roles={roles} householders={householders} />
+      <ApproveModal open={approveModal.open} onClose={() => setApproveModal({ open: false, user: null })} user={approveModal.user} onApproved={fetchData} householders={householders} />
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="person_remove"
         title="Delete User?" message={`Permanently delete <strong>${confirm.item?.name}</strong>? This cannot be undone.`}
