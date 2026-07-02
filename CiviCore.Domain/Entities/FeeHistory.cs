@@ -9,6 +9,8 @@ public class FeeHistory
     public decimal Amount { get; set; }
     public DateTime EffectiveFrom { get; set; }
     
+    public string? Notes { get; set; }
+    
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
