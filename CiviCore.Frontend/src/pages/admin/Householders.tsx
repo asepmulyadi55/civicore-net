@@ -101,6 +101,7 @@ export default function Householders() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importYear, setImportYear] = useState(new Date().getFullYear());
   const [importing, setImporting] = useState(false);
+  const [importJob, setImportJob] = useState<any>(null);
   const [importResult, setImportResult] = useState({ open: false, success: true, message: '' });
   const fileInputRef = React.useRef(null);
 
@@ -124,6 +125,27 @@ export default function Householders() {
   }, [filters]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  useEffect(() => {
+    let interval: any;
+    if (importJob && (importJob.status === 'Pending' || importJob.status === 'Processing')) {
+      interval = setInterval(async () => {
+        try {
+          const res = await axios.get(`/api/householders/import-status/${importJob.jobId}`);
+          setImportJob(res.data);
+          if (res.data.status === 'Completed') {
+            setImporting(false);
+            setImportResult({ open: true, success: true, message: res.data.message || 'Import completed!' });
+            fetchData();
+          } else if (res.data.status === 'Failed') {
+            setImporting(false);
+            setImportResult({ open: true, success: false, message: res.data.message || 'Import failed.' });
+          }
+        } catch (err) { }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [importJob, fetchData]);
 
   const allChecked = data.length > 0 && selected.length === data.length;
   const toggleAll = () => setSelected(allChecked ? [] : data.map(h => h.id));
@@ -158,12 +180,17 @@ export default function Householders() {
       const res = await axios.post('/api/householders/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setImportResult({ open: true, success: true, message: res.data.message || 'Import successful!' });
-      fetchData();
-    } catch (err) {
-      setImportResult({ open: true, success: false, message: err.response?.data?.message || 'Failed to import Excel file.' });
-    } finally {
+      if (res.status === 202 && res.data.jobId) {
+        setImportJob({ jobId: res.data.jobId, status: 'Pending', totalRows: 0, processedRows: 0, message: '' });
+      } else {
+        setImportResult({ open: true, success: true, message: res.data.message || 'Import successful!' });
+        setImporting(false);
+        fetchData();
+      }
+    } catch (err: any) {
       setImporting(false);
+      setImportResult({ open: true, success: false, message: err.response?.data?.message || 'Failed to start import.' });
+    } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -176,10 +203,47 @@ export default function Householders() {
     <AdminLayout title="Residents">
       {importing && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
             <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Importing Data...</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Please wait while we process the Excel file.</p>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Importing Data...</h3>
+            
+            {importJob ? (
+              <div className="w-full">
+                <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
+                  <span>Progress</span>
+                  <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 overflow-hidden border border-slate-200 dark:border-slate-700">
+                  <div className="bg-primary h-3 rounded-full transition-all duration-300" 
+                       style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
+                </div>
+                <p className="text-xs text-slate-400 text-center">{importJob.status}...</p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Uploading file to server...</p>
+            )}
+            
+            <button onClick={() => setImporting(false)} className="mt-6 px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer">Run in Background</button>
+          </div>
+        </div>
+      )}
+
+      {!importing && importJob && (importJob.status === 'Pending' || importJob.status === 'Processing') && (
+        <div 
+          className="fixed bottom-6 right-6 z-[90] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl shadow-primary/10 rounded-2xl p-4 w-80 cursor-pointer transition-all hover:-translate-y-1" 
+          onClick={() => setImporting(true)}
+          title="Click to view details"
+        >
+          <div className="flex items-center gap-3 mb-3">
+             <span className="material-icons text-primary animate-spin text-xl">autorenew</span>
+             <h4 className="text-sm font-bold text-slate-800 dark:text-white">Importing Householders...</h4>
+          </div>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1.5 overflow-hidden">
+            <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
+          </div>
+          <div className="flex justify-between text-[10px] font-bold text-slate-400">
+            <span>{Math.round(importJob.totalRows ? (importJob.processedRows / importJob.totalRows) * 100 : 0)}%</span>
+            <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
           </div>
         </div>
       )}
@@ -203,12 +267,12 @@ export default function Householders() {
           </div>
           <div>
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Excel File</label>
-            <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors" />
+            <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-primary file:text-white dark:file:text-surface hover:file:opacity-90 file:shadow-lg file:shadow-primary/20 file:transition-all file:cursor-pointer cursor-pointer" />
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Select an .xlsx file containing householders data.</p>
           </div>
           <div className="flex items-center gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button onClick={() => setImportModalOpen(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold transition-all cursor-pointer">Cancel</button>
-            <button onClick={handleImportSubmit} className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer">Import</button>
+            <button onClick={handleImportSubmit} className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md hover:opacity-90 transition-all cursor-pointer">Import</button>
           </div>
         </div>
       </Modal>

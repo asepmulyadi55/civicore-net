@@ -197,7 +197,8 @@ export default function Blocks() {
   const [modal, setModal] = useState({ open: false, data: null });
   const [confirm, setConfirm] = useState({ open: false, type: 'delete', item: null, loading: false });
   const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState({ open: false, success: true, message: '' });
+  const [importJob, setImportJob] = useState<any>(null);
+  const [importResult, setImportResult] = useState({ open: false, success: true, title: '', message: '' });
   const fileInputRef = useRef(null);
   const token = localStorage.getItem('admin_token');
   if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -219,6 +220,27 @@ export default function Blocks() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  useEffect(() => {
+    let interval: any;
+    if (importJob && (importJob.status === 'Pending' || importJob.status === 'Processing')) {
+      interval = setInterval(async () => {
+        try {
+          const res = await axios.get(`/api/blocks/import-status/${importJob.jobId}`);
+          setImportJob(res.data);
+          if (res.data.status === 'Completed') {
+            setImporting(false);
+            setImportResult({ open: true, success: true, title: 'Import Successful', message: res.data.message || 'Import completed!' });
+            fetchData();
+          } else if (res.data.status === 'Failed') {
+            setImporting(false);
+            setImportResult({ open: true, success: false, title: 'Import Failed', message: res.data.message || 'Import failed.' });
+          }
+        } catch (err) { }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [importJob, fetchData]);
+
   const doDelete = async () => {
     setConfirm(c => ({ ...c, loading: true }));
     try {
@@ -231,7 +253,11 @@ export default function Blocks() {
       fetchData(); 
       setConfirm({ open: false, type: 'delete', item: null, loading: false }); 
     }
-    catch { setConfirm(c => ({ ...c, loading: false })); }
+    catch (err: any) { 
+      setConfirm(c => ({ ...c, loading: false, open: false })); 
+      setImportResult({ open: true, success: false, title: 'Delete Failed', message: err.response?.data?.message || 'Delete failed.' });
+      fetchData();
+    }
   };
 
   const handleImportExcel = async (e) => {
@@ -246,12 +272,17 @@ export default function Blocks() {
       const res = await axios.post('/api/blocks/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setImportResult({ open: true, success: true, message: res.data.message || 'Import successful!' });
-      fetchData();
-    } catch (err) {
-      setImportResult({ open: true, success: false, message: err.response?.data?.message || 'Failed to import Excel file.' });
-    } finally {
+      if (res.status === 202 && res.data.jobId) {
+        setImportJob({ jobId: res.data.jobId, status: 'Pending', totalRows: 0, processedRows: 0, message: '' });
+      } else {
+        setImportResult({ open: true, success: true, title: 'Import Successful', message: res.data.message || 'Import successful!' });
+        setImporting(false);
+        fetchData();
+      }
+    } catch (err: any) {
       setImporting(false);
+      setImportResult({ open: true, success: false, title: 'Import Failed', message: err.response?.data?.message || 'Import failed.' });
+    } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -268,20 +299,57 @@ export default function Blocks() {
     <AdminLayout title="Blocks">
       {importing && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
             <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Importing Data...</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Please wait while we process the Excel file.</p>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Importing Data...</h3>
+            
+            {importJob ? (
+              <div className="w-full">
+                <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
+                  <span>Progress</span>
+                  <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 overflow-hidden border border-slate-200 dark:border-slate-700">
+                  <div className="bg-primary h-3 rounded-full transition-all duration-300" 
+                       style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
+                </div>
+                <p className="text-xs text-slate-400 text-center">{importJob.status}...</p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Uploading file to server...</p>
+            )}
+            
+            <button onClick={() => setImporting(false)} className="mt-6 px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer">Run in Background</button>
+          </div>
+        </div>
+      )}
+
+      {!importing && importJob && (importJob.status === 'Pending' || importJob.status === 'Processing') && (
+        <div 
+          className="fixed bottom-6 right-6 z-[90] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl shadow-primary/10 rounded-2xl p-4 w-80 cursor-pointer transition-all hover:-translate-y-1" 
+          onClick={() => setImporting(true)}
+          title="Click to view details"
+        >
+          <div className="flex items-center gap-3 mb-3">
+             <span className="material-icons text-primary animate-spin text-xl">autorenew</span>
+             <h4 className="text-sm font-bold text-slate-800 dark:text-white">Importing Blocks...</h4>
+          </div>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1.5 overflow-hidden">
+            <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
+          </div>
+          <div className="flex justify-between text-[10px] font-bold text-slate-400">
+            <span>{Math.round(importJob.totalRows ? (importJob.processedRows / importJob.totalRows) * 100 : 0)}%</span>
+            <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
           </div>
         </div>
       )}
       
-      <Modal open={importResult.open} onClose={() => setImportResult(prev => ({ ...prev, open: false }))} title={importResult.success ? 'Import Successful' : 'Import Failed'} size="sm">
+      <Modal open={importResult.open} onClose={() => setImportResult(prev => ({ ...prev, open: false }))} title={importResult.title} size="sm">
         <div className="flex flex-col items-center pt-2 pb-4 text-center">
           <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${importResult.success ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600'}`}>
             <span className="material-icons text-3xl">{importResult.success ? 'check_circle' : 'error'}</span>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{importResult.message}</p>
+          <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line text-center">{importResult.message}</p>
           <button onClick={() => setImportResult(prev => ({ ...prev, open: false }))} className="mt-6 px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold w-full transition-all cursor-pointer">Close</button>
         </div>
       </Modal>

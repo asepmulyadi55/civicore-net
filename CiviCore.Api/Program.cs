@@ -27,6 +27,7 @@ builder.Services.AddSwaggerGen(c =>
     c.CustomSchemaIds(type => type.FullName);
 });
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<ImportJobTracker>();
 
 // Rate Limiting Setup
 builder.Services.AddRateLimiter(options =>

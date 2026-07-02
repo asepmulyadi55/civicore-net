@@ -28,8 +28,11 @@ function Flash({ message, type = 'success' }) {
   );
 }
 
+import { useTranslation } from 'react-i18next';
+
 // ── Profile Tab ───────────────────────────────────────────────────────────
 function ProfileTab({ flash, setFlash }) {
+  const { i18n } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [name, setName] = useState('');
   const [language, setLanguage] = useState('en');
@@ -64,6 +67,17 @@ function ProfileTab({ flash, setFlash }) {
       formData.append('language', language);
       if (avatarFile) formData.append('avatar', avatarFile);
       await axios.put('/api/settings/profile', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      
+      const userStr = localStorage.getItem('admin_user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        user.language = language;
+        user.name = name;
+        localStorage.setItem('admin_user', JSON.stringify(user));
+      }
+
+      i18n.changeLanguage(language);
+      
       setFlash({ message: 'Profile updated successfully.', type: 'success' });
     } catch (err) {
       setFlash({ message: err.response?.data?.message || 'Failed to update profile.', type: 'error' });

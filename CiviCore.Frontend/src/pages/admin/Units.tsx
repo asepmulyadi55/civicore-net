@@ -83,6 +83,7 @@ export default function Units() {
   const [modal, setModal] = useState({ open: false, data: null });
   const [confirm, setConfirm] = useState({ open: false, type: null, item: null, loading: false });
   const [selected, setSelected] = useState([]);
+  const [resultModal, setResultModal] = useState({ open: false, success: true, title: '', message: '' });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -111,7 +112,11 @@ export default function Units() {
       fetchData(); 
       setConfirm({ open: false, type: null, item: null, loading: false }); 
     }
-    catch { setConfirm(c => ({ ...c, loading: false })); }
+    catch (err: any) { 
+      setConfirm(c => ({ ...c, loading: false, open: false })); 
+      setResultModal({ open: true, success: false, title: 'Delete Failed', message: err.response?.data?.message || 'Delete failed.' });
+      fetchData();
+    }
   };
 
   const filtered = units.filter(u => !search || (u.unitNumber || u.unit_number)?.toLowerCase().includes(search.toLowerCase()));
@@ -241,6 +246,20 @@ export default function Units() {
           </div>
         </>
       )}
+
+      <Modal open={resultModal.open} onClose={() => setResultModal({ ...resultModal, open: false })} title={resultModal.title} size="sm">
+        <div className="p-4 text-center">
+          <span className={`material-icons text-5xl mb-4 ${resultModal.success ? 'text-green-500' : 'text-rose-500'}`}>
+            {resultModal.success ? 'check_circle' : 'error'}
+          </span>
+          <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line text-center">{resultModal.message}</p>
+          <div className="mt-6">
+            <button onClick={() => setResultModal({ ...resultModal, open: false })} className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg transition-colors cursor-pointer">
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
     </AdminLayout>
   );
 }

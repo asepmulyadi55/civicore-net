@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './admin.css'
 import './bootstrap'
 import axios from 'axios'
+import './i18n'
 import Router from './Router'
 
 axios.interceptors.response.use(

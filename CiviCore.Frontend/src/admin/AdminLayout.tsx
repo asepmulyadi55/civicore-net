@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import useDarkMode from './useDarkMode';
 import axios from 'axios';
 
@@ -76,6 +77,7 @@ const NAV_GROUPS = [
 ];
 
 function NavItem({ item, isActive }) {
+  const { t } = useTranslation();
   return (
     <Link
       to={item.path}
@@ -86,12 +88,13 @@ function NavItem({ item, isActive }) {
       }`}
     >
       <span className="material-icons text-[20px]">{item.icon}</span>
-      <span>{item.label}</span>
+      <span>{t(`sidebar.${item.key}`, item.label)}</span>
     </Link>
   );
 }
 
 function NavGroup({ group, activePath, userRole }) {
+  const { t } = useTranslation();
   // Filter items based on user role
   const normalizedRole = (userRole || '').toLowerCase();
   const visibleItems = group.items.filter(i => i.roles.includes(normalizedRole));
@@ -100,6 +103,9 @@ function NavGroup({ group, activePath, userRole }) {
 
   const isGroupActive = visibleItems.some(i => activePath.startsWith(i.path));
   const [open, setOpen] = useState(isGroupActive);
+  
+  const groupKey = group.label ? group.label.toLowerCase().replace(/ /g, '') : null;
+  const translatedLabel = groupKey ? t(`sidebar.${groupKey}`, group.label) : '';
 
   if (!group.label) {
     return (
@@ -120,7 +126,7 @@ function NavGroup({ group, activePath, userRole }) {
         }`}
       >
         <span className="material-icons text-[20px]">{group.icon}</span>
-        <span className="flex-1 text-left">{group.label}</span>
+        <span className="flex-1 text-left">{translatedLabel}</span>
         <span className="material-icons text-[18px] opacity-60 transition-transform duration-200" style={{ transform: open ? 'rotate(180deg)' : '' }}>
           expand_more
         </span>
@@ -137,12 +143,19 @@ function NavGroup({ group, activePath, userRole }) {
 }
 
 export default function AdminLayout({ children, title, subtitle }) {
+  const { i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [dark, toggleDark] = useDarkMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const userStr = localStorage.getItem('admin_user');
   const user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
+
+  React.useEffect(() => {
+    if (user.language && i18n.language !== user.language) {
+      i18n.changeLanguage(user.language);
+    }
+  }, [user.language, i18n]);
 
   const handleLogout = async () => {
     try { await axios.post('/api/auth/logout'); } catch {}

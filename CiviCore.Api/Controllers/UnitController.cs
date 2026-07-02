@@ -21,7 +21,7 @@ public class UnitController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var units = await _context.Set<Unit>().ToListAsync();
+        var units = await _context.Set<Unit>().OrderBy(u => u.UnitNumber.Length).ThenBy(u => u.UnitNumber).ToListAsync();
         return Ok(units);
     }
 
@@ -61,6 +61,9 @@ public class UnitController : ControllerBase
         var unit = await _context.Set<Unit>().FindAsync(id);
         if (unit == null) return NotFound();
 
+        bool hasHouseholders = await _context.Set<Householder>().AnyAsync(h => h.UnitId == id);
+        if (hasHouseholders) return BadRequest(new { message = "Cannot delete unit as it is currently assigned to a householder." });
+
         _context.Set<Unit>().Remove(unit);
         await _context.SaveChangesAsync();
         return NoContent();
@@ -72,9 +75,33 @@ public class UnitController : ControllerBase
     public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteRequest request)
     {
         if (request.Ids == null || !request.Ids.Any()) return BadRequest();
+        
         var units = await _context.Set<Unit>().Where(u => request.Ids.Contains(u.Id)).ToListAsync();
-        _context.Set<Unit>().RemoveRange(units);
+        
+        int deletedCount = 0;
+        List<string> failedUnits = new List<string>();
+
+        foreach (var unit in units)
+        {
+            bool hasHouseholders = await _context.Set<Householder>().AnyAsync(h => h.UnitId == unit.Id);
+            if (hasHouseholders)
+            {
+                failedUnits.Add(unit.UnitNumber);
+            }
+            else
+            {
+                _context.Set<Unit>().Remove(unit);
+                deletedCount++;
+            }
+        }
+
         await _context.SaveChangesAsync();
+
+        if (failedUnits.Any())
+        {
+            return BadRequest(new { message = $"Successfully deleted {deletedCount} units. Failed to delete units ({string.Join(", ", failedUnits)}) because they still have related householders." });
+        }
+
         return NoContent();
     }
 }

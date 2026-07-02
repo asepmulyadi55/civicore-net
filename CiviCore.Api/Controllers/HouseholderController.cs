@@ -5,6 +5,8 @@ using CiviCore.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using CiviCore.Api.Services;
 using ClosedXML.Excel;
+using Microsoft.Extensions.DependencyInjection;
+using CiviCore.Api.Models;
 
 namespace CiviCore.Api.Controllers;
 
@@ -52,7 +54,7 @@ public class HouseholderController : ControllerBase
         var last_page = (int)Math.Ceiling(total / (double)per_page);
 
         var householders = await query
-            .OrderByDescending(h => h.Id)
+            .OrderBy(h => h.Fullname)
             .Skip((page - 1) * per_page)
             .Take(per_page)
             .ToListAsync();
@@ -195,8 +197,20 @@ public class HouseholderController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("import-status/{jobId}")]
+    public IActionResult GetImportStatus(Guid jobId, [FromServices] ImportJobTracker tracker)
+    {
+        var job = tracker.GetJob(jobId);
+        if (job == null) return NotFound(new { message = "Job not found." });
+        return Ok(job);
+    }
+
     [HttpPost("import")]
-    public async Task<IActionResult> ImportExcel([FromForm] IFormFile excel_file, [FromForm] int year = 2026)
+    public async Task<IActionResult> ImportExcel(
+        [FromForm] IFormFile excel_file, 
+        [FromForm] int year = 2026,
+        [FromServices] ImportJobTracker? tracker = null,
+        [FromServices] IServiceScopeFactory? scopeFactory = null)
     {
         if (excel_file == null || excel_file.Length == 0)
             return BadRequest(new { message = "Please choose an Excel file to upload." });
@@ -204,107 +218,147 @@ public class HouseholderController : ControllerBase
         if (year < 2020 || year > 2035)
             return BadRequest(new { message = "Year must be between 2020 and 2035." });
 
-        using var stream = new MemoryStream();
-        await excel_file.CopyToAsync(stream);
-        using var workbook = new XLWorkbook(stream);
-        var worksheet = workbook.Worksheet(1);
-        var rowCount = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+        if (tracker == null || scopeFactory == null)
+            return BadRequest(new { message = "Services not configured for background import." });
 
-        int householdersCreated = 0;
-        int householdersSkipped = 0;
-        int feesCreated = 0;
-
-        var effectiveFrom = new DateTime(year, 1, 1);
-        var blockCache = new Dictionary<string, Block>();
-        var unitCache = new Dictionary<string, Unit>();
-
-        string currentBlock = "";
-
-        for (int row = 2; row <= rowCount; row++)
+        var tempFile = Path.GetTempFileName();
+        using (var stream = new FileStream(tempFile, FileMode.Create))
         {
-            var blockLetter = (worksheet.Cell(row, 1).Value.ToString() ?? "").Trim().ToUpper();
-            if (!string.IsNullOrEmpty(blockLetter))
-            {
-                currentBlock = blockLetter;
-            }
-            else
-            {
-                blockLetter = currentBlock;
-            }
-
-            var unitNum = (worksheet.Cell(row, 2).Value.ToString() ?? "").Trim();
-            var name = (worksheet.Cell(row, 3).Value.ToString() ?? "").Trim();
-            var rawStatus = System.Text.RegularExpressions.Regex.Replace(
-                (worksheet.Cell(row, 4).Value.ToString() ?? "").Trim().ToLower(),
-                @"\s+", " ");
-
-            if (string.IsNullOrEmpty(blockLetter) || string.IsNullOrEmpty(unitNum) || string.IsNullOrEmpty(name)) continue;
-            
-            var skipStatuses = new[] { "fasum", "fasilitasumum", "developer" };
-            if (skipStatuses.Contains(rawStatus)) continue;
-            
-            if (!blockLetter.All(char.IsLetter)) continue;
-
-            if (!blockCache.ContainsKey(blockLetter))
-            {
-                var b = await _context.Set<Block>().FirstOrDefaultAsync(x => x.Name == blockLetter);
-                if (b == null) continue;
-                blockCache[blockLetter] = b;
-            }
-            var block = blockCache[blockLetter];
-
-            string unitCacheKey = $"{block.Id}_{unitNum}";
-            if (!unitCache.ContainsKey(unitCacheKey))
-            {
-                var u = await _context.Set<Unit>().FirstOrDefaultAsync(x => x.BlockId == block.Id && x.UnitNumber == unitNum);
-                if (u == null) continue;
-                unitCache[unitCacheKey] = u;
-            }
-            var unit = unitCache[unitCacheKey];
-
-            var householder = await _context.Set<Householder>().FirstOrDefaultAsync(h => h.UnitId == unit.Id);
-            if (householder == null)
-            {
-                householder = new Householder
-                {
-                    UnitId = unit.Id,
-                    BlockId = block.Id,
-                    Fullname = name,
-                    IsActive = true
-                };
-                _context.Set<Householder>().Add(householder);
-                await _context.SaveChangesAsync();
-                householdersCreated++;
-            }
-            else
-            {
-                householdersSkipped++;
-            }
-
-            var feeAmountStr = (worksheet.Cell(row, 5).Value.ToString() ?? "").Trim();
-            if (decimal.TryParse(feeAmountStr, out decimal feeAmount) && feeAmount > 0)
-            {
-                var feeExists = await _context.Set<FeeHistory>()
-                    .AnyAsync(f => f.HouseholderId == householder.Id && f.EffectiveFrom == effectiveFrom);
-                
-                if (!feeExists)
-                {
-                    var fee = new FeeHistory
-                    {
-                        HouseholderId = householder.Id,
-                        Amount = feeAmount,
-                        EffectiveFrom = effectiveFrom,
-                        Notes = $"Imported from Excel ({year})"
-                    };
-                    _context.Set<FeeHistory>().Add(fee);
-                    await _context.SaveChangesAsync();
-                    feesCreated++;
-                }
-            }
+            await excel_file.CopyToAsync(stream);
         }
 
-        var summary = $"Import complete — {householdersCreated} householder(s) created, {householdersSkipped} already existed | {feesCreated} fee record(s) created.";
-        return Ok(new { message = summary });
+        var job = tracker.CreateJob();
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                job.Status = "Processing";
+
+                using var workbookStream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var workbook = new XLWorkbook(workbookStream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+                job.TotalRows = rowCount > 1 ? rowCount - 1 : 0;
+
+                int householdersCreated = 0;
+                int householdersSkipped = 0;
+                int feesCreated = 0;
+
+                var effectiveFrom = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                
+                var allBlocks = await dbContext.Set<Block>().ToListAsync();
+                var blockCache = allBlocks.ToDictionary(b => b.Name, StringComparer.OrdinalIgnoreCase);
+                
+                var allUnits = await dbContext.Set<Unit>().ToListAsync();
+                var unitCache = allUnits.ToDictionary(u => $"{u.BlockId}_{u.UnitNumber}");
+                
+                var allHouseholders = await dbContext.Set<Householder>().ToListAsync();
+                var householderCache = allHouseholders.ToDictionary(h => h.UnitId);
+                
+                var allFees = await dbContext.Set<FeeHistory>().Where(f => f.EffectiveFrom == effectiveFrom).ToListAsync();
+                var feeCache = allFees.ToDictionary(f => f.HouseholderId);
+
+                string currentBlock = "";
+                var newHouseholders = new List<Householder>();
+                var newFees = new List<FeeHistory>();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    job.ProcessedRows = row - 1;
+
+                    var blockLetter = worksheet.Cell(row, 1).GetString().Trim().ToUpper();
+                    if (!string.IsNullOrEmpty(blockLetter))
+                        currentBlock = blockLetter;
+                    else
+                        blockLetter = currentBlock;
+
+                    var unitNum = worksheet.Cell(row, 2).GetString().Trim();
+                    var name = worksheet.Cell(row, 3).GetString().Trim();
+                    var rawStatus = System.Text.RegularExpressions.Regex.Replace(
+                        worksheet.Cell(row, 4).GetString().Trim().ToLower(),
+                        @"\s+", " ");
+
+                    if (string.IsNullOrEmpty(blockLetter) || string.IsNullOrEmpty(unitNum) || string.IsNullOrEmpty(name)) continue;
+                    
+                    var skipStatuses = new[] { "fasum", "fasilitasumum", "developer" };
+                    if (skipStatuses.Contains(rawStatus)) continue;
+                    
+                    if (!blockLetter.All(char.IsLetter)) continue;
+
+                    if (!blockCache.TryGetValue(blockLetter, out var block)) continue;
+                    
+                    string unitCacheKey = $"{block.Id}_{unitNum}";
+                    if (!unitCache.TryGetValue(unitCacheKey, out var unit)) continue;
+
+                    if (!householderCache.TryGetValue(unit.Id, out var householder))
+                    {
+                        householder = new Householder
+                        {
+                            UnitId = unit.Id,
+                            BlockId = block.Id,
+                            Fullname = name,
+                            IsActive = true
+                        };
+                        newHouseholders.Add(householder);
+                        householderCache[unit.Id] = householder;
+                        householdersCreated++;
+                    }
+                    else
+                    {
+                        householdersSkipped++;
+                    }
+
+                    decimal feeAmount = 0;
+                    if (!worksheet.Cell(row, 5).TryGetValue<decimal>(out feeAmount))
+                    {
+                        decimal.TryParse(worksheet.Cell(row, 5).GetString().Trim(), out feeAmount);
+                    }
+                    
+                    if (feeAmount > 0)
+                    {
+                        if (!feeCache.ContainsKey(householder.Id))
+                        {
+                            var fee = new FeeHistory
+                            {
+                                Householder = householder,
+                                Amount = feeAmount,
+                                EffectiveFrom = effectiveFrom,
+                                Notes = $"Imported from Excel ({year})"
+                            };
+                            newFees.Add(fee);
+                            feeCache[householder.Id] = fee;
+                            feesCreated++;
+                        }
+                    }
+                }
+
+                if (newHouseholders.Any()) dbContext.Set<Householder>().AddRange(newHouseholders);
+                if (newFees.Any()) dbContext.Set<FeeHistory>().AddRange(newFees);
+                
+                await dbContext.SaveChangesAsync();
+
+                job.Status = "Completed";
+                job.Message = $"Import complete — {householdersCreated} householder(s) created, {householdersSkipped} already existed | {feesCreated} fee record(s) created.";
+            }
+            catch (Exception ex)
+            {
+                job.Status = "Failed";
+                job.Message = "Error processing Excel file: " + ex.Message;
+            }
+            finally
+            {
+                if (System.IO.File.Exists(tempFile))
+                {
+                    try { System.IO.File.Delete(tempFile); } catch { }
+                }
+            }
+        });
+
+        return Accepted(new { jobId = job.JobId });
     }
 
     [HttpPatch("{id}/deactivate")]
