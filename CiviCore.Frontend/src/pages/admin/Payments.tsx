@@ -43,7 +43,7 @@ function ReviewModal({ open, onClose, payment, onApprove, onReject }) {
     <Modal open={open} onClose={onClose} title={payment.status === 'pending' ? "Review Payment" : "Payment Details"} size="md">
       <div className="space-y-4">
         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-2 text-sm">
-          <div className="flex justify-between"><span className="text-slate-500">Resident</span><span className="font-semibold text-slate-900 dark:text-white">{payment.householderName || '—'}</span></div>
+          <div className="flex justify-between"><span className="text-slate-500">Resident</span><span className="font-semibold text-slate-900 dark:text-white">{payment.householderName || '—'} {!payment.householderId && <span className="text-xs text-rose-500 ml-1">(Deleted)</span>}</span></div>
           <div className="flex justify-between"><span className="text-slate-500">Amount</span><span className="font-bold text-primary">Rp {(payment.amount || 0).toLocaleString('id-ID')}</span></div>
           <div className="flex justify-between"><span className="text-slate-500">Month</span><span className="text-slate-900 dark:text-white">{payment.paymentMonth ? new Date(payment.paymentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}</span></div>
           {payment.monthCount > 1 && <div className="flex justify-between"><span className="text-slate-500">Months</span><span className="font-semibold text-slate-900 dark:text-white">{payment.monthCount} months</span></div>}
@@ -333,7 +333,9 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
                            setSearchQuery('');
                          }}
                          className={`px-4 py-2.5 cursor-pointer border-b border-slate-100 dark:border-white/5 last:border-0 transition-colors flex items-center ${form.householderId === h.id ? 'bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}>
-                         <span className="font-bold text-slate-900 dark:text-white whitespace-nowrap overflow-hidden text-ellipsis mr-2">{h.fullname}</span>
+                         <div className="font-bold text-slate-900 dark:text-white whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]">
+                            {h.fullname || '—'} {!h.id && <span className="text-[10px] text-rose-500 ml-1 px-1.5 py-0.5 bg-rose-100 dark:bg-rose-900/30 rounded font-bold uppercase">(Deleted)</span>}
+                         </div>
                          <span className="text-slate-500 dark:text-slate-400 text-[13px] whitespace-nowrap">— {h.block?.name || ''} Unit {h.unit?.unitNumber || h.unit_number || '?'}</span>
                        </div>
                      ))
@@ -505,6 +507,11 @@ export default function Payments() {
   const [editItem, setEditItem] = useState(null);
   const [addModal, setAddModal] = useState(false);
   const [confirm, setConfirm] = useState({ open: false, item: null, loading: false });
+  const [importing, setImporting] = useState(false);
+  const [importJob, setImportJob] = useState<any>(null);
+  const [importResult, setImportResult] = useState({ open: false, success: true, title: '', message: '' });
+  const fileInputRef = useRef(null);
+  const [importYear, setImportYear] = useState(new Date().getFullYear());
 
   const token = localStorage.getItem('admin_token');
   if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -540,6 +547,55 @@ export default function Payments() {
   useEffect(() => {
     axios.get('/api/payments/blocks').then(res => setBlocks(res.data || [])).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    let interval: any;
+    if (importJob && (importJob.status === 'Pending' || importJob.status === 'Processing')) {
+      interval = setInterval(async () => {
+        try {
+          const res = await axios.get(`/api/payments/import-status/${importJob.jobId}`);
+          setImportJob(res.data);
+          if (res.data.status === 'Completed') {
+            setImporting(false);
+            setImportResult({ open: true, success: true, title: 'Import Successful', message: res.data.message || 'Import completed!' });
+            fetchData();
+          } else if (res.data.status === 'Failed') {
+            setImporting(false);
+            setImportResult({ open: true, success: false, title: 'Import Failed', message: res.data.message || 'Import failed.' });
+          }
+        } catch (err) { }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [importJob, fetchData]);
+
+  const handleImportExcel = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const formData = new FormData();
+    formData.append('excel_file', file);
+    formData.append('year', importYear.toString());
+
+    try {
+      const res = await axios.post('/api/payments/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.status === 202 && res.data.jobId) {
+        setImportJob({ jobId: res.data.jobId, status: 'Pending', totalRows: 0, processedRows: 0, message: '' });
+      } else {
+        setImportResult({ open: true, success: true, title: 'Import Successful', message: res.data.message || 'Import successful!' });
+        setImporting(false);
+        fetchData();
+      }
+    } catch (err: any) {
+      setImporting(false);
+      setImportResult({ open: true, success: false, title: 'Import Failed', message: err.response?.data?.message || 'Import failed.' });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const setFilter = (k, v) => setFilters(p => ({ ...p, [k]: v, page: 1 }));
 
@@ -602,12 +658,76 @@ export default function Payments() {
         title="Payment Records" 
         subtitle="Manage and review resident payment submissions" 
         actions={
-          <button onClick={() => setAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">add</span> Record Payment
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => fileInputRef.current?.click()} disabled={importing}
+              className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
+              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : 'Import Excel'}
+            </button>
+            <input type="file" ref={fileInputRef} onChange={handleImportExcel} className="hidden" accept=".xlsx,.xls" />
+            <button onClick={() => setAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+              <span className="material-icons text-sm">add</span> Record Payment
+            </button>
+          </div>
         }
       />
+
+      {importing && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
+            <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Importing Payments...</h3>
+            
+            {importJob ? (
+              <div className="w-full">
+                <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
+                  <span>Progress</span>
+                  <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 overflow-hidden border border-slate-200 dark:border-slate-700">
+                  <div className="bg-primary h-3 rounded-full transition-all duration-300" 
+                       style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
+                </div>
+                <p className="text-xs text-slate-400 text-center">{importJob.status}...</p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Uploading file to server...</p>
+            )}
+            
+            <button onClick={() => setImporting(false)} className="mt-6 px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer">Run in Background</button>
+          </div>
+        </div>
+      )}
+
+      {!importing && importJob && (importJob.status === 'Pending' || importJob.status === 'Processing') && (
+        <div 
+          className="fixed bottom-6 right-6 z-[90] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl shadow-primary/10 rounded-2xl p-4 w-80 cursor-pointer transition-all hover:-translate-y-1" 
+          onClick={() => setImporting(true)}
+          title="Click to view details"
+        >
+          <div className="flex items-center gap-3 mb-3">
+             <span className="material-icons text-primary animate-spin text-xl">autorenew</span>
+             <h4 className="text-sm font-bold text-slate-800 dark:text-white">Importing Payments...</h4>
+          </div>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1.5 overflow-hidden">
+            <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
+          </div>
+          <div className="flex justify-between text-[10px] font-bold text-slate-400">
+            <span>{Math.round(importJob.totalRows ? (importJob.processedRows / importJob.totalRows) * 100 : 0)}%</span>
+            <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
+          </div>
+        </div>
+      )}
+
+      <Modal open={importResult.open} onClose={() => setImportResult(prev => ({ ...prev, open: false }))} title={importResult.title} size="sm">
+        <div className="flex flex-col items-center pt-2 pb-4 text-center">
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${importResult.success ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600'}`}>
+            <span className="material-icons text-3xl">{importResult.success ? 'check_circle' : 'error'}</span>
+          </div>
+          <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line text-center">{importResult.message}</p>
+          <button onClick={() => setImportResult(prev => ({ ...prev, open: false }))} className="mt-6 px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold w-full transition-all cursor-pointer">Close</button>
+        </div>
+      </Modal>
 
       {/* Enhanced Filter Bar matching Laravel */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 mb-4">

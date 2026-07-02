@@ -260,7 +260,7 @@ public class HouseholderController : ControllerBase
                 var householderCache = allHouseholders.ToDictionary(h => h.UnitId);
                 
                 var allFees = await dbContext.Set<FeeHistory>().Where(f => f.EffectiveFrom == effectiveFrom).ToListAsync();
-                var feeCache = allFees.ToDictionary(f => f.HouseholderId);
+                var feeCache = allFees.Where(f => f.HouseholderId.HasValue).ToDictionary(f => f.HouseholderId!.Value);
 
                 string currentBlock = "";
                 var newHouseholders = new List<Householder>();

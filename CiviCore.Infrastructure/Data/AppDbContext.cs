@@ -64,7 +64,19 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             .HasIndex(s => s.Key)
             .IsUnique();
 
-        // PaymentRecord approvals
+        // PaymentRecord approvals & relations
+        builder.Entity<PaymentRecord>()
+            .HasOne(p => p.Householder)
+            .WithMany(h => h.PaymentRecords)
+            .HasForeignKey(p => p.HouseholderId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<FeeHistory>()
+            .HasOne(f => f.Householder)
+            .WithMany(h => h.FeeHistories)
+            .HasForeignKey(f => f.HouseholderId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.Entity<PaymentRecord>()
             .HasOne(p => p.SubmittedBy)
             .WithMany()
