@@ -6,8 +6,10 @@ import {
   PageHeader, FilterBar, SearchInput, SelectFilter,
   TableWrapper, Th
 } from '../../admin/components/ui';
+import { useTranslation } from 'react-i18next';
 
 export default function Posyandu() {
+  const { t } = useTranslation();
   const [data, setData] = useState([]);
   const [stats, setStats] = useState({ gender: {}, categories: {} });
   const [loading, setLoading] = useState(true);
@@ -54,55 +56,55 @@ export default function Posyandu() {
   };
 
   const catLabels = {
-    baby: 'Bayi', toddler: 'Balita', child: 'Anak', teen: 'Remaja',
-    adult: 'Dewasa', elderly: 'Lansia', unknown: 'Unknown'
+    baby: t('posyandu.cat_baby'), toddler: t('posyandu.cat_toddler'), child: t('posyandu.cat_child'), teen: t('posyandu.cat_teen'),
+    adult: t('posyandu.cat_adult'), elderly: t('posyandu.cat_elderly'), unknown: t('posyandu.cat_unknown')
   };
 
   return (
-    <AdminLayout title="Posyandu">
-      <PageHeader title="Posyandu Data" description="Community health monitoring and age categorization." />
+    <AdminLayout title={t('posyandu.title')}>
+      <PageHeader title={t('posyandu.header_title')} description={t('posyandu.header_subtitle')} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
-          <p className="text-sm font-medium text-slate-500 mb-1">Total</p>
+          <p className="text-sm font-medium text-slate-500 mb-1">{t('posyandu.stat_total')}</p>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.gender.total || 0}</p>
         </div>
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
-          <p className="text-sm font-medium text-slate-500 mb-1">Male</p>
+          <p className="text-sm font-medium text-slate-500 mb-1">{t('posyandu.stat_male')}</p>
           <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.gender.male || 0}</p>
         </div>
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
-          <p className="text-sm font-medium text-slate-500 mb-1">Female</p>
+          <p className="text-sm font-medium text-slate-500 mb-1">{t('posyandu.stat_female')}</p>
           <p className="text-2xl font-bold text-pink-600 dark:text-pink-400">{stats.gender.female || 0}</p>
         </div>
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
-          <p className="text-sm font-medium text-slate-500 mb-1">Balita & Bayi</p>
+          <p className="text-sm font-medium text-slate-500 mb-1">{t('posyandu.stat_baby_toddler')}</p>
           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{(stats.categories.baby || 0) + (stats.categories.toddler || 0)}</p>
         </div>
       </div>
 
       <FilterBar>
-        <SearchInput value={filters.search} onChange={v => setFilters(p => ({ ...p, search: v }))} placeholder="Search name..." />
+        <SearchInput value={filters.search} onChange={v => setFilters(p => ({ ...p, search: v }))} placeholder={t('posyandu.search_placeholder')} />
         <SelectFilter value={filters.block_id} onChange={v => setFilters(p => ({ ...p, block_id: v }))}
-          options={blocks.map(b => ({ value: b.id, label: b.name }))} placeholder="All Blocks" />
+          options={blocks.map(b => ({ value: b.id, label: b.name }))} placeholder={t('posyandu.all_blocks')} />
         <SelectFilter value={filters.gender} onChange={v => setFilters(p => ({ ...p, gender: v }))}
-          options={[{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }]} placeholder="All Genders" />
+          options={[{ value: 'male', label: t('posyandu.stat_male') }, { value: 'female', label: t('posyandu.stat_female') }]} placeholder={t('posyandu.all_genders')} />
         <SelectFilter value={filters.category} onChange={v => setFilters(p => ({ ...p, category: v }))}
-          options={Object.entries(catLabels).map(([k, v]) => ({ value: k, label: v }))} placeholder="All Categories" />
+          options={Object.entries(catLabels).map(([k, v]) => ({ value: k, label: v }))} placeholder={t('posyandu.all_categories')} />
         <button onClick={() => setFilters({ search: '', block_id: '', category: '', gender: '' })}
           className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
-          <span className="material-icons text-sm">close</span> Clear
+          <span className="material-icons text-sm">close</span> {t('posyandu.btn_clear')}
         </button>
       </FilterBar>
 
       <TableWrapper loading={loading}>
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-800/50 border-y border-slate-100 dark:border-slate-700/50">
-              <Th>Name</Th>
-              <Th>Age</Th>
-              <Th>Category</Th>
-              <Th>Gender</Th>
-              <Th>Unit</Th>
+              <Th>{t('posyandu.th_name')}</Th>
+              <Th>{t('posyandu.th_age')}</Th>
+              <Th>{t('posyandu.th_category')}</Th>
+              <Th>{t('posyandu.th_gender')}</Th>
+              <Th>{t('posyandu.th_unit')}</Th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -110,7 +112,7 @@ export default function Posyandu() {
               <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="font-semibold text-slate-900 dark:text-white">{item.fullname}</div>
-                  <div className="text-xs text-slate-500">{item.relationship || 'Resident'}</div>
+                  <div className="text-xs text-slate-500">{item.relationship || t('posyandu.resident')}</div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="font-medium text-slate-700 dark:text-slate-300">{item.ageLabel}</div>
@@ -123,9 +125,9 @@ export default function Posyandu() {
                 </td>
                 <td className="px-6 py-4">
                   {item.gender === 'male' ? (
-                    <span className="text-blue-500 flex items-center gap-1 text-sm"><span className="material-icons text-[16px]">male</span> Male</span>
+                    <span className="text-blue-500 flex items-center gap-1 text-sm"><span className="material-icons text-[16px]">male</span> {t('posyandu.stat_male')}</span>
                   ) : item.gender === 'female' ? (
-                    <span className="text-pink-500 flex items-center gap-1 text-sm"><span className="material-icons text-[16px]">female</span> Female</span>
+                    <span className="text-pink-500 flex items-center gap-1 text-sm"><span className="material-icons text-[16px]">female</span> {t('posyandu.stat_female')}</span>
                   ) : '—'}
                 </td>
                 <td className="px-6 py-4">
@@ -136,7 +138,7 @@ export default function Posyandu() {
             ))}
             {data.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-slate-500">No records found.</td>
+                <td colSpan={5} className="px-6 py-12 text-center text-slate-500">{t('posyandu.empty_state')}</td>
               </tr>
             )}
           </tbody>

@@ -13,18 +13,20 @@ import {
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 function PaymentStatusBadge({ status }) {
+  const { t } = useTranslation();
   const map = {
     approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     pending:  'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     rejected: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
     unpaid:   'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
   };
-  const labels = { approved: 'Approved', pending: 'Pending', rejected: 'Rejected', unpaid: 'Unpaid' };
+  const labels = { approved: t('payments.badge_approved'), pending: t('payments.badge_pending'), rejected: t('payments.badge_rejected'), unpaid: t('payments.badge_unpaid') };
   const s = status?.toLowerCase() || 'unpaid';
   return <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${map[s] || map.unpaid}`}>{labels[s] || s}</span>;
 }
 
 function ReviewModal({ open, onClose, payment, onApprove, onReject }) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState('');
 
@@ -41,47 +43,47 @@ function ReviewModal({ open, onClose, payment, onApprove, onReject }) {
 
   if (!payment) return null;
   return (
-    <Modal open={open} onClose={onClose} title={payment.status === 'pending' ? "Review Payment" : "Payment Details"} size="md">
+    <Modal open={open} onClose={onClose} title={payment.status === 'pending' ? t('payments.modal_review') : t('payments.modal_details')} size="md">
       <div className="space-y-4">
         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl space-y-2 text-sm">
-          <div className="flex justify-between"><span className="text-slate-500">Resident</span><span className="font-semibold text-slate-900 dark:text-white">{payment.householderName || '—'} {!payment.householderId && <span className="text-xs text-rose-500 ml-1">(Deleted)</span>}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500">Amount</span><span className="font-bold text-primary">Rp {(payment.amount || 0).toLocaleString('id-ID')}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500">Month</span><span className="text-slate-900 dark:text-white">{payment.paymentMonth ? new Date(payment.paymentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}</span></div>
-          {payment.monthCount > 1 && <div className="flex justify-between"><span className="text-slate-500">Months</span><span className="font-semibold text-slate-900 dark:text-white">{payment.monthCount} months</span></div>}
-          {payment.notes && <div className="flex justify-between"><span className="text-slate-500">Notes</span><span className="text-right max-w-[200px] text-slate-900 dark:text-white">{payment.notes}</span></div>}
+          <div className="flex justify-between"><span className="text-slate-500">{t('payments.resident')}</span><span className="font-semibold text-slate-900 dark:text-white">{payment.householderName || '—'} {!payment.householderId && <span className="text-xs text-rose-500 ml-1">{t('payments.deleted')}</span>}</span></div>
+          <div className="flex justify-between"><span className="text-slate-500">{t('payments.amount')}</span><span className="font-bold text-primary">Rp {(payment.amount || 0).toLocaleString('id-ID')}</span></div>
+          <div className="flex justify-between"><span className="text-slate-500">{t('payments.month')}</span><span className="text-slate-900 dark:text-white">{payment.paymentMonth ? new Date(payment.paymentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}</span></div>
+          {payment.monthCount > 1 && <div className="flex justify-between"><span className="text-slate-500">{t('payments.month')}</span><span className="font-semibold text-slate-900 dark:text-white">{t('payments.months_count', { count: payment.monthCount })}</span></div>}
+          {payment.notes && <div className="flex justify-between"><span className="text-slate-500">{t('payments.notes')}</span><span className="text-right max-w-[200px] text-slate-900 dark:text-white">{payment.notes}</span></div>}
         </div>
         {payment.proofPath && (
           <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-            <p className="text-xs font-semibold text-slate-500 mb-2">Payment Proof</p>
+            <p className="text-xs font-semibold text-slate-500 mb-2">{t('payments.proof_title')}</p>
             {payment.proofPath.startsWith('/') || payment.proofPath.startsWith('http') ? (
               <SecureImage src={payment.proofPath} alt="Payment proof" className="rounded-lg max-h-48 object-contain w-full" />
             ) : (
-              <p className="text-xs text-rose-500 italic">Image unavailable (uploaded before migration).</p>
+              <p className="text-xs text-rose-500 italic">{t('payments.proof_unavailable')}</p>
             )}
           </div>
         )}
         {payment.status === 'pending' ? (
           <>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Rejection Reason (if rejecting)</label>
-              <textarea value={reason} onChange={e => setReason(e.target.value)} rows={2} placeholder="Enter reason for rejection..."
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('payments.rejection_reason')}</label>
+              <textarea value={reason} onChange={e => setReason(e.target.value)} rows={2} placeholder={t('payments.rejection_placeholder')}
                 className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
             </div>
             <div className="flex gap-3 pt-2">
-              <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+              <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">{t('payments.btn_cancel')}</button>
               <button onClick={() => handle('reject')} disabled={!!loading || reason.trim().length === 0}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-sm font-bold transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
-                {loading === 'reject' ? 'Rejecting...' : 'Reject'}
+                {loading === 'reject' ? t('payments.btn_rejecting') : t('payments.btn_reject')}
               </button>
               <button onClick={() => handle('approve')} disabled={!!loading}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow-sm transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
-                {loading === 'approve' ? 'Approving...' : 'Approve'}
+                {loading === 'approve' ? t('payments.btn_approving') : t('payments.btn_approve')}
               </button>
             </div>
           </>
         ) : (
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Close</button>
+            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">{t('payments.btn_close')}</button>
           </div>
         )}
       </div>
@@ -111,7 +113,7 @@ function CustomSelect({ label, value, onChange, options, disabled, icon }) {
         
         <div onClick={() => !disabled && setOpen(!open)} 
              className={`w-full ${icon ? 'pl-10' : 'pl-4'} pr-10 py-3 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-semibold text-slate-700 dark:text-white flex justify-between items-center transition-all ${disabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:border-primary/50'}`}>
-          <span className="truncate select-none">{selected ? selected.label : '— None —'}</span>
+          <span className="truncate select-none">{selected ? selected.label : (options.length && options[0].label === '— None —' ? options[0].label : '— None —')}</span>
           <span className={`material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none transition-transform ${open ? 'rotate-180' : ''}`}>expand_more</span>
         </div>
         
@@ -131,6 +133,7 @@ function CustomSelect({ label, value, onChange, options, disabled, icon }) {
 }
 
 function PaymentModal({ open, onClose, onSaved, editData = null }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ householderId: '', amount: 0, notes: '', year: new Date().getFullYear(), paymentMethodId: '' });
   const [householders, setHouseholders] = useState([]);
   const [blocks, setBlocks] = useState([]);
@@ -287,14 +290,14 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
   });
 
   return (
-    <Modal open={open} onClose={onClose} title={editData ? "Edit Payment" : "Record Payment"} subtitle="Select a householder to continue" size="lg">
+    <Modal open={open} onClose={onClose} title={editData ? t('payments.modal_edit') : t('payments.modal_record')} subtitle={t('payments.modal_subtitle')} size="lg">
       <div className="space-y-6 -m-2">
         {errors.general && <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded-lg mx-2">{errors.general}</div>}
         {editData && editData.status === 'rejected' && editData.rejectionReason && (
           <div className="p-4 mx-2 bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-800/50 rounded-xl flex items-start gap-3">
             <span className="material-icons text-rose-500 text-xl">error_outline</span>
             <div>
-              <h4 className="text-sm font-bold text-rose-700 dark:text-rose-400">Payment Rejected</h4>
+              <h4 className="text-sm font-bold text-rose-700 dark:text-rose-400">{t('payments.payment_rejected_title')}</h4>
               <p className="text-sm text-rose-600 dark:text-rose-500 mt-1">{editData.rejectionReason}</p>
             </div>
           </div>
@@ -303,12 +306,12 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-2">
           {/* Householder */}
           <div ref={dropdownRef}>
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">HOUSEHOLDER <span className="text-rose-500">*</span></label>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{t('payments.field_householder')} <span className="text-rose-500">*</span></label>
             <div className="relative">
                <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
                <input 
                  type="text"
-                 placeholder="Search householder name or unit..."
+                 placeholder={t('payments.search_placeholder')}
                  value={dropdownOpen ? searchQuery : (selectedResident ? `${selectedResident.fullname} — ${selectedResident.block?.name || ''} Unit ${selectedResident.unit?.unitNumber || selectedResident.unit_number || '?'}` : '')}
                  disabled={!!editData}
                  onChange={e => {
@@ -323,7 +326,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
                {dropdownOpen && (
                  <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden py-1">
                    {filteredHouseholders.length === 0 ? (
-                     <div className="p-4 text-center text-sm text-slate-500">No householder found.</div>
+                     <div className="p-4 text-center text-sm text-slate-500">{t('payments.no_householder')}</div>
                    ) : (
                      filteredHouseholders.map(h => (
                        <div key={h.id} 
@@ -335,7 +338,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
                          }}
                          className={`px-4 py-2.5 cursor-pointer border-b border-slate-100 dark:border-white/5 last:border-0 transition-colors flex items-center ${form.householderId === h.id ? 'bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}>
                          <div className="font-bold text-slate-900 dark:text-white whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]">
-                            {h.fullname || '—'} {!h.id && <span className="text-[10px] text-rose-500 ml-1 px-1.5 py-0.5 bg-rose-100 dark:bg-rose-900/30 rounded font-bold uppercase">(Deleted)</span>}
+                            {h.fullname || '—'} {!h.id && <span className="text-[10px] text-rose-500 ml-1 px-1.5 py-0.5 bg-rose-100 dark:bg-rose-900/30 rounded font-bold uppercase">{t('payments.deleted')}</span>}
                          </div>
                          <span className="text-slate-500 dark:text-slate-400 text-[13px] whitespace-nowrap">— {h.block?.name || ''} Unit {h.unit?.unitNumber || h.unit_number || '?'}</span>
                        </div>
@@ -348,7 +351,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
 
           {/* Year */}
           <CustomSelect 
-            label="YEAR" 
+            label={t('payments.field_year')} 
             icon="calendar_today"
             disabled={!!editData} 
             value={form.year} 
@@ -364,7 +367,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
               <span className="material-icons text-primary animate-spin">autorenew</span>
             </div>
           )}
-          <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">SELECT MONTHS ({form.year}) <span className="text-slate-400 dark:text-slate-500 normal-case lowercase font-medium tracking-normal">— select at least one</span></p>
+          <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">{t('payments.field_months', { year: form.year })} <span className="text-slate-400 dark:text-slate-500 normal-case lowercase font-medium tracking-normal">{t('payments.select_at_least_one')}</span></p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {MONTH_NAMES.map((name, idx) => {
               const m = idx + 1;
@@ -374,20 +377,20 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
               const isLocked = isApproved || (isPending && !editData);
               const sel = selectedMonths.has(m);
               
-              let statusLabel = sel ? 'Selected' : 'Unpaid';
+              let statusLabel = sel ? t('payments.month_selected') : t('payments.badge_unpaid');
               let btnClass = sel ? 'border-primary bg-primary/5 dark:bg-primary/10 cursor-pointer' : 'border-slate-200 dark:border-slate-800 hover:border-primary/50 cursor-pointer';
               let textClass = sel ? 'text-primary' : 'text-slate-400';
               
               if (isApproved) {
-                statusLabel = 'Approved';
+                statusLabel = t('payments.badge_approved');
                 btnClass = 'border-emerald-200 bg-emerald-50 dark:bg-emerald-900/10 dark:border-emerald-800/50 cursor-not-allowed opacity-70';
                 textClass = 'text-emerald-500';
               } else if (isPending && !sel && !editData) {
-                statusLabel = 'Pending';
+                statusLabel = t('payments.badge_pending');
                 btnClass = 'border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800/50 cursor-not-allowed opacity-70';
                 textClass = 'text-amber-500';
               } else if (status === 'rejected' && !sel) {
-                statusLabel = 'Rejected';
+                statusLabel = t('payments.badge_rejected');
                 btnClass = 'border-rose-200 bg-rose-50 dark:bg-rose-900/10 dark:border-rose-800/50 cursor-pointer hover:border-primary/50';
                 textClass = 'text-rose-500';
               }
@@ -408,19 +411,19 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
           {/* Payment Method */}
           {/* Payment Method */}
           <CustomSelect 
-            label="PAYMENT METHOD" 
+            label={t('payments.field_payment_method')} 
             icon="account_balance"
             value={form.paymentMethodId} 
             onChange={(val) => setForm(f => ({ ...f, paymentMethodId: val }))} 
             options={[
-              { value: '', label: '— None —' },
+              { value: '', label: t('payments.select_none') },
               ...paymentMethods.map(m => ({ value: m.id, label: m.name }))
             ]}
           />
 
           {/* Proof of Payment */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">PROOF OF PAYMENT <span className="text-slate-400 dark:text-slate-500 normal-case lowercase tracking-normal font-medium">optional</span></label>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{t('payments.field_proof')} <span className="text-slate-400 dark:text-slate-500 normal-case lowercase tracking-normal font-medium">{t('payments.optional')}</span></label>
             <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setProofFile(e.target.files?.[0] || null)} />
             <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors h-[104px] overflow-hidden relative group">
               {proofFile ? (
@@ -434,8 +437,8 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
               ) : (
                 <>
                   <span className="material-icons text-amber-500 mb-1.5 text-[24px]">cloud_upload</span>
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Click to upload receipt</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">PDF, JPG, PNG (MAX 5MB) · Rec: Clear scan</span>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t('payments.click_to_upload')}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">{t('payments.upload_hint')}</span>
                 </>
               )}
             </div>
@@ -443,49 +446,49 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
 
           {/* Status Info */}
           <div className="flex flex-col">
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">STATUS</label>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{t('payments.field_status')}</label>
             <div className="flex items-start gap-3 p-4 bg-amber-50/50 border border-amber-200 dark:bg-[#1B2236]/30 dark:border-amber-500/20 rounded-xl flex-1">
               <span className="material-icons text-amber-500 text-[20px] mt-0.5">hourglass_empty</span>
               <div>
-                <p className="text-sm font-bold text-amber-600 dark:text-amber-500">Pending (awaiting review)</p>
-                <p className="text-[11px] text-amber-600/70 dark:text-amber-500/70 font-medium mt-1 leading-relaxed">All payments require approval by an admin or treasurer.</p>
+                <p className="text-sm font-bold text-amber-600 dark:text-amber-500">{t('payments.status_pending_title')}</p>
+                <p className="text-[11px] text-amber-600/70 dark:text-amber-500/70 font-medium mt-1 leading-relaxed">{t('payments.status_pending_desc')}</p>
               </div>
             </div>
           </div>
 
           {/* Notes */}
           <div className="flex flex-col">
-            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">NOTES <span className="text-slate-400 dark:text-slate-500 normal-case lowercase tracking-normal font-medium">optional</span></label>
-            <textarea placeholder="Any additional notes..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full p-4 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-700 dark:text-white appearance-none outline-none focus:border-primary resize-none flex-1 transition-all min-h-[116px]"></textarea>
+            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{t('payments.field_notes')} <span className="text-slate-400 dark:text-slate-500 normal-case lowercase tracking-normal font-medium">{t('payments.optional')}</span></label>
+            <textarea placeholder={t('payments.notes_placeholder')} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full p-4 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-700 dark:text-white appearance-none outline-none focus:border-primary resize-none flex-1 transition-all min-h-[116px]"></textarea>
           </div>
         </div>
 
         {/* Amount */}
         <div className="border-t border-slate-100 dark:border-white/5 pt-6 px-2">
-          <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">AMOUNT PER MONTH (RP) <span className="text-rose-500">*</span></label>
+          <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{t('payments.field_amount')} <span className="text-rose-500">*</span></label>
           <div className="relative">
             <span className="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">payments</span>
             <input 
               type="text" 
               disabled 
               value={form.householderId ? form.amount.toLocaleString('id-ID') : ""} 
-              placeholder="Select a resident first" 
+              placeholder={t('payments.amount_placeholder')} 
               className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-[#1B2236]/40 border border-slate-200 dark:border-white/5 rounded-xl text-sm font-semibold text-slate-500 dark:text-slate-400 outline-none cursor-not-allowed transition-all" 
             />
           </div>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">Auto-filled from resident's current monthly fee.</p>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">{t('payments.amount_hint')}</p>
         </div>
 
         {/* Footer */}
         {editData && (
           <p className="text-[11px] text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 p-3 mx-2 rounded-lg mt-2">
-            <span className="font-bold">Note:</span> Saving changes will reset the payment status to <b>Pending</b> for re-review.
+            <span className="font-bold">{t('payments.note')}</span> <span dangerouslySetInnerHTML={{ __html: t('payments.save_note') }}></span>
           </p>
         )}
         <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-white/5 px-2 mt-4">
-          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">{t('payments.btn_cancel')}</button>
           <button onClick={handleSave} disabled={loading || !form.householderId || !form.amount || selectedMonths.size === 0} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-            <span className="material-icons text-sm">verified</span> {loading ? 'Saving...' : (editData ? 'Save Changes' : 'Confirm Payment')}
+            <span className="material-icons text-sm">verified</span> {loading ? t('payments.btn_saving') : (editData ? t('payments.btn_save') : t('payments.btn_confirm'))}
           </button>
         </div>
       </div>
@@ -628,20 +631,20 @@ export default function Payments() {
   }));
 
   const statCards = [
-    { label: 'Total Payments', value: stats?.total ?? 0, icon: 'receipt_long', iconBg: 'bg-primary/10', iconColor: 'text-primary' },
-    { label: 'Pending Review', value: stats?.pending ?? 0, icon: 'pending_actions', iconBg: 'bg-amber-100 dark:bg-amber-500/10', iconColor: 'text-amber-500' },
-    { label: 'Approved', value: stats?.approved ?? 0, icon: 'check_circle', iconBg: 'bg-emerald-100 dark:bg-emerald-500/10', iconColor: 'text-emerald-500' },
-    { label: 'Rejected', value: stats?.rejected ?? 0, icon: 'cancel', iconBg: 'bg-rose-100 dark:bg-rose-500/10', iconColor: 'text-rose-500' },
+    { label: t('payments.stat_total'), value: stats?.total ?? 0, icon: 'receipt_long', iconBg: 'bg-primary/10', iconColor: 'text-primary' },
+    { label: t('payments.stat_pending'), value: stats?.pending ?? 0, icon: 'pending_actions', iconBg: 'bg-amber-100 dark:bg-amber-500/10', iconColor: 'text-amber-500' },
+    { label: t('payments.stat_approved'), value: stats?.approved ?? 0, icon: 'check_circle', iconBg: 'bg-emerald-100 dark:bg-emerald-500/10', iconColor: 'text-emerald-500' },
+    { label: t('payments.stat_rejected'), value: stats?.rejected ?? 0, icon: 'cancel', iconBg: 'bg-rose-100 dark:bg-rose-500/10', iconColor: 'text-rose-500' },
   ];
 
   return (
-    <AdminLayout title="Payments">
+    <AdminLayout title={t('payments.title')}>
       <PaymentModal open={addModal || !!editItem} onClose={() => { setAddModal(false); setEditItem(null); }} editData={editItem} onSaved={fetchData} />
       <ReviewModal open={!!reviewItem} onClose={() => setReviewItem(null)} payment={reviewItem} onApprove={fetchData} />
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
-        title="Delete Payment?" message={`Delete this payment record? This <strong>cannot</strong> be undone.`}
-        confirmLabel="Yes, Delete" />
+        title={t('payments.confirm_delete_title')} message={t('payments.confirm_delete_msg')}
+        confirmLabel={t('payments.btn_delete')} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -663,12 +666,12 @@ export default function Payments() {
           <div className="flex gap-2">
             <button onClick={() => fileInputRef.current?.click()} disabled={importing}
               className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : t('payments.import_excel')}
+              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('payments.btn_importing') : t('payments.btn_import')}
             </button>
             <input type="file" ref={fileInputRef} onChange={handleImportExcel} className="hidden" accept=".xlsx,.xls" />
             <button onClick={() => setAddModal(true)}
               className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-              <span className="material-icons text-sm">add</span> {t('payments.record_payment')}
+              <span className="material-icons text-sm">add</span> {t('payments.btn_add')}
             </button>
           </div>
         }
@@ -678,13 +681,13 @@ export default function Payments() {
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
             <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Importing Payments...</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t('payments.import_title')}</h3>
             
             {importJob ? (
               <div className="w-full">
                 <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
-                  <span>Progress</span>
-                  <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
+                  <span>{t('payments.progress')}</span>
+                  <span>{t('payments.rows', { processed: importJob.processedRows, total: importJob.totalRows || '?' })}</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 overflow-hidden border border-slate-200 dark:border-slate-700">
                   <div className="bg-primary h-3 rounded-full transition-all duration-300" 
@@ -693,10 +696,10 @@ export default function Payments() {
                 <p className="text-xs text-slate-400 text-center">{importJob.status}...</p>
               </div>
             ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Uploading file to server...</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{t('payments.uploading')}</p>
             )}
             
-            <button onClick={() => setImporting(false)} className="mt-6 px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer">Run in Background</button>
+            <button onClick={() => setImporting(false)} className="mt-6 px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer">{t('payments.run_in_background')}</button>
           </div>
         </div>
       )}
@@ -709,14 +712,14 @@ export default function Payments() {
         >
           <div className="flex items-center gap-3 mb-3">
              <span className="material-icons text-primary animate-spin text-xl">autorenew</span>
-             <h4 className="text-sm font-bold text-slate-800 dark:text-white">Importing Payments...</h4>
+             <h4 className="text-sm font-bold text-slate-800 dark:text-white">{t('payments.import_title')}</h4>
           </div>
           <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1.5 overflow-hidden">
             <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
           </div>
           <div className="flex justify-between text-[10px] font-bold text-slate-400">
             <span>{Math.round(importJob.totalRows ? (importJob.processedRows / importJob.totalRows) * 100 : 0)}%</span>
-            <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
+            <span>{t('payments.rows', { processed: importJob.processedRows, total: importJob.totalRows || '?' })}</span>
           </div>
         </div>
       )}
@@ -727,7 +730,7 @@ export default function Payments() {
             <span className="material-icons text-3xl">{importResult.success ? 'check_circle' : 'error'}</span>
           </div>
           <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line text-center">{importResult.message}</p>
-          <button onClick={() => setImportResult(prev => ({ ...prev, open: false }))} className="mt-6 px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold w-full transition-all cursor-pointer">Close</button>
+          <button onClick={() => setImportResult(prev => ({ ...prev, open: false }))} className="mt-6 px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold w-full transition-all cursor-pointer">{t('payments.btn_close')}</button>
         </div>
       </Modal>
 
@@ -736,23 +739,23 @@ export default function Payments() {
         <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-3">
           {/* Search */}
           <div className="w-full sm:w-auto sm:flex-1 sm:min-w-[200px]">
-            <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search householder name or unit…" />
+            <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder={t('payments.search_placeholder')} />
           </div>
 
           {/* Block filter */}
           <div className="w-full sm:w-auto sm:min-w-[130px]">
             <SelectFilter value={filters.block_id} onChange={v => setFilter('block_id', v)}
-              options={blocks.map(b => ({ value: b.id, label: b.name }))} placeholder="All Blocks" />
+              options={blocks.map(b => ({ value: b.id, label: b.name }))} placeholder={t('payments.filter_block')} />
           </div>
 
           {/* Status filter */}
           <div className="w-full sm:w-auto sm:min-w-[130px]">
             <SelectFilter value={filters.status} onChange={v => setFilter('status', v)}
               options={[
-                { value: 'pending', label: 'Pending' },
-                { value: 'approved', label: 'Approved' },
-                { value: 'rejected', label: 'Rejected' },
-              ]} placeholder="All Status" />
+                { value: 'pending', label: t('payments.badge_pending') },
+                { value: 'approved', label: t('payments.badge_approved') },
+                { value: 'rejected', label: t('payments.badge_rejected') },
+              ]} placeholder={t('payments.filter_status')} />
           </div>
 
           {/* Payment Month filter */}
@@ -761,30 +764,30 @@ export default function Payments() {
               options={monthOptions.map(m => ({
                 value: `${filters.recorded_year || currentYear}-${String(m.value).padStart(2, '0')}`,
                 label: m.label
-              }))} placeholder="All Months" />
+              }))} placeholder={t('payments.filter_months')} />
           </div>
 
           {/* Separator label */}
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider self-center px-1 w-full sm:w-auto mt-2 sm:mt-0">
-            Recorded Date
+            {t('payments.recorded_date')}
           </div>
 
           {/* Recorded Month filter */}
           <div className="w-full sm:w-auto sm:min-w-[130px]">
             <SelectFilter value={filters.recorded_month} onChange={v => setFilter('recorded_month', v)}
-              options={monthOptions} placeholder="All Months" />
+              options={monthOptions} placeholder={t('payments.filter_months')} />
           </div>
 
           {/* Recorded Year filter */}
           <div className="w-full sm:w-auto sm:min-w-[100px]">
             <SelectFilter value={filters.recorded_year} onChange={v => setFilter('recorded_year', v)}
-              options={yearOptions} placeholder="All Years" />
+              options={yearOptions} placeholder={t('payments.filter_years')} />
           </div>
 
           {/* Clear */}
           <button onClick={clearFilters}
             className="flex items-center justify-center gap-1 px-3 py-3 sm:py-2 text-sm text-slate-500 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer w-full sm:w-auto">
-            <span className="material-icons text-sm">close</span> Clear
+            <span className="material-icons text-sm">close</span> {t('payments.btn_clear')}
           </button>
         </div>
       </div>
@@ -802,18 +805,18 @@ export default function Payments() {
               <th className="w-12 px-6 py-4 text-center">
                 <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
               </th>
-              <Th>Householder</Th>
-              <Th>Block / Unit</Th>
-              <Th>Month(s)</Th>
-              <Th>Amount</Th>
-              <Th>Status</Th>
-              <Th>Recorded</Th>
-              <Th className="text-right">Actions</Th>
+              <Th>{t('payments.th_householder')}</Th>
+              <Th>{t('payments.th_block_unit')}</Th>
+              <Th>{t('payments.th_months')}</Th>
+              <Th>{t('payments.th_amount')}</Th>
+              <Th>{t('payments.th_status')}</Th>
+              <Th>{t('payments.th_recorded')}</Th>
+              <Th className="text-right">{t('payments.th_actions')}</Th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {data.length === 0 ? (
-              <tr><td colSpan={8}><EmptyState icon="receipt_long" title="No payments found" subtitle="Try adjusting your filters" /></td></tr>
+              <tr><td colSpan={8}><EmptyState icon="receipt_long" title={t('payments.empty_title')} subtitle={t('payments.empty_subtitle')} /></td></tr>
             ) : data.map(p => {
               const name = p.householderName || p.householder?.fullname || '—';
               const initials = name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('') || '?';
@@ -832,7 +835,7 @@ export default function Payments() {
                       <div className="w-10 h-10 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">{initials}</div>
                       <div>
                         <div className="font-bold text-slate-900 dark:text-white">
-                          {name} {!p.householderId && <span className="text-[10px] text-rose-500 ml-1 px-1.5 py-0.5 bg-rose-100 dark:bg-rose-900/30 rounded font-bold uppercase">(Deleted)</span>}
+                          {name} {!p.householderId && <span className="text-[10px] text-rose-500 ml-1 px-1.5 py-0.5 bg-rose-100 dark:bg-rose-900/30 rounded font-bold uppercase">{t('payments.deleted')}</span>}
                         </div>
                         <p className="text-xs text-slate-500">Unit {p.unit || p.householder?.unit_number || '—'}</p>
                       </div>
@@ -847,12 +850,12 @@ export default function Payments() {
                       <div className="flex flex-col gap-0.5">
                         <span className="font-semibold text-slate-800 dark:text-slate-200">
                           {p.allMonths.slice(0, 3).map(m => MONTH_NAMES[new Date(m).getMonth()]?.substring(0, 3)).join(', ')}
-                          {p.allMonths.length > 3 && ', etc'}
+                          {p.allMonths.length > 3 && t('payments.etc')}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] text-slate-400">{new Date(p.allMonths[0]).getFullYear()}</span>
                           {monthCount > 1 && (
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">{monthCount} months</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">{t('payments.months_count', { count: monthCount })}</span>
                           )}
                         </div>
                       </div>
@@ -881,7 +884,7 @@ export default function Payments() {
                     <div className="flex items-center justify-end gap-1">
                       {/* Edit button — always visible */}
                       <button onClick={() => setEditItem(p)}
-                        className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title="Edit">
+                        className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('payments.btn_edit')}>
                         <span className="material-icons text-lg">edit</span>
                       </button>
 
@@ -889,11 +892,11 @@ export default function Payments() {
                       {isPending ? (
                         <button onClick={() => setReviewItem(p)}
                           className="text-amber-600 border border-amber-500/40 bg-amber-50/60 hover:bg-amber-500 hover:text-white dark:bg-amber-500/10 dark:text-amber-400 font-semibold text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer">
-                          Review
+                          {t('payments.btn_review')}
                         </button>
                       ) : (
                         <button onClick={() => setReviewItem(p)}
-                          className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title="View Details">
+                          className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('payments.btn_view')}>
                           <span className="material-icons text-lg">visibility</span>
                         </button>
                       )}
@@ -902,7 +905,7 @@ export default function Payments() {
                       {isApproved && (
                         <span className="text-xs text-emerald-500 px-2 flex items-center gap-1">
                           <span className="material-icons text-[14px]">check_circle</span>
-                          Approved {p.approvedAt ? new Date(p.approvedAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short' }) : ''}
+                          {t('payments.label_approved')} {p.approvedAt ? new Date(p.approvedAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short' }) : ''}
                         </span>
                       )}
 
@@ -910,13 +913,13 @@ export default function Payments() {
                       {isRejected && (
                         <span className="text-xs text-rose-400 px-2 flex items-center gap-1" title={p.rejectionReason}>
                           <span className="material-icons text-[14px]">cancel</span>
-                          Rejected
+                          {t('payments.label_rejected')}
                         </span>
                       )}
 
                       {/* Delete button */}
                       <button onClick={() => setConfirm({ open: true, item: p, loading: false })}
-                        className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title="Delete">
+                        className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title={t('payments.btn_delete')}>
                         <span className="material-icons text-lg">delete_outline</span>
                       </button>
                     </div>

@@ -7,6 +7,7 @@ import {
   Avatar, PageHeader, FilterBar, SearchInput, SelectFilter,
   TableWrapper, Th, FormInput, FormSelect
 } from '../../admin/components/ui';
+import { useTranslation, Trans } from 'react-i18next';
 
 interface UserRole {
   id: number;
@@ -37,12 +38,13 @@ interface UserStats {
 interface PaginationMeta { current_page: number; last_page: number; from: number; to: number; total: number; }
 
 function PasswordStrength({ password }: { password?: string }) {
+  const { t } = useTranslation();
   const checks = [
-    { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
-    { label: 'Uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
-    { label: 'Lowercase letter', test: (p: string) => /[a-z]/.test(p) },
-    { label: 'Number', test: (p: string) => /[0-9]/.test(p) },
-    { label: 'Special character', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+    { label: t('users.pw_length'), test: (p: string) => p.length >= 8 },
+    { label: t('users.pw_upper'), test: (p: string) => /[A-Z]/.test(p) },
+    { label: t('users.pw_lower'), test: (p: string) => /[a-z]/.test(p) },
+    { label: t('users.pw_number'), test: (p: string) => /[0-9]/.test(p) },
+    { label: t('users.pw_special'), test: (p: string) => /[^A-Za-z0-9]/.test(p) },
   ];
   if (!password) return null;
   return (
@@ -61,6 +63,7 @@ function PasswordStrength({ password }: { password?: string }) {
 }
 
 function HouseholderSelect({ label, value, onChange, options, error }: { label: string, value: string, onChange: (val: string) => void, options: {value: string, label: string}[], error?: string }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const ref = useRef<HTMLDivElement>(null);
@@ -86,13 +89,13 @@ function HouseholderSelect({ label, value, onChange, options, error }: { label: 
         {open ? (
             <input 
               type="text" autoFocus
-              placeholder="Search householder..."
+              placeholder={t('users.hh_search')}
               value={search} onChange={e => setSearch(e.target.value)}
               className={`block w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all`}
             />
         ) : (
             <div onClick={() => setOpen(true)} className={`block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg text-sm text-slate-900 dark:text-white cursor-pointer select-none flex justify-between items-center`}>
-              <span className="truncate">{selected ? selected.label : '-- None --'}</span>
+              <span className="truncate">{selected ? selected.label : t('users.hh_none')}</span>
               <span className="material-icons text-slate-400 text-sm">expand_more</span>
             </div>
         )}
@@ -100,7 +103,7 @@ function HouseholderSelect({ label, value, onChange, options, error }: { label: 
         
         {open && (
           <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#1B2236] border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto">
-            {filtered.length === 0 ? <div className="p-3 text-sm text-slate-500 text-center">No results found</div> : 
+            {filtered.length === 0 ? <div className="p-3 text-sm text-slate-500 text-center">{t('users.hh_no_results')}</div> : 
              filtered.map(o => (
               <div key={o.value} onClick={() => { onChange(o.value); setOpen(false); setSearch(''); }}
                 className={`px-4 py-2.5 cursor-pointer text-sm border-b border-slate-100 dark:border-slate-700/50 last:border-0 transition-colors ${value === o.value ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
@@ -116,6 +119,7 @@ function HouseholderSelect({ label, value, onChange, options, error }: { label: 
 }
 
 function UserModal({ open, onClose, onSaved, data, roles, householders }: { open: boolean; onClose: () => void; onSaved: () => void; data: User | null; roles: UserRole[]; householders: any[] }) {
+  const { t } = useTranslation();
   const isEdit = !!data?.id;
   const [form, setForm] = useState({ name: '', username: '', email: '', role_id: '', password: '', password_confirmation: '', is_active: true, HouseholderId: '' });
   const [showPw, setShowPw] = useState(false);
@@ -145,29 +149,29 @@ function UserModal({ open, onClose, onSaved, data, roles, householders }: { open
   };
 
   const roleOptions = (roles || []).map(r => ({ value: String(r.id), label: r.name }));
-  const hhOptions = [{ value: '', label: '-- None --' }, ...householders.map(h => ({ value: h.id, label: `${h.fullname} (Block ${h.block?.name || '-'}, Unit ${h.unit?.unitNumber || '-'})` }))];
+  const hhOptions = [{ value: '', label: t('users.hh_none') }, ...householders.map(h => ({ value: h.id, label: `${h.fullname} (Block ${h.block?.name || '-'}, Unit ${h.unit?.unitNumber || '-'})` }))];
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit User' : 'Create User'} size="lg">
+    <Modal open={open} onClose={onClose} title={isEdit ? t('users.modal_edit_title') : t('users.modal_add_title')} size="lg">
       <div className="space-y-4">
         {errors.general && <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormInput label="Full Name" id="u-name" value={form.name} onChange={set('name')} error={errors.name} required />
-          <FormInput label="Username" id="u-uname" value={form.username} onChange={set('username')} error={errors.username} required />
+          <FormInput label={t('users.full_name')} id="u-name" value={form.name} onChange={set('name')} error={errors.name} required />
+          <FormInput label={t('users.username')} id="u-uname" value={form.username} onChange={set('username')} error={errors.username} required />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormInput label="Email" id="u-email" type="email" value={form.email} onChange={set('email')} error={errors.email} required />
-          <FormSelect label="Role" id="u-role" value={form.role_id} onChange={set('role_id')} options={roleOptions} error={errors.role_id} required placeholder="Select Role" />
+          <FormInput label={t('users.email')} id="u-email" type="email" value={form.email} onChange={set('email')} error={errors.email} required />
+          <FormSelect label={t('users.role')} id="u-role" value={form.role_id} onChange={set('role_id')} options={roleOptions} error={errors.role_id} required placeholder={t('users.select_role')} />
         </div>
         <div>
-          <HouseholderSelect label="Linked Householder (Optional)" value={form.HouseholderId} onChange={(val) => setForm(p => ({ ...p, HouseholderId: val }))} options={hhOptions} error={errors.HouseholderId} />
+          <HouseholderSelect label={t('users.linked_householder')} value={form.HouseholderId} onChange={(val) => setForm(p => ({ ...p, HouseholderId: val }))} options={hhOptions} error={errors.HouseholderId} />
         </div>
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-            Password {isEdit && <span className="font-normal text-slate-400">(leave blank to keep current)</span>}
+            {t('users.password')} {isEdit && <span className="font-normal text-slate-400">{t('users.password_hint')}</span>}
           </label>
           <div className="relative">
-            <input id="u-pw" type={showPw ? 'text' : 'password'} value={form.password} onChange={set('password')} placeholder="••••••••"
+            <input id="u-pw" type={showPw ? 'text' : 'password'} value={form.password} onChange={set('password')} placeholder={t('users.password_placeholder')}
               className={`block w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none ${errors.password ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'}`} />
             <button type="button" onClick={() => setShowPw(s => !s)}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
@@ -178,17 +182,17 @@ function UserModal({ open, onClose, onSaved, data, roles, householders }: { open
           {errors.password && <p className="mt-1.5 text-xs text-rose-600">{errors.password}</p>}
         </div>
         {form.password && (
-          <FormInput label="Confirm Password" id="u-pw2" type="password" value={form.password_confirmation} onChange={set('password_confirmation')} error={errors.password_confirmation} placeholder="••••••••" />
+          <FormInput label={t('users.confirm_password')} id="u-pw2" type="password" value={form.password_confirmation} onChange={set('password_confirmation')} error={errors.password_confirmation} placeholder={t('users.password_placeholder')} />
         )}
         <div className="flex items-center gap-3">
           <input type="checkbox" id="u-active" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))}
             className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30" />
-          <label htmlFor="u-active" className="text-sm font-medium text-slate-700 dark:text-slate-300">Active account</label>
+          <label htmlFor="u-active" className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('users.active_account')}</label>
         </div>
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">{t('users.btn_cancel')}</button>
           <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-            {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create User'}
+            {loading ? t('users.saving') : isEdit ? t('users.btn_save') : t('users.btn_create')}
           </button>
         </div>
       </div>
@@ -197,6 +201,7 @@ function UserModal({ open, onClose, onSaved, data, roles, householders }: { open
 }
 
 function ApproveModal({ open, onClose, user, onApproved, householders }: { open: boolean; onClose: () => void; user: User | null; onApproved: () => void; householders: any[] }) {
+  const { t } = useTranslation();
   const [roleId, setRoleId] = useState('');
   const [householderId, setHouseholderId] = useState('');
   const [roles, setRoles] = useState<UserRole[]>([]);
@@ -220,18 +225,22 @@ function ApproveModal({ open, onClose, user, onApproved, householders }: { open:
   };
 
   if (!user) return null;
-  const hhOptions = [{ value: '', label: '-- None --' }, ...householders.map(h => ({ value: h.id, label: `${h.fullname} (Block ${h.block?.name || '-'}, Unit ${h.unit?.unitNumber || '-'})` }))];
+  const hhOptions = [{ value: '', label: t('users.hh_none') }, ...householders.map(h => ({ value: h.id, label: `${h.fullname} (Block ${h.block?.name || '-'}, Unit ${h.unit?.unitNumber || '-'})` }))];
 
   return (
-    <Modal open={open} onClose={onClose} title="Approve User" size="sm">
+    <Modal open={open} onClose={onClose} title={t('users.approve_title')} size="sm">
       <div className="space-y-4">
-        <p className="text-sm text-slate-600 dark:text-slate-400">Approve <strong className="text-slate-900 dark:text-white">{user.name}</strong> and assign a role.</p>
-        <FormSelect label="Assign Role" id="approve-role" value={roleId} onChange={e => setRoleId(e.target.value)} options={(roles || []).map(r => ({ value: String(r.id), label: r.name }))} placeholder="Select Role" required />
-        <HouseholderSelect label="Linked Householder (Optional)" value={householderId} onChange={setHouseholderId} options={hhOptions} />
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          <Trans i18nKey="users.approve_message" values={{ name: user.name }}>
+            Approve <strong className="text-slate-900 dark:text-white">{{name: user.name}}</strong> and assign a role.
+          </Trans>
+        </p>
+        <FormSelect label={t('users.assign_role')} id="approve-role" value={roleId} onChange={e => setRoleId(e.target.value)} options={(roles || []).map(r => ({ value: String(r.id), label: r.name }))} placeholder={t('users.select_role')} required />
+        <HouseholderSelect label={t('users.linked_householder')} value={householderId} onChange={setHouseholderId} options={hhOptions} />
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+          <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">{t('users.btn_cancel')}</button>
           <button onClick={handle} disabled={!roleId || loading} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold flex justify-center items-center gap-2 cursor-pointer hover:scale-[1.02] shadow-lg shadow-emerald-500/20 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all duration-200">
-            {loading ? 'Approving...' : 'Approve'}
+            {loading ? t('users.approving') : t('users.btn_approve')}
           </button>
         </div>
       </div>
@@ -240,6 +249,7 @@ function ApproveModal({ open, onClose, user, onApproved, householders }: { open:
 }
 
 export default function Users() {
+  const { t } = useTranslation();
   const [data, setData] = useState<User[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
@@ -285,20 +295,20 @@ export default function Users() {
 
   const roleOptions = roles.map(r => ({ value: String(r.id), label: r.name }));
   const statCards = [
-    { label: 'Total Users', value: stats?.total ?? 0, icon: 'group', iconBg: 'bg-primary/10', iconColor: 'text-primary' },
-    { label: 'Pending Approval', value: stats?.pending ?? 0, icon: 'pending', iconBg: 'bg-amber-100 dark:bg-amber-500/10', iconColor: 'text-amber-500' },
-    { label: 'Active', value: stats?.active ?? 0, icon: 'person', iconBg: 'bg-emerald-100 dark:bg-emerald-500/10', iconColor: 'text-emerald-500' },
-    { label: 'Admins', value: stats?.admins ?? 0, icon: 'admin_panel_settings', iconBg: 'bg-indigo-100 dark:bg-indigo-500/10', iconColor: 'text-indigo-500' },
+    { label: t('users.stat_total'), value: stats?.total ?? 0, icon: 'group', iconBg: 'bg-primary/10', iconColor: 'text-primary' },
+    { label: t('users.stat_pending'), value: stats?.pending ?? 0, icon: 'pending', iconBg: 'bg-amber-100 dark:bg-amber-500/10', iconColor: 'text-amber-500' },
+    { label: t('users.stat_active'), value: stats?.active ?? 0, icon: 'person', iconBg: 'bg-emerald-100 dark:bg-emerald-500/10', iconColor: 'text-emerald-500' },
+    { label: t('users.stat_admins'), value: stats?.admins ?? 0, icon: 'admin_panel_settings', iconBg: 'bg-indigo-100 dark:bg-indigo-500/10', iconColor: 'text-indigo-500' },
   ];
 
   return (
-    <AdminLayout title="User Management">
+    <AdminLayout title={t('users.title')}>
       <UserModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} roles={roles} householders={householders} />
       <ApproveModal open={approveModal.open} onClose={() => setApproveModal({ open: false, user: null })} user={approveModal.user} onApproved={fetchData} householders={householders} />
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="person_remove"
-        title="Delete User?" message={`Permanently delete <strong>${confirm.item?.name}</strong>? This cannot be undone.`}
-        confirmLabel="Yes, Delete" />
+        title={t('users.delete_title')} message={<Trans i18nKey="users.delete_message" values={{ name: confirm.item?.name }}>Permanently delete <strong>{{name: confirm.item?.name}}</strong>? This cannot be undone.</Trans>}
+        confirmLabel={t('users.btn_delete')} />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {statCards.map(s => (
@@ -313,25 +323,25 @@ export default function Users() {
       </div>
 
       <PageHeader
-        title="Users & Access"
-        subtitle="Manage system users, roles, and approvals"
+        title={t('users.header_title')}
+        subtitle={t('users.header_subtitle')}
         actions={
           <button onClick={() => setModal({ open: true, data: null })}
             className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">person_add</span> Add User
+            <span className="material-icons text-sm">person_add</span> {t('users.btn_add_user')}
           </button>
         }
       />
 
       <FilterBar>
-        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder="Search name, email, username…" />
-        <SelectFilter value={filters.role} onChange={v => setFilter('role', v)} options={roleOptions} placeholder="All Roles" />
+        <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder={t('users.search_placeholder')} />
+        <SelectFilter value={filters.role} onChange={v => setFilter('role', v)} options={roleOptions} placeholder={t('users.all_roles')} />
         <SelectFilter value={filters.status} onChange={v => setFilter('status', v)}
-          options={[{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }, { value: 'pending', label: 'Pending Approval' }]}
-          placeholder="All Status" />
+          options={[{ value: 'active', label: t('users.status_active') }, { value: 'inactive', label: t('users.status_inactive') }, { value: 'pending', label: t('users.status_pending') }]}
+          placeholder={t('users.all_status')} />
         <button onClick={() => setFilters({ search: '', role: '', status: '', page: 1 })}
           className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
-          <span className="material-icons text-sm">close</span> Clear
+          <span className="material-icons text-sm">close</span> {t('users.btn_clear')}
         </button>
       </FilterBar>
 
@@ -341,16 +351,16 @@ export default function Users() {
         <TableWrapper>
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-              <Th>User</Th>
-              <Th>Role</Th>
-              <Th>Status</Th>
-              <Th>Joined</Th>
-              <Th className="text-center">Actions</Th>
+              <Th>{t('users.th_user')}</Th>
+              <Th>{t('users.th_role')}</Th>
+              <Th>{t('users.th_status')}</Th>
+              <Th>{t('users.th_joined')}</Th>
+              <Th className="text-center">{t('users.th_actions')}</Th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {data.length === 0 ? (
-              <tr><td colSpan={5}><EmptyState icon="manage_accounts" title="No users found" subtitle="Try adjusting your filters" /></td></tr>
+              <tr><td colSpan={5}><EmptyState icon="manage_accounts" title={t('users.empty_title')} subtitle={t('users.empty_subtitle')} /></td></tr>
             ) : data.map((u: User) => {
               const isPending = !u.is_active && !u.email_verified_at;
               return (
@@ -361,7 +371,7 @@ export default function Users() {
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-slate-900 dark:text-white">{u.name}</p>
-                          {isPending && <span className="text-[10px] font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded-full uppercase">Pending</span>}
+                          {isPending && <span className="text-[10px] font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded-full uppercase">{t('users.badge_pending')}</span>}
                         </div>
                         <p className="text-xs text-slate-400">{u.email}</p>
                         {u.username && <p className="text-xs text-slate-400">@{u.username}</p>}
@@ -384,23 +394,23 @@ export default function Users() {
                       {isPending && (
                         <button onClick={() => setApproveModal({ open: true, user: u })}
                           className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white dark:bg-emerald-900/30 dark:text-emerald-400 rounded-lg transition-all cursor-pointer">
-                          <span className="material-icons text-sm">how_to_reg</span> Approve
+                          <span className="material-icons text-sm">how_to_reg</span> {t('users.tooltip_approve')}
                         </button>
                       )}
-                      <button onClick={() => setModal({ open: true, data: u })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title="Edit">
+                      <button onClick={() => setModal({ open: true, data: u })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_edit')}>
                         <span className="material-icons text-lg">edit</span>
                       </button>
                       {!isPending && u.is_active && (
-                        <button onClick={async () => { try { await axios.post(`/api/users/${u.id}/deactivate`); fetchData(); } catch {} }} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors cursor-pointer" title="Deactivate">
+                        <button onClick={async () => { try { await axios.post(`/api/users/${u.id}/deactivate`); fetchData(); } catch {} }} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_deactivate')}>
                           <span className="material-icons text-lg">person_off</span>
                         </button>
                       )}
                       {!isPending && !u.is_active && (
-                        <button onClick={async () => { try { await axios.post(`/api/users/${u.id}/reactivate`); fetchData(); } catch {} }} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors cursor-pointer" title="Reactivate">
+                        <button onClick={async () => { try { await axios.post(`/api/users/${u.id}/reactivate`); fetchData(); } catch {} }} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_reactivate')}>
                           <span className="material-icons text-lg">person_add</span>
                         </button>
                       )}
-                      <button onClick={() => setConfirm({ open: true, item: u, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title="Delete">
+                      <button onClick={() => setConfirm({ open: true, item: u, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_delete')}>
                         <span className="material-icons text-lg">person_remove</span>
                       </button>
                     </div>

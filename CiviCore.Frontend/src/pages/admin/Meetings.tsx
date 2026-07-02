@@ -4,6 +4,7 @@ import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, SearchInput, SelectFilter, EmptyState, Pagination, Modal, ConfirmModal, FormInput, FormSelect, SearchableSelect, SecureImage } from '../../admin/components/ui';
 import { compressImage } from '../../utils/imageCompressor';
+import { useTranslation, Trans } from 'react-i18next';
 
 interface Meeting {
   id: number;
@@ -24,17 +25,18 @@ interface PaginationMeta {
   total: number;
 }
 
-const STATUS_OPTIONS = [
-  { value: 'scheduled', label: 'Scheduled' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
-];
-
 function MeetingModal({ open, onClose, onSaved, data }: { open: boolean; onClose: () => void; onSaved: () => void; data: Meeting | null }) {
+  const { t } = useTranslation();
   const isEdit = !!data?.id;
   const [form, setForm] = useState({ title: '', meeting_date: '', location: '', status: 'scheduled' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+
+  const STATUS_OPTIONS = [
+    { value: 'scheduled', label: t('meetings.status_scheduled') },
+    { value: 'completed', label: t('meetings.status_completed') },
+    { value: 'cancelled', label: t('meetings.status_cancelled') },
+  ];
 
   useEffect(() => {
     if (data) {
@@ -60,24 +62,24 @@ function MeetingModal({ open, onClose, onSaved, data }: { open: boolean; onClose
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit Meeting' : 'Schedule Meeting'} size="md">
+    <Modal open={open} onClose={onClose} title={isEdit ? t('meetings.edit_meeting') : t('meetings.add_meeting')} size="md">
       <div className="space-y-4">
         {errors.general && <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
-        <FormInput label="Title" id="m-title" value={form.title} onChange={set('title')} error={errors.title} required placeholder="e.g. Monthly RT Meeting" />
+        <FormInput label={t('meetings.modal_title')} id="m-title" value={form.title} onChange={set('title')} error={errors.title} required placeholder={t('meetings.modal_title_placeholder')} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="m-date" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date & Time <span className="text-rose-500">*</span></label>
+            <label htmlFor="m-date" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('meetings.modal_date')} <span className="text-rose-500">*</span></label>
             <input id="m-date" type="datetime-local" value={form.meeting_date} onChange={set('meeting_date')}
               className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white dark:[color-scheme:dark] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-sm" />
             {errors.meeting_date && <p className="mt-1.5 text-xs text-rose-600">{errors.meeting_date}</p>}
           </div>
-          <FormSelect label="Status" id="m-status" value={form.status} onChange={set('status')} options={STATUS_OPTIONS} />
+          <FormSelect label={t('meetings.modal_status')} id="m-status" value={form.status} onChange={set('status')} options={STATUS_OPTIONS} />
         </div>
-        <FormInput label="Location" id="m-location" value={form.location} onChange={set('location')} error={errors.location} placeholder="e.g. Balai RT, Block A" />
+        <FormInput label={t('meetings.modal_location')} id="m-location" value={form.location} onChange={set('location')} error={errors.location} placeholder={t('meetings.modal_location_placeholder')} />
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">{t('meetings.btn_cancel')}</button>
           <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-            {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Schedule Meeting'}
+            {loading ? t('meetings.saving') : isEdit ? t('meetings.btn_save_changes') : t('meetings.add_meeting')}
           </button>
         </div>
       </div>
@@ -86,6 +88,7 @@ function MeetingModal({ open, onClose, onSaved, data }: { open: boolean; onClose
 }
 
 function MeetingDescriptionModal({ open, onClose, onSaved, data }: { open: boolean; onClose: () => void; onSaved: () => void; data: Meeting | null }) {
+  const { t } = useTranslation();
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -104,14 +107,14 @@ function MeetingDescriptionModal({ open, onClose, onSaved, data }: { open: boole
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Meeting Description" size="md">
+    <Modal open={open} onClose={onClose} title={t('meetings.desc_modal_title')} size="md">
       <div className="space-y-4">
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={6} placeholder="Meeting agenda or notes..."
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={6} placeholder={t('meetings.desc_modal_placeholder')}
           className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" />
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">{t('meetings.btn_cancel')}</button>
           <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-            {loading ? 'Saving...' : 'Save Description'}
+            {loading ? t('meetings.saving') : t('meetings.btn_save_description')}
           </button>
         </div>
       </div>
@@ -120,6 +123,7 @@ function MeetingDescriptionModal({ open, onClose, onSaved, data }: { open: boole
 }
 
 function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: () => void; data: Meeting | null }) {
+  const { t } = useTranslation();
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -160,12 +164,12 @@ function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: ()
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Meeting Images" size="lg">
+    <Modal open={open} onClose={onClose} title={t('meetings.img_modal_title')} size="lg">
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <p className="text-sm text-slate-500 dark:text-slate-400">Upload minutes, photos, or documents. (Rec: 16:9 for photos)</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t('meetings.img_modal_info')}</p>
           <label className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-bold transition-all cursor-pointer">
-            <span className="material-icons text-sm">upload</span> {uploading ? 'Uploading...' : 'Upload Image'}
+            <span className="material-icons text-sm">upload</span> {uploading ? t('meetings.uploading') : t('meetings.btn_upload_image')}
             <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
           </label>
         </div>
@@ -173,7 +177,7 @@ function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: ()
         {loading ? (
           <div className="flex justify-center py-8"><span className="material-icons text-primary animate-spin">autorenew</span></div>
         ) : images.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 text-sm bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">No images uploaded yet.</div>
+          <div className="text-center py-8 text-slate-500 text-sm bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">{t('meetings.no_images')}</div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
             {images.map(img => (
@@ -187,12 +191,13 @@ function MeetingImageModal({ open, onClose, data }: { open: boolean; onClose: ()
           </div>
         )}
       </div>
-      <ConfirmModal open={!!deleteConfirm} title="Delete Image" message="Are you sure you want to delete this meeting image?" onConfirm={() => { if (deleteConfirm) handleDelete(deleteConfirm); setDeleteConfirm(null); }} onCancel={() => setDeleteConfirm(null)} />
+      <ConfirmModal open={!!deleteConfirm} title={t('meetings.delete_image_title')} message={t('meetings.delete_image_message')} onConfirm={() => { if (deleteConfirm) handleDelete(deleteConfirm); setDeleteConfirm(null); }} onCancel={() => setDeleteConfirm(null)} confirmLabel={t('meetings.btn_delete_confirm')} />
     </Modal>
   );
 }
 
 function MeetingAttendanceModal({ open, onClose, data }: { open: boolean; onClose: () => void; data: Meeting | null }) {
+  const { t } = useTranslation();
   const [attendees, setAttendees] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -223,7 +228,7 @@ function MeetingAttendanceModal({ open, onClose, data }: { open: boolean; onClos
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Attendance List" size="md">
+    <Modal open={open} onClose={onClose} title={t('meetings.att_modal_title')} size="md">
       <div className="space-y-4">
         {loading ? (
           <div className="flex justify-center py-8"><span className="material-icons text-primary animate-spin">autorenew</span></div>
@@ -231,7 +236,7 @@ function MeetingAttendanceModal({ open, onClose, data }: { open: boolean; onClos
           <>
             <div className="mb-4">
               <SearchableSelect 
-                placeholder="Search to add attendee..."
+                placeholder={t('meetings.att_search_placeholder')}
                 value=""
                 onChange={(id) => {
                   if (id) togglePresence(id);
@@ -243,7 +248,7 @@ function MeetingAttendanceModal({ open, onClose, data }: { open: boolean; onClos
             <div className="max-h-[50vh] overflow-y-auto pr-2 space-y-2">
               {attendees.filter(a => a.isPresent).length === 0 ? (
                 <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm italic">
-                  No attendees added yet.
+                  {t('meetings.att_no_attendees')}
                 </div>
               ) : (
                 attendees.filter(a => a.isPresent).map(a => (
@@ -267,9 +272,9 @@ function MeetingAttendanceModal({ open, onClose, data }: { open: boolean; onClos
           </>
         )}
         <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">{t('meetings.btn_cancel')}</button>
           <button onClick={handleSave} disabled={saving} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-            {saving ? 'Saving...' : 'Save Attendance'}
+            {saving ? t('meetings.saving') : t('meetings.btn_save_attendance')}
           </button>
         </div>
       </div>
@@ -278,6 +283,7 @@ function MeetingAttendanceModal({ open, onClose, data }: { open: boolean; onClos
 }
 
 export default function Meetings() {
+  const { t } = useTranslation();
   const [data, setData] = useState<Meeting[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -312,7 +318,7 @@ export default function Meetings() {
   };
 
   return (
-    <AdminLayout title="Meetings">
+    <AdminLayout title={t('meetings.title')}>
       <MeetingModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} />
       <MeetingDescriptionModal open={descModal.open} onClose={() => setDescModal({ open: false, data: null })} onSaved={fetchData} data={descModal.data} />
       <MeetingImageModal open={imgModal.open} onClose={() => setImgModal({ open: false, data: null })} data={imgModal.data} />
@@ -320,48 +326,48 @@ export default function Meetings() {
       
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="event_busy"
-        title="Cancel Meeting?" message={`Are you sure you want to delete <strong>${confirm.item?.title}</strong>?`}
-        confirmLabel="Yes, Delete" />
+        title={t('meetings.delete_title')} message={<Trans i18nKey="meetings.delete_message" values={{ topic: confirm.item?.title || '' }} components={{ strong: <strong /> }} />}
+        confirmLabel={t('meetings.btn_delete_confirm')} />
 
       <PageHeader
-        title="Meetings" subtitle="Schedule and track community meetings"
+        title={t('meetings.title')} subtitle={t('meetings.subtitle')}
         actions={
           <button onClick={() => setModal({ open: true, data: null })}
             className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">add</span> Schedule Meeting
+            <span className="material-icons text-sm">add</span> {t('meetings.add_meeting')}
           </button>
         }
       />
 
       <div className="mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
-        <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search by topic..." />
+        <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder={t('meetings.search_placeholder')} />
         <SelectFilter 
           value={filters.month || ''} 
           onChange={(v) => setFilter('month', v)} 
           options={['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => ({ value: String(i+1), label: m }))} 
-          placeholder="All Months" 
+          placeholder={t('meetings.all_months')} 
         />
         <SelectFilter 
           value={filters.year || ''} 
           onChange={(v) => setFilter('year', v)} 
           options={Array.from({ length: Math.max(1, new Date().getFullYear() - 2026 + 2) }, (_, i) => new Date().getFullYear() + 1 - i).filter(y => y >= 2026).map(y => ({ value: String(y), label: String(y) }))} 
-          placeholder="All Years" 
+          placeholder={t('meetings.all_years')} 
         />
         <button onClick={() => setFilters({ search: '', month: '', year: '', page: 1 })}
           className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
-          <span className="material-icons text-sm">close</span> Clear
+          <span className="material-icons text-sm">close</span> {t('meetings.clear')}
         </button>
       </div>
 
       <div className="mb-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
-        Showing {data.length} of {meta?.total || data.length}
+        {t('meetings.showing', { count: data.length, total: meta?.total || data.length })}
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>
       ) : data.length === 0 ? (
         <div className="bg-white dark:bg-[#1A1F36] border border-slate-200 dark:border-white/5 rounded-xl p-12 shadow-sm text-center">
-          <EmptyState icon="event_note" title="No meetings found" subtitle="Try adjusting your filters or schedule a new meeting" />
+          <EmptyState icon="event_note" title={t('meetings.no_meetings_title')} subtitle={t('meetings.no_meetings_subtitle')} />
         </div>
       ) : (
         <div className="space-y-4">

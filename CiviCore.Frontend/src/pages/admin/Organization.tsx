@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, EmptyState, Modal, ConfirmModal, FormInput, FormSelect, SecureImage, CustomSelect, SearchableSelect } from '../../admin/components/ui';
+import { useTranslation } from 'react-i18next';
 
 interface OrgPeriod {
   id: string;
@@ -26,6 +27,7 @@ interface OrgPosition {
 }
 
 function PeriodModal({ open, onClose, onSaved, data }: { open: boolean; onClose: () => void; onSaved: () => void; data: OrgPeriod | null }) {
+  const { t } = useTranslation();
   const isEdit = !!data?.id;
   const currentYear = new Date().getFullYear();
   const [form, setForm] = useState({ name: '', startYear: currentYear, endYear: currentYear + 1 });
@@ -54,17 +56,17 @@ function PeriodModal({ open, onClose, onSaved, data }: { open: boolean; onClose:
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit Period' : 'Add Period'} size="sm">
+    <Modal open={open} onClose={onClose} title={isEdit ? t('organization.period_modal_edit') : t('organization.period_modal_add')} size="sm">
       <div className="space-y-4">
         {errors.general && <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
-        <FormInput label="Period Name" id="p-name" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} error={errors.name} required placeholder="e.g. Pengurus 2024-2026" />
+        <FormInput label={t('organization.period_name')} id="p-name" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} error={errors.name} required placeholder={t('organization.period_name_placeholder')} />
         <div className="grid grid-cols-2 gap-4">
-          <FormInput label="Start Year" id="p-start" type="number" value={String(form.startYear)} onChange={e => setForm(p => ({ ...p, startYear: parseInt(e.target.value) || 0 }))} error={errors.startYear} required />
-          <FormInput label="End Year" id="p-end" type="number" value={String(form.endYear)} onChange={e => setForm(p => ({ ...p, endYear: parseInt(e.target.value) || 0 }))} error={errors.endYear} required />
+          <FormInput label={t('organization.start_year')} id="p-start" type="number" value={String(form.startYear)} onChange={e => setForm(p => ({ ...p, startYear: parseInt(e.target.value) || 0 }))} error={errors.startYear} required />
+          <FormInput label={t('organization.end_year')} id="p-end" type="number" value={String(form.endYear)} onChange={e => setForm(p => ({ ...p, endYear: parseInt(e.target.value) || 0 }))} error={errors.endYear} required />
         </div>
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all text-sm font-semibold cursor-pointer">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary text-white dark:text-surface text-sm font-bold shadow-sm transition-all cursor-pointer">{loading ? 'Saving...' : 'Save Period'}</button>
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all text-sm font-semibold cursor-pointer">{t('organization.btn_cancel')}</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary text-white dark:text-surface text-sm font-bold shadow-sm transition-all cursor-pointer">{loading ? t('organization.saving') : t('organization.btn_save_period')}</button>
         </div>
       </div>
     </Modal>
@@ -72,6 +74,7 @@ function PeriodModal({ open, onClose, onSaved, data }: { open: boolean; onClose:
 }
 
 function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }: { open: boolean; onClose: () => void; onSaved: () => void; data: OrgPosition | null; periodId: string; allPositions: OrgPosition[] }) {
+  const { t } = useTranslation();
   const isEdit = !!data?.id;
   const [form, setForm] = useState({ positionName: '', parentId: '', residentId: '', householderId: '', sortOrder: 0 });
   const [errors, setErrors] = useState({});
@@ -129,36 +132,36 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
   const parentOptions = allPositions.filter(p => p.id !== data?.id).map(p => ({ value: p.id, label: p.positionName }));
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit Position' : 'Add Position'} size="md">
+    <Modal open={open} onClose={onClose} title={isEdit ? t('organization.pos_modal_edit') : t('organization.pos_modal_add')} size="md">
       <div className="space-y-4">
         {errors.general && <div className="p-3 bg-rose-50 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
-        <FormInput label="Position Name" id="pos-name" value={form.positionName} onChange={e => setForm(p => ({ ...p, positionName: e.target.value }))} error={errors.positionName} required placeholder="e.g. Ketua RT" />
-        <CustomSelect label="Parent Position (Reports To)" value={form.parentId} onChange={v => setForm(p => ({ ...p, parentId: v }))} options={parentOptions} placeholder="None (Top Level)" />
-        <FormInput label="Sort Order" id="pos-sort" type="number" value={String(form.sortOrder)} onChange={e => setForm(p => ({ ...p, sortOrder: parseInt(e.target.value) || 0 }))} />
+        <FormInput label={t('organization.pos_name')} id="pos-name" value={form.positionName} onChange={e => setForm(p => ({ ...p, positionName: e.target.value }))} error={errors.positionName} required placeholder={t('organization.pos_name_placeholder')} />
+        <CustomSelect label={t('organization.parent_pos')} value={form.parentId} onChange={v => setForm(p => ({ ...p, parentId: v }))} options={parentOptions} placeholder={t('organization.parent_none')} />
+        <FormInput label={t('organization.sort_order')} id="pos-sort" type="number" value={String(form.sortOrder)} onChange={e => setForm(p => ({ ...p, sortOrder: parseInt(e.target.value) || 0 }))} />
         
         <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
-          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Assign Person</p>
-          <CustomSelect label="Person Type" value={personType} onChange={v => setPersonType(v)} options={[
-            { value: 'none', label: 'Unassigned' },
-            { value: 'resident', label: 'Resident' },
-            { value: 'householder', label: 'Householder' }
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('organization.assign_person')}</p>
+          <CustomSelect label={t('organization.person_type')} value={personType} onChange={v => setPersonType(v)} options={[
+            { value: 'none', label: t('organization.type_unassigned') },
+            { value: 'resident', label: t('organization.type_resident') },
+            { value: 'householder', label: t('organization.type_householder') }
           ]} />
           
           {personType === 'resident' && (
             <div className="mt-3">
-              <SearchableSelect label="Select Resident" value={form.residentId} onChange={v => setForm(p => ({ ...p, residentId: v }))} options={residents.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Search Resident..." />
+              <SearchableSelect label={t('organization.select_resident')} value={form.residentId} onChange={v => setForm(p => ({ ...p, residentId: v }))} options={residents.map(r => ({ value: r.id, label: r.fullname }))} placeholder={t('organization.search_resident')} />
             </div>
           )}
           {personType === 'householder' && (
             <div className="mt-3">
-              <SearchableSelect label="Select Householder" value={form.householderId} onChange={v => setForm(p => ({ ...p, householderId: v }))} options={householders.map(r => ({ value: r.id, label: r.fullname }))} placeholder="Search Householder..." />
+              <SearchableSelect label={t('organization.select_householder')} value={form.householderId} onChange={v => setForm(p => ({ ...p, householderId: v }))} options={householders.map(r => ({ value: r.id, label: r.fullname }))} placeholder={t('organization.search_householder')} />
             </div>
           )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all text-sm font-semibold cursor-pointer">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary text-white dark:text-surface text-sm font-bold shadow-sm transition-all cursor-pointer">{loading ? 'Saving...' : 'Save Position'}</button>
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all text-sm font-semibold cursor-pointer">{t('organization.btn_cancel')}</button>
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary text-white dark:text-surface text-sm font-bold shadow-sm transition-all cursor-pointer">{loading ? t('organization.saving') : t('organization.btn_save_position')}</button>
         </div>
       </div>
     </Modal>
@@ -166,8 +169,9 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
 }
 
 function OrgHeroCard({ node, onEdit, onDelete }: { node: OrgPosition; onEdit: (n: OrgPosition) => void; onDelete: (n: OrgPosition) => void }) {
-  const personName = node.resident?.fullname || node.householder?.fullname || 'Unassigned';
-  const initials = personName !== 'Unassigned' ? personName.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('') : '?';
+  const { t } = useTranslation();
+  const personName = node.resident?.fullname || node.householder?.fullname || t('organization.unassigned');
+  const initials = personName !== t('organization.unassigned') ? personName.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('') : '?';
   const photoUrl = node.resident?.photoPath || node.householder?.photoPath;
 
   return (
@@ -184,7 +188,7 @@ function OrgHeroCard({ node, onEdit, onDelete }: { node: OrgPosition; onEdit: (n
           <div className="w-24 h-24 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-2xl shadow-sm mx-auto mb-4 border-4 border-white dark:border-slate-800">{initials}</div>
         )}
         <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary mb-2">{node.positionName}</span>
-        <p className={`font-bold text-base leading-tight ${personName !== 'Unassigned' ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>{personName}</p>
+        <p className={`font-bold text-base leading-tight ${personName !== t('organization.unassigned') ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>{personName}</p>
       </div>
     </div>
     </div>
@@ -192,8 +196,9 @@ function OrgHeroCard({ node, onEdit, onDelete }: { node: OrgPosition; onEdit: (n
 }
 
 function OrgOfficerCard({ node, onEdit, onDelete }: { node: OrgPosition; onEdit: (n: OrgPosition) => void; onDelete: (n: OrgPosition) => void }) {
-  const personName = node.resident?.fullname || node.householder?.fullname || 'Unassigned';
-  const initials = personName !== 'Unassigned' ? personName.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('') : '?';
+  const { t } = useTranslation();
+  const personName = node.resident?.fullname || node.householder?.fullname || t('organization.unassigned');
+  const initials = personName !== t('organization.unassigned') ? personName.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('') : '?';
   const photoUrl = node.resident?.photoPath || node.householder?.photoPath;
 
   return (
@@ -209,15 +214,16 @@ function OrgOfficerCard({ node, onEdit, onDelete }: { node: OrgPosition; onEdit:
           <div className="w-14 h-14 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 font-bold flex items-center justify-center text-base shadow-sm mx-auto mb-2 border-2 border-white dark:border-slate-800">{initials}</div>
         )}
         <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 mb-1">{node.positionName}</span>
-        <p className={`font-semibold text-sm leading-tight truncate px-1 ${personName !== 'Unassigned' ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>{personName}</p>
+        <p className={`font-semibold text-sm leading-tight truncate px-1 ${personName !== t('organization.unassigned') ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>{personName}</p>
       </div>
     </div>
   );
 }
 
 function OrgSectionNode({ node, onEdit, onDelete }: { node: OrgPosition; onEdit: (n: OrgPosition) => void; onDelete: (n: OrgPosition) => void }) {
-  const personName = node.resident?.fullname || node.householder?.fullname || 'Unassigned';
-  const initials = personName !== 'Unassigned' ? personName.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('') : '?';
+  const { t } = useTranslation();
+  const personName = node.resident?.fullname || node.householder?.fullname || t('organization.unassigned');
+  const initials = personName !== t('organization.unassigned') ? personName.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('') : '?';
   const photoUrl = node.resident?.photoPath || node.householder?.photoPath;
 
   return (
@@ -234,14 +240,14 @@ function OrgSectionNode({ node, onEdit, onDelete }: { node: OrgPosition; onEdit:
         )}
         <div className="flex-1 pr-14">
           <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 mb-0.5">{node.positionName}</span>
-          <p className={`font-semibold text-sm ${personName !== 'Unassigned' ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>{personName}</p>
+          <p className={`font-semibold text-sm ${personName !== t('organization.unassigned') ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>{personName}</p>
         </div>
       </div>
       
       {node.children && node.children.length > 0 && (
         <div className="pl-4 space-y-2 border-l-2 border-slate-200 dark:border-slate-700 ml-5 mt-2">
           {node.children.map(child => {
-            const cName = child.resident?.fullname || child.householder?.fullname || 'Unassigned';
+            const cName = child.resident?.fullname || child.householder?.fullname || t('organization.unassigned');
             return (
               <div key={child.id} className="group relative flex items-center gap-3 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary/30 transition-all">
                 <div className="absolute right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-white dark:bg-slate-900 pl-2">
@@ -250,7 +256,7 @@ function OrgSectionNode({ node, onEdit, onDelete }: { node: OrgPosition; onEdit:
                 </div>
                 <div className="flex-1 min-w-0 pr-16">
                   <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block truncate">{child.positionName}</span>
-                  <span className={`text-xs block truncate ${cName !== 'Unassigned' ? 'text-slate-700 dark:text-slate-300 font-medium' : 'text-slate-400 italic'}`}>{cName}</span>
+                  <span className={`text-xs block truncate ${cName !== t('organization.unassigned') ? 'text-slate-700 dark:text-slate-300 font-medium' : 'text-slate-400 italic'}`}>{cName}</span>
                 </div>
               </div>
             );
@@ -262,6 +268,7 @@ function OrgSectionNode({ node, onEdit, onDelete }: { node: OrgPosition; onEdit:
 }
 
 function OrgChart({ tree, onEdit, onDelete }: { tree: OrgPosition[]; onEdit: (n: OrgPosition) => void; onDelete: (n: OrgPosition) => void }) {
+  const { t } = useTranslation();
   if (tree.length === 1) {
     const rootItem = tree[0];
     const rootChildren = rootItem.children || [];
@@ -290,7 +297,7 @@ function OrgChart({ tree, onEdit, onDelete }: { tree: OrgPosition[]; onEdit: (n:
             
             <div className="flex items-center gap-3 mb-6">
               <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-2">Divisions / Committees</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-2">{t('organization.divisions_committees')}</span>
               <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
             </div>
             
@@ -314,6 +321,7 @@ function OrgChart({ tree, onEdit, onDelete }: { tree: OrgPosition[]; onEdit: (n:
 }
 
 export default function Organization() {
+  const { t } = useTranslation();
   const [periods, setPeriods] = useState<OrgPeriod[]>([]);
   const [positions, setPositions] = useState<OrgPosition[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
@@ -377,23 +385,23 @@ export default function Organization() {
   });
 
   return (
-    <AdminLayout title="Organization">
+    <AdminLayout title={t('organization.title')}>
       <PeriodModal open={periodModal.open} onClose={() => setPeriodModal({ open: false, data: null })} onSaved={fetchPeriods} data={periodModal.data} />
       {selectedPeriod && <PositionModal open={posModal.open} onClose={() => setPosModal({ open: false, data: null })} onSaved={fetchPositions} data={posModal.data} periodId={selectedPeriod} allPositions={positions} />}
       
-      <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, type: '', loading: false })} onConfirm={doDelete} loading={confirm.loading} icon="delete_forever" title={`Delete ${confirm.type === 'period' ? 'Period' : 'Position'}?`} message="Are you sure you want to delete this permanently?" confirmLabel="Yes, Delete" />
+      <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, type: '', loading: false })} onConfirm={doDelete} loading={confirm.loading} icon="delete_forever" title={confirm.type === 'period' ? t('organization.delete_period_title') : t('organization.delete_pos_title')} message={t('organization.delete_message')} confirmLabel={t('organization.btn_delete_confirm')} />
 
       <PageHeader
-        title="Organization Structure"
-        subtitle="Manage community leadership hierarchies and assignments"
+        title={t('organization.title')}
+        subtitle={t('organization.subtitle')}
         actions={
           <div className="flex gap-2">
             <button onClick={() => setPeriodModal({ open: true, data: null })} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white text-sm font-bold rounded-lg transition-all cursor-pointer">
-              Manage Periods
+              {t('organization.btn_manage_periods')}
             </button>
             {selectedPeriod && (
               <button onClick={() => setPosModal({ open: true, data: null })} className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all cursor-pointer">
-                <span className="material-icons text-sm">account_tree</span> Add Position
+                <span className="material-icons text-sm">account_tree</span> {t('organization.btn_add_position')}
               </button>
             )}
           </div>
@@ -402,7 +410,7 @@ export default function Organization() {
 
       {periods.length > 0 ? (
         <div className="flex items-center gap-3 flex-wrap mb-8">
-          <span className="text-sm font-semibold text-slate-500">Period:</span>
+          <span className="text-sm font-semibold text-slate-500">{t('organization.period_label')}</span>
           <div className="flex flex-wrap gap-2">
             {periods.map(p => (
               <div key={p.id} className="relative group">
@@ -413,9 +421,9 @@ export default function Organization() {
                 {/* Fixed Hover Gap: Removed mt-1, replaced with invisible padding wrapper to bridge the gap */}
                 <div className="absolute top-full pt-1 hidden group-hover:block z-10 w-32 left-0">
                   <div className="flex flex-col bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-lg rounded-lg overflow-hidden">
-                    {!p.isActive && <button onClick={() => activatePeriod(p.id)} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">Set Active</button>}
-                    <button onClick={() => setPeriodModal({ open: true, data: p })} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">Edit</button>
-                    {!p.isActive && <button onClick={() => setConfirm({ open: true, item: p, type: 'period', loading: false })} className="px-3 py-2 text-xs text-left text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 cursor-pointer">Delete</button>}
+                    {!p.isActive && <button onClick={() => activatePeriod(p.id)} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">{t('organization.set_active')}</button>}
+                    <button onClick={() => setPeriodModal({ open: true, data: p })} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">{t('organization.edit')}</button>
+                    {!p.isActive && <button onClick={() => setConfirm({ open: true, item: p, type: 'period', loading: false })} className="px-3 py-2 text-xs text-left text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 cursor-pointer">{t('organization.delete')}</button>}
                   </div>
                 </div>
               </div>
@@ -423,14 +431,14 @@ export default function Organization() {
           </div>
         </div>
       ) : (
-        <div className="mb-6"><EmptyState icon="event" title="No Periods" subtitle="Create an organization period to get started." /></div>
+        <div className="mb-6"><EmptyState icon="event" title={t('organization.no_periods_title')} subtitle={t('organization.no_periods_subtitle')} /></div>
       )}
 
       {selectedPeriod && (
         loading ? (
           <div className="flex justify-center py-12"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>
         ) : tree.length === 0 ? (
-          <EmptyState icon="account_tree" title="Empty Organization" subtitle="Add root positions to build the structure." />
+          <EmptyState icon="account_tree" title={t('organization.empty_org_title')} subtitle={t('organization.empty_org_subtitle')} />
         ) : (
           <OrgChart tree={tree} onEdit={n => setPosModal({ open: true, data: n })} onDelete={n => setConfirm({ open: true, item: n, type: 'position', loading: false })} />
         )

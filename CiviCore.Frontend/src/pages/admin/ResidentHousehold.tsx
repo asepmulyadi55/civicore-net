@@ -1,10 +1,12 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { Modal, FormSelect } from '../../admin/components/ui';
 
 export default function ResidentHousehold() {
+  const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,7 +83,7 @@ export default function ResidentHousehold() {
 
   if (loading) {
     return (
-      <AdminLayout title="My Household" subtitle="Loading...">
+      <AdminLayout title={t('resident_household.title')} subtitle={t('resident_household.subtitle_loading')}>
         <div className="flex items-center justify-center py-24">
           <span className="material-icons text-primary text-4xl animate-spin">autorenew</span>
         </div>
@@ -91,23 +93,23 @@ export default function ResidentHousehold() {
 
   if (!data) {
     return (
-      <AdminLayout title="My Household" subtitle="Welcome to the Resident Portal">
+      <AdminLayout title={t('resident_household.title')} subtitle={t('resident_household.no_household_desc')}>
         <div className="text-center py-24 bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700/50">
           <span className="material-icons text-5xl text-slate-300 dark:text-slate-600 block mb-4">family_restroom</span>
-          <h2 className="text-xl font-bold text-slate-700 dark:text-slate-300">No Household Found</h2>
-          <p className="text-slate-500 mt-2">Your account is not yet linked to a household record. Please contact management.</p>
+          <h2 className="text-xl font-bold text-slate-700 dark:text-slate-300">{t('resident_household.no_household_title')}</h2>
+          <p className="text-slate-500 mt-2">{t('resident_household.no_household_desc')}</p>
         </div>
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout title="My Household" subtitle={`Manage your household profile and family members in ${data.blockName} - ${data.unitNumber}`}>
+    <AdminLayout title={t('resident_household.title')} subtitle={t('resident_household.subtitle_manage', { block: data.blockName, unit: data.unitNumber })}>
       
       {/* Contact Info Card */}
       <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-hidden mb-8">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Household Details</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('resident_household.household_details')}</h2>
           <button 
             onClick={() => {
               setContactForm({ phone: data.phone || '', email: data.email || '', notes: data.notes || '' });
@@ -116,24 +118,24 @@ export default function ResidentHousehold() {
             className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
           >
             <span className="material-icons text-[18px]">edit</span>
-            Edit Details
+            {t('resident_household.btn_edit_details')}
           </button>
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Primary Householder</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('resident_household.primary_householder')}</p>
             <p className="font-semibold text-slate-900 dark:text-white">{data.fullname}</p>
           </div>
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Phone</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('resident_household.phone')}</p>
             <p className="font-semibold text-slate-900 dark:text-white">{data.phone || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Email</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('resident_household.email')}</p>
             <p className="font-semibold text-slate-900 dark:text-white">{data.email || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Notes</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('resident_household.notes')}</p>
             <p className="text-sm text-slate-900 dark:text-white">{data.notes || '—'}</p>
           </div>
         </div>
@@ -144,7 +146,7 @@ export default function ResidentHousehold() {
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span className="material-icons text-primary">groups</span>
-            Family Members ({data.residents.length})
+            {t('resident_household.family_members')} ({data.residents.length})
           </h2>
           <button 
             onClick={() => {
@@ -155,25 +157,25 @@ export default function ResidentHousehold() {
             className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm"
           >
             <span className="material-icons text-[18px]">add</span>
-            Add Member
+            {t('resident_household.btn_add_member')}
           </button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/30 text-slate-500 text-xs uppercase tracking-wider font-bold">
-                <th className="px-6 py-4">Name</th>
-                <th className="px-6 py-4">Relationship</th>
-                <th className="px-6 py-4">Gender</th>
-                <th className="px-6 py-4">Occupation</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-6 py-4">{t('resident_household.th_name')}</th>
+                <th className="px-6 py-4">{t('resident_household.th_relationship')}</th>
+                <th className="px-6 py-4">{t('resident_household.th_gender')}</th>
+                <th className="px-6 py-4">{t('resident_household.th_occupation')}</th>
+                <th className="px-6 py-4 text-right">{t('resident_household.th_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {data.residents.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="px-6 py-8 text-center text-slate-500">
-                    No family members added yet.
+                    {t('resident_household.no_members')}
                   </td>
                 </tr>
               ) : (
@@ -183,11 +185,11 @@ export default function ResidentHousehold() {
                       {r.fullname}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 capitalize">
-                      {r.relationship}
-                      {r.relationship === 'head' && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">HEAD</span>}
+                      {t(`resident_household.rel_${r.relationship}`) || r.relationship}
+                      {r.relationship === 'head' && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500">{t('resident_household.tag_head')}</span>}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 capitalize">
-                      {r.gender || '—'}
+                      {r.gender ? t(`resident_household.gen_${r.gender}`) : '—'}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                       {r.occupation || '—'}
@@ -195,7 +197,7 @@ export default function ResidentHousehold() {
                     <td className="px-6 py-4 text-right space-x-2">
                       {r.relationship !== 'head' && (
                         <button onClick={() => setHead(r.id)} className="text-xs font-semibold text-primary hover:underline">
-                          Set Head
+                          {t('resident_household.btn_set_head')}
                         </button>
                       )}
                       <button 
@@ -231,83 +233,83 @@ export default function ResidentHousehold() {
       </div>
 
       {/* Edit Contact Modal */}
-      <Modal open={isEditContactModalOpen} onClose={() => setEditContactModalOpen(false)} title="Edit Contact Info">
+      <Modal open={isEditContactModalOpen} onClose={() => setEditContactModalOpen(false)} title={t('resident_household.modal_edit_contact')}>
         <form onSubmit={onContactSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Phone</label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('resident_household.phone')}</label>
             <input value={contactForm.phone} onChange={e => setContactForm({...contactForm, phone: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('resident_household.email')}</label>
             <input type="email" value={contactForm.email} onChange={e => setContactForm({...contactForm, email: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes</label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('resident_household.notes')}</label>
             <textarea value={contactForm.notes} onChange={e => setContactForm({...contactForm, notes: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" rows="3"></textarea>
           </div>
           <div className="flex justify-end gap-3 mt-6">
-            <button type="button" onClick={() => setEditContactModalOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium text-sm">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary-dark transition-colors shadow-sm">Save Changes</button>
+            <button type="button" onClick={() => setEditContactModalOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium text-sm">{t('resident_household.btn_cancel')}</button>
+            <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary-dark transition-colors shadow-sm">{t('resident_household.btn_save_changes')}</button>
           </div>
         </form>
       </Modal>
 
       {/* Add/Edit Resident Modal */}
-      <Modal open={isResidentModalOpen} onClose={() => setResidentModalOpen(false)} title={editingResident ? "Edit Family Member" : "Add Family Member"}>
+      <Modal open={isResidentModalOpen} onClose={() => setResidentModalOpen(false)} title={editingResident ? t('resident_household.modal_edit_member') : t('resident_household.modal_add_member')}>
         <form onSubmit={onResidentSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Name *</label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('resident_household.label_fullname')}</label>
             <input required value={residentForm.fullname} onChange={e => setResidentForm({...residentForm, fullname: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Relationship</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('resident_household.label_relationship')}</label>
               <FormSelect 
                 id="rh-rel"
                 label=""
                 value={residentForm.relationship} 
                 onChange={e => setResidentForm({...residentForm, relationship: e.target.value})} 
                 options={[
-                  { value: 'other', label: 'Other' },
-                  { value: 'spouse', label: 'Spouse' },
-                  { value: 'child', label: 'Child' },
-                  { value: 'parent', label: 'Parent' },
-                  { value: 'tenant', label: 'Tenant' }
+                  { value: 'other', label: t('resident_household.rel_other') },
+                  { value: 'spouse', label: t('resident_household.rel_spouse') },
+                  { value: 'child', label: t('resident_household.rel_child') },
+                  { value: 'parent', label: t('resident_household.rel_parent') },
+                  { value: 'tenant', label: t('resident_household.rel_tenant') }
                 ]}
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Gender</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('resident_household.label_gender')}</label>
               <FormSelect 
                 id="rh-gen"
                 label=""
                 value={residentForm.gender} 
                 onChange={e => setResidentForm({...residentForm, gender: e.target.value})} 
                 options={[
-                  { value: '', label: 'Unknown' },
-                  { value: 'male', label: 'Male' },
-                  { value: 'female', label: 'Female' }
+                  { value: '', label: t('resident_household.gen_unknown') },
+                  { value: 'male', label: t('resident_household.gen_male') },
+                  { value: 'female', label: t('resident_household.gen_female') }
                 ]}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Birth Date</label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('resident_household.label_birth_date')}</label>
             <input type="date" value={residentForm.birthDate} onChange={e => setResidentForm({...residentForm, birthDate: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Occupation</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('resident_household.label_occupation')}</label>
               <input value={residentForm.occupation} onChange={e => setResidentForm({...residentForm, occupation: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Education</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('resident_household.label_education')}</label>
               <input value={residentForm.education} onChange={e => setResidentForm({...residentForm, education: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
             </div>
           </div>
           <div className="flex justify-end gap-3 mt-6">
-            <button type="button" onClick={() => setResidentModalOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium text-sm">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary-dark transition-colors shadow-sm">{editingResident ? 'Save Changes' : 'Add Member'}</button>
+            <button type="button" onClick={() => setResidentModalOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium text-sm">{t('resident_household.btn_cancel')}</button>
+            <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary-dark transition-colors shadow-sm">{editingResident ? t('resident_household.btn_save_changes') : t('resident_household.btn_add_member')}</button>
           </div>
         </form>
       </Modal>

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import {
@@ -60,32 +60,32 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
     <Modal open={open} onClose={onClose} title={isEdit ? t('common.edit') : t('common.add')} size="md">
       <div className="space-y-4">
         {errors.general && <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
-        <FormInput label="Block Name" id="b-name" value={form.name} onChange={set('name')} error={errors.name} required placeholder="e.g. Block A" />
+        <FormInput label={t('blocks.block_name')} id="b-name" value={form.name} onChange={set('name')} error={errors.name} required placeholder={t('blocks.block_name_placeholder')} />
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-          <textarea value={form.description} onChange={set('description')} rows={3} placeholder="Optional description..."
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('blocks.description')}</label>
+          <textarea value={form.description} onChange={set('description')} rows={3} placeholder={t('blocks.description_placeholder')}
             className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none text-sm" />
         </div>
         
         <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 bg-slate-50/50 dark:bg-slate-800/50">
-          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Assign Coordinators</p>
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">{t('blocks.assign_coordinators')}</p>
           <div className="flex flex-col sm:flex-row gap-2 mb-3">
             <div className="w-full sm:w-1/3">
                 <CustomSelect value={personType} onChange={v => { setPersonType(v); setPersonId(''); }} options={[
-                { value: 'resident', label: 'Resident' },
-                { value: 'householder', label: 'Householder' }
+                { value: 'resident', label: t('blocks.type_resident') },
+                { value: 'householder', label: t('blocks.type_householder') }
                 ]} />
             </div>
             <div className="w-full sm:flex-1">
               {personType === 'resident' ? (
-                <SearchableSelect value={personId} onChange={setPersonId} options={residents.map(r => ({ value: String(r.id), label: r.fullname }))} placeholder="Search Resident..." />
+                <SearchableSelect value={personId} onChange={setPersonId} options={residents.map(r => ({ value: String(r.id), label: r.fullname }))} placeholder={t('blocks.search_resident')} />
               ) : (
-                <SearchableSelect value={personId} onChange={setPersonId} options={householders.map(h => ({ value: String(h.id), label: h.fullname }))} placeholder="Search Householder..." />
+                <SearchableSelect value={personId} onChange={setPersonId} options={householders.map(h => ({ value: String(h.id), label: h.fullname }))} placeholder={t('blocks.search_householder')} />
               )}
             </div>
             <button type="button" onClick={handleAddCoord} disabled={!personId} className="w-full sm:w-auto px-4 py-2.5 sm:py-0 bg-primary text-white rounded-lg disabled:opacity-50 cursor-pointer flex items-center justify-center transition-all hover:opacity-90">
                 <span className="material-icons">add</span>
-                <span className="ml-1 sm:hidden font-bold">Add Coordinator</span>
+                <span className="ml-1 sm:hidden font-bold">{t('blocks.add_coordinator')}</span>
             </button>
           </div>
           
@@ -100,19 +100,19 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-400 italic mt-2">No coordinators assigned.</p>
+            <p className="text-xs text-slate-400 italic mt-2">{t('blocks.no_coordinators')}</p>
           )}
         </div>
 
         <div className="flex items-center gap-3">
           <input type="checkbox" id="b-active" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))}
             className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30" />
-          <label htmlFor="b-active" className="text-sm font-medium text-slate-700 dark:text-slate-300">Active block</label>
+          <label htmlFor="b-active" className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('blocks.active_block')}</label>
         </div>
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">Cancel</button>
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">{t('blocks.btn_cancel')}</button>
           <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-            {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Block'}
+            {loading ? t('blocks.saving') : isEdit ? t('blocks.btn_save') : t('blocks.btn_create')}
           </button>
         </div>
       </div>
@@ -121,13 +121,14 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
 }
 
 function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggleSelect }) {
+  const { t } = useTranslation();
   const stats = [
-    { label: 'Units', value: block.units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
-    { label: 'Occupied', value: block.owner_occupied_units_count ?? 0, cls: 'bg-emerald-50 dark:bg-emerald-900/10', valCls: 'text-emerald-500' },
-    { label: 'Rented', value: block.rented_units_count ?? 0, cls: 'bg-amber-50 dark:bg-amber-900/10', valCls: 'text-amber-500' },
-    { label: 'Vacant', value: block.vacant_units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
-    { label: 'Public', value: block.public_facility_units_count ?? 0, cls: 'bg-teal-50 dark:bg-teal-900/10', valCls: 'text-teal-500' },
-    { label: 'Developer', value: block.developer_units_count ?? 0, cls: 'bg-indigo-50 dark:bg-indigo-900/10', valCls: 'text-indigo-500' },
+    { label: t('blocks.stat_units'), value: block.units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
+    { label: t('blocks.stat_occupied'), value: block.owner_occupied_units_count ?? 0, cls: 'bg-emerald-50 dark:bg-emerald-900/10', valCls: 'text-emerald-500' },
+    { label: t('blocks.stat_rented'), value: block.rented_units_count ?? 0, cls: 'bg-amber-50 dark:bg-amber-900/10', valCls: 'text-amber-500' },
+    { label: t('blocks.stat_vacant'), value: block.vacant_units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
+    { label: t('blocks.stat_public'), value: block.public_facility_units_count ?? 0, cls: 'bg-teal-50 dark:bg-teal-900/10', valCls: 'text-teal-500' },
+    { label: t('blocks.stat_developer'), value: block.developer_units_count ?? 0, cls: 'bg-indigo-50 dark:bg-indigo-900/10', valCls: 'text-indigo-500' },
   ];
   return (
     <div className={`relative bg-white dark:bg-slate-900 rounded-xl border ${isSelected ? 'border-primary ring-1 ring-primary/30' : 'border-slate-200 dark:border-slate-800'} shadow-sm p-6 flex flex-col gap-4 hover:shadow-md hover:border-primary/30 transition-all`}>
@@ -160,9 +161,9 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggl
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="material-icons text-sm text-slate-400 flex-shrink-0">manage_accounts</span>
           {(block.coordinators || []).length === 0 ? (
-            <span className="text-xs text-slate-400 italic">No coordinator assigned</span>
+            <span className="text-xs text-slate-400 italic">{t('blocks.no_coordinator_assigned')}</span>
           ) : block.coordinators.map(c => (
-            <div key={c.id} className="flex items-center gap-1 bg-primary/5 rounded-full px-2 py-0.5" title={c.type === 'resident' ? 'Resident' : 'Householder'}>
+            <div key={c.id} className="flex items-center gap-1 bg-primary/5 rounded-full px-2 py-0.5" title={c.type === 'resident' ? t('blocks.type_resident') : t('blocks.type_householder')}>
               <div className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[8px] font-bold">
                 {c.type === 'resident' ? 'R' : 'H'}
               </div>
@@ -174,13 +175,13 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggl
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
         <StatusBadge status={block.is_active ? 'active' : 'inactive'} />
         <div className="flex gap-1">
-          <button onClick={() => onManageUnits(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title="Manage Units">
+          <button onClick={() => onManageUnits(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_manage_units')}>
             <span className="material-icons text-sm">home_work</span>
           </button>
-          <button onClick={() => onEdit(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title="Edit">
+          <button onClick={() => onEdit(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_edit')}>
             <span className="material-icons text-sm">edit</span>
           </button>
-          <button onClick={() => onDelete(block)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer" title="Delete">
+          <button onClick={() => onDelete(block)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_delete')}>
             <span className="material-icons text-sm">delete_outline</span>
           </button>
         </div>
@@ -304,12 +305,12 @@ export default function Blocks() {
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
             <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Importing Data...</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t('blocks.importing_data')}</h3>
             
             {importJob ? (
               <div className="w-full">
                 <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
-                  <span>Progress</span>
+                  <span>{t('blocks.progress')}</span>
                   <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 overflow-hidden border border-slate-200 dark:border-slate-700">
@@ -319,10 +320,10 @@ export default function Blocks() {
                 <p className="text-xs text-slate-400 text-center">{importJob.status}...</p>
               </div>
             ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Uploading file to server...</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{t('blocks.uploading_file')}</p>
             )}
             
-            <button onClick={() => setImporting(false)} className="mt-6 px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer">Run in Background</button>
+            <button onClick={() => setImporting(false)} className="mt-6 px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer">{t('blocks.run_in_background')}</button>
           </div>
         </div>
       )}
@@ -335,7 +336,7 @@ export default function Blocks() {
         >
           <div className="flex items-center gap-3 mb-3">
              <span className="material-icons text-primary animate-spin text-xl">autorenew</span>
-             <h4 className="text-sm font-bold text-slate-800 dark:text-white">Importing Blocks...</h4>
+             <h4 className="text-sm font-bold text-slate-800 dark:text-white">{t('blocks.importing_blocks')}</h4>
           </div>
           <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1.5 overflow-hidden">
             <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
@@ -360,9 +361,9 @@ export default function Blocks() {
       <BlockModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} residents={residents} householders={householders} />
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, type: 'delete', item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
-        title={confirm.type === 'bulk' ? 'Delete Selected?' : 'Delete Block?'} 
-        message={confirm.type === 'bulk' ? `Delete <strong>${selected.length}</strong> selected blocks permanently?` : `Permanently delete block <strong>${confirm.item?.name}</strong>? This cannot be undone.`}
-        confirmLabel="Yes, Delete" />
+        title={confirm.type === 'bulk' ? t('blocks.delete_bulk_title') : t('blocks.delete_title')} 
+        message={confirm.type === 'bulk' ? <Trans i18nKey="blocks.delete_bulk_message" values={{ count: selected.length }}>Delete <strong>{selected.length}</strong> selected blocks permanently?</Trans> : <Trans i18nKey="blocks.delete_message" values={{ name: confirm.item?.name }}>Permanently delete block <strong>{confirm.item?.name}</strong>? This cannot be undone.</Trans>}
+        confirmLabel={t('blocks.btn_delete')} />
 
       <PageHeader
         title={t('blocks.title')}
@@ -372,7 +373,7 @@ export default function Blocks() {
             <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="hidden" onChange={handleImportExcel} />
             <button onClick={() => fileInputRef.current?.click()} disabled={importing}
               className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : t('common.import')}
+              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('blocks.importing_data') : t('common.import')}
             </button>
             <button onClick={() => setModal({ open: true, data: null })}
               className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
@@ -389,14 +390,14 @@ export default function Blocks() {
       <div className="mb-6 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3 pl-2">
            <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
-           <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3">Select All</span>
+           <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3">{t('blocks.select_all')}</span>
            <span className={`text-sm font-semibold transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
-             {selected.length} selected
+             {t('blocks.selected_count', { count: selected.length })}
            </span>
         </div>
         {selected.length > 0 && (
           <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
-            <span className="material-icons text-sm">delete</span> Delete Selected
+            <span className="material-icons text-sm">delete</span> {t('blocks.btn_delete_selected')}
           </button>
         )}
       </div>
@@ -405,7 +406,7 @@ export default function Blocks() {
         <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>
       ) : filtered.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8">
-          <EmptyState icon="apartment" title="No blocks yet" subtitle="Add your first block to get started" />
+          <EmptyState icon="apartment" title={t('blocks.empty_title')} subtitle={t('blocks.empty_subtitle')} />
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

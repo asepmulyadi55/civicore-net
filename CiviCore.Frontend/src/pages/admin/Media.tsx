@@ -1,5 +1,6 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, EmptyState, Modal, FormInput } from '../../admin/components/ui';
@@ -14,6 +15,7 @@ interface MediaFile {
 }
 
 function MediaCard({ file, onDelete }: { file: MediaFile; onDelete: (f: MediaFile) => void }) {
+  const { t } = useTranslation();
   const isImage = file.mime_type?.startsWith('image/');
   const ext = file.name.split('.').pop()?.toUpperCase() || 'FILE';
   const sizeLabel = file.size > 1024 * 1024
@@ -38,7 +40,7 @@ function MediaCard({ file, onDelete }: { file: MediaFile; onDelete: (f: MediaFil
         <div className="flex items-center justify-between mt-3">
           <a href={file.url} target="_blank" rel="noopener noreferrer"
             className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
-            <span className="material-icons text-sm">open_in_new</span> View
+            <span className="material-icons text-sm">open_in_new</span> {t('media.view')}
           </a>
           <button onClick={() => onDelete(file)} className="p-1 text-slate-400 hover:text-rose-500 transition-colors">
             <span className="material-icons text-lg">delete_outline</span>
@@ -50,6 +52,7 @@ function MediaCard({ file, onDelete }: { file: MediaFile; onDelete: (f: MediaFil
 }
 
 export default function Media() {
+  const { t } = useTranslation();
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -88,7 +91,7 @@ export default function Media() {
   };
 
   return (
-    <AdminLayout title="Media">
+    <AdminLayout title={t('media.title')}>
       {/* Delete confirm */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)}>
@@ -98,12 +101,12 @@ export default function Media() {
                 <span className="material-icons text-rose-600 text-2xl">delete_forever</span>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Delete File?</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Delete <strong>{deleteConfirm.name}</strong>? This cannot be undone.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('media.delete_title')}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1"><Trans i18nKey="media.delete_message" values={{ name: deleteConfirm.name }}>Delete <strong>{deleteConfirm.name}</strong>? This cannot be undone.</Trans></p>
               </div>
               <div className="flex gap-3 w-full">
-                <button onClick={() => setDeleteConfirm(null)} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
-                <button onClick={doDelete} className="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-all">Delete</button>
+                <button onClick={() => setDeleteConfirm(null)} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">{t('media.btn_cancel')}</button>
+                <button onClick={doDelete} className="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-all">{t('media.btn_delete')}</button>
               </div>
             </div>
           </div>
@@ -111,12 +114,12 @@ export default function Media() {
       )}
 
       <PageHeader
-        title="Media Library"
-        subtitle="Manage uploaded files, images, and documents"
+        title={t('media.title')}
+        subtitle={t('media.subtitle')}
         actions={
           <label className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all cursor-pointer">
             <span className="material-icons text-sm">{uploading ? 'hourglass_top' : 'upload'}</span>
-            {uploading ? 'Uploading...' : 'Upload Files'}
+            {uploading ? t('media.uploading') : t('media.upload_files')}
             <input type="file" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
           </label>
         }
@@ -125,7 +128,7 @@ export default function Media() {
       <div className="mb-6">
         <div className="relative w-full sm:max-w-sm">
           <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search files…"
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('media.search_placeholder')}
             className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none dark:text-white" />
         </div>
       </div>
@@ -134,7 +137,7 @@ export default function Media() {
         <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>
       ) : files.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8">
-          <EmptyState icon="perm_media" title="No files uploaded" subtitle="Upload files using the button above" />
+          <EmptyState icon="perm_media" title={t('media.empty_title')} subtitle={t('media.empty_subtitle')} />
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">

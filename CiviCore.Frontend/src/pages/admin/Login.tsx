@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation, Link, useSearchParams } from 'react-router-dom';
 import useDarkMode from '../../admin/useDarkMode';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -20,6 +21,7 @@ export default function Login() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [dark, toggleDark] = useDarkMode();
+  const { t } = useTranslation();
 
   const [successMessage, setSuccessMessage] = useState(location.state?.message);
 
@@ -45,7 +47,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!username || !password) {
-      setError('Please enter your username/email and password.');
+      setError(t('login.err_empty'));
       return;
     }
 
@@ -69,7 +71,7 @@ export default function Login() {
         setIsSettingUp2FA(true);
         fetch2FASetup();
       } else {
-        setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+        setError(err.response?.data?.message || t('login.err_default'));
       }
     } finally {
       setIsLoading(false);
@@ -95,7 +97,7 @@ export default function Login() {
   const handle2FASubmit = async (e) => {
     e.preventDefault();
     if (!twoFaCode) {
-      setError('Please enter your 6-digit code.');
+      setError(t('login.err_code_empty'));
       return;
     }
 
@@ -297,7 +299,7 @@ export default function Login() {
                         className={`block w-full pl-10 pr-10 py-2.5 bg-surface border border-surface-var rounded-lg text-on-surface placeholder:text-on-surface-var focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none [&::-ms-reveal]:hidden [&::-webkit-contacts-auto-fill-button]:hidden ${!password && error === 'Please enter your username/email and password.' ? 'border-red-500 dark:border-red-500' : ''}`}
                         id="password"
                         name="password"
-                        placeholder="••••••••"
+                        placeholder={t('login.field_password_placeholder')}
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}

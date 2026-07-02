@@ -6,6 +6,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { compressImage } from '../../utils/imageCompressor';
 import AdminLayout from '../../admin/AdminLayout';
+import { useTranslation } from 'react-i18next';
 import { PageHeader, Modal, ConfirmModal, FormInput, FormSelect, SearchInput, SelectFilter, FilterBar, Pagination, TableWrapper, Th, EmptyState, StatusBadge } from '../../admin/components/ui';
 import NavigationTab from '../../admin/homepage/Navigation';
 
@@ -1453,6 +1454,7 @@ function MetadataTab() {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function AdminHomepage() {
+  const { t } = useTranslation();
   const { tab } = useParams();
   const activeTab = tab || 'hero';
 
@@ -1473,12 +1475,12 @@ export default function AdminHomepage() {
     }
   };
 
-  const tabTitle = TABS.find(t => t.key === activeTab)?.label || 'Homepage CMS';
+  const tabTitle = t(`homepage.tab_${activeTab}`, { defaultValue: TABS.find(t => t.key === activeTab)?.label || 'Homepage CMS' });
 
   return (
     <AdminLayout title={tabTitle}>
       <div className="max-w-7xl mx-auto pb-12">
-        <PageHeader title={tabTitle} subtitle="Manage homepage content" />
+        <PageHeader title={tabTitle} subtitle={t('homepage.subtitle', { defaultValue: "Manage homepage content" })} />
 
         {/* Active Tab Content */}
         {renderTab()}
