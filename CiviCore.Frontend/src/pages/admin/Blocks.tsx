@@ -5,7 +5,8 @@ import AdminLayout from '../../admin/AdminLayout';
 import {
   StatusBadge, EmptyState, Modal, ConfirmModal,
   PageHeader, FilterBar, SearchInput,
-  TableWrapper, Th, FormInput, FormSelect, SearchableSelect, CustomSelect
+  TableWrapper, Th, FormInput, FormSelect, SearchableSelect, CustomSelect,
+  BulkActionBar
 } from '../../admin/components/ui';
 
 function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
@@ -117,7 +118,7 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
   );
 }
 
-function BlockCard({ block, onEdit, onDelete, onManageUnits }) {
+function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggleSelect }) {
   const stats = [
     { label: 'Units', value: block.units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
     { label: 'Occupied', value: block.owner_occupied_units_count ?? 0, cls: 'bg-emerald-50 dark:bg-emerald-900/10', valCls: 'text-emerald-500' },
@@ -127,12 +128,20 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits }) {
     { label: 'Developer', value: block.developer_units_count ?? 0, cls: 'bg-indigo-50 dark:bg-indigo-900/10', valCls: 'text-indigo-500' },
   ];
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 flex flex-col gap-4 hover:shadow-md hover:border-primary/30 transition-all">
+    <div className={`relative bg-white dark:bg-slate-900 rounded-xl border ${isSelected ? 'border-primary ring-1 ring-primary/30' : 'border-slate-200 dark:border-slate-800'} shadow-sm p-6 flex flex-col gap-4 hover:shadow-md hover:border-primary/30 transition-all`}>
+      <div className="absolute top-4 right-4 z-10">
+        <input 
+          type="checkbox" 
+          checked={isSelected}
+          onChange={(e) => onToggleSelect(block.id, e.target.checked)}
+          className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer"
+        />
+      </div>
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center flex-shrink-0">
           <span className="material-icons text-2xl">apartment</span>
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-6">
           <h3 className="font-bold text-slate-900 dark:text-white truncate">{block.name}</h3>
           {block.description && <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{block.description}</p>}
         </div>
@@ -184,9 +193,11 @@ export default function Blocks() {
   const [householders, setHouseholders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState([]);
   const [modal, setModal] = useState({ open: false, data: null });
-  const [confirm, setConfirm] = useState({ open: false, item: null, loading: false });
+  const [confirm, setConfirm] = useState({ open: false, type: 'delete', item: null, loading: false });
   const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState({ open: false, success: true, message: '' });
   const fileInputRef = useRef(null);
   const token = localStorage.getItem('admin_token');
   if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -210,7 +221,16 @@ export default function Blocks() {
 
   const doDelete = async () => {
     setConfirm(c => ({ ...c, loading: true }));
-    try { await axios.delete(`/api/blocks/${confirm.item.id}`); fetchData(); setConfirm({ open: false, item: null, loading: false }); }
+    try {
+      if (confirm.type === 'bulk') {
+        await axios.delete('/api/blocks/bulk', { data: { ids: selected } });
+        setSelected([]);
+      } else {
+        await axios.delete(`/api/blocks/${confirm.item.id}`);
+      }
+      fetchData(); 
+      setConfirm({ open: false, type: 'delete', item: null, loading: false }); 
+    }
     catch { setConfirm(c => ({ ...c, loading: false })); }
   };
 
@@ -226,10 +246,10 @@ export default function Blocks() {
       const res = await axios.post('/api/blocks/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      alert(res.data.message || 'Import successful!');
+      setImportResult({ open: true, success: true, message: res.data.message || 'Import successful!' });
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to import Excel file.');
+      setImportResult({ open: true, success: false, message: err.response?.data?.message || 'Failed to import Excel file.' });
     } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -238,12 +258,39 @@ export default function Blocks() {
 
   const filtered = blocks.filter(b => !search || b.name?.toLowerCase().includes(search.toLowerCase()));
 
+  const allChecked = filtered.length > 0 && selected.length === filtered.length;
+  const toggleAll = (e) => {
+    if (e.target.checked) setSelected(filtered.map(b => b.id));
+    else setSelected([]);
+  };
+
   return (
     <AdminLayout title="Blocks">
+      {importing && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center">
+            <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Importing Data...</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Please wait while we process the Excel file.</p>
+          </div>
+        </div>
+      )}
+      
+      <Modal open={importResult.open} onClose={() => setImportResult(prev => ({ ...prev, open: false }))} title={importResult.success ? 'Import Successful' : 'Import Failed'} size="sm">
+        <div className="flex flex-col items-center pt-2 pb-4 text-center">
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${importResult.success ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600'}`}>
+            <span className="material-icons text-3xl">{importResult.success ? 'check_circle' : 'error'}</span>
+          </div>
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{importResult.message}</p>
+          <button onClick={() => setImportResult(prev => ({ ...prev, open: false }))} className="mt-6 px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold w-full transition-all cursor-pointer">Close</button>
+        </div>
+      </Modal>
+
       <BlockModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} residents={residents} householders={householders} />
-      <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
+      <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, type: 'delete', item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
-        title="Delete Block?" message={`Permanently delete block <strong>${confirm.item?.name}</strong>? This cannot be undone.`}
+        title={confirm.type === 'bulk' ? 'Delete Selected?' : 'Delete Block?'} 
+        message={confirm.type === 'bulk' ? `Delete <strong>${selected.length}</strong> selected blocks permanently?` : `Permanently delete block <strong>${confirm.item?.name}</strong>? This cannot be undone.`}
         confirmLabel="Yes, Delete" />
 
       <PageHeader
@@ -253,7 +300,7 @@ export default function Blocks() {
           <div className="flex items-center gap-2">
             <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="hidden" onChange={handleImportExcel} />
             <button onClick={() => fileInputRef.current?.click()} disabled={importing}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#059669] hover:bg-[#047857] text-white text-sm font-bold rounded-lg shadow-lg shadow-emerald-600/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-50">
+              className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
               <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : 'Import Excel'}
             </button>
             <button onClick={() => setModal({ open: true, data: null })}
@@ -268,6 +315,21 @@ export default function Blocks() {
         <SearchInput value={search} onChange={setSearch} placeholder="Search blocks…" />
       </FilterBar>
 
+      <div className="mb-6 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3 pl-2">
+           <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+           <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3">Select All</span>
+           <span className={`text-sm font-semibold transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
+             {selected.length} selected
+           </span>
+        </div>
+        {selected.length > 0 && (
+          <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
+            <span className="material-icons text-sm">delete</span> Delete Selected
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>
       ) : filtered.length === 0 ? (
@@ -278,8 +340,10 @@ export default function Blocks() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filtered.map(block => (
             <BlockCard key={block.id} block={block}
+              isSelected={selected.includes(block.id)}
+              onToggleSelect={(id, checked) => setSelected(prev => checked ? [...prev, id] : prev.filter(s => s !== id))}
               onEdit={b => setModal({ open: true, data: b })}
-              onDelete={b => setConfirm({ open: true, item: b, loading: false })}
+              onDelete={b => setConfirm({ open: true, type: 'delete', item: b, loading: false })}
               onManageUnits={b => window.location.href = `/admin/blocks/${b.id}/units`}
             />
           ))}

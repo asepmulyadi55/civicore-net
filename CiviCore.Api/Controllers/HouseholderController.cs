@@ -4,6 +4,7 @@ using CiviCore.Infrastructure.Data;
 using CiviCore.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using CiviCore.Api.Services;
+using ClosedXML.Excel;
 
 namespace CiviCore.Api.Controllers;
 
@@ -192,6 +193,118 @@ public class HouseholderController : ControllerBase
         _context.Set<Householder>().RemoveRange(householders);
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpPost("import")]
+    public async Task<IActionResult> ImportExcel([FromForm] IFormFile excel_file, [FromForm] int year = 2026)
+    {
+        if (excel_file == null || excel_file.Length == 0)
+            return BadRequest(new { message = "Please choose an Excel file to upload." });
+
+        if (year < 2020 || year > 2035)
+            return BadRequest(new { message = "Year must be between 2020 and 2035." });
+
+        using var stream = new MemoryStream();
+        await excel_file.CopyToAsync(stream);
+        using var workbook = new XLWorkbook(stream);
+        var worksheet = workbook.Worksheet(1);
+        var rowCount = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+
+        int householdersCreated = 0;
+        int householdersSkipped = 0;
+        int feesCreated = 0;
+
+        var effectiveFrom = new DateTime(year, 1, 1);
+        var blockCache = new Dictionary<string, Block>();
+        var unitCache = new Dictionary<string, Unit>();
+
+        string currentBlock = "";
+
+        for (int row = 2; row <= rowCount; row++)
+        {
+            var blockLetter = (worksheet.Cell(row, 1).Value.ToString() ?? "").Trim().ToUpper();
+            if (!string.IsNullOrEmpty(blockLetter))
+            {
+                currentBlock = blockLetter;
+            }
+            else
+            {
+                blockLetter = currentBlock;
+            }
+
+            var unitNum = (worksheet.Cell(row, 2).Value.ToString() ?? "").Trim();
+            var name = (worksheet.Cell(row, 3).Value.ToString() ?? "").Trim();
+            var rawStatus = System.Text.RegularExpressions.Regex.Replace(
+                (worksheet.Cell(row, 4).Value.ToString() ?? "").Trim().ToLower(),
+                @"\s+", " ");
+
+            if (string.IsNullOrEmpty(blockLetter) || string.IsNullOrEmpty(unitNum) || string.IsNullOrEmpty(name)) continue;
+            
+            var skipStatuses = new[] { "fasum", "fasilitasumum", "developer" };
+            if (skipStatuses.Contains(rawStatus)) continue;
+            
+            if (!blockLetter.All(char.IsLetter)) continue;
+
+            if (!blockCache.ContainsKey(blockLetter))
+            {
+                var b = await _context.Set<Block>().FirstOrDefaultAsync(x => x.Name == blockLetter);
+                if (b == null) continue;
+                blockCache[blockLetter] = b;
+            }
+            var block = blockCache[blockLetter];
+
+            string unitCacheKey = $"{block.Id}_{unitNum}";
+            if (!unitCache.ContainsKey(unitCacheKey))
+            {
+                var u = await _context.Set<Unit>().FirstOrDefaultAsync(x => x.BlockId == block.Id && x.UnitNumber == unitNum);
+                if (u == null) continue;
+                unitCache[unitCacheKey] = u;
+            }
+            var unit = unitCache[unitCacheKey];
+
+            var householder = await _context.Set<Householder>().FirstOrDefaultAsync(h => h.UnitId == unit.Id);
+            if (householder == null)
+            {
+                householder = new Householder
+                {
+                    UnitId = unit.Id,
+                    BlockId = block.Id,
+                    Fullname = name,
+                    IsActive = true
+                };
+                _context.Set<Householder>().Add(householder);
+                await _context.SaveChangesAsync();
+                householdersCreated++;
+            }
+            else
+            {
+                householdersSkipped++;
+            }
+
+            var feeAmountStr = (worksheet.Cell(row, 5).Value.ToString() ?? "").Trim();
+            if (decimal.TryParse(feeAmountStr, out decimal feeAmount) && feeAmount > 0)
+            {
+                var feeExists = await _context.Set<FeeHistory>()
+                    .AnyAsync(f => f.HouseholderId == householder.Id && f.EffectiveFrom == effectiveFrom);
+                
+                if (!feeExists)
+                {
+                    var fee = new FeeHistory
+                    {
+                        HouseholderId = householder.Id,
+                        Amount = feeAmount,
+                        EffectiveFrom = effectiveFrom,
+                        Notes = $"Imported from Excel ({year})"
+                    };
+                    _context.Set<FeeHistory>().Add(fee);
+                    await _context.SaveChangesAsync();
+                    feesCreated++;
+                }
+            }
+        }
+
+        var summary = $"Import complete — {householdersCreated} householder(s) created, {householdersSkipped} already existed | {feesCreated} fee record(s) created.";
+        return Ok(new { message = summary });
     }
 
     [HttpPatch("{id}/deactivate")]

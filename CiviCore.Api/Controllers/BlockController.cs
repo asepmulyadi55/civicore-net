@@ -165,6 +165,26 @@ public class BlockController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
+    public class BulkDeleteRequest { public List<Guid> Ids { get; set; } = new(); }
+
+    [HttpDelete("bulk")]
+    public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteRequest request)
+    {
+        var blocks = await _context.Set<Block>()
+            .Include(b => b.Coordinators)
+            .Where(b => request.Ids.Contains(b.Id))
+            .ToListAsync();
+
+        foreach (var block in blocks)
+        {
+            _context.Set<BlockCoordinator>().RemoveRange(block.Coordinators);
+            _context.Set<Block>().Remove(block);
+        }
+
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
     [HttpPost("import")]
     public async Task<IActionResult> ImportExcel([FromForm] IFormFile excel_file)
     {

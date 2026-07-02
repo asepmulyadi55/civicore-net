@@ -98,6 +98,12 @@ export default function Householders() {
   const [modal, setModal] = useState({ open: false, data: null });
   const [confirm, setConfirm] = useState({ open: false, type: null, item: null, loading: false });
 
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importYear, setImportYear] = useState(new Date().getFullYear());
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState({ open: false, success: true, message: '' });
+  const fileInputRef = React.useRef(null);
+
   const token = localStorage.getItem('admin_token');
   if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
@@ -136,12 +142,77 @@ export default function Householders() {
     } catch { setConfirm(c => ({ ...c, loading: false })); }
   };
 
+  const handleImportSubmit = async () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      alert("Please select a file.");
+      return;
+    }
+    setImportModalOpen(false);
+    setImporting(true);
+    const formData = new FormData();
+    formData.append('excel_file', file);
+    formData.append('year', importYear.toString());
+
+    try {
+      const res = await axios.post('/api/householders/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setImportResult({ open: true, success: true, message: res.data.message || 'Import successful!' });
+      fetchData();
+    } catch (err) {
+      setImportResult({ open: true, success: false, message: err.response?.data?.message || 'Failed to import Excel file.' });
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const setFilter = (k, v) => setFilters(p => ({ ...p, [k]: v, page: 1 }));
 
   const blockOptions = blocks.map(b => ({ value: String(b.id), label: b.name }));
 
   return (
     <AdminLayout title="Residents">
+      {importing && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center">
+            <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Importing Data...</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Please wait while we process the Excel file.</p>
+          </div>
+        </div>
+      )}
+      
+      <Modal open={importResult.open} onClose={() => setImportResult(prev => ({ ...prev, open: false }))} title={importResult.success ? 'Import Successful' : 'Import Failed'} size="sm">
+        <div className="flex flex-col items-center pt-2 pb-4 text-center">
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${importResult.success ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600'}`}>
+            <span className="material-icons text-3xl">{importResult.success ? 'check_circle' : 'error'}</span>
+          </div>
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{importResult.message}</p>
+          <button onClick={() => setImportResult(prev => ({ ...prev, open: false }))} className="mt-6 px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold w-full transition-all cursor-pointer">Close</button>
+        </div>
+      </Modal>
+
+      <Modal open={importModalOpen} onClose={() => setImportModalOpen(false)} title="Import Householders" size="md">
+        <div className="flex flex-col gap-4 py-2">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Effective Year (For Fees)</label>
+            <FormInput type="number" value={importYear} onChange={e => setImportYear(parseInt(e.target.value) || 2026)} placeholder="2026" min={2020} max={2035} />
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Fee histories will start from January 1st of this year.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Excel File</label>
+            <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-colors" />
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Select an .xlsx file containing householders data.</p>
+          </div>
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <button onClick={() => setImportModalOpen(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold transition-all cursor-pointer">Cancel</button>
+            <button onClick={handleImportSubmit} className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity cursor-pointer">Import</button>
+          </div>
+        </div>
+      </Modal>
+
       <HouseholderModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} blocks={blocks} />
       <ConfirmModal
         open={confirm.open} onClose={closeConfirm} onConfirm={doConfirm} loading={confirm.loading}
@@ -156,10 +227,16 @@ export default function Householders() {
         title="Householders"
         subtitle="Manage all residential units and occupants"
         actions={
-          <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">add</span> Add Householder
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setImportModalOpen(true)} disabled={importing}
+              className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
+              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : 'Import Excel'}
+            </button>
+            <button onClick={() => setModal({ open: true, data: null })}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+              <span className="material-icons text-sm">add</span> Add Householder
+            </button>
+          </div>
         }
       />
 
