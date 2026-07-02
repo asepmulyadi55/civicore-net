@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import {
@@ -493,6 +494,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
 }
 
 export default function Payments() {
+  const { t } = useTranslation();
   const [data, setData] = useState([]);
   const [meta, setMeta] = useState(null);
   const [stats, setStats] = useState(null);
@@ -655,18 +657,18 @@ export default function Payments() {
       </div>
 
       <PageHeader 
-        title="Payment Records" 
-        subtitle="Manage and review resident payment submissions" 
+        title={t('payments.title')} 
+        subtitle={t('payments.subtitle')} 
         actions={
           <div className="flex gap-2">
             <button onClick={() => fileInputRef.current?.click()} disabled={importing}
               className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : 'Import Excel'}
+              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : t('payments.import_excel')}
             </button>
             <input type="file" ref={fileInputRef} onChange={handleImportExcel} className="hidden" accept=".xlsx,.xls" />
             <button onClick={() => setAddModal(true)}
               className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-              <span className="material-icons text-sm">add</span> Record Payment
+              <span className="material-icons text-sm">add</span> {t('payments.record_payment')}
             </button>
           </div>
         }
@@ -829,7 +831,9 @@ export default function Payments() {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">{initials}</div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{name}</p>
+                        <div className="font-bold text-slate-900 dark:text-white">
+                          {name} {!p.householderId && <span className="text-[10px] text-rose-500 ml-1 px-1.5 py-0.5 bg-rose-100 dark:bg-rose-900/30 rounded font-bold uppercase">(Deleted)</span>}
+                        </div>
                         <p className="text-xs text-slate-500">Unit {p.unit || p.householder?.unit_number || '—'}</p>
                       </div>
                     </div>

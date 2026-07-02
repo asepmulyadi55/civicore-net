@@ -32,7 +32,7 @@ import { useTranslation } from 'react-i18next';
 
 // ── Profile Tab ───────────────────────────────────────────────────────────
 function ProfileTab({ flash, setFlash }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [name, setName] = useState('');
   const [language, setLanguage] = useState('en');
@@ -90,7 +90,7 @@ function ProfileTab({ flash, setFlash }) {
     <div className="space-y-6">
       {/* Photo */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
-        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Photo</h2>
+        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">{t('settings.photo')}</h2>
         <div className="flex items-center gap-5">
           <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-primary/10 border-2 border-white dark:border-slate-800 shadow-md flex items-center justify-center">
             {avatarPreview ? (
@@ -102,7 +102,7 @@ function ProfileTab({ flash, setFlash }) {
           <div>
             <button onClick={() => fileRef.current?.click()}
               className="inline-flex items-center gap-2 cursor-pointer px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700">
-              <span className="material-icons text-sm">upload</span> Upload photo
+              <span className="material-icons text-sm">upload</span> {t('settings.upload_photo')}
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             <p className="text-xs text-slate-400 mt-2">JPG, PNG or WEBP · Max 2 MB · Recommended: 400x400 (1:1)</p>
@@ -112,20 +112,20 @@ function ProfileTab({ flash, setFlash }) {
 
       {/* Identity */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-5">
-        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Identity</h2>
+        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('settings.identity')}</h2>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.full_name')}</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)}
             className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.email')}</label>
           <input type="email" value={profile?.email || ''} disabled
             className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-400 cursor-not-allowed" />
           <p className="text-xs text-slate-400 mt-1">Email cannot be changed here. Contact your admin if needed.</p>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Username</label>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.username')}</label>
           <input type="text" value={profile?.username || ''} disabled
             className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-400 cursor-not-allowed" />
         </div>
@@ -133,7 +133,7 @@ function ProfileTab({ flash, setFlash }) {
 
       {/* Language */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
-        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Language</h2>
+        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">{t('settings.language')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[{ code: 'en', flag: 'GB', label: 'English' }, { code: 'id', flag: 'ID', label: 'Indonesian' }].map(lang => (
             <label key={lang.code} htmlFor={`lang-${lang.code}`}
@@ -158,7 +158,7 @@ function ProfileTab({ flash, setFlash }) {
       <div className="flex justify-end">
         <button onClick={handleSave} disabled={saving}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-          <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Save Profile'}
+          <span className="material-icons text-sm">save</span> {saving ? t('settings.saving') : t('settings.save_profile')}
         </button>
       </div>
     </div>

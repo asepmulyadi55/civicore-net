@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import {
@@ -10,6 +11,7 @@ import {
 } from '../../admin/components/ui';
 
 function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
+  const { t } = useTranslation();
   const isEdit = !!data?.id;
   const [form, setForm] = useState({ name: '', description: '', is_active: true, coordinators: [] });
   const [errors, setErrors] = useState({});
@@ -55,7 +57,7 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit Block' : 'Add New Block'} size="md">
+    <Modal open={open} onClose={onClose} title={isEdit ? t('common.edit') : t('common.add')} size="md">
       <div className="space-y-4">
         {errors.general && <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
         <FormInput label="Block Name" id="b-name" value={form.name} onChange={set('name')} error={errors.name} required placeholder="e.g. Block A" />
@@ -188,6 +190,7 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggl
 }
 
 export default function Blocks() {
+  const { t } = useTranslation();
   const [blocks, setBlocks] = useState([]);
   const [residents, setResidents] = useState([]);
   const [householders, setHouseholders] = useState([]);
@@ -296,7 +299,7 @@ export default function Blocks() {
   };
 
   return (
-    <AdminLayout title="Blocks">
+    <AdminLayout title={t('blocks.title')}>
       {importing && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
@@ -362,25 +365,25 @@ export default function Blocks() {
         confirmLabel="Yes, Delete" />
 
       <PageHeader
-        title="Blocks Management"
-        subtitle="Manage residential blocks and their coordinators"
+        title={t('blocks.title')}
+        subtitle={t('blocks.subtitle')}
         actions={
           <div className="flex items-center gap-2">
             <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="hidden" onChange={handleImportExcel} />
             <button onClick={() => fileInputRef.current?.click()} disabled={importing}
               className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : 'Import Excel'}
+              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : t('common.import')}
             </button>
             <button onClick={() => setModal({ open: true, data: null })}
               className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-              <span className="material-icons text-sm">add</span> Add Block
+              <span className="material-icons text-sm">add</span> {t('blocks.add_block')}
             </button>
           </div>
         }
       />
 
       <FilterBar>
-        <SearchInput value={search} onChange={setSearch} placeholder="Search blocks…" />
+        <SearchInput value={search} onChange={setSearch} placeholder={t('common.search')} />
       </FilterBar>
 
       <div className="mb-6 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between shadow-sm">

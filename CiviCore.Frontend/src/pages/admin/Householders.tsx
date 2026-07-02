@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
@@ -89,6 +90,7 @@ function HouseholderModal({ open, onClose, onSaved, data, blocks }) {
 }
 
 export default function Householders() {
+  const { t } = useTranslation();
   const [data, setData] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -101,7 +103,7 @@ export default function Householders() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importYear, setImportYear] = useState(new Date().getFullYear());
   const [importing, setImporting] = useState(false);
-  const [importJob, setImportJob] = useState<any>(null);
+  const [importJob, setImportJob] = useState(null);
   const [importResult, setImportResult] = useState({ open: false, success: true, message: '' });
   const fileInputRef = React.useRef(null);
 
@@ -288,17 +290,17 @@ export default function Householders() {
       />
 
       <PageHeader
-        title="Householders"
-        subtitle="Manage all residential units and occupants"
+        title={t('householders.title')}
+        subtitle={t('householders.subtitle')}
         actions={
           <div className="flex items-center gap-2">
             <button onClick={() => setImportModalOpen(true)} disabled={importing}
               className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : 'Import Excel'}
+              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? 'Importing...' : t('householders.import_excel')}
             </button>
             <button onClick={() => setModal({ open: true, data: null })}
               className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-              <span className="material-icons text-sm">add</span> Add Householder
+              <span className="material-icons text-sm">add</span> {t('householders.add_householder')}
             </button>
           </div>
         }
