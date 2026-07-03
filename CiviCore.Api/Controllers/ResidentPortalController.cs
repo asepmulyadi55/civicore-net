@@ -140,6 +140,11 @@ public class ResidentPortalController : ControllerBase
             photoPath = resident.PhotoPath,
             blockName = resident.Block.Name,
             unitNumber = resident.Unit.UnitNumber,
+            blockId = resident.BlockId,
+            unitId = resident.UnitId,
+            monthlyFee = resident.FeeHistories.OrderByDescending(f => f.EffectiveFrom).FirstOrDefault()?.Amount ?? 0,
+            houseStatus = resident.Unit.HouseStatus,
+            isActive = resident.IsActive,
             residents = resident.Residents.Select(r => new
             {
                 id = r.Id,
@@ -148,7 +153,8 @@ public class ResidentPortalController : ControllerBase
                 gender = r.Gender,
                 birthDate = r.BirthDate?.ToString("yyyy-MM-dd"),
                 occupation = r.Occupation,
-                education = r.Education
+                education = r.Education,
+                photoPath = r.PhotoPath
             })
         });
     }
@@ -158,6 +164,7 @@ public class ResidentPortalController : ControllerBase
         public string? Phone { get; set; }
         public string? Email { get; set; }
         public string? Notes { get; set; }
+        public string? PhotoPath { get; set; }
     }
 
     [HttpPut("household")]
@@ -172,6 +179,7 @@ public class ResidentPortalController : ControllerBase
         resident.Phone = dto.Phone;
         resident.Email = dto.Email;
         resident.Notes = dto.Notes;
+        resident.PhotoPath = dto.PhotoPath;
 
         await _context.SaveChangesAsync();
         return Ok(new { message = "Household updated successfully." });
@@ -185,6 +193,7 @@ public class ResidentPortalController : ControllerBase
         public DateTime? BirthDate { get; set; }
         public string? Occupation { get; set; }
         public string? Education { get; set; }
+        public string? PhotoPath { get; set; }
     }
 
     [HttpPost("household/residents")]
@@ -202,9 +211,10 @@ public class ResidentPortalController : ControllerBase
             Fullname = dto.Fullname,
             Relationship = dto.Relationship,
             Gender = dto.Gender,
-            BirthDate = dto.BirthDate,
+            BirthDate = dto.BirthDate.HasValue ? DateTime.SpecifyKind(dto.BirthDate.Value, DateTimeKind.Utc) : null,
             Occupation = dto.Occupation,
-            Education = dto.Education
+            Education = dto.Education,
+            PhotoPath = dto.PhotoPath
         };
 
         _context.Set<Resident>().Add(newResident);
@@ -228,9 +238,10 @@ public class ResidentPortalController : ControllerBase
         resident.Fullname = dto.Fullname;
         resident.Relationship = dto.Relationship;
         resident.Gender = dto.Gender;
-        resident.BirthDate = dto.BirthDate;
+        resident.BirthDate = dto.BirthDate.HasValue ? DateTime.SpecifyKind(dto.BirthDate.Value, DateTimeKind.Utc) : null;
         resident.Occupation = dto.Occupation;
         resident.Education = dto.Education;
+        resident.PhotoPath = dto.PhotoPath;
 
         await _context.SaveChangesAsync();
         return Ok(new { message = "Resident updated successfully." });
