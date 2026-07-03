@@ -66,7 +66,7 @@ export default function Router() {
         <Route path="/admin/*" element={<AdminLayout />} />
 
         {/* Auth pages */}
-        <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin/register" element={<Register />} />
         <Route path="/admin/forgot-password" element={<ForgotPassword />} />

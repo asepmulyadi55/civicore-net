@@ -14,22 +14,32 @@ interface Role {
 }
 
 const AVAILABLE_PERMISSIONS = {
-  overview: ['view'],
   dashboard: ['view'],
-  homepage: ['view', 'create', 'edit', 'delete'],
   householders: ['view', 'create', 'edit', 'delete'],
-  household: ['view', 'edit'],
   blocks: ['view', 'create', 'edit', 'delete'],
+  organization: ['view', 'create', 'edit', 'delete'],
+  meetings: ['view', 'create', 'edit', 'delete'],
+  posyandu: ['view', 'create', 'edit', 'delete'],
+  finance: ['view', 'create', 'edit', 'delete', 'approve'],
   payments: ['view', 'create', 'edit', 'delete', 'approve'],
   reports: ['view'],
-  posyandu: ['view'],
   users: ['view', 'create', 'edit', 'delete', 'approve'],
   roles: ['view', 'create', 'edit', 'delete'],
-  property: ['view', 'create', 'edit', 'delete'],
   media: ['view', 'delete'],
-  organization: ['view', 'create', 'edit', 'delete'],
-  finance: ['view', 'create', 'edit', 'delete', 'approve'],
-  meetings: ['view', 'create', 'edit', 'delete']
+  homepage_hero: ['view', 'edit'],
+  homepage_events: ['view', 'create', 'edit', 'delete'],
+  homepage_gallery: ['view', 'create', 'edit', 'delete'],
+  homepage_bulletin: ['view', 'create', 'edit', 'delete'],
+  homepage_property: ['view', 'create', 'edit', 'delete'],
+  homepage_navigation: ['view', 'create', 'edit', 'delete'],
+  homepage_footer: ['view', 'edit'],
+  homepage_metadata: ['view', 'edit'],
+  overview: ['view'],
+  my_household: ['view', 'edit'],
+  settings_profile: ['view', 'edit'],
+  settings_password: ['view', 'edit'],
+  settings_security: ['view', 'edit'],
+  settings_memo: ['view', 'edit']
 };
 
 function RoleModal({ open, onClose, onSaved, data }: { open: boolean; onClose: () => void; onSaved: () => void; data: Role | null }) {
@@ -89,7 +99,7 @@ function RoleModal({ open, onClose, onSaved, data }: { open: boolean; onClose: (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(AVAILABLE_PERMISSIONS).map(([module, actions]) => (
               <div key={module} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/50">
-                <h4 className="font-semibold text-slate-700 dark:text-slate-300 capitalize mb-3 text-sm">{module}</h4>
+                <h4 className="font-semibold text-slate-700 dark:text-slate-300 capitalize mb-3 text-sm">{module.replace(/_/g, ' ')}</h4>
                 <div className="flex flex-wrap gap-2">
                   {actions.map(action => {
                     const key = `${module}.${action}`;

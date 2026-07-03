@@ -26,6 +26,12 @@ export default function Login() {
   const [successMessage, setSuccessMessage] = useState(location.state?.message);
 
   React.useEffect(() => {
+    if (localStorage.getItem('admin_token')) {
+      navigate('/admin/dashboard');
+    }
+  }, [navigate]);
+
+  React.useEffect(() => {
     const token = searchParams.get('token');
     const userStr = searchParams.get('user');
     const msg = searchParams.get('message');
