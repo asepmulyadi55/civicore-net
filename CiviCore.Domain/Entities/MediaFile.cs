@@ -15,6 +15,10 @@ public class MediaFile
     public int FileSize { get; set; }
     public string MimeType { get; set; } = string.Empty;
     
+    /// <summary>True = served via authenticated /api/media/path/ proxy (private storage).
+    /// False = served as static /public-media/ file.</summary>
+    public bool IsPrivate { get; set; } = true;
+    
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

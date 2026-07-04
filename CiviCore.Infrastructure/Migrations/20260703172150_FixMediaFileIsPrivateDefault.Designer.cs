@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CiviCore.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CiviCore.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260703172150_FixMediaFileIsPrivateDefault")]
+    partial class FixMediaFileIsPrivateDefault
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -590,67 +593,67 @@ namespace CiviCore.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2688),
+                            CreatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8577),
                             Order = 1,
                             ShowInFooter = true,
                             ShowInNavigation = true,
                             Title = "Home",
-                            UpdatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2697),
+                            UpdatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8580),
                             Url = "/"
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2710),
+                            CreatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8593),
                             Order = 2,
                             ShowInFooter = true,
                             ShowInNavigation = true,
                             Title = "Properties",
-                            UpdatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2710),
+                            UpdatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8594),
                             Url = "/#properties"
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2713),
+                            CreatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8607),
                             Order = 3,
                             ShowInFooter = true,
                             ShowInNavigation = true,
                             Title = "Events",
-                            UpdatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2713),
+                            UpdatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8607),
                             Url = "/#events"
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            CreatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2726),
+                            CreatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8609),
                             Order = 4,
                             ShowInFooter = true,
                             ShowInNavigation = true,
                             Title = "Gallery",
-                            UpdatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2726),
+                            UpdatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8610),
                             Url = "/#gallery"
                         },
                         new
                         {
                             Id = new Guid("55555555-5555-5555-5555-555555555555"),
-                            CreatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2729),
+                            CreatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8612),
                             Order = 5,
                             ShowInFooter = true,
                             ShowInNavigation = true,
                             Title = "Bulletins",
-                            UpdatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2729),
+                            UpdatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8613),
                             Url = "/#bulletins"
                         },
                         new
                         {
                             Id = new Guid("66666666-6666-6666-6666-666666666666"),
-                            CreatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2732),
+                            CreatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8615),
                             Order = 6,
                             ShowInFooter = true,
                             ShowInNavigation = true,
                             Title = "Contact",
-                            UpdatedAt = new DateTime(2026, 7, 3, 17, 33, 28, 19, DateTimeKind.Utc).AddTicks(2732),
+                            UpdatedAt = new DateTime(2026, 7, 3, 17, 21, 49, 656, DateTimeKind.Utc).AddTicks(8615),
                             Url = "#contact"
                         });
                 });

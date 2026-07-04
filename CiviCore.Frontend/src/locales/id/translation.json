@@ -602,7 +602,12 @@
     "delete_message": "Hapus <strong>{{name}}</strong>? Tindakan ini tidak dapat dibatalkan.",
     "btn_cancel": "Batal",
     "btn_delete": "Hapus",
-    "view": "Lihat"
+    "view": "Lihat",
+    "prune_error": "Gagal membersihkan file yang tidak digunakan.",
+    "prune_success": "Berhasil membersihkan {{count}} file yang tidak digunakan.",
+    "prune_unused": "Bersihkan file",
+    "pruning": "Membersihkan...",
+    "readonly_notice": "File di dalam {{folder}} dikelola oleh modulnya masing-masing. Anda dapat melihatnya di sini tetapi tidak dapat menghapusnya dari halaman ini."
   },
   "overview": {
     "title": "Ringkasan",
@@ -998,5 +1003,26 @@
     "err_confirm_match": "Kata sandi tidak cocok.",
     "success_msg": "Kata sandi Anda berhasil direset. Anda sekarang dapat masuk dengan kata sandi baru Anda.",
     "err_default": "Terjadi kesalahan. Tautan mungkin telah kedaluwarsa."
+  },
+  "media": {
+    "title": "Perpustakaan Media",
+    "subtitle": "Kelola semua file dan gambar yang diunggah ke sistem.",
+    "upload_files": "Unggah File",
+    "uploading": "Mengunggah...",
+    "view": "Lihat",
+    "search_placeholder": "Cari file...",
+    "empty_title": "Belum ada file",
+    "empty_subtitle": "Unggah file untuk memulai.",
+    "delete_title": "Hapus File",
+    "delete_message": "Apakah Anda yakin ingin menghapus <strong>{{name}}</strong>? Ini tidak dapat dibatalkan.",
+    "btn_cancel": "Batal",
+    "btn_delete": "Hapus",
+    "readonly": "Hanya baca",
+    "readonly_notice": "File di {{folder}} dikelola oleh modul tersendiri. Anda dapat melihatnya di sini tetapi tidak dapat menghapus dari halaman ini.",
+    "prune_unused": "Bersihkan file yang tidak digunakan",
+    "pruning": "Membersihkan...",
+    "prune_success": "Berhasil membersihkan {{count}} file yang tidak digunakan.",
+    "prune_error": "Pembersihan gagal. Silakan coba lagi.",
+    "pagination_info": "Menampilkan {{from}}–{{to}} dari {{total}} file"
   }
 }

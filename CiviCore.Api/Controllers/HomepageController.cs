@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
 using CiviCore.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using System.Text.Json;
 
 using CiviCore.Api.Services;
@@ -54,7 +55,25 @@ public class HomepageController : ControllerBase
         var filePath = $"homepage/{subFolder}/{fileName}";
 
         using var stream = file.OpenReadStream();
-        return await _storageService.UploadFileAsync(false, filePath, stream);
+        var url = await _storageService.UploadFileAsync(false, filePath, stream);
+
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        _context.MediaFiles.Add(new MediaFile
+        {
+            Id = Guid.NewGuid(),
+            FileName = file.FileName,
+            FilePath = filePath,
+            MimeType = file.ContentType ?? "application/octet-stream",
+            FileSize = (int)file.Length,
+            UserId = !string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var uid) ? uid : Guid.Empty,
+            ModelType = $"homepage_{subFolder}",
+            ModelId = Guid.Empty,
+            IsPrivate = false
+        });
+        await _context.SaveChangesAsync();
+
+        return url;
     }
 
     private async Task DeleteUploadedFile(string? url)
@@ -64,6 +83,13 @@ public class HomepageController : ControllerBase
         {
             var filePath = url.Substring("/public-media/".Length);
             await _storageService.RemoveFileAsync(false, filePath);
+            
+            var mediaFile = await _context.MediaFiles.FirstOrDefaultAsync(m => m.FilePath == filePath);
+            if (mediaFile != null)
+            {
+                _context.MediaFiles.Remove(mediaFile);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 

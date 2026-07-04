@@ -602,7 +602,12 @@
     "delete_message": "Delete <strong>{{name}}</strong>? This cannot be undone.",
     "btn_cancel": "Cancel",
     "btn_delete": "Delete",
-    "view": "View"
+    "view": "View",
+    "prune_error": "Failed to clean unused files.",
+    "prune_success": "Cleaned up {{count}} unused files.",
+    "prune_unused": "Clean unused files",
+    "pruning": "Cleaning...",
+    "readonly_notice": "Files in {{folder}} are managed by their own module. You can view them here but cannot delete from this page."
   },
   "overview": {
     "title": "Overview",
@@ -998,5 +1003,26 @@
     "err_confirm_match": "Passwords do not match.",
     "success_msg": "Your password has been successfully reset. You can now login with your new password.",
     "err_default": "An error occurred. The link might have expired."
+  },
+  "media": {
+    "title": "Media Library",
+    "subtitle": "Manage all files and images uploaded to the system.",
+    "upload_files": "Upload Files",
+    "uploading": "Uploading...",
+    "view": "View",
+    "search_placeholder": "Search files...",
+    "empty_title": "No files yet",
+    "empty_subtitle": "Upload files to get started.",
+    "delete_title": "Delete File",
+    "delete_message": "Are you sure you want to delete <strong>{{name}}</strong>? This cannot be undone.",
+    "btn_cancel": "Cancel",
+    "btn_delete": "Delete",
+    "readonly": "Read-only",
+    "readonly_notice": "Files in {{folder}} are managed by their own module. You can view them here but cannot delete from this page.",
+    "prune_unused": "Clean unused files",
+    "pruning": "Cleaning...",
+    "prune_success": "Successfully cleaned up {{count}} unused files.",
+    "prune_error": "Cleanup failed. Please try again.",
+    "pagination_info": "Showing {{from}}–{{to}} of {{total}} files"
   }
 }

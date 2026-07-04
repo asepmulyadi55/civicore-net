@@ -226,6 +226,20 @@ public class PropertyController : ControllerBase
         
         using var stream = file.OpenReadStream();
         var imageUrl = await _storageService.UploadFileAsync(false, filePath, stream);
+        
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        _context.MediaFiles.Add(new MediaFile
+        {
+            Id = Guid.NewGuid(),
+            FileName = file.FileName,
+            FilePath = filePath,
+            MimeType = file.ContentType ?? "application/octet-stream",
+            FileSize = (int)file.Length,
+            UserId = !string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var uid) ? uid : Guid.Empty,
+            ModelType = "property_listing",
+            ModelId = property.Id,
+            IsPrivate = false
+        });
 
         property.Images.Add(imageUrl);
         property.UpdatedAt = DateTime.UtcNow;
@@ -248,6 +262,12 @@ public class PropertyController : ControllerBase
             {
                 var filePath = url.Substring("/public-media/".Length);
                 await _storageService.RemoveFileAsync(false, filePath);
+                
+                var mediaFile = await _context.MediaFiles.FirstOrDefaultAsync(m => m.FilePath == filePath);
+                if (mediaFile != null)
+                {
+                    _context.MediaFiles.Remove(mediaFile);
+                }
             }
 
             property.UpdatedAt = DateTime.UtcNow;

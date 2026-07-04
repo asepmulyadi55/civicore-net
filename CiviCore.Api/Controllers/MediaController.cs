@@ -39,12 +39,17 @@ public class MediaController : ControllerBase
 
         var files = await query
             .OrderByDescending(m => m.CreatedAt)
-            .Take(100)
+            .Take(500)
             .Select(m => new
             {
                 id = m.Id,
                 name = m.FileName,
-                url = $"/api/media/path/{m.FilePath}",
+                // Use the correct URL based on storage location
+                url = m.IsPrivate
+                    ? $"/api/media/path/{m.FilePath}"
+                    : $"/public-media/{m.FilePath}",
+                file_path = m.FilePath,
+                is_private = m.IsPrivate,
                 mime_type = m.MimeType,
                 size = m.FileSize,
                 created_at = m.CreatedAt
@@ -143,7 +148,8 @@ public class MediaController : ControllerBase
                 FileSize = (int)f.Length,
                 UserId = userId != null ? Guid.Parse(userId) : Guid.Empty,
                 ModelType = "upload",
-                ModelId = Guid.Empty
+                ModelId = Guid.Empty,
+                IsPrivate = true  // Manual uploads always go to private storage
             };
 
             _context.MediaFiles.Add(mediaFile);
@@ -172,7 +178,8 @@ public class MediaController : ControllerBase
 
         try
         {
-            await _storageService.RemoveFileAsync(true, media.FilePath);
+            // Delete from the correct storage location based on IsPrivate flag
+            await _storageService.RemoveFileAsync(media.IsPrivate, media.FilePath);
         }
         catch (Exception ex)
         {
@@ -183,5 +190,76 @@ public class MediaController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    private async Task<bool> IsFileInUse(string path)
+    {
+        // For public images, the path in entities might have /public-media/ prefix,
+        // but MediaFile.FilePath does not. So we match against the filename or partial path.
+        var filename = System.IO.Path.GetFileName(path);
+
+        if (await _context.Users.AnyAsync(u => u.Avatar != null && u.Avatar.Contains(filename))) return true;
+        if (await _context.PaymentRecords.AnyAsync(p => p.ProofPath != null && p.ProofPath.Contains(filename))) return true;
+        if (await _context.Householders.AnyAsync(h => h.PhotoPath != null && h.PhotoPath.Contains(filename))) return true;
+        if (await _context.Residents.AnyAsync(r => r.PhotoPath != null && r.PhotoPath.Contains(filename))) return true;
+        if (await _context.MeetingImages.AnyAsync(m => m.ImagePath != null && m.ImagePath.Contains(filename))) return true;
+        
+        var properties = await _context.PropertyListings.ToListAsync();
+        if (properties.Any(p => p.Images != null && p.Images.Any(i => i.Contains(filename)))) return true;
+        
+        // Settings (homepage)
+        var settings = await _context.Settings.ToListAsync();
+        foreach (var s in settings)
+        {
+            if (s.Value != null && s.Value.Contains(filename)) return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Removes DB records and physical files for media that is no longer in use, 
+    /// as well as cleaning up ghost records (404s).
+    /// </summary>
+    [HttpPost("cleanup-orphans")]
+    [Authorize]
+    public async Task<IActionResult> CleanupOrphans()
+    {
+        var allFiles = await _context.MediaFiles.ToListAsync();
+        var removed = new List<MediaFile>();
+
+        var privatePath = _configuration["LocalMedia:PrivatePath"]
+            ?? System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "App_Data", "PrivateMedia");
+        var publicPath = _configuration["LocalMedia:PublicPath"]
+            ?? System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "public-media");
+
+        foreach (var file in allFiles)
+        {
+            string basePath = file.IsPrivate ? privatePath : publicPath;
+            var fullPath = System.IO.Path.Combine(basePath, file.FilePath.Replace('/', System.IO.Path.DirectorySeparatorChar));
+
+            bool isGhost = !System.IO.File.Exists(fullPath);
+            bool inUse = !isGhost && await IsFileInUse(file.FilePath);
+
+            if (isGhost || !inUse)
+            {
+                removed.Add(file);
+                if (!isGhost)
+                {
+                    // Also delete the physical file since it's unused
+                    try { System.IO.File.Delete(fullPath); } catch { }
+                }
+            }
+        }
+
+        if (removed.Count > 0)
+        {
+            _context.MediaFiles.RemoveRange(removed);
+            await _context.SaveChangesAsync();
+        }
+
+        Console.WriteLine($"[CleanupOrphans] Removed {removed.Count} unused/ghost media file(s).");
+
+        return Ok(new { removed = removed.Count });
     }
 }
