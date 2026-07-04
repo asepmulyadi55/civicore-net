@@ -9,6 +9,7 @@ import {
   BulkActionBar, TableWrapper, Th, FormInput, FormSelect,
   SecureImage
 } from '../../admin/components/ui';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -498,6 +499,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
 
 export default function Payments() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [data, setData] = useState([]);
   const [meta, setMeta] = useState(null);
   const [stats, setStats] = useState(null);
@@ -664,15 +666,19 @@ export default function Payments() {
         subtitle={t('payments.subtitle')} 
         actions={
           <div className="flex gap-2">
-            <button onClick={() => fileInputRef.current?.click()} disabled={importing}
-              className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('payments.btn_importing') : t('payments.btn_import')}
-            </button>
-            <input type="file" ref={fileInputRef} onChange={handleImportExcel} className="hidden" accept=".xlsx,.xls" />
-            <button onClick={() => setAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-              <span className="material-icons text-sm">add</span> {t('payments.btn_add')}
-            </button>
+            {can('payments.create') && (
+              <>
+                <button onClick={() => fileInputRef.current?.click()} disabled={importing}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
+                  <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('payments.btn_importing') : t('payments.btn_import')}
+                </button>
+                <input type="file" ref={fileInputRef} onChange={handleImportExcel} className="hidden" accept=".xlsx,.xls" />
+                <button onClick={() => setAddModal(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+                  <span className="material-icons text-sm">add</span> {t('payments.btn_add')}
+                </button>
+              </>
+            )}
           </div>
         }
       />
@@ -803,7 +809,9 @@ export default function Payments() {
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
               <th className="w-12 px-6 py-4 text-center">
-                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
+                {can('payments.delete') && (
+                  <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
+                )}
               </th>
               <Th>{t('payments.th_householder')}</Th>
               <Th>{t('payments.th_block_unit')}</Th>
@@ -828,7 +836,9 @@ export default function Payments() {
               return (
                 <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                   <td className="w-12 px-6 py-4 text-center">
-                    <input type="checkbox" checked={selected.includes(p.id)} onChange={() => toggleOne(p.id)} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
+                    {can('payments.delete') && (
+                      <input type="checkbox" checked={selected.includes(p.id)} onChange={() => toggleOne(p.id)} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -882,26 +892,26 @@ export default function Payments() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
-                      {/* Edit button — always visible */}
-                      <button onClick={() => setEditItem(p)}
-                        className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('payments.btn_edit')}>
-                        <span className="material-icons text-lg">edit</span>
-                      </button>
+                      {can('payments.edit') && (
+                        <button onClick={() => setEditItem(p)}
+                          className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('payments.btn_edit')}>
+                          <span className="material-icons text-lg">edit</span>
+                        </button>
+                      )}
 
-                      {/* View / Review button */}
-                      {isPending ? (
+                      {can('payments.approve') && isPending && (
                         <button onClick={() => setReviewItem(p)}
                           className="text-amber-600 border border-amber-500/40 bg-amber-50/60 hover:bg-amber-500 hover:text-white dark:bg-amber-500/10 dark:text-amber-400 font-semibold text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer">
                           {t('payments.btn_review')}
                         </button>
-                      ) : (
+                      )}
+                      {!isPending && can('payments.view') && (
                         <button onClick={() => setReviewItem(p)}
                           className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('payments.btn_view')}>
                           <span className="material-icons text-lg">visibility</span>
                         </button>
                       )}
 
-                      {/* Approved label */}
                       {isApproved && (
                         <span className="text-xs text-emerald-500 px-2 flex items-center gap-1">
                           <span className="material-icons text-[14px]">check_circle</span>
@@ -909,7 +919,6 @@ export default function Payments() {
                         </span>
                       )}
 
-                      {/* Rejected label */}
                       {isRejected && (
                         <span className="text-xs text-rose-400 px-2 flex items-center gap-1" title={p.rejectionReason}>
                           <span className="material-icons text-[14px]">cancel</span>
@@ -917,11 +926,12 @@ export default function Payments() {
                         </span>
                       )}
 
-                      {/* Delete button */}
-                      <button onClick={() => setConfirm({ open: true, item: p, loading: false })}
-                        className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title={t('payments.btn_delete')}>
-                        <span className="material-icons text-lg">delete_outline</span>
-                      </button>
+                      {can('payments.delete') && (
+                        <button onClick={() => setConfirm({ open: true, item: p, loading: false })}
+                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title={t('payments.btn_delete')}>
+                          <span className="material-icons text-lg">delete_outline</span>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -10,6 +10,7 @@ import {
   BulkActionBar, TableWrapper, Th, FormInput, FormSelect, SecureImage,
   SearchableSelect, CustomSelect
 } from '../../admin/components/ui';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 const HOUSE_STATUS_OPTIONS = [
   { value: 'owner_occupied', label: 'Owner Occupied' },
@@ -92,6 +93,7 @@ function HouseholderModal({ open, onClose, onSaved, data, blocks }) {
 
 export default function Householders() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [data, setData] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -295,14 +297,18 @@ export default function Householders() {
         subtitle={t('householders.subtitle')}
         actions={
           <div className="flex items-center gap-2">
-            <button onClick={() => setImportModalOpen(true)} disabled={importing}
-              className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('householders.importing_data') : t('householders.btn_import_excel')}
-            </button>
-            <button onClick={() => setModal({ open: true, data: null })}
-              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-              <span className="material-icons text-sm">add</span> {t('householders.btn_add_householder')}
-            </button>
+            {can('householders.create') && (
+              <>
+                <button onClick={() => setImportModalOpen(true)} disabled={importing}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
+                  <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('householders.importing_data') : t('householders.btn_import_excel')}
+                </button>
+                <button onClick={() => setModal({ open: true, data: null })}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+                  <span className="material-icons text-sm">add</span> {t('householders.btn_add_householder')}
+                </button>
+              </>
+            )}
           </div>
         }
       />
@@ -318,18 +324,26 @@ export default function Householders() {
         </button>
       </div>
 
-      <BulkActionBar count={selected.length} onDelete={() => openConfirm('bulk', null)} />
+      {can('householders.delete') && selected.length > 0 && (
+        <BulkActionBar
+          count={selected.length}
+          onClear={() => setSelected([])}
+          actions={[{ label: t('householders.btn_delete_selected'), icon: 'delete', onClick: () => setConfirm({ open: true, type: 'bulk', item: null, loading: false }), variant: 'danger' }]}
+        />
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>
       ) : (
         <TableWrapper>
           <thead>
-            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800/50">
+            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
               <th className="w-12 px-6 py-4 text-center">
-                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded bg-transparent border-slate-400 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
+                {can('householders.delete') && (
+                  <input type="checkbox" checked={data.length > 0 && selected.length === data.length} onChange={toggleAll} className="w-4 h-4 rounded bg-transparent border-slate-400 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
+                )}
               </th>
-              <Th>{t('householders.th_household')}</Th>
+              <Th>{t('householders.th_householder')}</Th>
               <Th className="hidden sm:table-cell">{t('householders.th_house_status')}</Th>
               <Th>{t('householders.th_monthly_fee')}</Th>
               <Th>{t('householders.th_status')}</Th>
@@ -345,7 +359,9 @@ export default function Householders() {
               return (
                 <tr key={h.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/30 last:border-0">
                   <td className="w-12 px-6 py-4 text-center">
-                    <input type="checkbox" checked={selected.includes(h.id)} onChange={() => toggleOne(h.id)} className="w-4 h-4 rounded bg-transparent border-slate-400 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
+                    {can('householders.delete') && (
+                      <input type="checkbox" checked={selected.includes(h.id)} onChange={() => toggleOne(h.id)} className="w-4 h-4 rounded bg-transparent border-slate-400 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -373,17 +389,23 @@ export default function Householders() {
                   </td>
                   <td className="px-6 py-4 text-right pr-6">
                     <div className="flex items-center justify-end gap-2">
-                      <Link to={`/admin/householders/${h.id}/edit`} className="text-slate-400 hover:text-primary transition-colors cursor-pointer" title={t('householders.tooltip_edit')}>
-                        <span className="material-icons text-[18px]">edit</span>
-                      </Link>
-                      {h.is_active && (
-                        <button onClick={() => openConfirm('deactivate', h)} className="text-slate-400 hover:text-amber-500 transition-colors cursor-pointer" title={t('householders.tooltip_deactivate')}>
-                          <span className="material-icons text-[18px]">visibility_off</span>
+                      {can('householders.edit') && (
+                        <>
+                          <Link to={`/admin/householders/${h.id}/edit`} className="text-slate-400 hover:text-primary transition-colors cursor-pointer" title={t('householders.tooltip_edit')}>
+                            <span className="material-icons text-[18px]">edit</span>
+                          </Link>
+                          {h.is_active && (
+                            <button onClick={() => openConfirm('deactivate', h)} className="text-slate-400 hover:text-amber-500 transition-colors cursor-pointer" title={t('householders.tooltip_deactivate')}>
+                              <span className="material-icons text-[18px]">visibility_off</span>
+                            </button>
+                          )}
+                        </>
+                      )}
+                      {can('householders.delete') && (
+                        <button onClick={() => openConfirm('delete', h)} className="text-slate-400 hover:text-rose-500 transition-colors cursor-pointer" title={t('householders.tooltip_delete')}>
+                          <span className="material-icons text-[18px]">delete</span>
                         </button>
                       )}
-                      <button onClick={() => openConfirm('delete', h)} className="text-slate-400 hover:text-rose-500 transition-colors cursor-pointer" title={t('householders.tooltip_delete')}>
-                        <span className="material-icons text-[18px]">delete</span>
-                      </button>
                     </div>
                   </td>
                 </tr>

@@ -5,6 +5,7 @@ import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { Modal, FormInput, FormSelect, ConfirmModal, SecureImage } from '../../admin/components/ui';
 import { compressImage } from '../../utils/imageCompressor';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 function ResidentModal({ open, onClose, onSaved, data, householderId }) {
   const { t } = useTranslation();
@@ -166,6 +167,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
 
 export default function EditHouseholder() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -399,11 +401,13 @@ export default function EditHouseholder() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end mb-12">
-          <button onClick={handleSave} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-900/80 dark:hover:bg-emerald-800 border border-emerald-700 dark:border-emerald-800/50 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer shadow-md shadow-emerald-600/20">
-            <span className="material-icons text-[18px]">save</span> {t('edit_householder.btn_save_household')}
-          </button>
-        </div>
+        {can('householders.edit') && (
+          <div className="flex justify-end mb-12">
+            <button onClick={handleSave} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-900/80 dark:hover:bg-emerald-800 border border-emerald-700 dark:border-emerald-800/50 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer shadow-md shadow-emerald-600/20">
+              <span className="material-icons text-[18px]">save</span> {t('edit_householder.btn_save_household')}
+            </button>
+          </div>
+        )}
 
         {/* Section 3: Residents */}
         <div className="mb-12">
@@ -417,15 +421,17 @@ export default function EditHouseholder() {
                 <p className="text-xs text-slate-500 dark:text-slate-400">{t('edit_householder.residents_desc')}</p>
               </div>
             </div>
-            <button onClick={() => setResidentModal({ open: true, data: null })} className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer shadow-lg shadow-indigo-600/20 shrink-0 whitespace-nowrap">
-              <span className="material-icons text-[16px]">person_add</span> {t('edit_householder.btn_add_resident')}
-            </button>
+            {can('householders.edit') && (
+              <button onClick={() => setResidentModal({ open: true, data: null })} className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer shadow-lg shadow-indigo-600/20 shrink-0 whitespace-nowrap">
+                <span className="material-icons text-[16px]">person_add</span> {t('edit_householder.btn_add_resident')}
+              </button>
+            )}
           </div>
 
           {data.residents?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {data.residents.map(r => (
-                <div key={r.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center gap-4 hover:border-primary/30 transition-all cursor-pointer group" onClick={() => setResidentModal({ open: true, data: r })}>
+                <div key={r.id} className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center gap-4 ${can('householders.edit') ? 'hover:border-primary/30 cursor-pointer group' : ''} transition-all`} onClick={() => can('householders.edit') && setResidentModal({ open: true, data: r })}>
                   <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-slate-700">
                     {r.photoPath ? (
                       <SecureImage src={`/api/media/path/${r.photoPath}`} className="w-full h-full object-cover" alt={r.fullname} />
@@ -437,9 +443,11 @@ export default function EditHouseholder() {
                     <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{r.fullname}</div>
                     <div className="text-xs text-slate-500 truncate">{r.relationship ? (r.relationship === 'Head of Family' ? t('edit_householder.rel_head') : r.relationship) : t('edit_householder.unspecified')} {r.isHead && <span className="ml-1 text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">{t('edit_householder.tag_head')}</span>}</div>
                   </div>
-                  <button onClick={e => { e.stopPropagation(); setConfirmDelete({ open: true, item: r, loading: false }); }} className="text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 p-2 transition-colors shrink-0 opacity-0 group-hover:opacity-100 cursor-pointer">
-                    <span className="material-icons text-[18px]">delete_outline</span>
-                  </button>
+                  {can('householders.edit') && (
+                    <button onClick={e => { e.stopPropagation(); setConfirmDelete({ open: true, item: r, loading: false }); }} className="text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 p-2 transition-colors shrink-0 opacity-0 group-hover:opacity-100 cursor-pointer">
+                      <span className="material-icons text-[18px]">delete_outline</span>
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -447,7 +455,9 @@ export default function EditHouseholder() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
               <span className="material-icons text-5xl text-slate-300 dark:text-slate-600 mb-3">person_off</span>
               <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">{t('edit_householder.no_residents')}</h3>
-              <button onClick={() => setResidentModal({ open: true, data: null })} className="text-xs font-bold text-primary hover:underline cursor-pointer">{t('edit_householder.btn_add_first_resident')}</button>
+              {can('householders.edit') && (
+                <button onClick={() => setResidentModal({ open: true, data: null })} className="text-xs font-bold text-primary hover:underline cursor-pointer">{t('edit_householder.btn_add_first_resident')}</button>
+              )}
             </div>
           )}
         </div>

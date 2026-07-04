@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useDarkMode from './useDarkMode';
 import axios from 'axios';
+import { usePermissions } from './PermissionsContext';
 
 const NAV_GROUPS = [
   {
@@ -151,8 +152,7 @@ export default function AdminLayout({ children, title, subtitle }) {
   const navigate = useNavigate();
   const [dark, toggleDark] = useDarkMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [permissions, setPermissions] = useState<string[]>([]);
-  const [loadingPerms, setLoadingPerms] = useState(true);
+  const { permissions, loading: loadingPerms } = usePermissions();
   const userStr = localStorage.getItem('admin_user');
   const user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
 
@@ -161,18 +161,6 @@ export default function AdminLayout({ children, title, subtitle }) {
       i18n.changeLanguage(user.language);
     }
   }, [user.language, i18n]);
-
-  React.useEffect(() => {
-    const fetchPerms = async () => {
-      try {
-        const res = await axios.get('/api/auth/permissions');
-        setPermissions(res.data || []);
-      } catch (err) {} finally {
-        setLoadingPerms(false);
-      }
-    };
-    fetchPerms();
-  }, []);
 
   const currentNavItem = React.useMemo(() => {
     for (const group of NAV_GROUPS) {

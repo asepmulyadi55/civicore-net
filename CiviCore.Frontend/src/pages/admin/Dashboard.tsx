@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../admin/AdminLayout';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 function StatCard({ icon, iconBg, iconColor, label, value, badge, badgeStyle }) {
   const badgeColors = {
@@ -47,6 +48,7 @@ function StatusBadge({ status }) {
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [stats, setStats] = useState(null);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -158,22 +160,30 @@ export default function Dashboard() {
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t('dashboard.quick_actions')}</h2>
                 <div className="grid grid-cols-2 gap-4">
-                  <a href="/admin/householders" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
-                    <span className="material-icons text-emerald-500 mb-2 group-hover:scale-110 transition-transform">person_add</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_add_householder')}</span>
-                  </a>
-                  <a href="/admin/payments" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
-                    <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">receipt_long</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_payments')}</span>
-                  </a>
-                  <a href="/admin/reports" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
-                    <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">post_add</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_generate_report')}</span>
-                  </a>
-                  <a href="/admin/blocks" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
-                    <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">domain</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_manage_blocks')}</span>
-                  </a>
+                  {can('householders.create') && (
+                    <a href="/admin/householders" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                      <span className="material-icons text-emerald-500 mb-2 group-hover:scale-110 transition-transform">person_add</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_add_householder')}</span>
+                    </a>
+                  )}
+                  {can('payments.view') && (
+                    <a href="/admin/payments" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                      <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">receipt_long</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_payments')}</span>
+                    </a>
+                  )}
+                  {can('reports.view') && (
+                    <a href="/admin/reports" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                      <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">post_add</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_generate_report')}</span>
+                    </a>
+                  )}
+                  {can('blocks.view') && (
+                    <a href="/admin/blocks" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                      <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">domain</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_manage_blocks')}</span>
+                    </a>
+                  )}
                 </div>
               </div>
 

@@ -9,6 +9,7 @@ import AdminLayout from '../../admin/AdminLayout';
 import { useTranslation } from 'react-i18next';
 import { PageHeader, Modal, ConfirmModal, FormInput, FormSelect, SearchInput, SelectFilter, FilterBar, Pagination, TableWrapper, Th, EmptyState, StatusBadge } from '../../admin/components/ui';
 import NavigationTab from '../../admin/homepage/Navigation';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TABS CONFIG
@@ -62,10 +63,12 @@ function SectionCard({ icon, iconBg, iconColor, title, subtitle, badge, children
   );
 }
 
-function SaveButton({ onClick, loading, label = 'Save Changes' }) {
+function SaveButton({ onClick, loading, label = 'Save Changes', disabled = false }) {
+  const { can } = usePermissions();
+  const canEdit = can('homepage.edit');
   return (
     <div className="flex justify-end pt-4 px-6 pb-6">
-      <button onClick={onClick} disabled={loading}
+      <button onClick={onClick} disabled={loading || disabled || !canEdit}
         className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
         <span className="material-icons text-base">{loading ? 'hourglass_top' : 'save'}</span>
         {loading ? 'Saving...' : label}
@@ -123,7 +126,7 @@ function SuccessBanner({ show }) {
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 1: FEATURED EVENT
    ═══════════════════════════════════════════════════════════════════════════ */
-function HeroTab() {
+function HeroTab({ canEdit }: { canEdit: boolean }) {
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -170,7 +173,7 @@ function HeroTab() {
         </div>
         <ImageUploadBox label="Background Image" currentUrl={data.background_image_url} file={bgImage} onFileChange={setBgImage} recommendedSize="1920x1080" />
       </div>
-      <SaveButton onClick={save} loading={saving} label="Save Hero Section" />
+      {canEdit && <SaveButton onClick={save} loading={saving} label="Save Hero Section" />}
     </SectionCard>
   );
 }
@@ -178,7 +181,7 @@ function HeroTab() {
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 2: EVENTS
    ═══════════════════════════════════════════════════════════════════════════ */
-function EventsTab() {
+function EventsTab({ canEdit }: { canEdit: boolean }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -314,9 +317,9 @@ function EventsTab() {
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            <button onClick={saveEvent} disabled={saving} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+            {canEdit && <button onClick={saveEvent} disabled={saving} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
               {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+            </button>}
           </div>
         </div>
       </Modal>
@@ -334,7 +337,7 @@ function EventsTab() {
             <div className="md:col-span-2"><FormInput label="Subtitle" id="e-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore..." /></div>
           </div>
         </div>
-        <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
+        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />}
       </SectionCard>
 
       <div className="h-6"></div>
@@ -347,9 +350,9 @@ function EventsTab() {
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search events..." />
             <SelectFilter value={catFilter} onChange={v => { setCatFilter(v); setPage(1); }} options={CATEGORY_OPTIONS} placeholder="All Categories" />
             <div className="flex-grow"></div>
-            <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> Add Event
-            </button>
+            </button>}
           </FilterBar>
 
           <TableWrapper>
@@ -385,8 +388,8 @@ function EventsTab() {
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => openModal(ev)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>
-                          <button onClick={() => setDeleteModal({ open: true, id: ev.id, title: ev.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>
+                          {canEdit && <button onClick={() => openModal(ev)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>}
+                          {canEdit && <button onClick={() => setDeleteModal({ open: true, id: ev.id, title: ev.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
                       </td>
                     </tr>
@@ -402,7 +405,7 @@ function EventsTab() {
   );
 }
 
-function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
+function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -466,22 +469,24 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
   return (
     <Modal open={open} onClose={onClose} title={`Manage Photos - ${album?.title}`} size="xl">
       <div className="space-y-6">
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
-          <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Upload New Photo</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <FormInput label="Title (Optional)" id="p-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Pool Area" />
-            <FormInput label="Description (Optional)" id="p-desc" value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Enjoying the sunset..." />
-          </div>
-          <div className="flex items-end gap-4">
-            <div className="flex-1">
-              <ImageUploadBox label="" currentUrl="" file={file} onFileChange={setFile} recommendedSize="Any" />
+        {canEdit && (
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Upload New Photo</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <FormInput label="Title (Optional)" id="p-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Pool Area" />
+              <FormInput label="Description (Optional)" id="p-desc" value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Enjoying the sunset..." />
             </div>
-            <button onClick={uploadPhoto} disabled={!file || uploading} className="px-5 h-[100px] rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed mb-1.5 flex flex-col items-center justify-center gap-1">
-              {uploading ? <span className="material-icons animate-spin">autorenew</span> : <span className="material-icons">cloud_upload</span>}
-              {uploading ? 'Uploading...' : 'Upload'}
-            </button>
+            <div className="flex items-end gap-4">
+              <div className="flex-1">
+                <ImageUploadBox label="" currentUrl="" file={file} onFileChange={setFile} recommendedSize="Any" />
+              </div>
+              <button onClick={uploadPhoto} disabled={!file || uploading} className="px-5 h-[100px] rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed mb-1.5 flex flex-col items-center justify-center gap-1">
+                {uploading ? <span className="material-icons animate-spin">autorenew</span> : <span className="material-icons">cloud_upload</span>}
+                {uploading ? 'Uploading...' : 'Upload'}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Album Photos ({photos.length})</h4>
@@ -494,15 +499,17 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
               {photos.map(p => (
                 <div key={p.id} className="relative group rounded-xl overflow-hidden aspect-[4/3] border border-slate-200 dark:border-slate-700">
                   <img src={p.image_url} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
-                    <div>
-                      {p.title && <p className="text-white text-xs font-bold truncate">{p.title}</p>}
-                      {p.description && <p className="text-white/80 text-[10px] truncate">{p.description}</p>}
+                  {canEdit && (
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                      <div>
+                        {p.title && <p className="text-white text-xs font-bold truncate">{p.title}</p>}
+                        {p.description && <p className="text-white/80 text-[10px] truncate">{p.description}</p>}
+                      </div>
+                      <button onClick={() => setDeleteConfirmId(p.id)} disabled={deleting === p.id} className="self-end p-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors cursor-pointer disabled:opacity-50">
+                        {deleting === p.id ? <span className="material-icons animate-spin text-sm">autorenew</span> : <span className="material-icons text-sm">delete_outline</span>}
+                      </button>
                     </div>
-                    <button onClick={() => setDeleteConfirmId(p.id)} disabled={deleting === p.id} className="self-end p-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors cursor-pointer disabled:opacity-50">
-                      {deleting === p.id ? <span className="material-icons animate-spin text-sm">autorenew</span> : <span className="material-icons text-sm">delete_outline</span>}
-                    </button>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -523,7 +530,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh }: any) {
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 3: GALLERY
    ═══════════════════════════════════════════════════════════════════════════ */
-function GalleryTab() {
+function GalleryTab({ canEdit }: { canEdit: boolean }) {
   const [settings, setSettings] = useState<any>({});
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -632,9 +639,9 @@ function GalleryTab() {
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            <button onClick={saveAlbum} disabled={savingAlbum} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+            {canEdit && <button onClick={saveAlbum} disabled={savingAlbum} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
               {savingAlbum ? 'Saving...' : 'Save Changes'}
-            </button>
+            </button>}
           </div>
         </div>
       </Modal>
@@ -644,6 +651,7 @@ function GalleryTab() {
         album={managePhotosModal.album}
         onClose={() => setManagePhotosModal({ open: false, album: null })}
         onRefresh={fetchData}
+        canEdit={canEdit}
       />
 
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
@@ -659,7 +667,7 @@ function GalleryTab() {
             <div className="md:col-span-2"><FormInput label="Subtitle" id="g-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore..." /></div>
           </div>
         </div>
-        <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
+        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />}
       </SectionCard>
 
       <div className="h-6"></div>
@@ -671,9 +679,9 @@ function GalleryTab() {
           <FilterBar>
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search albums..." />
             <div className="flex-grow"></div>
-            <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> Add Album
-            </button>
+            </button>}
           </FilterBar>
 
           <TableWrapper>
@@ -704,8 +712,8 @@ function GalleryTab() {
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
                           <button onClick={() => setManagePhotosModal({ open: true, album: a })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title="Manage Photos"><span className="material-icons text-lg">photo_library</span></button>
-                          <button onClick={() => openModal(a)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>
-                          <button onClick={() => setDeleteModal({ open: true, id: a.id, title: a.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>
+                          {canEdit && <button onClick={() => openModal(a)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>}
+                          {canEdit && <button onClick={() => setDeleteModal({ open: true, id: a.id, title: a.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
                       </td>
                     </tr>
@@ -723,7 +731,7 @@ function GalleryTab() {
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 4: BULLETIN
    ═══════════════════════════════════════════════════════════════════════════ */
-function BulletinTab() {
+function BulletinTab({ canEdit }: { canEdit: boolean }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -833,7 +841,7 @@ function BulletinTab() {
             <div className="md:col-span-2"><FormInput label="Subtitle" id="b-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore our bulletins..." /></div>
           </div>
         </div>
-        <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
+        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />}
       </SectionCard>
 
       <div className="h-6"></div>
@@ -866,10 +874,10 @@ function BulletinTab() {
           <ImageUploadBox label="Bulletin Image" file={addImage} onFileChange={setAddImage} recommendedSize="800x600" />
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <button onClick={() => setAddModalOpen(false)} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            <button onClick={addBulletin} disabled={addLoading}
+            {canEdit && <button onClick={addBulletin} disabled={addLoading}
               className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
               <span className="material-icons text-base">add</span> {addLoading ? 'Adding...' : 'Add Bulletin'}
-            </button>
+            </button>}
           </div>
         </div>
       </Modal>
@@ -902,9 +910,9 @@ function BulletinTab() {
           <ImageUploadBox label="Bulletin Image" currentUrl={editModal.data?.image_url} file={editImage} onFileChange={setEditImage} recommendedSize="800x600" />
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
             <button onClick={() => setEditModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            <button onClick={saveEdit} disabled={editLoading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+            {canEdit && <button onClick={saveEdit} disabled={editLoading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
               {editLoading ? 'Saving...' : 'Save Changes'}
-            </button>
+            </button>}
           </div>
         </div>
       </Modal>
@@ -920,9 +928,9 @@ function BulletinTab() {
           <FilterBar>
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search bulletins..." />
             <div className="flex-grow"></div>
-            <button onClick={() => setAddModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <button onClick={() => setAddModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> Add Bulletin
-            </button>
+            </button>}
           </FilterBar>
 
           <TableWrapper>
@@ -951,8 +959,8 @@ function BulletinTab() {
                       <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{b.date ? new Date(b.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => openEdit(b)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>
-                          <button onClick={() => setDeleteModal({ open: true, id: b.id, title: b.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>
+                          {canEdit && <button onClick={() => openEdit(b)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>}
+                          {canEdit && <button onClick={() => setDeleteModal({ open: true, id: b.id, title: b.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
                       </td>
                     </tr>
@@ -973,7 +981,7 @@ function BulletinTab() {
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 5: PROPERTY
    ═══════════════════════════════════════════════════════════════════════════ */
-function PropertyTab() {
+function PropertyTab({ canEdit }: { canEdit: boolean }) {
   const [data, setData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -1108,7 +1116,7 @@ function PropertyTab() {
             <div className="md:col-span-2"><FormInput label="Subtitle" id="p-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore available properties..." /></div>
           </div>
         </div>
-        <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />
+        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />}
       </SectionCard>
 
       <div className="h-6"></div>
@@ -1145,9 +1153,9 @@ function PropertyTab() {
           </div>
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-white/5 px-2 mt-4">
             <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            <button onClick={saveProperty} disabled={savingProperty} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+            {canEdit && <button onClick={saveProperty} disabled={savingProperty} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
               {savingProperty ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Property'}
-            </button>
+            </button>}
           </div>
         </div>
       </Modal>
@@ -1164,25 +1172,29 @@ function PropertyTab() {
               {(imageModal.property.images || []).map((img: string, i: number) => (
                 <div key={i} className="relative group rounded-xl overflow-hidden aspect-video bg-slate-100 dark:bg-slate-800">
                   <img src={img} alt="Property" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button onClick={() => setDeleteImageConfirmUrl(img)} className="p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors cursor-pointer">
-                      <span className="material-icons text-sm">delete_outline</span>
-                    </button>
-                  </div>
+                  {canEdit && (
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button onClick={() => setDeleteImageConfirmUrl(img)} className="p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors cursor-pointer">
+                        <span className="material-icons text-sm">delete_outline</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
             
-            <label className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-              <span className="material-icons text-4xl text-slate-400 mb-2">{uploadingImage ? 'hourglass_empty' : 'cloud_upload'}</span>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                {uploadingImage ? 'Uploading...' : 'Click to upload image'}
-              </p>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed text-center">
-                JPG, PNG, WebP.<br/>Automatically compressed before upload.<br/>(Recommended: 1200x800)
-              </p>
-              <input type="file" className="hidden" accept="image/*" onChange={handleUploadImage} disabled={uploadingImage} />
-            </label>
+            {canEdit && (
+              <label className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <span className="material-icons text-4xl text-slate-400 mb-2">{uploadingImage ? 'hourglass_empty' : 'cloud_upload'}</span>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {uploadingImage ? 'Uploading...' : 'Click to upload image'}
+                </p>
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed text-center">
+                  JPG, PNG, WebP.<br/>Automatically compressed before upload.<br/>(Recommended: 1200x800)
+                </p>
+                <input type="file" className="hidden" accept="image/*" onChange={handleUploadImage} disabled={uploadingImage} />
+              </label>
+            )}
           </div>
           <div className="flex justify-end pt-6 border-t border-slate-100 dark:border-white/5 mt-6">
             <button onClick={() => setImageModal({ open: false, property: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Done</button>
@@ -1209,9 +1221,9 @@ function PropertyTab() {
               <span className="material-icons text-sm">close</span> Clear
             </button>
             <div className="flex-grow"></div>
-            <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> Add Property
-            </button>
+            </button>}
           </FilterBar>
 
           <TableWrapper>
@@ -1247,12 +1259,12 @@ function PropertyTab() {
                           <button onClick={() => setImageModal({ open: true, property: p })} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors cursor-pointer">
                             <span className="material-icons text-lg">image</span>
                           </button>
-                          <button onClick={() => openModal(p)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer">
+                          {canEdit && <button onClick={() => openModal(p)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer">
                             <span className="material-icons text-lg">edit</span>
-                          </button>
-                          <button onClick={() => setConfirm({ open: true, item: p, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer">
+                          </button>}
+                          {canEdit && <button onClick={() => setConfirm({ open: true, item: p, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer">
                             <span className="material-icons text-lg">delete_outline</span>
-                          </button>
+                          </button>}
                         </div>
                       </td>
                     </tr>
@@ -1271,7 +1283,7 @@ function PropertyTab() {
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 6: FOOTER
    ═══════════════════════════════════════════════════════════════════════════ */
-function FooterTab() {
+function FooterTab({ canEdit }: { canEdit: boolean }) {
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1282,13 +1294,7 @@ function FooterTab() {
   }, []);
 
   const set = (k, v) => setData(d => ({ ...d, [k]: v }));
-  const setLink = (i, field, v) => {
-    const links = [...(data.links || [{ label: '', url: '' }, { label: '', url: '' }, { label: '', url: '' }, { label: '', url: '' }])];
-    while (links.length < 4) links.push({ label: '', url: '' });
-    links[i] = { ...links[i], [field]: v };
-    setData(d => ({ ...d, links }));
-  };
-
+  
   const save = async () => {
     setSaving(true);
     try {
@@ -1329,7 +1335,7 @@ function FooterTab() {
           </div>
         </div>
       </div>
-      <SaveButton onClick={save} loading={saving} label="Save Footer" />
+      {canEdit && <SaveButton onClick={save} loading={saving} label="Save Footer" />}
     </SectionCard>
   );
 }
@@ -1337,7 +1343,7 @@ function FooterTab() {
 /* ═══════════════════════════════════════════════════════════════════════════
    TAB 7: SEO & METADATA
    ═══════════════════════════════════════════════════════════════════════════ */
-function MetadataTab() {
+function MetadataTab({ canEdit }: { canEdit: boolean }) {
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1445,44 +1451,50 @@ function MetadataTab() {
         <ImageUploadBox label="OG Image (optional)" currentUrl={data.og_image} file={ogFile} onFileChange={setOgFile} recommendedSize="1200x630" />
       </div>
 
-      <SaveButton onClick={save} loading={saving} label="Save Metadata" />
+      {canEdit && <SaveButton onClick={save} loading={saving} label="Save Metadata" />}
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   MAIN COMPONENT
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* Main Component */
 export default function AdminHomepage() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const { tab } = useParams();
   const activeTab = tab || 'hero';
 
   const token = localStorage.getItem('admin_token');
-  if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  if (token) axios.defaults.headers.common['Authorization'] = "Bearer " + token;
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'hero': return <HeroTab />;
-      case 'events': return <EventsTab />;
-      case 'gallery': return <GalleryTab />;
-      case 'bulletin': return <BulletinTab />;
-      case 'property': return <PropertyTab />;
-      case 'navigation': return <NavigationTab />;
-      case 'footer': return <FooterTab />;
-      case 'metadata': return <MetadataTab />;
+      case 'hero': return React.createElement(HeroTab);
+      case 'events': return React.createElement(EventsTab);
+      case 'gallery': return React.createElement(GalleryTab);
+      case 'bulletin': return React.createElement(BulletinTab);
+      case 'property': return React.createElement(PropertyTab);
+      case 'navigation': return React.createElement(NavigationTab);
+      case 'footer': return React.createElement(FooterTab);
+      case 'metadata': return React.createElement(MetadataTab);
       default: return null;
     }
   };
 
-  const tabTitle = t(`homepage.tab_${activeTab}`, { defaultValue: TABS.find(t => t.key === activeTab)?.label || 'Homepage CMS' });
+  const tabLabel = TABS.find(function(tb) { return tb.key === activeTab; });
+  const tabTitle = t("homepage.tab_" + activeTab, { defaultValue: tabLabel ? tabLabel.label : 'Homepage CMS' });
 
   return (
     <AdminLayout title={tabTitle}>
       <div className="max-w-7xl mx-auto pb-12">
         <PageHeader title={tabTitle} subtitle={t('homepage.subtitle', { defaultValue: "Manage homepage content" })} />
 
-        {/* Active Tab Content */}
+        {!can('homepage.edit') && (
+          <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center gap-3">
+            <span className="material-icons text-amber-500">lock</span>
+            <p className="text-sm text-amber-700 dark:text-amber-400 font-medium">You have view-only access to this section.</p>
+          </div>
+        )}
+
         {renderTab()}
       </div>
     </AdminLayout>

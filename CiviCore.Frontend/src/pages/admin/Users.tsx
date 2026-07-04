@@ -8,6 +8,7 @@ import {
   TableWrapper, Th, FormInput, FormSelect
 } from '../../admin/components/ui';
 import { useTranslation, Trans } from 'react-i18next';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 interface UserRole {
   id: number;
@@ -250,6 +251,7 @@ function ApproveModal({ open, onClose, user, onApproved, householders }: { open:
 
 export default function Users() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [data, setData] = useState<User[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
@@ -326,10 +328,12 @@ export default function Users() {
         title={t('users.header_title')}
         subtitle={t('users.header_subtitle')}
         actions={
-          <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">person_add</span> {t('users.btn_add_user')}
-          </button>
+          can('users.create') && (
+            <button onClick={() => setModal({ open: true, data: null })}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+              <span className="material-icons text-sm">person_add</span> {t('users.btn_add_user')}
+            </button>
+          )
         }
       />
 
@@ -391,28 +395,32 @@ export default function Users() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-1">
-                      {isPending && (
+                      {isPending && can('users.approve') && (
                         <button onClick={() => setApproveModal({ open: true, user: u })}
                           className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-500 hover:text-white dark:bg-emerald-900/30 dark:text-emerald-400 rounded-lg transition-all cursor-pointer">
                           <span className="material-icons text-sm">how_to_reg</span> {t('users.tooltip_approve')}
                         </button>
                       )}
-                      <button onClick={() => setModal({ open: true, data: u })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_edit')}>
-                        <span className="material-icons text-lg">edit</span>
-                      </button>
-                      {!isPending && u.is_active && (
+                      {can('users.edit') && (
+                        <button onClick={() => setModal({ open: true, data: u })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_edit')}>
+                          <span className="material-icons text-lg">edit</span>
+                        </button>
+                      )}
+                      {can('users.edit') && !isPending && u.is_active && (
                         <button onClick={async () => { try { await axios.post(`/api/users/${u.id}/deactivate`); fetchData(); } catch {} }} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_deactivate')}>
                           <span className="material-icons text-lg">person_off</span>
                         </button>
                       )}
-                      {!isPending && !u.is_active && (
+                      {can('users.edit') && !isPending && !u.is_active && (
                         <button onClick={async () => { try { await axios.post(`/api/users/${u.id}/reactivate`); fetchData(); } catch {} }} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_reactivate')}>
                           <span className="material-icons text-lg">person_add</span>
                         </button>
                       )}
-                      <button onClick={() => setConfirm({ open: true, item: u, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_delete')}>
-                        <span className="material-icons text-lg">person_remove</span>
-                      </button>
+                      {can('users.delete') && (
+                        <button onClick={() => setConfirm({ open: true, item: u, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_delete')}>
+                          <span className="material-icons text-lg">person_remove</span>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

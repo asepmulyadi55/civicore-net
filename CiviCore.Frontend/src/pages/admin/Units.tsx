@@ -9,6 +9,7 @@ import {
   PageHeader, FilterBar, SearchInput,
   TableWrapper, Th, FormInput, FormSelect, CustomSelect
 } from '../../admin/components/ui';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 function UnitModal({ open, onClose, onSaved, data, blockId }) {
   const { t } = useTranslation();
@@ -77,6 +78,7 @@ function UnitModal({ open, onClose, onSaved, data, blockId }) {
 
 export default function Units() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const { id } = useParams();
   const navigate = useNavigate();
   const [block, setBlock] = useState(null);
@@ -160,10 +162,12 @@ export default function Units() {
         subtitle={t('units.page_subtitle')}
         onBack={() => navigate('/admin/blocks')}
         actions={
-          <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">add</span> {t('units.btn_add_unit')}
-          </button>
+          can('blocks.create') && (
+            <button onClick={() => setModal({ open: true, data: null })}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+              <span className="material-icons text-sm">add</span> {t('units.btn_add_unit')}
+            </button>
+          )
         }
       />
 
@@ -190,13 +194,15 @@ export default function Units() {
         <>
           <div className="mb-4 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3 pl-2">
-               <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+              {can('blocks.delete') && (
+                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+              )}
                <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3">{t('units.select_all')}</span>
                <span className={`text-sm font-semibold transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
                  {t('units.selected', { count: selected.length })}
                </span>
             </div>
-            {selected.length > 0 && (
+            {can('blocks.delete') && selected.length > 0 && (
               <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
                 <span className="material-icons text-sm">delete</span> {t('units.btn_delete_selected')}
               </button>
@@ -226,7 +232,9 @@ export default function Units() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider">{t('units.active')}</span>
-                    <input type="checkbox" checked={selected.includes(unit.id)} onChange={() => toggleOne(unit.id)} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+                    {can('blocks.delete') && (
+                      <input type="checkbox" checked={selected.includes(unit.id)} onChange={() => toggleOne(unit.id)} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+                    )}
                   </div>
                 </div>
 
@@ -236,12 +244,16 @@ export default function Units() {
                 </div>
 
                 <div className="flex gap-2 mt-auto">
-                  <button onClick={() => setModal({ open: true, data: unit })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
-                    <span className="material-icons text-[14px]">edit</span> {t('units.btn_edit')}
-                  </button>
-                  <button onClick={() => setConfirm({ open: true, type: 'delete', item: unit, loading: false })} className="w-9 h-9 flex shrink-0 items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-slate-200 dark:border-slate-700 hover:border-rose-200 dark:hover:border-rose-900/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors text-slate-500 dark:text-slate-400 cursor-pointer">
-                    <span className="material-icons text-[14px]">delete_outline</span>
-                  </button>
+                  {can('blocks.edit') && (
+                    <button onClick={() => setModal({ open: true, data: unit })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <span className="material-icons text-[14px]">edit</span> {t('units.btn_edit')}
+                    </button>
+                  )}
+                  {can('blocks.delete') && (
+                    <button onClick={() => setConfirm({ open: true, type: 'delete', item: unit, loading: false })} className="w-9 h-9 flex shrink-0 items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-slate-200 dark:border-slate-700 hover:border-rose-200 dark:hover:border-rose-900/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors text-slate-500 dark:text-slate-400 cursor-pointer">
+                      <span className="material-icons text-[14px]">delete_outline</span>
+                    </button>
+                  )}
                 </div>
               </div>
             );

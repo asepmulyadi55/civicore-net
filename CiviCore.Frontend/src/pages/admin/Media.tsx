@@ -4,6 +4,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, EmptyState } from '../../admin/components/ui';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 interface MediaFile {
   id: string;
@@ -206,8 +207,9 @@ const PAGE_SIZE = 24;
 
 export default function Media() {
   const { t } = useTranslation();
-  const canUpload = true;
-  const canDelete = true;
+  const { can } = usePermissions();
+  const canUpload = can('media.create');
+  const canDelete = can('media.delete');
 
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);

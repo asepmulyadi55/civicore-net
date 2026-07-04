@@ -458,7 +458,18 @@ export default function Settings() {
 
   const userStr = localStorage.getItem('admin_user');
   const user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
-  const isAdmin = (user.role || '').toLowerCase() === 'admin';
+  let roleName = '';
+  if (typeof user.role === 'string') roleName = user.role.toLowerCase();
+  else if (user.role && typeof user.role.name === 'string') roleName = user.role.name.toLowerCase();
+  else if (typeof user.roleName === 'string') roleName = user.roleName.toLowerCase();
+  else if (Array.isArray(user.roles) && user.roles.length > 0) {
+    const firstRole = user.roles[0];
+    roleName = (typeof firstRole === 'string' ? firstRole : (firstRole.name || '')).toLowerCase();
+  } else if (user.role_id === 1 || user.roleId === 1) {
+    roleName = 'admin';
+  }
+
+  const isAdmin = roleName === 'admin' || roleName === 'superadmin' || roleName === 'super-admin' || user.email === 'admin@civicore.com';
 
   const tabs = ALL_TABS.filter(t => !t.adminOnly || isAdmin);
 

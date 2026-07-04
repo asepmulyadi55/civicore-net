@@ -5,6 +5,7 @@ import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, SearchInput, SelectFilter, EmptyState, Pagination, Modal, ConfirmModal, FormInput, FormSelect, SearchableSelect, SecureImage } from '../../admin/components/ui';
 import { compressImage } from '../../utils/imageCompressor';
 import { useTranslation, Trans } from 'react-i18next';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 interface Meeting {
   id: number;
@@ -284,6 +285,7 @@ function MeetingAttendanceModal({ open, onClose, data }: { open: boolean; onClos
 
 export default function Meetings() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [data, setData] = useState<Meeting[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -332,10 +334,12 @@ export default function Meetings() {
       <PageHeader
         title={t('meetings.title')} subtitle={t('meetings.subtitle')}
         actions={
-          <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">add</span> {t('meetings.add_meeting')}
-          </button>
+          can('meetings.create') && (
+            <button onClick={() => setModal({ open: true, data: null })}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+              <span className="material-icons text-sm">add</span> {t('meetings.add_meeting')}
+            </button>
+          )
         }
       />
 
@@ -413,21 +417,27 @@ export default function Meetings() {
                 </div>
                 
                 <div className="flex items-center gap-1 sm:opacity-50 sm:group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => setImgModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer" title="Images">
-                    <span className="material-icons text-[20px]">image</span>
-                  </button>
-                  <button onClick={() => setDescModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-amber-500 transition-colors cursor-pointer" title="Description">
-                    <span className="material-icons text-[18px]">description</span>
-                  </button>
-                  <button onClick={() => setAttModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-emerald-500 transition-colors cursor-pointer" title="Attendance">
-                    <span className="material-icons text-[18px]">how_to_reg</span>
-                  </button>
-                  <button onClick={() => setModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit">
-                    <span className="material-icons text-[18px]">edit</span>
-                  </button>
-                  <button onClick={() => setConfirm({ open: true, item: m, loading: false })} className="p-2 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer" title="Delete">
-                    <span className="material-icons text-[18px]">delete</span>
-                  </button>
+                  {can('meetings.edit') && (
+                    <>
+                      <button onClick={() => setImgModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer" title="Images">
+                        <span className="material-icons text-[20px]">image</span>
+                      </button>
+                      <button onClick={() => setDescModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-amber-500 transition-colors cursor-pointer" title="Description">
+                        <span className="material-icons text-[18px]">description</span>
+                      </button>
+                      <button onClick={() => setAttModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-emerald-500 transition-colors cursor-pointer" title="Attendance">
+                        <span className="material-icons text-[18px]">how_to_reg</span>
+                      </button>
+                      <button onClick={() => setModal({ open: true, data: m })} className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit">
+                        <span className="material-icons text-[18px]">edit</span>
+                      </button>
+                    </>
+                  )}
+                  {can('meetings.delete') && (
+                    <button onClick={() => setConfirm({ open: true, item: m, loading: false })} className="p-2 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer" title="Delete">
+                      <span className="material-icons text-[18px]">delete</span>
+                    </button>
+                  )}
                 </div>
               </div>
             );

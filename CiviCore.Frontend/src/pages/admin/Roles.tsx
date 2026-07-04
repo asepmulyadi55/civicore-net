@@ -4,6 +4,7 @@ import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, TableWrapper, Th, EmptyState, Modal, ConfirmModal, FormInput } from '../../admin/components/ui';
 import { useTranslation, Trans } from 'react-i18next';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 interface Role {
   id: number;
@@ -130,6 +131,7 @@ function RoleModal({ open, onClose, onSaved, data }: { open: boolean; onClose: (
 
 export default function Roles() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; data: Role | null }>({ open: false, data: null });
@@ -168,10 +170,12 @@ export default function Roles() {
         title={t('roles.header_title')}
         subtitle={t('roles.header_subtitle')}
         actions={
-          <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">add</span> {t('roles.btn_create_role')}
-          </button>
+          can('roles.create') && (
+            <button onClick={() => setModal({ open: true, data: null })}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+              <span className="material-icons text-sm">add</span> {t('roles.btn_create_role')}
+            </button>
+          )
         }
       />
 
@@ -214,10 +218,12 @@ export default function Roles() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => setModal({ open: true, data: r })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer">
-                        <span className="material-icons text-lg">edit</span>
-                      </button>
-                      {!isSystem && (
+                      {can('roles.edit') && (
+                        <button onClick={() => setModal({ open: true, data: r })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer">
+                          <span className="material-icons text-lg">edit</span>
+                        </button>
+                      )}
+                      {!isSystem && can('roles.delete') && (
                         <button onClick={() => setConfirm({ open: true, item: r, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer">
                           <span className="material-icons text-lg">delete_outline</span>
                         </button>

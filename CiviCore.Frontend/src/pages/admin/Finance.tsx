@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, TableWrapper, Th, EmptyState, Pagination, FilterBar, SelectFilter, SearchInput, Modal, FormInput, FormSelect } from '../../admin/components/ui';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 type FinanceTab = 'dashboard' | 'transactions' | 'reports';
 
@@ -90,6 +91,7 @@ function TransactionModal({ open, onClose, onSaved }: { open: boolean; onClose: 
 
 export default function Finance() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [activeTab, setActiveTab] = useState<FinanceTab>('dashboard');
   const [stats, setStats] = useState<FinanceStats | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -142,10 +144,12 @@ export default function Finance() {
         title={t('finance.title')}
         subtitle={t('finance.subtitle')}
         actions={
-          <button onClick={() => setModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-            <span className="material-icons text-sm">add</span> {t('finance.btn_record_transaction')}
-          </button>
+          can('finance.create') && (
+            <button onClick={() => setModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+              <span className="material-icons text-sm">add</span> {t('finance.btn_record_transaction')}
+            </button>
+          )
         }
       />
 
@@ -352,8 +356,8 @@ export default function Finance() {
                         </td>
                         <td className="p-4 text-right">
                           <div className="flex items-center justify-end gap-2 text-slate-400">
-                             <button className="hover:text-emerald-400 transition-colors cursor-pointer"><span className="material-icons text-[18px]">edit</span></button>
-                             <button className="hover:text-rose-400 transition-colors cursor-pointer"><span className="material-icons text-[18px]">delete</span></button>
+                            {can('finance.edit') && <button className="hover:text-emerald-400 transition-colors cursor-pointer"><span className="material-icons text-[18px]">edit</span></button>}
+                            {can('finance.delete') && <button className="hover:text-rose-400 transition-colors cursor-pointer"><span className="material-icons text-[18px]">delete</span></button>}
                           </div>
                         </td>
                       </tr>
@@ -416,10 +420,10 @@ export default function Finance() {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-3 text-slate-400">
-                           <button className="hover:text-emerald-400 transition-colors cursor-pointer" title="Regenerate"><span className="material-icons text-[18px]">refresh</span></button>
-                           <button className="hover:text-white transition-colors cursor-pointer" title="Details"><span className="material-icons text-[18px]">notes</span></button>
-                           <button className="hover:text-indigo-400 transition-colors cursor-pointer" title="Send for Approval"><span className="material-icons text-[18px]">send</span></button>
-                           <button className="hover:text-rose-400 transition-colors cursor-pointer" title="Delete"><span className="material-icons text-[18px]">delete</span></button>
+                          {can('finance.edit') && <button className="hover:text-emerald-400 transition-colors cursor-pointer" title="Regenerate"><span className="material-icons text-[18px]">refresh</span></button>}
+                          {can('finance.view') && <button className="hover:text-white transition-colors cursor-pointer" title="Details"><span className="material-icons text-[18px]">notes</span></button>}
+                          {can('finance.approve') && <button className="hover:text-indigo-400 transition-colors cursor-pointer" title="Send for Approval"><span className="material-icons text-[18px]">send</span></button>}
+                          {can('finance.delete') && <button className="hover:text-rose-400 transition-colors cursor-pointer" title="Delete"><span className="material-icons text-[18px]">delete</span></button>}
                         </div>
                       </td>
                     </tr>

@@ -4,6 +4,7 @@ import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, EmptyState, Modal, ConfirmModal, FormInput, FormSelect, SecureImage, CustomSelect, SearchableSelect } from '../../admin/components/ui';
 import { useTranslation } from 'react-i18next';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 interface OrgPeriod {
   id: string;
@@ -322,6 +323,7 @@ function OrgChart({ tree, onEdit, onDelete }: { tree: OrgPosition[]; onEdit: (n:
 
 export default function Organization() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [periods, setPeriods] = useState<OrgPeriod[]>([]);
   const [positions, setPositions] = useState<OrgPosition[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
@@ -396,10 +398,12 @@ export default function Organization() {
         subtitle={t('organization.subtitle')}
         actions={
           <div className="flex gap-2">
-            <button onClick={() => setPeriodModal({ open: true, data: null })} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white text-sm font-bold rounded-lg transition-all cursor-pointer">
-              {t('organization.btn_manage_periods')}
-            </button>
-            {selectedPeriod && (
+            {can('organization.create') && (
+              <button onClick={() => setPeriodModal({ open: true, data: null })} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white text-sm font-bold rounded-lg transition-all cursor-pointer">
+                {t('organization.btn_manage_periods')}
+              </button>
+            )}
+            {can('organization.create') && selectedPeriod && (
               <button onClick={() => setPosModal({ open: true, data: null })} className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-sm shadow-primary/20 transition-all cursor-pointer">
                 <span className="material-icons text-sm">account_tree</span> {t('organization.btn_add_position')}
               </button>
@@ -421,9 +425,9 @@ export default function Organization() {
                 {/* Fixed Hover Gap: Removed mt-1, replaced with invisible padding wrapper to bridge the gap */}
                 <div className="absolute top-full pt-1 hidden group-hover:block z-10 w-32 left-0">
                   <div className="flex flex-col bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-lg rounded-lg overflow-hidden">
-                    {!p.isActive && <button onClick={() => activatePeriod(p.id)} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">{t('organization.set_active')}</button>}
-                    <button onClick={() => setPeriodModal({ open: true, data: p })} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">{t('organization.edit')}</button>
-                    {!p.isActive && <button onClick={() => setConfirm({ open: true, item: p, type: 'period', loading: false })} className="px-3 py-2 text-xs text-left text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 cursor-pointer">{t('organization.delete')}</button>}
+                    {!p.isActive && can('organization.edit') && <button onClick={() => activatePeriod(p.id)} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">{t('organization.set_active')}</button>}
+                    {can('organization.edit') && <button onClick={() => setPeriodModal({ open: true, data: p })} className="px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-slate-700 dark:text-slate-300">{t('organization.edit')}</button>}
+                    {!p.isActive && can('organization.delete') && <button onClick={() => setConfirm({ open: true, item: p, type: 'period', loading: false })} className="px-3 py-2 text-xs text-left text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 cursor-pointer">{t('organization.delete')}</button>}
                   </div>
                 </div>
               </div>
@@ -440,7 +444,11 @@ export default function Organization() {
         ) : tree.length === 0 ? (
           <EmptyState icon="account_tree" title={t('organization.empty_org_title')} subtitle={t('organization.empty_org_subtitle')} />
         ) : (
-          <OrgChart tree={tree} onEdit={n => setPosModal({ open: true, data: n })} onDelete={n => setConfirm({ open: true, item: n, type: 'position', loading: false })} />
+          <OrgChart
+            tree={tree}
+            onEdit={n => can('organization.edit') ? setPosModal({ open: true, data: n }) : undefined}
+            onDelete={n => can('organization.delete') ? setConfirm({ open: true, item: n, type: 'position', loading: false }) : undefined}
+          />
         )
       )}
     </AdminLayout>

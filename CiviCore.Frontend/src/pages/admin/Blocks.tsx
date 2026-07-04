@@ -9,6 +9,7 @@ import {
   TableWrapper, Th, FormInput, FormSelect, SearchableSelect, CustomSelect,
   BulkActionBar
 } from '../../admin/components/ui';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
   const { t } = useTranslation();
@@ -122,6 +123,7 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
 
 function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggleSelect }) {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const stats = [
     { label: t('blocks.stat_units'), value: block.units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
     { label: t('blocks.stat_occupied'), value: block.owner_occupied_units_count ?? 0, cls: 'bg-emerald-50 dark:bg-emerald-900/10', valCls: 'text-emerald-500' },
@@ -132,14 +134,16 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggl
   ];
   return (
     <div className={`relative bg-white dark:bg-slate-900 rounded-xl border ${isSelected ? 'border-primary ring-1 ring-primary/30' : 'border-slate-200 dark:border-slate-800'} shadow-sm p-6 flex flex-col gap-4 hover:shadow-md hover:border-primary/30 transition-all`}>
-      <div className="absolute top-4 right-4 z-10">
-        <input 
-          type="checkbox" 
-          checked={isSelected}
-          onChange={(e) => onToggleSelect(block.id, e.target.checked)}
-          className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer"
-        />
-      </div>
+      {can('blocks.delete') && (
+        <div className="absolute top-4 right-4 z-10">
+          <input 
+            type="checkbox" 
+            checked={isSelected}
+            onChange={(e) => onToggleSelect(block.id, e.target.checked)}
+            className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer"
+          />
+        </div>
+      )}
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center flex-shrink-0">
           <span className="material-icons text-2xl">apartment</span>
@@ -175,15 +179,21 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggl
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
         <StatusBadge status={block.is_active ? 'active' : 'inactive'} />
         <div className="flex gap-1">
-          <button onClick={() => onManageUnits(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_manage_units')}>
-            <span className="material-icons text-sm">home_work</span>
-          </button>
-          <button onClick={() => onEdit(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_edit')}>
-            <span className="material-icons text-sm">edit</span>
-          </button>
-          <button onClick={() => onDelete(block)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_delete')}>
-            <span className="material-icons text-sm">delete_outline</span>
-          </button>
+          {can('blocks.edit') && (
+            <button onClick={() => onManageUnits(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_manage_units')}>
+              <span className="material-icons text-sm">home_work</span>
+            </button>
+          )}
+          {can('blocks.edit') && (
+            <button onClick={() => onEdit(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_edit')}>
+              <span className="material-icons text-sm">edit</span>
+            </button>
+          )}
+          {can('blocks.delete') && (
+            <button onClick={() => onDelete(block)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_delete')}>
+              <span className="material-icons text-sm">delete_outline</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -192,6 +202,7 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggl
 
 export default function Blocks() {
   const { t } = useTranslation();
+  const { can } = usePermissions();
   const [blocks, setBlocks] = useState([]);
   const [residents, setResidents] = useState([]);
   const [householders, setHouseholders] = useState([]);
@@ -370,15 +381,19 @@ export default function Blocks() {
         subtitle={t('blocks.subtitle')}
         actions={
           <div className="flex items-center gap-2">
-            <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="hidden" onChange={handleImportExcel} />
-            <button onClick={() => fileInputRef.current?.click()} disabled={importing}
-              className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-              <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('blocks.importing_data') : t('common.import')}
-            </button>
-            <button onClick={() => setModal({ open: true, data: null })}
-              className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-              <span className="material-icons text-sm">add</span> {t('blocks.add_block')}
-            </button>
+            {can('blocks.create') && (
+              <>
+                <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="hidden" onChange={handleImportExcel} />
+                <button onClick={() => fileInputRef.current?.click()} disabled={importing}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
+                  <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('blocks.importing_data') : t('common.import')}
+                </button>
+                <button onClick={() => setModal({ open: true, data: null })}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+                  <span className="material-icons text-sm">add</span> {t('blocks.add_block')}
+                </button>
+              </>
+            )}
           </div>
         }
       />
@@ -389,13 +404,15 @@ export default function Blocks() {
 
       <div className="mb-6 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3 pl-2">
-           <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+          {can('blocks.delete') && (
+            <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+          )}
            <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3">{t('blocks.select_all')}</span>
            <span className={`text-sm font-semibold transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
              {t('blocks.selected_count', { count: selected.length })}
            </span>
         </div>
-        {selected.length > 0 && (
+        {can('blocks.delete') && selected.length > 0 && (
           <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
             <span className="material-icons text-sm">delete</span> {t('blocks.btn_delete_selected')}
           </button>
