@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AdminLayout from './admin/AdminLayout';
 import RequireAuth from './admin/RequireAuth';
+import RequirePermission from './admin/RequirePermission';
 
 import Login from './pages/admin/Login';
 import Register from './pages/admin/Register';
@@ -23,6 +24,7 @@ import Organization from './pages/admin/Organization';
 import Reports from './pages/admin/Reports';
 // Wave 3
 import Roles from './pages/admin/Roles';
+import EditRole from './pages/admin/EditRole';
 import Settings from './pages/admin/Settings';
 import Posyandu from './pages/admin/Posyandu';
 import AdminHomepage from './pages/admin/Homepage';
@@ -76,32 +78,35 @@ export default function Router() {
         <Route path="/admin/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
 
         {/* Wave 1 — Community & Payments */}
-        <Route path="/admin/householders" element={<RequireAuth><Householders /></RequireAuth>} />
-        <Route path="/admin/householders/:id/edit" element={<RequireAuth><EditHouseholder /></RequireAuth>} />
-        <Route path="/admin/blocks" element={<RequireAuth><Blocks /></RequireAuth>} />
-        <Route path="/admin/blocks/:id/units" element={<RequireAuth><Units /></RequireAuth>} />
-        <Route path="/admin/payments" element={<RequireAuth><Payments /></RequireAuth>} />
-        <Route path="/admin/users" element={<RequireAuth><Users /></RequireAuth>} />
+        <Route path="/admin/householders" element={<RequireAuth><RequirePermission perm="householders.view"><Householders /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/householders/:id/edit" element={<RequireAuth><RequirePermission perm="householders.edit"><EditHouseholder /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/blocks" element={<RequireAuth><RequirePermission perm="blocks.view"><Blocks /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/blocks/:id/units" element={<RequireAuth><RequirePermission perm="blocks.edit"><Units /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/payments" element={<RequireAuth><RequirePermission perm="payments.view"><Payments /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/users" element={<RequireAuth><RequirePermission perm="users.view"><Users /></RequirePermission></RequireAuth>} />
 
         {/* Wave 2 — Finance, Meetings, Org, Reports */}
-        <Route path="/admin/finance" element={<RequireAuth><Finance /></RequireAuth>} />
-        <Route path="/admin/meetings" element={<RequireAuth><Meetings /></RequireAuth>} />
-        <Route path="/admin/organization" element={<RequireAuth><Organization /></RequireAuth>} />
-        <Route path="/admin/reports" element={<RequireAuth><Reports /></RequireAuth>} />
+        <Route path="/admin/finance" element={<RequireAuth><RequirePermission perm="finance.view"><Finance /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/meetings" element={<RequireAuth><RequirePermission perm="meetings.view"><Meetings /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/organization" element={<RequireAuth><RequirePermission perm="organization.view"><Organization /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/reports" element={<RequireAuth><RequirePermission perm="reports.view"><Reports /></RequirePermission></RequireAuth>} />
 
         {/* Wave 3 — Admin & Config */}
-        <Route path="/admin/roles" element={<RequireAuth><Roles /></RequireAuth>} />
+        <Route path="/admin/roles" element={<RequireAuth><RequirePermission perm="roles.view"><Roles /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/roles/new/edit" element={<RequireAuth><RequirePermission perm="roles.create"><EditRole /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/roles/:id/edit" element={<RequireAuth><RequirePermission perm="roles.edit"><EditRole /></RequirePermission></RequireAuth>} />
         <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
         <Route path="/admin/settings/:tab" element={<RequireAuth><Settings /></RequireAuth>} />
         <Route path="/admin/homepage" element={<Navigate to="/admin/homepage/featured" replace />} />
-        <Route path="/admin/homepage/:tab" element={<RequireAuth><AdminHomepage /></RequireAuth>} />
-        <Route path="/admin/media" element={<RequireAuth><Media /></RequireAuth>} />
+        <Route path="/admin/homepage/:tab" element={<RequireAuth><RequirePermission perm="homepage_hero.view"><AdminHomepage /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/media" element={<RequireAuth><RequirePermission perm="media.view"><Media /></RequirePermission></RequireAuth>} />
 
         {/* Resident Portal */}
         <Route path="/admin/overview" element={<RequireAuth><Overview /></RequireAuth>} />
         <Route path="/admin/residents" element={<RequireAuth><ResidentHousehold /></RequireAuth>} />
-        <Route path="/admin/posyandu" element={<RequireAuth><Posyandu /></RequireAuth>} />
+        <Route path="/admin/posyandu" element={<RequireAuth><RequirePermission perm="posyandu.view"><Posyandu /></RequirePermission></RequireAuth>} />
       </Routes>
     </BrowserRouter>
   );
 }
+
