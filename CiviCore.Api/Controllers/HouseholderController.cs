@@ -207,7 +207,7 @@ public class HouseholderController : ControllerBase
 
     [HttpPost("import")]
     public async Task<IActionResult> ImportExcel(
-        [FromForm] IFormFile excel_file, 
+        IFormFile excel_file, 
         [FromForm] int year = 2026,
         [FromServices] ImportJobTracker? tracker = null,
         [FromServices] IServiceScopeFactory? scopeFactory = null)

@@ -219,7 +219,7 @@ public class BlockController : ControllerBase
 
     [HttpPost("import")]
     public async Task<IActionResult> ImportExcel(
-        [FromForm] IFormFile excel_file,
+        IFormFile excel_file,
         [FromServices] ImportJobTracker? tracker = null,
         [FromServices] IServiceScopeFactory? scopeFactory = null)
     {
