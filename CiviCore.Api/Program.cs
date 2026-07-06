@@ -152,18 +152,18 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
-        // This won't do anything until the DB is created/migrated,
-        // but it will safely attempt to seed data when ready.
         var context = services.GetRequiredService<CiviCore.Infrastructure.Data.AppDbContext>();
-        if (context.Database.CanConnect())
-        {
-            await CiviCore.Infrastructure.Data.DataSeeder.SeedDataAsync(services);
-        }
+        
+        // Automatically apply any pending migrations when the app starts
+        await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(context.Database);
+        
+        // Seed data after migrations are applied
+        await CiviCore.Infrastructure.Data.DataSeeder.SeedDataAsync(services);
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred seeding the DB.");
+        logger.LogError(ex, "An error occurred during database migration or seeding.");
     }
 }
 
