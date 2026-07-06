@@ -102,15 +102,18 @@ builder.Services.AddAuthentication()
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseSwagger(c => 
+if (app.Environment.IsDevelopment())
 {
-    c.RouteTemplate = "api/swagger/{documentName}/swagger.json";
-});
-app.UseSwaggerUI(c => 
-{
-    c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "CiviCore API v1");
-    c.RoutePrefix = "api/swagger";
-});
+    app.UseSwagger(c => 
+    {
+        c.RouteTemplate = "api/swagger/{documentName}/swagger.json";
+    });
+    app.UseSwaggerUI(c => 
+    {
+        c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "CiviCore API v1");
+        c.RoutePrefix = "api/swagger";
+    });
+}
 
 // please comment it while development to avoid certificate error
 app.UseHttpsRedirection();
