@@ -1,13 +1,13 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { compressImage } from '../../utils/imageCompressor';
 import AdminLayout from '../../admin/AdminLayout';
 import { useTranslation } from 'react-i18next';
-import { PageHeader, Modal, ConfirmModal, FormInput, FormSelect, SearchInput, SelectFilter, FilterBar, Pagination, TableWrapper, Th, EmptyState, StatusBadge } from '../../admin/components/ui';
+import { PageHeader, Modal, ConfirmModal, FormInput, FormSelect, SearchInput, SelectFilter, FilterBar, Pagination, TableWrapper, Th, EmptyState, StatusBadge, ImageUploadBox } from '../../admin/components/ui';
 import NavigationTab from '../../admin/homepage/Navigation';
 import { usePermissions } from '../../admin/PermissionsContext';
 
@@ -19,7 +19,7 @@ const TABS = [
   { key: 'events', label: 'Events', icon: 'event' },
   { key: 'gallery', label: 'Gallery', icon: 'photo_library' },
   { key: 'bulletin', label: 'Bulletin', icon: 'article' },
-  { key: 'property', label: 'Properties', icon: 'home_work' },
+  { key: 'properties', label: 'Properties', icon: 'home_work' },
   { key: 'navigation', label: 'Navigation', icon: 'menu' },
   { key: 'footer', label: 'Footer', icon: 'web_asset' },
   { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search' },
@@ -77,41 +77,6 @@ function SaveButton({ onClick, loading, label = 'Save Changes', disabled = false
   );
 }
 
-function ImageUploadBox({ id, label, currentUrl, onFileChange, file, recommendedSize }: any) {
-  const inputRef = React.useRef<any>(null);
-  return (
-    <div className="space-y-1.5">
-      {label && <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{label}</label>}
-      {currentUrl && !file && (
-        <div className="flex items-center gap-4 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 mb-2">
-          <img src={currentUrl} alt="Current" className="w-20 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Current Image</p>
-            <p className="text-xs text-slate-400 truncate">{currentUrl}</p>
-          </div>
-        </div>
-      )}
-      {file ? (
-        <div className="flex items-center gap-3 p-3 rounded-xl border border-primary/30 bg-primary/5">
-          <img src={URL.createObjectURL(file)} alt="Preview" className="w-16 h-12 object-cover rounded-lg flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-primary">Ready to upload</p>
-            <p className="text-xs text-slate-400 truncate">{file.name}</p>
-          </div>
-          <button type="button" onClick={() => { onFileChange(null); if (inputRef.current) inputRef.current.value = ''; }} className="text-slate-400 hover:text-rose-500 transition-colors cursor-pointer">
-            <span className="material-icons text-lg">close</span>
-          </button>
-        </div>
-      ) : (
-        <label className="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer">
-          <span className="material-icons text-slate-400 text-2xl">cloud_upload</span>
-          <span className="text-xs font-semibold text-slate-500">Upload New Image <span className="text-slate-400 font-normal">(optional · max 1 MB auto-compressed{recommendedSize ? ` · rec: ${recommendedSize}` : ''})</span></span>
-          <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={e => onFileChange(e.target.files?.[0] || null)} />
-        </label>
-      )}
-    </div>
-  );
-}
 
 function SuccessBanner({ show }) {
   if (!show) return null;
@@ -186,10 +151,6 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('');
-  const [modal, setModal] = useState({ open: false, data: null });
-  const [form, setForm] = useState({ title: '', description: '', date: '', location: '', category: '', status: '', url: '' });
-  const [image, setImage] = useState(null);
-  const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
   const [success, setSuccess] = useState('');
   const [page, setPage] = useState(1);
@@ -241,34 +202,6 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
   const meta = { current_page: page, last_page: lastPage, from: total === 0 ? 0 : (page - 1) * perPage + 1, to: Math.min(page * perPage, total), total };
 
-  const openModal = (ev = null) => {
-    setModal({ open: true, data: ev });
-    if (ev) {
-      setForm({ title: ev.title || '', description: ev.description || '', date: ev.date ? (ev.date.includes('T') ? ev.date.slice(0, 16) : ev.date + 'T00:00') : '', location: ev.location || '', category: ev.category || '', status: ev.status || '', url: ev.url || '' });
-    } else {
-      setForm({ title: '', description: '', date: '', location: '', category: '', status: '', url: '' });
-    }
-    setImage(null);
-  };
-
-  const saveEvent = async () => {
-    if (!form.title.trim()) return;
-    setSaving(true);
-    const fd = new FormData();
-    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    if (image) fd.append('image_file', await compressImage(image));
-    try {
-      if (modal.data) {
-        await axios.put(`/api/homepage/events/${modal.data.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      } else {
-        await axios.post('/api/homepage/events', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      }
-      setModal({ open: false, data: null });
-      setSuccess('event'); setTimeout(() => setSuccess(''), 3000);
-      fetchEvents();
-    } catch { }
-    setSaving(false);
-  };
 
   const deleteEvent = async () => {
     setDeleteModal(d => ({ ...d, loading: true }));
@@ -280,43 +213,6 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
 
   return (
     <>
-      <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })} title={modal.data ? "Edit Event" : "Add Event"} size="lg">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormInput label="Title" id="ev-title" value={form.title} onChange={e => {
-              const title = e.target.value;
-              const slug = '/events/' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-              setForm(f => ({ ...f, title, url: (!f.url || f.url.startsWith('/events/')) ? slug : f.url }));
-            }} required placeholder="Event title..." />
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date & Time</label>
-              <input type="datetime-local" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
-            </div>
-            <FormInput label="Location" id="ev-location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="e.g. Central Garden" />
-            <FormSelect label="Category" id="ev-cat" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} options={CATEGORY_OPTIONS} placeholder="None" />
-          </div>
-          <div>
-            <div className="flex justify-between items-end mb-1.5">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
-            </div>
-            <ReactQuill theme="snow" value={form.description || ''} onChange={v => setForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">URL</label>
-            <input type="text" readOnly disabled value={form.url} placeholder="Auto-generated from title" className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-500 cursor-not-allowed" />
-          </div>
-          <ImageUploadBox label="Event Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} recommendedSize="1000x600" />
-
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
-            <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            {canEdit && <button onClick={saveEvent} disabled={saving} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>}
-          </div>
-        </div>
-      </Modal>
-
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
         onConfirm={deleteEvent} loading={deleteModal.loading} icon="delete_outline"
         title="Delete Event?" message={`Delete <strong>${deleteModal.title}</strong>? This cannot be undone.`} confirmLabel="Yes, Delete" />
@@ -343,9 +239,9 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search events..." />
             <SelectFilter value={catFilter} onChange={v => { setCatFilter(v); setPage(1); }} options={CATEGORY_OPTIONS} placeholder="All Categories" />
             <div className="flex-grow"></div>
-            {canEdit && <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <Link to="/admin/homepage/events/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> Add Event
-            </button>}
+            </Link>}
           </FilterBar>
 
           <TableWrapper>
@@ -381,7 +277,7 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
-                          {canEdit && <button onClick={() => openModal(ev)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>}
+                          {canEdit && <Link to={`/admin/homepage/events/${ev.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
                           {canEdit && <button onClick={() => setDeleteModal({ open: true, id: ev.id, title: ev.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
                       </td>
@@ -728,15 +624,6 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [addForm, setAddForm] = useState({ title: '', description: '', date: '', url: '' });
-  const [addImage, setAddImage] = useState<any>(null);
-  const [addLoading, setAddLoading] = useState(false);
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [editModal, setEditModal] = useState({ open: false, data: null as any });
-  const [editForm, setEditForm] = useState({ title: '', description: '', date: '', url: '' });
-
-  const [editImage, setEditImage] = useState(null);
-  const [editLoading, setEditLoading] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
   const [settings, setSettings] = useState<any>({});
   const [savingSettings, setSavingSettings] = useState(false);
@@ -770,41 +657,6 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
   const meta = { current_page: page, last_page: lastPage, from: total === 0 ? 0 : (page - 1) * perPage + 1, to: Math.min(page * perPage, total), total };
 
-  const addBulletin = async () => {
-    if (!addForm.title.trim()) return;
-    setAddLoading(true);
-    const fd = new FormData();
-    Object.entries(addForm).forEach(([k, v]) => fd.append(k, v));
-    if (addImage) fd.append('image_file', await compressImage(addImage));
-    try {
-      await axios.post('/api/homepage/bulletin', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setAddForm({ title: '', description: '', date: '', url: '' }); setAddImage(null);
-      setAddModalOpen(false);
-      setSuccess('item'); setTimeout(() => setSuccess(false), 3000);
-      fetch();
-    } catch { }
-    setAddLoading(false);
-  };
-
-  const openEdit = (b) => {
-    setEditModal({ open: true, data: b });
-    setEditForm({ title: b.title || '', description: b.description || '', date: b.date || '', url: b.url || '' });
-    setEditImage(null);
-  };
-
-  const saveEdit = async () => {
-    setEditLoading(true);
-    const fd = new FormData();
-    Object.entries(editForm).forEach(([k, v]) => fd.append(k, v));
-    if (editImage) fd.append('image_file', await compressImage(editImage));
-    try {
-      await axios.put(`/api/homepage/bulletin/${editModal.data.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setEditModal({ open: false, data: null });
-      setSuccess('item'); setTimeout(() => setSuccess(false), 3000);
-      fetch();
-    } catch { }
-    setEditLoading(false);
-  };
 
   const deleteBulletin = async () => {
     setDeleteModal(d => ({ ...d, loading: true }));
@@ -839,62 +691,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
 
       <div className="h-6"></div>
 
-      <Modal open={addModalOpen} onClose={() => setAddModalOpen(false)} title="Add New Bulletin" size="lg">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormInput label="Title" id="ab-title" value={addForm.title} onChange={e => setAddForm(f => ({ ...f, title: e.target.value }))} required placeholder="Bulletin title..." />
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date</label>
-              <input type="date" value={addForm.date} onChange={e => setAddForm(f => ({ ...f, date: e.target.value }))}
-                onClick={e => 'showPicker' in e.target && (e.target as any).showPicker()}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between items-end mb-1.5">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
-            </div>
-            <ReactQuill theme="snow" value={addForm.description || ''} onChange={v => setAddForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
-          </div>
-          <FormInput label="URL" id="ab-url" value={addForm.url} onChange={e => setAddForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
-          <ImageUploadBox label="Bulletin Image" file={addImage} onFileChange={setAddImage} recommendedSize="800x600" />
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
-            <button onClick={() => setAddModalOpen(false)} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            {canEdit && <button onClick={addBulletin} disabled={addLoading}
-              className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-              <span className="material-icons text-base">add</span> {addLoading ? 'Adding...' : 'Add Bulletin'}
-            </button>}
-          </div>
-        </div>
-      </Modal>
 
-      <Modal open={editModal.open} onClose={() => setEditModal({ open: false, data: null })} title="Edit Bulletin" size="lg">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormInput label="Title" id="eb-title" value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} required placeholder="Bulletin title..." />
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date</label>
-              <input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))}
-                onClick={e => 'showPicker' in e.target && (e.target as any).showPicker()}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none cursor-pointer dark:[color-scheme:dark]" />
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between items-end mb-1.5">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
-            </div>
-            <ReactQuill theme="snow" value={editForm.description || ''} onChange={v => setEditForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
-          </div>
-          <FormInput label="URL" id="eb-url" value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
-          <ImageUploadBox label="Bulletin Image" currentUrl={editModal.data?.image_url} file={editImage} onFileChange={setEditImage} recommendedSize="800x600" />
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
-            <button onClick={() => setEditModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            {canEdit && <button onClick={saveEdit} disabled={editLoading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-              {editLoading ? 'Saving...' : 'Save Changes'}
-            </button>}
-          </div>
-        </div>
-      </Modal>
 
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
         onConfirm={deleteBulletin} loading={deleteModal.loading} icon="delete_outline"
@@ -907,9 +704,9 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
           <FilterBar>
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search bulletins..." />
             <div className="flex-grow"></div>
-            {canEdit && <button onClick={() => setAddModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <Link to="/admin/homepage/bulletin/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> Add Bulletin
-            </button>}
+            </Link>}
           </FilterBar>
 
           <TableWrapper>
@@ -938,7 +735,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
                       <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{b.date ? new Date(b.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
-                          {canEdit && <button onClick={() => openEdit(b)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">edit</span></button>}
+                          {canEdit && <Link to={`/admin/homepage/bulletin/${b.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
                           {canEdit && <button onClick={() => setDeleteModal({ open: true, id: b.id, title: b.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
                       </td>
@@ -965,7 +762,6 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
   const [meta, setMeta] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ search: '', type: '', status: '', page: 1 });
-  const [modal, setModal] = useState<{ open: boolean; data: any }>({ open: false, data: null });
   const [confirm, setConfirm] = useState<{ open: boolean; item: any; loading: boolean }>({ open: false, item: null, loading: false });
   const [settings, setSettings] = useState<any>({});
   const [savingSettings, setSavingSettings] = useState(false);
@@ -974,14 +770,6 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
   const [imageModal, setImageModal] = useState<{ open: boolean; property: any }>({ open: false, property: null });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [deleteImageConfirmUrl, setDeleteImageConfirmUrl] = useState<string | null>(null);
-
-  const [form, setForm] = useState({ 
-    title: '', type: 'house', price: '', status: 'available', description: '', location: '',
-    bedrooms: '', bathrooms: '', landArea: '', buildingArea: '', amenities: '', contactName: '', contactPhone: ''
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [savingProperty, setSavingProperty] = useState(false);
-  const isEdit = !!modal.data?.id;
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -1045,44 +833,6 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
     setSavingSettings(false);
   };
 
-  const openModal = (p = null) => {
-    setModal({ open: true, data: p });
-    if (p) {
-      setForm({ 
-        title: p.title, type: p.type, price: String(p.price), status: p.status, description: p.description || '', location: p.location || '',
-        bedrooms: p.bedrooms ? String(p.bedrooms) : '', bathrooms: p.bathrooms ? String(p.bathrooms) : '',
-        landArea: p.landArea ? String(p.landArea) : '', buildingArea: p.buildingArea ? String(p.buildingArea) : '',
-        amenities: p.amenities || '', contactName: p.contactName || '', contactPhone: p.contactPhone || ''
-      });
-    } else {
-      setForm({ title: '', type: 'house', price: '', status: 'available', description: '', location: '', bedrooms: '', bathrooms: '', landArea: '', buildingArea: '', amenities: '', contactName: '', contactPhone: '' });
-    }
-    setErrors({});
-  };
-
-  const setFormValue = (f: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((p) => ({ ...p, [f]: e.target.value }));
-
-  const saveProperty = async () => {
-    setSavingProperty(true); setErrors({});
-    try {
-      const payload = { 
-        ...form, 
-        price: Number(form.price),
-        bedrooms: form.bedrooms ? Number(form.bedrooms) : null,
-        bathrooms: form.bathrooms ? Number(form.bathrooms) : null,
-        landArea: form.landArea ? Number(form.landArea) : null,
-        buildingArea: form.buildingArea ? Number(form.buildingArea) : null
-      };
-      if (isEdit) await axios.put(`/api/property/${modal.data!.id}`, payload);
-      else await axios.post('/api/property', payload);
-      setSuccess('item'); setTimeout(() => setSuccess(false), 3000);
-      setModal({ open: false, data: null });
-      fetch();
-    } catch (err: any) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
-    } finally { setSavingProperty(false); }
-  };
 
   return (
     <>
@@ -1098,46 +848,7 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
         {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />}
       </SectionCard>
 
-      <div className="h-6"></div>
 
-      <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })} title={isEdit ? 'Edit Property' : 'Add Property'} size="lg">
-        <div className="space-y-4">
-          {errors.general && <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
-          <FormInput label="Title" id="p-title" value={form.title} onChange={setFormValue('title')} error={errors.title} required placeholder="e.g. Unit A-01 For Rent" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormSelect label="Status" id="p-status" value={form.status} onChange={setFormValue('status')} options={PROPERTY_STATUS_OPTIONS} />
-            <FormInput label="Price (Rp)" id="p-price" type="number" value={form.price} onChange={setFormValue('price')} error={errors.price} placeholder="0" />
-          </div>
-          <FormInput label="Location" id="p-loc" value={form.location} onChange={setFormValue('location')} placeholder="Block & unit, e.g. Block A No. 5" />
-          
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <FormInput label="Bedrooms" id="p-beds" type="number" value={form.bedrooms} onChange={setFormValue('bedrooms')} placeholder="e.g. 3" />
-            <FormInput label="Bathrooms" id="p-baths" type="number" value={form.bathrooms} onChange={setFormValue('bathrooms')} placeholder="e.g. 2" />
-            <FormInput label="Land Area" id="p-land" type="number" value={form.landArea} onChange={setFormValue('landArea')} placeholder="m²" />
-            <FormInput label="Build Area" id="p-build" type="number" value={form.buildingArea} onChange={setFormValue('buildingArea')} placeholder="m²" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormInput label="Contact Name" id="p-cname" value={form.contactName} onChange={setFormValue('contactName')} placeholder="Agent or owner name" />
-            <FormInput label="Contact Phone" id="p-cphone" value={form.contactPhone} onChange={setFormValue('contactPhone')} placeholder="+62..." />
-          </div>
-
-          <FormInput label="Amenities" id="p-amenities" value={form.amenities} onChange={setFormValue('amenities')} placeholder="e.g. Infinity Pool, Smart Garage, 24/7 Security" />
-
-          <div>
-            <div className="flex justify-between items-end mb-1.5">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
-            </div>
-            <ReactQuill theme="snow" value={form.description} onChange={(val) => setForm(p => ({ ...p, description: val }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
-          </div>
-          <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-white/5 px-2 mt-4">
-            <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
-            {canEdit && <button onClick={saveProperty} disabled={savingProperty} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-              {savingProperty ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Property'}
-            </button>}
-          </div>
-        </div>
-      </Modal>
 
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
@@ -1200,9 +911,9 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
               <span className="material-icons text-sm">close</span> Clear
             </button>
             <div className="flex-grow"></div>
-            {canEdit && <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <Link to="/admin/homepage/properties/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> Add Property
-            </button>}
+            </Link>}
           </FilterBar>
 
           <TableWrapper>
@@ -1238,9 +949,9 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
                           <button onClick={() => setImageModal({ open: true, property: p })} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors cursor-pointer">
                             <span className="material-icons text-lg">image</span>
                           </button>
-                          {canEdit && <button onClick={() => openModal(p)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer">
-                            <span className="material-icons text-lg">edit</span>
-                          </button>}
+                          {canEdit && <Link to={`/admin/homepage/properties/${p.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block">
+                            <span className="material-icons text-lg block">edit</span>
+                          </Link>}
                           {canEdit && <button onClick={() => setConfirm({ open: true, item: p, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer">
                             <span className="material-icons text-lg">delete_outline</span>
                           </button>}
@@ -1452,7 +1163,7 @@ export default function AdminHomepage() {
       case 'events': return <EventsTab canEdit={canEdit} />;
       case 'gallery': return <GalleryTab canEdit={canEdit} />;
       case 'bulletin': return <BulletinTab canEdit={canEdit} />;
-      case 'property': return <PropertyTab canEdit={canEdit} />;
+      case 'properties': return <PropertyTab canEdit={canEdit} />;
       case 'navigation': return <NavigationTab />;
       case 'footer': return <FooterTab canEdit={canEdit} />;
       case 'metadata': return <MetadataTab canEdit={canEdit} />;

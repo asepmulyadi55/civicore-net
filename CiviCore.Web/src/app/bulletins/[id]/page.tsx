@@ -109,7 +109,7 @@ export default function BulletinDetailPage() {
                         )}
 
                         {/* Description */}
-                        <div className="rte-content" dangerouslySetInnerHTML={{ __html: bulletin.description || '' }} />
+                        <div className="rte-content" dangerouslySetInnerHTML={{ __html: (bulletin.description || '').replace(/&nbsp;/g, ' ') }} />
                     </article>
 
                     {/* Sidebar */}

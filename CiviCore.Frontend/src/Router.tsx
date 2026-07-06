@@ -28,6 +28,9 @@ import EditRole from './pages/admin/EditRole';
 import Settings from './pages/admin/Settings';
 import Posyandu from './pages/admin/Posyandu';
 import AdminHomepage from './pages/admin/Homepage';
+import HomepageEventForm from './pages/admin/HomepageEventForm';
+import HomepageBulletinForm from './pages/admin/HomepageBulletinForm';
+import HomepagePropertyForm from './pages/admin/HomepagePropertyForm';
 import Media from './pages/admin/Media';
 // Resident Portal
 import Overview from './pages/admin/Overview';
@@ -98,6 +101,12 @@ export default function Router() {
         <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
         <Route path="/admin/settings/:tab" element={<RequireAuth><Settings /></RequireAuth>} />
         <Route path="/admin/homepage" element={<Navigate to="/admin/homepage/featured" replace />} />
+        <Route path="/admin/homepage/events/new" element={<RequireAuth><RequirePermission perm="homepage_events.create"><HomepageEventForm /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/homepage/events/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_events.edit"><HomepageEventForm /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/homepage/bulletin/new" element={<RequireAuth><RequirePermission perm="homepage_bulletin.create"><HomepageBulletinForm /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/homepage/bulletin/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_bulletin.edit"><HomepageBulletinForm /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/homepage/properties/new" element={<RequireAuth><RequirePermission perm="homepage_property.create"><HomepagePropertyForm /></RequirePermission></RequireAuth>} />
+        <Route path="/admin/homepage/properties/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_property.edit"><HomepagePropertyForm /></RequirePermission></RequireAuth>} />
         <Route path="/admin/homepage/:tab" element={<RequireAuth><RequirePermission perm="homepage_hero.view"><AdminHomepage /></RequirePermission></RequireAuth>} />
         <Route path="/admin/media" element={<RequireAuth><RequirePermission perm="media.view"><Media /></RequirePermission></RequireAuth>} />
 

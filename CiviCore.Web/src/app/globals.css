@@ -189,8 +189,8 @@ input[type="month"]::-webkit-calendar-picker-indicator {
 /* ── Rich Text Editor Content (RTE) ──────────────────────────────────────── */
 .rte-content {
     overflow-wrap: break-word;
-    word-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
+    white-space: pre-wrap;
 }
 /* Un-reset Tailwind's base styles for user-generated content */
 .rte-content p { margin-bottom: 1em; }
