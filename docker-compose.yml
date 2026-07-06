@@ -7,6 +7,9 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+    volumes:
+      - civicore_public_media:/app/wwwroot/public-media
+      - civicore_private_media:/app/App_Data/PrivateMedia
 
   web:
     build:
@@ -21,3 +24,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
+
+volumes:
+  civicore_public_media:
+  civicore_private_media:
