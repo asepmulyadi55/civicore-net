@@ -195,7 +195,7 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
   const [page, setPage] = useState(1);
   const [settings, setSettings] = useState({ eyebrow: '', title: '', subtitle: '' });
   const [savingSettings, setSavingSettings] = useState(false);
-  const [htmlMode, setHtmlMode] = useState(false);
+
 
   const STATUS_OPTIONS = [
     { value: 'upcoming', label: 'Upcoming' },
@@ -299,15 +299,8 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
           <div>
             <div className="flex justify-between items-end mb-1.5">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
-              <button onClick={() => setHtmlMode(!htmlMode)} className="text-xs text-primary hover:underline bg-transparent border-none cursor-pointer">
-                {htmlMode ? 'Use Rich Text' : 'Edit HTML'}
-              </button>
             </div>
-            {htmlMode ? (
-              <textarea value={form.description || ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none min-h-[200px]" />
-            ) : (
-              <ReactQuill theme="snow" value={form.description || ''} onChange={v => setForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
-            )}
+            <ReactQuill theme="snow" value={form.description || ''} onChange={v => setForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">URL</label>
@@ -741,7 +734,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModal, setEditModal] = useState({ open: false, data: null as any });
   const [editForm, setEditForm] = useState({ title: '', description: '', date: '', url: '' });
-  const [htmlMode, setHtmlMode] = useState(false);
+
   const [editImage, setEditImage] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
@@ -860,15 +853,8 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
           <div>
             <div className="flex justify-between items-end mb-1.5">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
-              <button onClick={() => setHtmlMode(!htmlMode)} className="text-xs text-primary hover:underline bg-transparent border-none cursor-pointer">
-                {htmlMode ? 'Use Rich Text' : 'Edit HTML'}
-              </button>
             </div>
-            {htmlMode ? (
-              <textarea value={addForm.description || ''} onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none min-h-[200px]" />
-            ) : (
-              <ReactQuill theme="snow" value={addForm.description || ''} onChange={v => setAddForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
-            )}
+            <ReactQuill theme="snow" value={addForm.description || ''} onChange={v => setAddForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
           </div>
           <FormInput label="URL" id="ab-url" value={addForm.url} onChange={e => setAddForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
           <ImageUploadBox label="Bulletin Image" file={addImage} onFileChange={setAddImage} recommendedSize="800x600" />
@@ -896,15 +882,8 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
           <div>
             <div className="flex justify-between items-end mb-1.5">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
-              <button onClick={() => setHtmlMode(!htmlMode)} className="text-xs text-primary hover:underline bg-transparent border-none cursor-pointer">
-                {htmlMode ? 'Use Rich Text' : 'Edit HTML'}
-              </button>
             </div>
-            {htmlMode ? (
-              <textarea value={editForm.description || ''} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none min-h-[200px]" />
-            ) : (
-              <ReactQuill theme="snow" value={editForm.description || ''} onChange={v => setEditForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
-            )}
+            <ReactQuill theme="snow" value={editForm.description || ''} onChange={v => setEditForm(f => ({ ...f, description: v }))} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg" />
           </div>
           <FormInput label="URL" id="eb-url" value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://... (optional)" />
           <ImageUploadBox label="Bulletin Image" currentUrl={editModal.data?.image_url} file={editImage} onFileChange={setEditImage} recommendedSize="800x600" />
@@ -1486,7 +1465,7 @@ export default function AdminHomepage() {
 
   return (
     <AdminLayout title={tabTitle}>
-      <div className="max-w-7xl mx-auto pb-12">
+      <div className="w-[80%] mx-auto pb-12">
         <PageHeader title={tabTitle} subtitle={t('homepage.subtitle', { defaultValue: "Manage homepage content" })} />
 
         {!can('homepage.edit') && (

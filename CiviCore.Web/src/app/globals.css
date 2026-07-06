@@ -185,3 +185,28 @@ input[type="month"]::-webkit-calendar-picker-indicator {
     padding: 0 !important;
     margin: 0 !important;
 }
+
+/* ── Rich Text Editor Content (RTE) ──────────────────────────────────────── */
+.rte-content {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+/* Un-reset Tailwind's base styles for user-generated content */
+.rte-content p { margin-bottom: 1em; }
+.rte-content p:empty::after { content: "\00a0"; }
+.rte-content p:has(br:only-child) { min-height: 1em; }
+.rte-content ol { list-style-type: decimal; padding-left: 2em; margin-bottom: 1em; }
+.rte-content ul { list-style-type: disc; padding-left: 2em; margin-bottom: 1em; }
+.rte-content li { margin-bottom: 0.25em; }
+.rte-content li > p { margin-bottom: 0; }
+.rte-content h1 { font-size: 2em; font-weight: 700; margin-top: 1em; margin-bottom: 0.5em; }
+.rte-content h2 { font-size: 1.5em; font-weight: 700; margin-top: 1em; margin-bottom: 0.5em; }
+.rte-content h3 { font-size: 1.25em; font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; }
+.rte-content h4 { font-size: 1em; font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; }
+.rte-content a { color: var(--color-primary); text-decoration: underline; }
+.rte-content strong, .rte-content b { font-weight: 700; }
+.rte-content em, .rte-content i { font-style: italic; }
+.rte-content blockquote { border-left: 4px solid var(--color-primary-container); padding-left: 1rem; color: var(--color-text-muted); font-style: italic; margin: 1em 0; }
+.rte-content u { text-decoration: underline; }
+
