@@ -1467,15 +1467,16 @@ export default function AdminHomepage() {
   if (token) axios.defaults.headers.common['Authorization'] = "Bearer " + token;
 
   const renderTab = () => {
+    const canEdit = can('homepage.edit');
     switch (activeTab) {
-      case 'hero': return React.createElement(HeroTab);
-      case 'events': return React.createElement(EventsTab);
-      case 'gallery': return React.createElement(GalleryTab);
-      case 'bulletin': return React.createElement(BulletinTab);
-      case 'property': return React.createElement(PropertyTab);
-      case 'navigation': return React.createElement(NavigationTab);
-      case 'footer': return React.createElement(FooterTab);
-      case 'metadata': return React.createElement(MetadataTab);
+      case 'hero': return <HeroTab canEdit={canEdit} />;
+      case 'events': return <EventsTab canEdit={canEdit} />;
+      case 'gallery': return <GalleryTab canEdit={canEdit} />;
+      case 'bulletin': return <BulletinTab canEdit={canEdit} />;
+      case 'property': return <PropertyTab canEdit={canEdit} />;
+      case 'navigation': return <NavigationTab />;
+      case 'footer': return <FooterTab canEdit={canEdit} />;
+      case 'metadata': return <MetadataTab canEdit={canEdit} />;
       default: return null;
     }
   };
