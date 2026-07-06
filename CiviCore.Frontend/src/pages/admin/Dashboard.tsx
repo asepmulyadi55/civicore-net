@@ -1,7 +1,9 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import AdminLayout from '../../admin/AdminLayout';
+import { usePermissions } from '../../admin/PermissionsContext';
 
 function StatCard({ icon, iconBg, iconColor, label, value, badge, badgeStyle }) {
   const badgeColors = {
@@ -30,6 +32,7 @@ function StatCard({ icon, iconBg, iconColor, label, value, badge, badgeStyle }) 
 }
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const styles = {
     Approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
@@ -38,12 +41,14 @@ function StatusBadge({ status }) {
   };
   return (
     <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${styles[status] || styles.Unpaid}`}>
-      {status}
+      {t(`dashboard.status_${status.toLowerCase()}`, status)}
     </span>
   );
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
+  const { can } = usePermissions();
   const [stats, setStats] = useState(null);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,8 +69,8 @@ export default function Dashboard() {
 
   return (
     <AdminLayout 
-      title="Dashboard Overview" 
-      subtitle="Welcome back, Super Admin! Here's what's happening today."
+      title={t('dashboard.title')} 
+      subtitle={t('dashboard.subtitle')}
     >
       {loading ? (
         <div className="flex items-center justify-center py-24">
@@ -76,13 +81,13 @@ export default function Dashboard() {
           {/* Stats */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard icon="account_balance_wallet" iconBg="bg-amber-500/10" iconColor="text-amber-500"
-              label="This Month's Collections" value={`Rp ${(stats?.thisMonthsCollections ?? 0).toLocaleString('id-ID')}`} />
+              label={t('dashboard.this_month_collections')} value={`Rp ${(stats?.thisMonthsCollections ?? 0).toLocaleString('id-ID')}`} />
             <StatCard icon="assignment" iconBg="bg-amber-500/10" iconColor="text-amber-500"
-              label="Pending Approvals" value={stats?.pendingApprovals ?? 0} />
+              label={t('dashboard.pending_approvals')} value={stats?.pendingApprovals ?? 0} />
             <StatCard icon="priority_high" iconBg="bg-rose-500/10" iconColor="text-rose-500"
-              label="Unpaid Householders" value={stats?.unpaidHouseholders ?? 0} badge="Needs attention" badgeStyle="rose" />
+              label={t('dashboard.unpaid_householders')} value={stats?.unpaidHouseholders ?? 0} badge={t('dashboard.needs_attention')} badgeStyle="rose" />
             <StatCard icon="people" iconBg="bg-indigo-500/10" iconColor="text-indigo-400"
-              label="Active Householders" value={stats?.activeHouseholders ?? 0} />
+              label={t('dashboard.active_householders')} value={stats?.activeHouseholders ?? 0} />
           </section>
 
           {/* Two Column Layout */}
@@ -91,18 +96,18 @@ export default function Dashboard() {
             {/* Left Column: Recent Activity */}
             <div className="lg:col-span-2 bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-hidden">
               <div className="p-6 border-b border-slate-700/50 flex justify-between items-center">
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Recent Activity</h2>
-                <a href="/admin/payments" className="text-sm font-semibold text-amber-500 hover:underline">View All</a>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('dashboard.recent_activity')}</h2>
+                <a href="/admin/payments" className="text-sm font-semibold text-amber-500 hover:underline">{t('dashboard.view_all')}</a>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-800/30 text-slate-500 text-xs uppercase tracking-wider font-bold">
-                      <th className="px-6 py-4">Householder</th>
-                      <th className="px-6 py-4">Month(s)</th>
-                      <th className="px-6 py-4">Unit / Block</th>
-                      <th className="px-6 py-4">Date</th>
-                      <th className="px-6 py-4 text-right">Status</th>
+                      <th className="px-6 py-4">{t('dashboard.table_householder')}</th>
+                      <th className="px-6 py-4">{t('dashboard.table_months')}</th>
+                      <th className="px-6 py-4">{t('dashboard.table_unit_block')}</th>
+                      <th className="px-6 py-4">{t('dashboard.table_date')}</th>
+                      <th className="px-6 py-4 text-right">{t('dashboard.table_status')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -110,7 +115,7 @@ export default function Dashboard() {
                       <tr>
                         <td colSpan={5} className="px-6 py-12 text-center text-slate-400 text-sm">
                           <span className="material-icons text-3xl block mb-2 text-slate-600">receipt_long</span>
-                          No recent activity
+                          {t('dashboard.no_activity')}
                         </td>
                       </tr>
                     ) : payments.map(p => (
@@ -130,7 +135,7 @@ export default function Dashboard() {
                               <div className="flex items-center gap-2">
                                 <span>{text}</span>
                                 <span className="bg-amber-500/20 text-amber-500 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                                  {p.allMonths.length} MONTHS
+                                  {p.allMonths.length} {t('dashboard.months_count')}
                                 </span>
                               </div>
                             );
@@ -153,24 +158,32 @@ export default function Dashboard() {
               
               {/* Quick Actions */}
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Quick Actions</h2>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t('dashboard.quick_actions')}</h2>
                 <div className="grid grid-cols-2 gap-4">
-                  <a href="/admin/householders" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
-                    <span className="material-icons text-emerald-500 mb-2 group-hover:scale-110 transition-transform">person_add</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-white">Add Householder</span>
-                  </a>
-                  <a href="/admin/payments" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
-                    <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">receipt_long</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-white">Payments</span>
-                  </a>
-                  <a href="/admin/reports" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
-                    <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">post_add</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-white">Generate Report</span>
-                  </a>
-                  <a href="/admin/blocks" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
-                    <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">domain</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-white">Manage Blocks</span>
-                  </a>
+                  {can('householders.create') && (
+                    <a href="/admin/householders" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                      <span className="material-icons text-emerald-500 mb-2 group-hover:scale-110 transition-transform">person_add</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_add_householder')}</span>
+                    </a>
+                  )}
+                  {can('payments.view') && (
+                    <a href="/admin/payments" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                      <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">receipt_long</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_payments')}</span>
+                    </a>
+                  )}
+                  {can('reports.view') && (
+                    <a href="/admin/reports" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                      <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">post_add</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_generate_report')}</span>
+                    </a>
+                  )}
+                  {can('blocks.view') && (
+                    <a href="/admin/blocks" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                      <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">domain</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_manage_blocks')}</span>
+                    </a>
+                  )}
                 </div>
               </div>
 
@@ -178,10 +191,10 @@ export default function Dashboard() {
               <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700/50 p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="material-icons text-amber-500 text-sm">edit_square</span>
-                  <h3 className="text-xs font-bold text-amber-500 uppercase tracking-wider">Admin Memo</h3>
+                  <h3 className="text-xs font-bold text-amber-500 uppercase tracking-wider">{t('dashboard.admin_memo')}</h3>
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-400 italic">
-                  {stats?.adminMemo ?? 'No memo set. Add one in Settings -> Admin Memo.'}
+                  {stats?.adminMemo ?? t('dashboard.no_memo_set')}
                 </p>
               </div>
 

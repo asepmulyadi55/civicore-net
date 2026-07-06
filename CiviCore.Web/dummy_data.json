@@ -1,0 +1,129 @@
+{
+  "hero": {
+    "title": "Welcome to Dwipapuri Residence",
+    "subtitle": "Modern Living in Harmony. Experience tranquility and luxury in every detail.",
+    "cta_label": "Schedule a Visit",
+    "background_image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80"
+  },
+  "events": [
+    {
+      "id": 1,
+      "title": "Annual Community BBQ",
+      "image_url": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "date": "2024-07-15",
+      "url": "/events/1"
+    },
+    {
+      "id": 2,
+      "title": "Neighborhood Watch Meeting",
+      "image_url": "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "date": "2024-07-22",
+      "url": "/events/2"
+    }
+  ],
+  "gallerySettings": {
+    "eyebrow": "Visual Tour",
+    "title": "Gallery",
+    "subtitle": "Explore the beauty of our community amenities.",
+    "archive_url": "/gallery"
+  },
+  "gallery": [
+    {
+      "id": 1,
+      "title": "The Clubhouse",
+      "image_url": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "photos": [
+        {
+          "id": "1-1",
+          "title": "Main Hall",
+          "description": "The elegant main hall for resident gatherings.",
+          "image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        },
+        {
+          "id": "1-2",
+          "title": "Fitness Center",
+          "description": "State-of-the-art fitness equipment.",
+          "image_url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Community Pool",
+      "image_url": "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "photos": [
+        {
+          "id": "2-1",
+          "title": "Poolside View",
+          "description": "Relaxing poolside area with sunbeds.",
+          "image_url": "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        },
+        {
+          "id": "2-2",
+          "title": "Evening Swim",
+          "description": "The pool beautifully lit up in the evening.",
+          "image_url": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Children's Playground",
+      "image_url": "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "photos": [
+        {
+          "id": "3-1",
+          "title": "Swing Set",
+          "description": "Safe and fun swing sets for kids.",
+          "image_url": "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+        },
+        {
+          "id": "3-2",
+          "title": "Sandbox",
+          "description": "A clean sandbox for creative play.",
+          "image_url": "https://picsum.photos/seed/sandbox/1000/667"
+        }
+      ]
+    }
+  ],
+  "bulletins": [
+    {
+      "id": 1,
+      "title": "Scheduled Water Maintenance",
+      "description": "<p>Please be advised that water will be temporarily shut off for maintenance this upcoming Saturday from 10:00 AM to 2:00 PM.</p>",
+      "date": "2024-06-25T10:00:00Z",
+      "url": "/bulletins/1",
+      "image_url": "https://picsum.photos/seed/water/1000/600"
+    },
+    {
+      "id": 2,
+      "title": "New Trash Collection Schedule",
+      "description": "<p>Starting next month, trash collection will be moved to Tuesdays and Fridays.</p>",
+      "date": "2024-06-28T08:00:00Z",
+      "url": "/bulletins/2",
+      "image_url": "https://picsum.photos/seed/truck/1000/600"
+    }
+  ],
+  "properties": [
+    {
+      "id": 1,
+      "title": "Luxury Family Villa",
+      "thumbnail_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "listing_type": "For Sale",
+      "price": 450000,
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "area_sqft": 3200
+    },
+    {
+      "id": 2,
+      "title": "Cozy Townhouse",
+      "thumbnail_url": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      "listing_type": "For Rent",
+      "price": 2500,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "area_sqft": 1800
+    }
+  ]
+}

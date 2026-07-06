@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import useDarkMode from '../../admin/useDarkMode';
+import { useTranslation } from 'react-i18next';
 
 function PasswordInput({ id, name, placeholder, value, onChange }) {
   const [show, setShow] = useState(false);
@@ -42,15 +43,15 @@ function Field({ label, id, type = 'text', placeholder, icon, value, onChange, e
   );
 }
 
-function PasswordValidation({ password }) {
+function PasswordValidation({ password, t }) {
   if (!password) return null;
 
   const reqs = [
-    { label: 'At least 8 characters', valid: password.length >= 8 },
-    { label: 'One uppercase letter', valid: /[A-Z]/.test(password) },
-    { label: 'One lowercase letter', valid: /[a-z]/.test(password) },
-    { label: 'One number', valid: /[0-9]/.test(password) },
-    { label: 'One special character', valid: /[^A-Za-z0-9]/.test(password) },
+    { label: t('register.req_length'), valid: password.length >= 8 },
+    { label: t('register.req_upper'), valid: /[A-Z]/.test(password) },
+    { label: t('register.req_lower'), valid: /[a-z]/.test(password) },
+    { label: t('register.req_number'), valid: /[0-9]/.test(password) },
+    { label: t('register.req_special'), valid: /[^A-Za-z0-9]/.test(password) },
   ];
 
   return (
@@ -74,6 +75,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [dark, toggleDark] = useDarkMode();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const errorMsg = searchParams.get('error');
@@ -90,14 +92,14 @@ export default function Register() {
 
   const validate = () => {
     const e = {};
-    if (!form.fullname.trim()) e.fullname = 'Please enter your full name.';
-    if (!form.email.trim()) e.email = 'Please enter your email address.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Please enter a valid email.';
-    if (!form.username.trim()) e.username = 'Please choose a username.';
-    if (!form.password) e.password = 'Please enter a password.';
-    else if (form.password.length < 8) e.password = 'Password must be at least 8 characters.';
-    if (!form.password_confirmation) e.password_confirmation = 'Please confirm your password.';
-    else if (form.password !== form.password_confirmation) e.password_confirmation = 'Passwords do not match.';
+    if (!form.fullname.trim()) e.fullname = t('register.err_fullname');
+    if (!form.email.trim()) e.email = t('register.err_email');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = t('register.err_email_invalid');
+    if (!form.username.trim()) e.username = t('register.err_username');
+    if (!form.password) e.password = t('register.err_password');
+    else if (form.password.length < 8) e.password = t('register.err_password_len');
+    if (!form.password_confirmation) e.password_confirmation = t('register.err_confirm');
+    else if (form.password !== form.password_confirmation) e.password_confirmation = t('register.err_confirm_match');
     return e;
   };
 
@@ -126,7 +128,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400">
+    <div className={`admin-theme min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400 ${dark ? 'dark' : ''}`}>
       <button onClick={toggleDark}
         className="fixed bottom-6 right-6 p-3 rounded-full bg-surface shadow-lg border border-surface-var text-on-surface hover:text-primary hover:scale-105 hover:shadow-xl transition-all duration-200 cursor-pointer">
         <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>
@@ -162,7 +164,7 @@ export default function Register() {
               <div>
                 <label className="block text-sm font-semibold text-on-surface mb-1.5">Password</label>
                 <PasswordInput id="password" name="password" placeholder="••••••••" value={form.password} onChange={set('password')} />
-                <PasswordValidation password={form.password} />
+                <PasswordValidation password={form.password} t={t} />
                 {errors.password && <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.password}</p>}
               </div>
 

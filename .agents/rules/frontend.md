@@ -1,13 +1,15 @@
 ---
 trigger: glob
-globs: civicore-net/CiviCore.Frontend/**/*.{ts,tsx,css}
+globs: civicore-net/CiviCore.Frontend/**/*.{ts,tsx,css}, civicore-net/CiviCore.Web/**/*.{ts,tsx,css}
 ---
 
-# CiviCore Frontend Rules (React SPA)
+# CiviCore Frontend Rules (React SPA & Next.js)
 
 ## 1. Tech Stack & Best Practices
-- **Framework:** React with TypeScript.
-- **Styling:** Tailwind CSS. Use clean utility classes, avoid bloated or redundant styles.
+- **Architecture Overview:** The project uses a dual-frontend architecture:
+  - **Admin Dashboard (`CiviCore.Frontend`):** Built with React + Vite (Pure SPA) for authenticated management tools.
+  - **Public Site (`CiviCore.Web`):** Built with Next.js 15 App Router (SSG/SSR) for maximum SEO and performance.
+- **Styling:** Tailwind CSS (v4 for Next.js, v3 for Vite). Use clean utility classes, avoid bloated or redundant styles.
 - **State Management:** Keep it modular. Use Context API for global state (like Theme or Auth) and local state for individual components.
 
 ## 2. API Communication & Security

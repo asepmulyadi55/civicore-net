@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import useDarkMode from '../../admin/useDarkMode';
+import { useTranslation } from 'react-i18next';
 
 function PasswordInput({ id, name, placeholder, value, onChange, disabled }) {
   const [show, setShow] = useState(false);
@@ -24,15 +25,15 @@ function PasswordInput({ id, name, placeholder, value, onChange, disabled }) {
   );
 }
 
-function PasswordValidation({ password }) {
+function PasswordValidation({ password, t }) {
   if (!password) return null;
 
   const reqs = [
-    { label: 'At least 8 characters', valid: password.length >= 8 },
-    { label: 'One uppercase letter', valid: /[A-Z]/.test(password) },
-    { label: 'One lowercase letter', valid: /[a-z]/.test(password) },
-    { label: 'One number', valid: /[0-9]/.test(password) },
-    { label: 'One special character', valid: /[^A-Za-z0-9]/.test(password) },
+    { label: t('reset_password.req_length'), valid: password.length >= 8 },
+    { label: t('reset_password.req_upper'), valid: /[A-Z]/.test(password) },
+    { label: t('reset_password.req_lower'), valid: /[a-z]/.test(password) },
+    { label: t('reset_password.req_number'), valid: /[0-9]/.test(password) },
+    { label: t('reset_password.req_special'), valid: /[^A-Za-z0-9]/.test(password) },
   ];
 
   return (
@@ -62,10 +63,11 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [dark, toggleDark] = useDarkMode();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!token || !email) {
-      setError('Invalid password reset link. Please request a new one.');
+      setError(t('reset_password.err_invalid_link'));
     }
   }, [token, email]);
 
@@ -73,12 +75,12 @@ export default function ResetPassword() {
     e.preventDefault();
     if (!token || !email) return;
     
-    if (!password) { setError('Please enter a new password.'); return; }
-    if (password.length < 8) { setError('Password must be at least 8 characters long.'); return; }
+    if (!password) { setError(t('reset_password.err_password_empty')); return; }
+    if (password.length < 8) { setError(t('reset_password.err_password_len')); return; }
     if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
-      setError('Please ensure your password meets all requirements.'); return;
+      setError(t('reset_password.err_password_reqs')); return;
     }
-    if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
+    if (password !== confirmPassword) { setError(t('reset_password.err_confirm_match')); return; }
     
     setError('');
     setIsLoading(true);
@@ -89,17 +91,17 @@ export default function ResetPassword() {
         token, 
         newPassword: password 
       });
-      setSuccess('Your password has been successfully reset. You can now login with your new password.');
+      setSuccess(t('reset_password.success_msg'));
       setTimeout(() => navigate('/admin/login'), 3000);
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred. The link might have expired.');
+      setError(err.response?.data?.message || t('reset_password.err_default'));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400">
+    <div className={`admin-theme min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400 ${dark ? 'dark' : ''}`}>
       <button onClick={toggleDark}
         className="fixed bottom-6 right-6 p-3 rounded-full bg-surface shadow-lg border border-surface-var text-on-surface hover:text-primary hover:scale-105 hover:shadow-xl transition-all duration-200 cursor-pointer">
         <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>
@@ -137,7 +139,7 @@ export default function ResetPassword() {
                     value={password} onChange={(e) => { setPassword(e.target.value); setError(''); }} 
                     disabled={!token}
                   />
-                  <PasswordValidation password={password} />
+                  <PasswordValidation password={password} t={t} />
                 </div>
 
                 <div>
@@ -166,7 +168,7 @@ export default function ResetPassword() {
           <div className="p-6 bg-surface-var border-t border-surface-var text-center">
             <Link to="/admin/login" className="group flex items-center justify-center gap-2 text-sm font-bold text-primary transition-colors hover:opacity-80">
               <span className="material-icons text-base">arrow_back</span>
-              <span className="group-hover:underline">Back to Login</span>
+              <span className="group-hover:underline">{t('reset_password.back_login')}</span>
             </Link>
           </div>
         </div>

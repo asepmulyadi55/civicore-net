@@ -3,11 +3,15 @@ namespace CiviCore.Domain.Entities;
 public class FeeHistory
 {
     public Guid Id { get; set; }
-    public Guid HouseholderId { get; set; }
-    public Householder Householder { get; set; } = null!;
+    public Guid? HouseholderId { get; set; }
+    public Householder? Householder { get; set; }
+    
+    public string? HouseholderName { get; set; }
     
     public decimal Amount { get; set; }
     public DateTime EffectiveFrom { get; set; }
+    
+    public string? Notes { get; set; }
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

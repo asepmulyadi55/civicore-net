@@ -57,7 +57,7 @@ public class ReportController : ControllerBase
             .ToListAsync();
 
         // Get payment records for the year
-        var householderIds = householders.Select(h => h.Id).ToList();
+        var householderIds = householders.Select(h => (Guid?)h.Id).ToList();
         var payments = await _context.Set<PaymentRecord>()
             .Where(p => householderIds.Contains(p.HouseholderId) && p.PaymentMonth.Year == reportYear)
             .ToListAsync();
@@ -114,7 +114,7 @@ public class ReportController : ControllerBase
 
         if (!string.IsNullOrEmpty(block_id) && Guid.TryParse(block_id, out var blockGuid))
         {
-            paymentQuery = paymentQuery.Where(p => p.Householder.BlockId == blockGuid);
+            paymentQuery = paymentQuery.Where(p => p.Householder != null && p.Householder.BlockId == blockGuid);
         }
 
         var allPayments = await paymentQuery.ToListAsync();

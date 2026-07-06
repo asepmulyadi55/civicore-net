@@ -5,8 +5,16 @@ using CiviCore.Api.Services;
 using CiviCore.Api.Middleware;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var wwwrootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+if (!Directory.Exists(wwwrootPath))
+{
+    Directory.CreateDirectory(wwwrootPath);
+}
+builder.Environment.WebRootPath = wwwrootPath;
 
 // Add services to the container.
 builder.Services.AddControllers(options => {
@@ -15,8 +23,35 @@ builder.Services.AddControllers(options => {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.CustomSchemaIds(type => type.FullName);
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter 'Bearer' [space] and then your valid token in the text input below.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\""
+    });
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<ImportJobTracker>();
 
 // Rate Limiting Setup
 builder.Services.AddRateLimiter(options =>
@@ -54,11 +89,7 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
-builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
-
-var supabaseUrl = builder.Configuration["Supabase:Url"] ?? "https://dummy.supabase.co";
-var supabaseKey = builder.Configuration["Supabase:ServiceRoleKey"] ?? "dummy";
-builder.Services.AddScoped<Supabase.Client>(_ => new Supabase.Client(supabaseUrl, supabaseKey));
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
@@ -71,11 +102,11 @@ builder.Services.AddAuthentication()
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c => 
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("v1/swagger.json", "CiviCore API v1");
+});
 
 // please comment it while development to avoid certificate error
 app.UseHttpsRedirection();
@@ -93,6 +124,7 @@ if (!app.Environment.IsDevelopment())
     app.UseRateLimiter();
 }
 
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -106,6 +138,13 @@ app.UseMiddleware<RequireTwoFactorMiddleware>();
 app.UseMiddleware<RequirePermissionMiddleware>();
 
 app.MapControllers();
+app.MapGet("/debug-env", (IWebHostEnvironment env) => new { 
+    env.WebRootPath, 
+    env.ContentRootPath, 
+    env.EnvironmentName 
+});
+
+app.MapFallbackToFile("admin/{**slug}", "admin.html");
 app.MapFallbackToFile("index.html");
 
 using (var scope = app.Services.CreateScope())

@@ -51,26 +51,26 @@ export function Pagination({ meta, onChange }: { meta: any; onChange: (page: num
   const end = Math.min(last_page, current_page + 2);
   for (let p = start; p <= end; p++) pages.push(p);
 
-  const btnBase = 'p-2 rounded-lg border text-sm transition-colors';
-  const btnActive = 'bg-primary text-white border-primary font-semibold';
-  const btnNormal = 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800';
-  const btnDisabled = 'border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed';
+  const btnBase = 'inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg border text-sm font-semibold transition-colors';
+  const btnActive = 'bg-primary border-primary text-white cursor-default select-none';
+  const btnNormal = 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-primary/10 hover:border-primary/40 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary cursor-pointer';
+  const btnDisabled = 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed';
 
   return (
     <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center sm:justify-between gap-3">
       <p className="text-sm text-slate-500">
-        Showing {from}â€“{to} of {total}
+        Showing {from}–{to} of {total}
       </p>
       <div className="flex items-center gap-1">
         <button className={`${btnBase} ${current_page === 1 ? btnDisabled : btnNormal}`}
           disabled={current_page === 1} onClick={() => onChange(current_page - 1)}>
           <span className="material-icons text-sm">chevron_left</span>
         </button>
-        {start > 1 && (<><button className={`${btnBase} ${btnNormal} px-3 py-1.5`} onClick={() => onChange(1)}>1</button>{start > 2 && <span className="text-slate-400 text-sm px-1">…</span>}</>)}
+        {start > 1 && (<><button className={`${btnBase} ${btnNormal}`} onClick={() => onChange(1)}>1</button>{start > 2 && <span className="text-slate-400 text-sm px-1">…</span>}</>)}
         {pages.map(p => (
-          <button key={p} className={`${btnBase} px-3 py-1.5 ${p === current_page ? btnActive : btnNormal}`} onClick={() => onChange(p)}>{p}</button>
+          <button key={p} className={`${btnBase} ${p === current_page ? btnActive : btnNormal}`} onClick={() => p !== current_page && onChange(p)}>{p}</button>
         ))}
-        {end < last_page && (<>{end < last_page - 1 && <span className="text-slate-400 text-sm px-1">…</span>}<button className={`${btnBase} ${btnNormal} px-3 py-1.5`} onClick={() => onChange(last_page)}>{last_page}</button></>)}
+        {end < last_page && (<>{end < last_page - 1 && <span className="text-slate-400 text-sm px-1">…</span>}<button className={`${btnBase} ${btnNormal}`} onClick={() => onChange(last_page)}>{last_page}</button></>)}
         <button className={`${btnBase} ${current_page === last_page ? btnDisabled : btnNormal}`}
           disabled={current_page === last_page} onClick={() => onChange(current_page + 1)}>
           <span className="material-icons text-sm">chevron_right</span>
@@ -116,7 +116,7 @@ export function ConfirmModal({ open, onClose, onConfirm, title, message, confirm
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed" dangerouslySetInnerHTML={{ __html: message }} />
         </div>
         <div className="flex gap-3 px-6 pb-6">
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">
+          <button onClick={onClose} disabled={loading} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             Cancel
           </button>
           <button onClick={onConfirm} disabled={loading} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${confirmClass}`}>
@@ -256,19 +256,62 @@ export function FormInput({ label, id, type = 'text', value, onChange, placehold
   );
 }
 
-export function FormSelect({ label, id, value, onChange, options, error, required, placeholder = 'Select...' }: { label: string; id: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: { value: string; label: string }[]; error?: string; required?: boolean; placeholder?: string }) {
+export function FormSelect({ label, id, value, onChange, options, error, required, placeholder = 'Select...' }: { label: string; id: string; value: string; onChange: (e: any) => void; options: { value: string; label: string; disabled?: boolean }[]; error?: string; required?: boolean; placeholder?: string }) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedLabel = value === '' ? placeholder : (options.find(o => String(o.value) === String(value))?.label || placeholder);
+
   return (
-    <div>
+    <div ref={ref}>
       <label htmlFor={id} className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
         {label}{required && <span className="text-rose-500 ml-1">*</span>}
       </label>
       <div className="relative">
-        <select id={id} value={value} onChange={onChange}
-          className={`appearance-none block w-full pl-4 pr-9 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'}`}>
-          <option value="">{placeholder}</option>
-          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-        <span className="material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px]">expand_more</span>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className={`w-full text-left pl-4 pr-9 py-2.5 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'}`}
+        >
+          <span className="truncate block">{selectedLabel}</span>
+        </button>
+        <span className={`material-icons absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[18px] transition-transform ${open ? 'rotate-180' : ''}`}>expand_more</span>
+        
+        {open && (
+          <ul className="absolute z-50 w-full mt-1 max-h-60 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1">
+            <li
+              onClick={() => { onChange({ target: { value: '' } } as any); setOpen(false); }}
+              className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === '' ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+            >
+              {placeholder}
+            </li>
+            {options.map(o => (
+              <li
+                key={o.value}
+                onClick={() => { 
+                  if (o.disabled) return;
+                  if (typeof onChange === 'function') {
+                    onChange({ target: { value: o.value } } as any);
+                  }
+                  setOpen(false); 
+                }}
+                className={`px-4 py-2.5 text-sm transition-colors ${o.disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800' : 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700'} ${String(value) === String(o.value) && !o.disabled ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+              >
+                {o.label}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       {error && <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{error}</p>}
     </div>

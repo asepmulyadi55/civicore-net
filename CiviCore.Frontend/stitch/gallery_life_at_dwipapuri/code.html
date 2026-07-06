@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dwipapuri Residence - Community Life Gallery</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#95d3ba",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-fixed-dim": "#bdc7d9",
+                        "surface-bright": "#f8f9fa",
+                        "on-tertiary-container": "#ff985a",
+                        "on-surface": "#191c1d",
+                        "on-secondary-fixed-variant": "#3d4756",
+                        "outline": "#707974",
+                        "on-primary-container": "#80bea6",
+                        "background": "#f8f9fa",
+                        "on-secondary": "#ffffff",
+                        "text-muted": "#6b7280",
+                        "primary-container": "#064e3b",
+                        "border-subtle": "#e5e7eb",
+                        "surface-variant": "#e1e3e4",
+                        "surface-tint": "#2b6954",
+                        "tertiary-container": "#733100",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#191c1d",
+                        "surface-dim": "#d9dadb",
+                        "surface": "#f8f9fa",
+                        "tertiary-fixed-dim": "#ffb68e",
+                        "tertiary": "#502000",
+                        "secondary-fixed": "#d9e3f6",
+                        "primary": "#003527",
+                        "on-tertiary-fixed": "#331200",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#95d3ba",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#d6e0f3",
+                        "surface-glass": "rgba(255, 255, 255, 0.7)",
+                        "outline-variant": "#bfc9c3",
+                        "on-secondary-fixed": "#121c2a",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#ffdbca",
+                        "surface-container-high": "#e7e8e9",
+                        "secondary": "#555f6f",
+                        "on-secondary-container": "#596373",
+                        "primary-fixed": "#b0f0d6",
+                        "on-surface-variant": "#404944",
+                        "on-tertiary-fixed-variant": "#763300",
+                        "on-primary-fixed": "#002117",
+                        "inverse-surface": "#2e3132"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "40px",
+                        "section-gap": "80px",
+                        "gutter": "24px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Playfair Display"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "headline-sm": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .material-symbols-outlined {
+                font-family: 'Material Symbols Outlined';
+                font-weight: normal;
+                font-style: normal;
+                font-size: 24px;
+                line-height: 1;
+                letter-spacing: normal;
+                text-transform: none;
+                display: inline-block;
+                white-space: nowrap;
+                word-wrap: normal;
+                direction: ltr;
+                -webkit-font-feature-settings: 'liga';
+                -webkit-font-smoothing: antialiased;
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col font-body-md text-body-md">
+<!-- TopNavBar Shared Component -->
+<header class="bg-surface-glass backdrop-blur-md dark:bg-surface-glass fixed top-0 w-full z-50 border-b border-border-subtle dark:border-outline-variant shadow-sm">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 max-w-container-max mx-auto">
+<!-- Brand Logo -->
+<a class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed-dim" href="#">
+                Dwipapuri Residence
+            </a>
+<!-- Desktop Navigation -->
+<nav class="hidden md:flex items-center space-x-gutter">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-low/50 duration-300 px-3 py-2 rounded-md" href="#">Events</a>
+<!-- Active Item -->
+<a class="font-label-md text-label-md text-primary font-bold border-b-2 border-primary pb-1 hover:bg-surface-container-low/50 transition-all duration-300 px-3 py-2" href="#">Gallery</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-low/50 duration-300 px-3 py-2 rounded-md" href="#">Bulletins</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-low/50 duration-300 px-3 py-2 rounded-md" href="#">About</a>
+</nav>
+<!-- Trailing Icons -->
+<div class="flex items-center space-x-4 text-primary dark:text-primary-fixed-dim">
+<button aria-label="Toggle Dark Mode" class="p-2 hover:bg-surface-container-low/50 transition-all duration-300 rounded-full scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<button aria-label="Change Language" class="p-2 hover:bg-surface-container-low/50 transition-all duration-300 rounded-full scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="language">language</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-28 pb-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
+<!-- Header Section -->
+<div class="mb-12 text-center md:text-left">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-4">Community Life</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                Experience the harmony of modern living and natural tranquility. A curated glimpse into daily life at Dwipapuri Residence.
+            </p>
+</div>
+<!-- Bento Grid Gallery -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter auto-rows-[300px] md:auto-rows-[400px]">
+<!-- Aerial View (Large Feature) -->
+<div class="group relative rounded-2xl overflow-hidden col-span-1 md:col-span-12 lg:col-span-8 shadow-[0_8px_30px_rgb(6,78,59,0.04)] bg-surface-container-lowest">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AP1WRLvkUKAaBrOuLTP_Cr2GX3tEXjCRwQ8y1e_BJ0A4uT6J_rc3UbwyQwy1_sGQQkn-5Xc6KDZyGZK5MY5-LSwWNTrc2YyooqwGbf3K9dxm4XhF83vipiIt2oBqhgKHHUxTGifBj5MZmn_8D_eaOjDYV9XrXvytKc9rscryGUkBTR-OouP55rRQ1hG1rDau1SpTe782ryufUSJdllHnOGlq7oQSAr6tpFZnJoTuETygXS5DvPc5jYHZ1_Z0UIA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 bg-surface-glass backdrop-blur-md border-t border-border-subtle/20 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1">Master Plan Aerials</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Sweeping sunset views over the luxury complex and central parklands.</p>
+</div>
+</div>
+<!-- Clubhouse Interior (Vertical Feature) -->
+<div class="group relative rounded-2xl overflow-hidden col-span-1 md:col-span-6 lg:col-span-4 shadow-[0_8px_30px_rgb(6,78,59,0.04)] bg-surface-container-lowest">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AP1WRLt2RMHJtAu7QDWWJdrN4jmoIOJzSE_XUv1xXxKESdSVx-VnjXFJ-V1h8hXVgXOTDIgGew12_z190TTesKNAX2W_OS1J64Zhkal6FwQBlYkzlD_3-qWxJlDhRBIYfgIkj34UIZb08O8rSZbW3haHJF1MAGgLedoRs4neF3HFIlDz0QaGc0KpGBqN4q30RMra0iKxT7MBGF69dpBI62qlOw4KxMV1bPbeALoGOzO8782fe_bshRxOllBo5kM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 bg-surface-glass backdrop-blur-md border-t border-border-subtle/20 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1">The Clubhouse</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Elegant social spaces designed for exclusive resident gatherings.</p>
+</div>
+</div>
+<!-- Modern House (Square Feature) -->
+<div class="group relative rounded-2xl overflow-hidden col-span-1 md:col-span-6 lg:col-span-6 shadow-[0_8px_30px_rgb(6,78,59,0.04)] bg-surface-container-lowest">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AP1WRLuTNDBghlVA7Ni2U6D6cqsc70ztU4UMcA1yi7AlXpy_fJDpZBH4awobt0m7YyVt4f8lmRXsDCMpbUVxmoFEGZTsdcZiDXOpvK768Han1CD0-oe3e7Wr-V72h82cUDOTa8PVbeyfSbwqKjgYmkgdzYiZ_hv6r1Rv-jevV8l7_CBgGE3TpG2-C_mrDu7iroIbi188NJ7mGpJJwP_NKa-BaJbfqdiPPpPW3Sncq_o8r2ZUOHcsgZTadTlgybo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 bg-surface-glass backdrop-blur-md border-t border-border-subtle/20 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1">Signature Residences</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Architectural excellence blending seamlessly with manicured lawns.</p>
+</div>
+</div>
+<!-- Community Garden (Square Feature) -->
+<div class="group relative rounded-2xl overflow-hidden col-span-1 md:col-span-12 lg:col-span-6 shadow-[0_8px_30px_rgb(6,78,59,0.04)] bg-surface-container-lowest">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AP1WRLtthZrfVP8Nf5pHCwDmEobmFpYsnxvcE8NZgrHdsokDh-MUKXL7dWR51Iqyh0sKssQa5iE4lWAkE5dzWwbdL9Fyp5bVoQ0WN_HBavUXsL87BoPm-w_qbK30yuxVsp7ejeFubSl_g3sjWII3CHDe7h9FbaMR27lqWF-57N9Uloz7jIoyEUtlU-L3dhtRQtu7u3PIMEBWPMxgxMp9Nlv43svLUhhBw7lxkbvthyJHgMBKPMZgcCdn0rEZ01c"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-0 left-0 w-full p-6 bg-surface-glass backdrop-blur-md border-t border-border-subtle/20 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1">Botanical Walkways</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Tranquil mornings in the community gardens, bathed in soft sunlight.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shared Component -->
+<footer class="bg-primary dark:bg-primary-container w-full py-section-gap border-t border-primary-container mt-auto">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<!-- Brand & Copyright -->
+<div class="flex flex-col space-y-4">
+<span class="font-headline-sm text-headline-sm text-on-primary">Dwipapuri Residence</span>
+<p class="font-body-md text-body-md text-on-primary/80">
+                    © 2026 Dwipapuri Residential. All rights reserved.
+                </p>
+</div>
+<!-- Navigation Links Column 1 -->
+<div class="flex flex-col space-y-3">
+<a class="font-label-sm text-label-sm text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 duration-200 opacity-90 hover:opacity-100" href="#">Home</a>
+<a class="font-label-sm text-label-sm text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 duration-200 opacity-90 hover:opacity-100" href="#">Events</a>
+<a class="font-label-sm text-label-sm text-on-primary font-semibold underline hover:translate-x-1 transition-transform duration-200 opacity-90 hover:opacity-100" href="#">Gallery</a>
+<a class="font-label-sm text-label-sm text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 duration-200 opacity-90 hover:opacity-100" href="#">Bulletins</a>
+</div>
+<!-- Navigation Links Column 2 -->
+<div class="flex flex-col space-y-3">
+<a class="font-label-sm text-label-sm text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 duration-200 opacity-90 hover:opacity-100" href="#">About</a>
+<a class="font-label-sm text-label-sm text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 duration-200 opacity-90 hover:opacity-100" href="#">Contact Us</a>
+<a class="font-label-sm text-label-sm text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 duration-200 opacity-90 hover:opacity-100" href="#">Privacy Policy</a>
+</div>
+</div>
+</footer>
+</body></html>

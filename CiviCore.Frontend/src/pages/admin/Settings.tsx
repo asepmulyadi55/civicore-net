@@ -6,11 +6,11 @@ import AdminLayout from '../../admin/AdminLayout';
 
 // ── Tab definitions ───────────────────────────────────────────────────────
 const ALL_TABS = [
-  { id: 'profile',   icon: 'person',              label: 'Profile' },
-  { id: 'password',  icon: 'lock',                label: 'Password' },
-  { id: 'security',  icon: 'admin_panel_settings', label: 'Security',   adminOnly: true },
-  { id: 'memo',      icon: 'sticky_note_2',       label: 'Admin Memo', adminOnly: true },
-  { id: 'posyandu',  icon: 'health_and_safety',   label: 'Posyandu',   adminOnly: true },
+  { id: 'profile',   icon: 'person',              labelKey: 'settings.tab_profile' },
+  { id: 'password',  icon: 'lock',                labelKey: 'settings.tab_password' },
+  { id: 'security',  icon: 'admin_panel_settings', labelKey: 'settings.tab_security',   adminOnly: true },
+  { id: 'memo',      icon: 'sticky_note_2',       labelKey: 'settings.tab_memo', adminOnly: true },
+  { id: 'posyandu',  icon: 'health_and_safety',   labelKey: 'settings.tab_posyandu',   adminOnly: true },
 ];
 
 function Flash({ message, type = 'success' }) {
@@ -28,8 +28,11 @@ function Flash({ message, type = 'success' }) {
   );
 }
 
+import { useTranslation } from 'react-i18next';
+
 // ── Profile Tab ───────────────────────────────────────────────────────────
 function ProfileTab({ flash, setFlash }) {
+  const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [name, setName] = useState('');
   const [language, setLanguage] = useState('en');
@@ -64,9 +67,20 @@ function ProfileTab({ flash, setFlash }) {
       formData.append('language', language);
       if (avatarFile) formData.append('avatar', avatarFile);
       await axios.put('/api/settings/profile', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setFlash({ message: 'Profile updated successfully.', type: 'success' });
+      
+      const userStr = localStorage.getItem('admin_user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        user.language = language;
+        user.name = name;
+        localStorage.setItem('admin_user', JSON.stringify(user));
+      }
+
+      i18n.changeLanguage(language);
+      
+      setFlash({ message: t('settings.success_profile'), type: 'success' });
     } catch (err) {
-      setFlash({ message: err.response?.data?.message || 'Failed to update profile.', type: 'error' });
+      setFlash({ message: err.response?.data?.message || t('settings.error_profile'), type: 'error' });
     } finally { setSaving(false); }
   };
 
@@ -76,7 +90,7 @@ function ProfileTab({ flash, setFlash }) {
     <div className="space-y-6">
       {/* Photo */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
-        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Photo</h2>
+        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">{t('settings.photo')}</h2>
         <div className="flex items-center gap-5">
           <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-primary/10 border-2 border-white dark:border-slate-800 shadow-md flex items-center justify-center">
             {avatarPreview ? (
@@ -88,30 +102,30 @@ function ProfileTab({ flash, setFlash }) {
           <div>
             <button onClick={() => fileRef.current?.click()}
               className="inline-flex items-center gap-2 cursor-pointer px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-semibold transition-all border border-slate-200 dark:border-slate-700">
-              <span className="material-icons text-sm">upload</span> Upload photo
+              <span className="material-icons text-sm">upload</span> {t('settings.upload_photo')}
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-            <p className="text-xs text-slate-400 mt-2">JPG, PNG or WEBP · Max 2 MB</p>
+            <p className="text-xs text-slate-400 mt-2">{t('settings.photo_hint')}</p>
           </div>
         </div>
       </div>
 
       {/* Identity */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-5">
-        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Identity</h2>
+        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('settings.identity')}</h2>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.full_name')}</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)}
             className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.email')}</label>
           <input type="email" value={profile?.email || ''} disabled
             className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-400 cursor-not-allowed" />
-          <p className="text-xs text-slate-400 mt-1">Email cannot be changed here. Contact your admin if needed.</p>
+          <p className="text-xs text-slate-400 mt-1">{t('settings.email_hint')}</p>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Username</label>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.username')}</label>
           <input type="text" value={profile?.username || ''} disabled
             className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-400 cursor-not-allowed" />
         </div>
@@ -119,9 +133,9 @@ function ProfileTab({ flash, setFlash }) {
 
       {/* Language */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
-        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Language</h2>
+        <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">{t('settings.language')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[{ code: 'en', flag: 'GB', label: 'English' }, { code: 'id', flag: 'ID', label: 'Indonesian' }].map(lang => (
+          {[{ code: 'en', flag: 'GB', label: t('settings.lang_en') }, { code: 'id', flag: 'ID', label: t('settings.lang_id') }].map(lang => (
             <label key={lang.code} htmlFor={`lang-${lang.code}`}
               className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                 language === lang.code
@@ -138,13 +152,13 @@ function ProfileTab({ flash, setFlash }) {
             </label>
           ))}
         </div>
-        <p className="text-xs text-slate-400 mt-3">The UI will update immediately after saving.</p>
+        <p className="text-xs text-slate-400 mt-3">{t('settings.lang_hint')}</p>
       </div>
 
       <div className="flex justify-end">
         <button onClick={handleSave} disabled={saving}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-          <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Save Profile'}
+          <span className="material-icons text-sm">save</span> {saving ? t('settings.saving') : t('settings.save_profile')}
         </button>
       </div>
     </div>
@@ -153,6 +167,7 @@ function ProfileTab({ flash, setFlash }) {
 
 // ── Password Tab ──────────────────────────────────────────────────────────
 function PasswordTab({ flash, setFlash }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ currentPassword: '', password: '', passwordConfirmation: '' });
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(null);
@@ -167,20 +182,20 @@ function PasswordTab({ flash, setFlash }) {
     setSaving(true);
     try {
       await axios.put('/api/settings/password', form);
-      setFlash({ message: 'Password changed successfully.', type: 'success' });
+      setFlash({ message: t('settings.success_password'), type: 'success' });
       setForm({ currentPassword: '', password: '', passwordConfirmation: '' });
     } catch (err) {
-      setFlash({ message: err.response?.data?.message || 'Failed to change password.', type: 'error' });
+      setFlash({ message: err.response?.data?.message || t('settings.error_password'), type: 'error' });
     } finally { setSaving(false); }
   };
 
   const pw = form.password;
   const checks = [
-    { id: 'length', label: 'At least 8 characters', pass: pw.length >= 8 },
-    { id: 'upper', label: 'One uppercase letter', pass: /[A-Z]/.test(pw) },
-    { id: 'lower', label: 'One lowercase letter', pass: /[a-z]/.test(pw) },
-    { id: 'number', label: 'One number', pass: /[0-9]/.test(pw) },
-    { id: 'symbol', label: 'One special character', pass: /[^A-Za-z0-9]/.test(pw) },
+    { id: 'length', label: t('settings.check_length'), pass: pw.length >= 8 },
+    { id: 'upper', label: t('settings.check_upper'), pass: /[A-Z]/.test(pw) },
+    { id: 'lower', label: t('settings.check_lower'), pass: /[a-z]/.test(pw) },
+    { id: 'number', label: t('settings.check_number'), pass: /[0-9]/.test(pw) },
+    { id: 'symbol', label: t('settings.check_symbol'), pass: /[^A-Za-z0-9]/.test(pw) },
   ];
 
   return (
@@ -190,21 +205,21 @@ function PasswordTab({ flash, setFlash }) {
           <span className="material-icons text-slate-500 text-lg">lock</span>
         </div>
         <div>
-          <h2 className="font-bold text-slate-900 dark:text-white">Change Password</h2>
-          <p className="text-xs text-slate-500">{hasGoogleId ? 'You signed up with Google. Set a password for manual login.' : 'Update your account password'}</p>
+          <h2 className="font-bold text-slate-900 dark:text-white">{t('settings.change_password')}</h2>
+          <p className="text-xs text-slate-500">{hasGoogleId ? t('settings.password_desc_google') : t('settings.password_desc_manual')}</p>
         </div>
       </div>
 
       {!hasGoogleId && (
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Password</label>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.current_password')}</label>
           <input type="password" value={form.currentPassword} onChange={e => setForm(f => ({ ...f, currentPassword: e.target.value }))}
             className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">New Password</label>
+        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.new_password')}</label>
         <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
           className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
       </div>
@@ -221,7 +236,7 @@ function PasswordTab({ flash, setFlash }) {
       )}
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Confirm Password</label>
+        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.confirm_password')}</label>
         <input type="password" value={form.passwordConfirmation} onChange={e => setForm(f => ({ ...f, passwordConfirmation: e.target.value }))}
           className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
       </div>
@@ -229,7 +244,7 @@ function PasswordTab({ flash, setFlash }) {
       <div className="flex justify-end pt-1">
         <button onClick={handleSave} disabled={saving || !form.password || form.password !== form.passwordConfirmation}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-          <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Change Password'}
+          <span className="material-icons text-sm">save</span> {saving ? t('settings.saving') : t('settings.save_password')}
         </button>
       </div>
     </div>
@@ -238,6 +253,7 @@ function PasswordTab({ flash, setFlash }) {
 
 // ── Security Tab (admin only) ─────────────────────────────────────────────
 function SecurityTab({ flash, setFlash }) {
+  const { t } = useTranslation();
   const [data, setData] = useState({ session_timeout_minutes: 30, ga_measurement_id: '' });
   const [saving, setSaving] = useState(false);
 
@@ -252,9 +268,9 @@ function SecurityTab({ flash, setFlash }) {
         sessionTimeoutMinutes: data.session_timeout_minutes,
         gaMeasurementId: data.ga_measurement_id
       });
-      setFlash({ message: 'Security settings saved.', type: 'success' });
+      setFlash({ message: t('settings.success_security'), type: 'success' });
     } catch (err) {
-      setFlash({ message: err.response?.data?.message || 'Failed to save.', type: 'error' });
+      setFlash({ message: err.response?.data?.message || t('settings.error_security'), type: 'error' });
     } finally { setSaving(false); }
   };
 
@@ -265,41 +281,41 @@ function SecurityTab({ flash, setFlash }) {
           <span className="material-icons text-slate-500 text-lg">security</span>
         </div>
         <div>
-          <h2 className="font-bold text-slate-900 dark:text-white">Security Settings</h2>
-          <p className="text-xs text-slate-500">Admin-only session control</p>
+          <h2 className="font-bold text-slate-900 dark:text-white">{t('settings.security_settings')}</h2>
+          <p className="text-xs text-slate-500">{t('settings.security_desc')}</p>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Session Timeout</label>
+        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.session_timeout')}</label>
         <div className="flex items-center gap-3">
           <input type="number" min="5" max="120" step="5" value={data.session_timeout_minutes}
             onChange={e => setData(d => ({ ...d, session_timeout_minutes: Number(e.target.value) }))}
             className="w-32 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
-          <span className="text-sm text-slate-500">minutes</span>
+          <span className="text-sm text-slate-500">{t('settings.minutes')}</span>
         </div>
-        <p className="text-xs text-slate-400 mt-1">Auto-logout after this many minutes of inactivity (5–120)</p>
+        <p className="text-xs text-slate-400 mt-1">{t('settings.timeout_hint')}</p>
       </div>
 
       <div className="border-t border-slate-100 dark:border-slate-800 pt-5">
         <div className="flex items-center gap-2 mb-3">
           <span className="material-icons text-slate-400 text-lg">bar_chart</span>
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Google Analytics</h3>
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('settings.ga_title')}</h3>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Measurement ID</label>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.ga_measurement_id')}</label>
           <input type="text" maxLength={20} value={data.ga_measurement_id}
             onChange={e => setData(d => ({ ...d, ga_measurement_id: e.target.value }))}
             placeholder="G-XXXXXXXXXX"
             className="w-full max-w-xs px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all font-mono" />
-          <p className="text-xs text-slate-400 mt-1">Leave empty to disable tracking. Format: <code>G-XXXXXXXXXX</code></p>
+          <p className="text-xs text-slate-400 mt-1" dangerouslySetInnerHTML={{ __html: t('settings.ga_hint').replace('G-XXXXXXXXXX', '<code>G-XXXXXXXXXX</code>') }}></p>
         </div>
       </div>
 
       <div className="flex justify-end pt-1">
         <button onClick={handleSave} disabled={saving}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-          <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Save Security'}
+          <span className="material-icons text-sm">save</span> {saving ? t('settings.saving') : t('settings.save_security')}
         </button>
       </div>
     </div>
@@ -308,6 +324,7 @@ function SecurityTab({ flash, setFlash }) {
 
 // ── Admin Memo Tab ────────────────────────────────────────────────────────
 function MemoTab({ flash, setFlash }) {
+  const { t } = useTranslation();
   const [memo, setMemo] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -319,9 +336,9 @@ function MemoTab({ flash, setFlash }) {
     setSaving(true);
     try {
       await axios.put('/api/settings/memo', { adminMemo: memo });
-      setFlash({ message: 'Memo saved.', type: 'success' });
+      setFlash({ message: t('settings.success_memo'), type: 'success' });
     } catch (err) {
-      setFlash({ message: err.response?.data?.message || 'Failed to save.', type: 'error' });
+      setFlash({ message: err.response?.data?.message || t('settings.error_memo'), type: 'error' });
     } finally { setSaving(false); }
   };
 
@@ -332,20 +349,20 @@ function MemoTab({ flash, setFlash }) {
           <span className="material-icons text-slate-500 text-lg">sticky_note_2</span>
         </div>
         <div>
-          <h2 className="font-bold text-slate-900 dark:text-white">Admin Memo</h2>
-          <p className="text-xs text-slate-500">Internal notes visible only to administrators</p>
+          <h2 className="font-bold text-slate-900 dark:text-white">{t('settings.memo_title')}</h2>
+          <p className="text-xs text-slate-500">{t('settings.memo_desc')}</p>
         </div>
       </div>
 
       <textarea value={memo} onChange={e => setMemo(e.target.value)} rows={8} maxLength={1000}
-        placeholder="Write your admin notes here..."
+        placeholder={t('settings.memo_placeholder')}
         className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none resize-none transition-all" />
       <p className="text-xs text-slate-400 text-right">{memo.length}/1000</p>
 
       <div className="flex justify-end">
         <button onClick={handleSave} disabled={saving}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-          <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Save Memo'}
+          <span className="material-icons text-sm">save</span> {saving ? t('settings.saving') : t('settings.save_memo')}
         </button>
       </div>
     </div>
@@ -354,6 +371,7 @@ function MemoTab({ flash, setFlash }) {
 
 // ── Posyandu Tab (admin only) ─────────────────────────────────────────────
 function PosyanduTab({ flash, setFlash }) {
+  const { t } = useTranslation();
   const [data, setData] = useState({
     posyandu_baby_max_months: 12,
     posyandu_toddler_max_months: 36,
@@ -377,18 +395,18 @@ function PosyanduTab({ flash, setFlash }) {
         posyanduTeenMaxMonths: data.posyandu_teen_max_months,
         posyanduAdultMaxMonths: data.posyandu_adult_max_months,
       });
-      setFlash({ message: 'Posyandu settings saved.', type: 'success' });
+      setFlash({ message: t('settings.success_posyandu'), type: 'success' });
     } catch (err) {
-      setFlash({ message: err.response?.data?.message || 'Failed to save.', type: 'error' });
+      setFlash({ message: err.response?.data?.message || t('settings.error_posyandu'), type: 'error' });
     } finally { setSaving(false); }
   };
 
   const fields = [
-    { key: 'posyandu_baby_max_months', label: 'Baby (max months)', icon: 'child_care', min: 1, max: 24 },
-    { key: 'posyandu_toddler_max_months', label: 'Toddler (max months)', icon: 'escalator_warning', min: 2, max: 60 },
-    { key: 'posyandu_child_max_months', label: 'Child (max months)', icon: 'boy', min: 12, max: 144 },
-    { key: 'posyandu_teen_max_months', label: 'Teen (max months)', icon: 'person', min: 48, max: 216 },
-    { key: 'posyandu_adult_max_months', label: 'Adult (max months)', icon: 'elderly', min: 120, max: 840 },
+    { key: 'posyandu_baby_max_months', label: t('settings.posyandu_baby'), icon: 'child_care', min: 1, max: 24 },
+    { key: 'posyandu_toddler_max_months', label: t('settings.posyandu_toddler'), icon: 'escalator_warning', min: 2, max: 60 },
+    { key: 'posyandu_child_max_months', label: t('settings.posyandu_child'), icon: 'boy', min: 12, max: 144 },
+    { key: 'posyandu_teen_max_months', label: t('settings.posyandu_teen'), icon: 'person', min: 48, max: 216 },
+    { key: 'posyandu_adult_max_months', label: t('settings.posyandu_adult'), icon: 'elderly', min: 120, max: 840 },
   ];
 
   return (
@@ -398,8 +416,8 @@ function PosyanduTab({ flash, setFlash }) {
           <span className="material-icons text-slate-500 text-lg">health_and_safety</span>
         </div>
         <div>
-          <h2 className="font-bold text-slate-900 dark:text-white">Posyandu Age Categories</h2>
-          <p className="text-xs text-slate-500">Define the upper age limit (in months) for each category</p>
+          <h2 className="font-bold text-slate-900 dark:text-white">{t('settings.posyandu_title')}</h2>
+          <p className="text-xs text-slate-500">{t('settings.posyandu_desc')}</p>
         </div>
       </div>
 
@@ -413,7 +431,7 @@ function PosyanduTab({ flash, setFlash }) {
             <input type="number" min={f.min} max={f.max} value={data[f.key]}
               onChange={e => setData(d => ({ ...d, [f.key]: Number(e.target.value) }))}
               className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" />
-            <p className="text-[11px] text-slate-400 mt-1">Range: {f.min} – {f.max} months</p>
+            <p className="text-[11px] text-slate-400 mt-1">{t('settings.posyandu_range', { min: f.min, max: f.max })}</p>
           </div>
         ))}
       </div>
@@ -421,7 +439,7 @@ function PosyanduTab({ flash, setFlash }) {
       <div className="flex justify-end pt-1">
         <button onClick={handleSave} disabled={saving}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-          <span className="material-icons text-sm">save</span> {saving ? 'Saving...' : 'Save Posyandu'}
+          <span className="material-icons text-sm">save</span> {saving ? t('settings.saving') : t('settings.save_posyandu')}
         </button>
       </div>
     </div>
@@ -430,6 +448,7 @@ function PosyanduTab({ flash, setFlash }) {
 
 // ── Main Settings Page ────────────────────────────────────────────────────
 export default function Settings() {
+  const { t } = useTranslation();
   const { tab } = useParams();
   const activeTab = tab || 'profile';
   const [flash, setFlash] = useState({ message: '', type: 'success' });
@@ -439,7 +458,18 @@ export default function Settings() {
 
   const userStr = localStorage.getItem('admin_user');
   const user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
-  const isAdmin = (user.role || '').toLowerCase() === 'admin';
+  let roleName = '';
+  if (typeof user.role === 'string') roleName = user.role.toLowerCase();
+  else if (user.role && typeof user.role.name === 'string') roleName = user.role.name.toLowerCase();
+  else if (typeof user.roleName === 'string') roleName = user.roleName.toLowerCase();
+  else if (Array.isArray(user.roles) && user.roles.length > 0) {
+    const firstRole = user.roles[0];
+    roleName = (typeof firstRole === 'string' ? firstRole : (firstRole.name || '')).toLowerCase();
+  } else if (user.role_id === 1 || user.roleId === 1) {
+    roleName = 'admin';
+  }
+
+  const isAdmin = roleName === 'admin' || roleName === 'superadmin' || roleName === 'super-admin' || user.email === 'admin@civicore.com';
 
   const tabs = ALL_TABS.filter(t => !t.adminOnly || isAdmin);
 
@@ -458,7 +488,7 @@ export default function Settings() {
     }
   };
 
-  const tabTitle = tabs.find(t => t.id === activeTab)?.label || 'Account Settings';
+  const tabTitle = tabs.find(t => t.id === activeTab)?.labelKey ? t(tabs.find(t => t.id === activeTab).labelKey) : t('settings.account_settings');
 
   return (
     <AdminLayout title={tabTitle}>

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.Google;
 using CiviCore.Domain.Entities;
 using CiviCore.Api.Services;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using OtpNet;
 using QRCoder;
 using Microsoft.AspNetCore.RateLimiting;
@@ -17,13 +19,15 @@ namespace CiviCore.Api.Controllers
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
 
-        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailService emailService, IConfiguration config)
+        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IEmailService emailService, IConfiguration config)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _roleManager = roleManager;
             _emailService = emailService;
             _config = config;
         }
@@ -109,6 +113,26 @@ namespace CiviCore.Api.Controllers
             }
 
             return Unauthorized(new { message = "Invalid 2FA code." });
+        }
+
+        [HttpGet("permissions")]
+        [Authorize]
+        public async Task<IActionResult> GetPermissions()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var roleName = roles.FirstOrDefault();
+            if (string.IsNullOrEmpty(roleName)) return Ok(new List<string>());
+
+            // Super admin bypass
+            if (roleName.Equals("Admin", StringComparison.OrdinalIgnoreCase) || roleName.Equals("Super Admin", StringComparison.OrdinalIgnoreCase))
+                return Ok(new List<string> { "*" });
+
+            var role = await _roleManager.Roles.Include(r => r.Permissions).FirstOrDefaultAsync(r => r.Name == roleName);
+            var perms = role?.Permissions?.Select(p => p.PermissionKey).ToList() ?? new List<string>();
+            return Ok(perms);
         }
 
         [HttpPost("logout")]

@@ -1,72 +1,84 @@
 // @ts-nocheck
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import useDarkMode from './useDarkMode';
 import axios from 'axios';
+import { usePermissions } from './PermissionsContext';
 
 const NAV_GROUPS = [
   {
     label: null,
     items: [
-      { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
+      { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard', permission: 'dashboard.view' },
     ],
   },
   {
     label: 'Community',
     icon: 'groups',
     items: [
-      { key: 'householders', label: 'Householders', icon: 'people', path: '/admin/householders', roles: ['admin', 'block_coordinator'] },
-      { key: 'blocks', label: 'Blocks', icon: 'domain', path: '/admin/blocks', roles: ['admin', 'block_coordinator'] },
-      { key: 'organization', label: 'Organization', icon: 'account_tree', path: '/admin/organization', roles: ['admin'] },
-      { key: 'meetings', label: 'Meetings', icon: 'event_note', path: '/admin/meetings', roles: ['admin', 'block_coordinator'] },
+      { key: 'householders', label: 'Householders', icon: 'people', path: '/admin/householders', permission: 'householders.view' },
+      { key: 'blocks', label: 'Blocks', icon: 'domain', path: '/admin/blocks', permission: 'blocks.view' },
+      { key: 'organization', label: 'Organization', icon: 'account_tree', path: '/admin/organization', permission: 'organization.view' },
+      { key: 'meetings', label: 'Meetings', icon: 'event_note', path: '/admin/meetings', permission: 'meetings.view' },
+      { key: 'posyandu', label: 'Posyandu', icon: 'health_and_safety', path: '/admin/posyandu', permission: 'posyandu.view' },
     ],
   },
   {
     label: 'Finance',
     icon: 'attach_money',
     items: [
-      { key: 'finance', label: 'Finance', icon: 'account_balance', path: '/admin/finance', roles: ['admin', 'treasurer'] },
-      { key: 'payments', label: 'Payments', icon: 'payments', path: '/admin/payments', roles: ['admin', 'treasurer'] },
-      { key: 'reports', label: 'Reports', icon: 'bar_chart', path: '/admin/reports', roles: ['admin', 'treasurer'] },
+      { key: 'finance', label: 'Finance', icon: 'account_balance', path: '/admin/finance', permission: 'finance.view' },
+      { key: 'payments', label: 'Payments', icon: 'payments', path: '/admin/payments', permission: 'payments.view' },
+      { key: 'reports', label: 'Reports', icon: 'bar_chart', path: '/admin/reports', permission: 'reports.view' },
     ],
   },
   {
     label: 'Administration',
     icon: 'admin_panel_settings',
     items: [
-      { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/admin/users', roles: ['admin'] },
-      { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/admin/roles', roles: ['admin'] },
-      { key: 'property', label: 'Property', icon: 'home_work', path: '/admin/property', roles: ['admin'] },
-      { key: 'media', label: 'Media', icon: 'perm_media', path: '/admin/media', roles: ['admin'] },
+      { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/admin/users', permission: 'users.view' },
+      { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/admin/roles', permission: 'roles.view' },
+      { key: 'media', label: 'Media', icon: 'perm_media', path: '/admin/media', permission: 'media.view' },
     ],
   },
   {
     label: 'Homepage',
     icon: 'public',
     items: [
-      { key: 'featured', label: 'Featured Event', icon: 'star', path: '/admin/homepage/featured', roles: ['admin'] },
-      { key: 'events', label: 'Events', icon: 'event', path: '/admin/homepage/events', roles: ['admin'] },
-      { key: 'moments', label: 'Memorable Moments', icon: 'photo_library', path: '/admin/homepage/moments', roles: ['admin'] },
-      { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/admin/homepage/bulletin', roles: ['admin'] },
-      { key: 'about', label: 'About Section', icon: 'info', path: '/admin/homepage/about', roles: ['admin'] },
-      { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/admin/homepage/footer', roles: ['admin'] },
-      { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/admin/homepage/metadata', roles: ['admin'] },
+      { key: 'hero', label: 'Hero Section', icon: 'star', path: '/admin/homepage/hero', permission: 'homepage_hero.view' },
+      { key: 'events', label: 'Events', icon: 'event', path: '/admin/homepage/events', permission: 'homepage_events.view' },
+      { key: 'gallery', label: 'Gallery', icon: 'photo_library', path: '/admin/homepage/gallery', permission: 'homepage_gallery.view' },
+      { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/admin/homepage/bulletin', permission: 'homepage_bulletin.view' },
+      { key: 'property', label: 'Properties', icon: 'home_work', path: '/admin/homepage/property', permission: 'homepage_property.view' },
+      { key: 'navigation', label: 'Navigation', icon: 'menu', path: '/admin/homepage/navigation', permission: 'homepage_navigation.view' },
+      { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/admin/homepage/footer', permission: 'homepage_footer.view' },
+      { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/admin/homepage/metadata', permission: 'homepage_metadata.view' },
+    ],
+  },
+  {
+    label: 'My Resident Profile',
+    icon: 'house',
+    items: [
+      { key: 'overview', label: 'Overview', icon: 'home', path: '/admin/overview', permission: 'overview.view' },
+      { key: 'my-household', label: 'My Household', icon: 'family_restroom', path: '/admin/residents', permission: 'my_household.view' },
     ],
   },
   {
     label: 'Settings',
     icon: 'settings',
     items: [
-      { key: 'profile', label: 'Profile', icon: 'person', path: '/admin/settings/profile', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
-      { key: 'password', label: 'Password', icon: 'lock', path: '/admin/settings/password', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
-      { key: 'security', label: 'Security', icon: 'security', path: '/admin/settings/security', roles: ['admin', 'treasurer', 'block_coordinator', 'resident'] },
-      { key: 'memo', label: 'Admin Memo', icon: 'sticky_note_2', path: '/admin/settings/memo', roles: ['admin'] },
-      { key: 'posyandu', label: 'Posyandu', icon: 'child_care', path: '/admin/settings/posyandu', roles: ['admin'] },
+      { key: 'profile', label: 'Profile', icon: 'person', path: '/admin/settings/profile', permission: 'settings_profile.view' },
+      { key: 'password', label: 'Password', icon: 'lock', path: '/admin/settings/password', permission: 'settings_password.view' },
+      { key: 'security', label: 'Security', icon: 'security', path: '/admin/settings/security', permission: 'settings_security.view' },
+      { key: 'memo', label: 'Admin Memo', icon: 'sticky_note_2', path: '/admin/settings/memo', permission: 'settings_memo.view' },
+      { key: 'posyandu', label: 'Posyandu', icon: 'child_care', path: '/admin/settings/posyandu', permission: 'settings_posyandu.view' },
     ],
   },
 ];
 
 function NavItem({ item, isActive }) {
+  const { t } = useTranslation();
   return (
     <Link
       to={item.path}
@@ -77,20 +89,27 @@ function NavItem({ item, isActive }) {
       }`}
     >
       <span className="material-icons text-[20px]">{item.icon}</span>
-      <span>{item.label}</span>
+      <span>{t(`sidebar.${item.key}`, item.label)}</span>
     </Link>
   );
 }
 
-function NavGroup({ group, activePath, userRole }) {
-  // Filter items based on user role
-  const normalizedRole = (userRole || '').toLowerCase();
-  const visibleItems = group.items.filter(i => i.roles.includes(normalizedRole));
+function NavGroup({ group, activePath, userRole, permissions }) {
+  const { t } = useTranslation();
+  
+  const isGroupActive = group.items.some(i => activePath.startsWith(i.path));
+  const [open, setOpen] = useState(isGroupActive);
+
+  const visibleItems = group.items.filter(i => {
+    if (permissions.includes('*')) return true;
+    if (i.permission) return permissions.includes(i.permission);
+    return false;
+  });
   
   if (visibleItems.length === 0) return null;
 
-  const isGroupActive = visibleItems.some(i => activePath.startsWith(i.path));
-  const [open, setOpen] = useState(isGroupActive);
+  const groupKey = group.label ? group.label.toLowerCase().replace(/ /g, '') : null;
+  const translatedLabel = groupKey ? t(`sidebar.${groupKey}`, group.label) : '';
 
   if (!group.label) {
     return (
@@ -111,7 +130,7 @@ function NavGroup({ group, activePath, userRole }) {
         }`}
       >
         <span className="material-icons text-[20px]">{group.icon}</span>
-        <span className="flex-1 text-left">{group.label}</span>
+        <span className="flex-1 text-left">{translatedLabel}</span>
         <span className="material-icons text-[18px] opacity-60 transition-transform duration-200" style={{ transform: open ? 'rotate(180deg)' : '' }}>
           expand_more
         </span>
@@ -128,12 +147,61 @@ function NavGroup({ group, activePath, userRole }) {
 }
 
 export default function AdminLayout({ children, title, subtitle }) {
+  const { i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [dark, toggleDark] = useDarkMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { permissions, loading: loadingPerms } = usePermissions();
   const userStr = localStorage.getItem('admin_user');
   const user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
+
+  React.useEffect(() => {
+    if (user.language && i18n.language !== user.language) {
+      i18n.changeLanguage(user.language);
+    }
+  }, [user.language, i18n]);
+
+  const currentNavItem = React.useMemo(() => {
+    for (const group of NAV_GROUPS) {
+      for (const item of group.items) {
+        if (location.pathname.startsWith(item.path)) {
+          return item;
+        }
+      }
+    }
+    return null;
+  }, [location.pathname]);
+
+  const hasAccess = React.useMemo(() => {
+    if (!currentNavItem) return true; // allow unknown routes
+    if (permissions.includes('*')) return true;
+    if (currentNavItem.permission) return permissions.includes(currentNavItem.permission);
+    return false;
+  }, [currentNavItem, permissions]);
+
+  React.useEffect(() => {
+    if (!loadingPerms && !hasAccess && location.pathname === '/admin/dashboard') {
+      let redirectPath = null;
+      if (permissions.includes('*')) {
+        redirectPath = '/admin/dashboard';
+      } else {
+        for (const group of NAV_GROUPS) {
+          for (const item of group.items) {
+            if (item.permission && permissions.includes(item.permission)) {
+              redirectPath = item.path;
+              break;
+            }
+          }
+          if (redirectPath) break;
+        }
+      }
+      
+      if (redirectPath && redirectPath !== '/admin/dashboard') {
+        navigate(redirectPath, { replace: true });
+      }
+    }
+  }, [loadingPerms, hasAccess, location.pathname, permissions, navigate]);
 
   const handleLogout = async () => {
     try { await axios.post('/api/auth/logout'); } catch {}
@@ -143,7 +211,7 @@ export default function AdminLayout({ children, title, subtitle }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className={`admin-theme min-h-screen bg-slate-50 dark:bg-surface ${dark ? 'dark' : ''}`}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -169,7 +237,7 @@ export default function AdminLayout({ children, title, subtitle }) {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
           {NAV_GROUPS.map((group, i) => (
-            <NavGroup key={i} group={group} activePath={location.pathname} userRole={user.role} />
+            <NavGroup key={i} group={group} activePath={location.pathname} userRole={user.role} permissions={permissions} />
           ))}
         </nav>
 
@@ -216,8 +284,24 @@ export default function AdminLayout({ children, title, subtitle }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8">
-          {children}
+        <main className="flex-1 p-4 lg:p-8 flex flex-col">
+          {loadingPerms ? (
+            <div className="flex-1 flex items-center justify-center">
+              <span className="material-icons animate-spin text-primary text-4xl">autorenew</span>
+            </div>
+          ) : !hasAccess ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <div className="w-20 h-20 bg-rose-50 dark:bg-rose-900/20 text-rose-500 rounded-full flex items-center justify-center mb-6">
+                <span className="material-icons text-4xl">gpp_bad</span>
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Access Denied</h2>
+              <p className="text-slate-500 dark:text-slate-400 max-w-md">
+                You do not have permission to view this page. If you believe this is an error, please contact your administrator.
+              </p>
+            </div>
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>

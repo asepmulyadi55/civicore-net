@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import useDarkMode from '../../admin/useDarkMode';
+import { useTranslation } from 'react-i18next';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -10,25 +11,26 @@ export default function ForgotPassword() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [dark, toggleDark] = useDarkMode();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim()) { setError('Please enter your email address.'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Please enter a valid email address.'); return; }
+    if (!email.trim()) { setError(t('forgot_password.err_email_empty')); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError(t('forgot_password.err_email_invalid')); return; }
     setError('');
     setIsLoading(true);
     try {
       await axios.post('/api/auth/forgot-password', { email });
-      setSuccess('If this email exists in our system, a reset link has been sent. Check your inbox.');
+      setSuccess(t('forgot_password.success_msg'));
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred. Please try again.');
+      setError(err.response?.data?.message || t('forgot_password.err_default'));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400">
+    <div className={`admin-theme min-h-screen bg-surface flex items-center justify-center p-4 transition-colors duration-400 ${dark ? 'dark' : ''}`}>
       <button onClick={toggleDark}
         className="fixed bottom-6 right-6 p-3 rounded-full bg-surface shadow-lg border border-surface-var text-on-surface hover:text-primary hover:scale-105 hover:shadow-xl transition-all duration-200 cursor-pointer">
         <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>
@@ -46,8 +48,8 @@ export default function ForgotPassword() {
         <div className="bg-surface dark:bg-surface-var border border-surface-var shadow-xl rounded-xl overflow-hidden">
           <div className="p-8">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-on-surface">Forgot Password?</h2>
-              <p className="text-sm text-on-surface-var mt-1">Enter your registered email and we'll send a reset link.</p>
+              <h2 className="text-xl font-bold text-on-surface">{t('forgot_password.title')}</h2>
+              <p className="text-sm text-on-surface-var mt-1">{t('forgot_password.subtitle')}</p>
             </div>
 
             {success && (
@@ -60,7 +62,7 @@ export default function ForgotPassword() {
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-on-surface mb-1.5">
-                  Email Address
+                  {t('forgot_password.field_email')}
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -81,7 +83,7 @@ export default function ForgotPassword() {
                 disabled={isLoading}
               >
                 <span className="material-icons text-lg">{isLoading ? 'hourglass_top' : 'send'}</span>
-                <span>{isLoading ? 'Sending...' : 'Send Reset Link'}</span>
+                <span>{isLoading ? t('forgot_password.btn_sending') : t('forgot_password.btn_send')}</span>
               </button>
             </form>
           </div>
@@ -89,7 +91,7 @@ export default function ForgotPassword() {
           <div className="p-6 bg-surface-var border-t border-surface-var text-center">
             <Link to="/admin/login" className="group flex items-center justify-center gap-2 text-sm font-bold text-primary transition-colors hover:opacity-80">
               <span className="material-icons text-base">arrow_back</span>
-              <span className="group-hover:underline">Back to Login</span>
+              <span className="group-hover:underline">{t('forgot_password.back_login')}</span>
             </Link>
           </div>
         </div>

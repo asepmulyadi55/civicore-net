@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dwipapuri Residence</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#95d3ba",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#edeeef",
+                      "inverse-on-surface": "#f0f1f2",
+                      "secondary-fixed-dim": "#bdc7d9",
+                      "surface-bright": "#f8f9fa",
+                      "on-tertiary-container": "#ff985a",
+                      "on-surface": "#191c1d",
+                      "on-secondary-fixed-variant": "#3d4756",
+                      "outline": "#707974",
+                      "on-primary-container": "#80bea6",
+                      "background": "#f8f9fa",
+                      "on-secondary": "#ffffff",
+                      "text-muted": "#6b7280",
+                      "primary-container": "#064e3b",
+                      "border-subtle": "#e5e7eb",
+                      "surface-variant": "#e1e3e4",
+                      "surface-tint": "#2b6954",
+                      "tertiary-container": "#733100",
+                      "on-tertiary": "#ffffff",
+                      "on-background": "#191c1d",
+                      "surface-dim": "#d9dadb",
+                      "surface": "#f8f9fa",
+                      "tertiary-fixed-dim": "#ffb68e",
+                      "tertiary": "#502000",
+                      "secondary-fixed": "#d9e3f6",
+                      "primary": "#003527",
+                      "on-tertiary-fixed": "#331200",
+                      "surface-container-highest": "#e1e3e4",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "on-primary": "#ffffff",
+                      "inverse-primary": "#95d3ba",
+                      "error-container": "#ffdad6",
+                      "secondary-container": "#d6e0f3",
+                      "surface-glass": "rgba(255, 255, 255, 0.7)",
+                      "outline-variant": "#bfc9c3",
+                      "on-secondary-fixed": "#121c2a",
+                      "error": "#ba1a1a",
+                      "on-error": "#ffffff",
+                      "surface-container-low": "#f3f4f5",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed": "#ffdbca",
+                      "surface-container-high": "#e7e8e9",
+                      "secondary": "#555f6f",
+                      "on-secondary-container": "#596373",
+                      "primary-fixed": "#b0f0d6",
+                      "on-surface-variant": "#404944",
+                      "on-tertiary-fixed-variant": "#763300",
+                      "on-primary-fixed": "#002117",
+                      "inverse-surface": "#2e3132"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px",
+                      "2xl": "1.5rem"
+              },
+              "spacing": {
+                      "container-max": "1280px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "40px",
+                      "section-gap": "80px",
+                      "gutter": "24px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "headline-sm": [
+                              "Playfair Display"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "36px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              },
+              "boxShadow": {
+                "soft": "0 10px 30px -10px rgba(6, 78, 59, 0.04)",
+                "glass": "0 8px 32px 0 rgba(6, 78, 59, 0.05)",
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.surface');
+            color: theme('colors.on-surface');
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .clip-path-slant {
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        /* Smooth reveal animation classes */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="font-body-md antialiased overflow-x-hidden selection:bg-primary selection:text-on-primary">
+<!-- Navigation Bar -->
+<nav class="bg-surface-glass backdrop-blur-md border-b border-border-subtle shadow-sm fixed top-0 w-full z-50 transition-all duration-300" id="main-nav">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 max-w-container-max mx-auto">
+<!-- Brand -->
+<a class="text-headline-sm font-headline-sm font-bold text-primary flex items-center gap-2 hover:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">apartment</span>
+                Dwipapuri Residence
+            </a>
+<!-- Desktop Nav Links -->
+<div class="hidden md:flex items-center gap-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#events">Events</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#gallery">Gallery</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#bulletins">Bulletins</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#about">About</a>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4">
+<button aria-label="Dark Mode" class="text-on-surface-variant hover:text-primary transition-colors scale-95 active:scale-90 transition-transform hidden sm:block p-2 rounded-full hover:bg-surface-container-low/50">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<button aria-label="Language" class="text-on-surface-variant hover:text-primary transition-colors scale-95 active:scale-90 transition-transform hidden sm:block p-2 rounded-full hover:bg-surface-container-low/50">
+<span class="material-symbols-outlined">language</span>
+</button>
+<a class="hidden md:inline-flex bg-primary-container text-on-primary px-6 py-2 rounded-lg font-label-md text-label-md hover:bg-primary transition-colors shadow-soft" href="#contact">
+                    Inquire Now
+                </a>
+<!-- Mobile Menu Button -->
+<button class="md:hidden text-on-surface p-2" id="mobile-menu-btn">
+<span class="material-symbols-outlined text-headline-sm">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="pt-20">
+<!-- Hero Section -->
+<section class="relative min-h-[80vh] flex items-center justify-center overflow-hidden px-margin-mobile md:px-margin-desktop py-section-gap">
+<!-- Background Image -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="A sweeping wide-angle shot of a luxurious, modern residential estate at golden hour. The architecture features clean, minimal lines, expansive glass windows, and deep emerald green landscaping that contrasts beautifully against the warm, sunlit facade. The atmosphere is serene, high-end, and inviting, perfectly capturing the essence of premium living in a bright, modern light-mode setting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAtDwiOy3GbAq50HEInieamHIcuYPqfUjGZ0B8S8SwmyoFZAFVhmsKothURtKLO3yBDyRvEl1e8a1ayKmccEBBYcDr7kZjOf2nFQ07F2a3H5Mm55J4LvhKpKS1TEGALIoIi1aowitr_RGuv0MqqSwU35JulszZL1JfHq0c_J8f26hGOaYVmb7i_JXTKsyUYErvPcub3t8nQYpKTvKLwU4Oop1Nas3UeXL4iXiVb62mAWvU4FbmHnu7iV9Fq7OO-HtNu8D2JAA6RLnc')"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-surface/90 via-surface/70 to-transparent"></div>
+</div>
+<div class="relative z-10 w-full max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-12 gap-gutter items-center">
+<div class="md:col-span-7 space-y-8 reveal">
+<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-container/10 text-primary-container border border-primary-container/20 glass-panel backdrop-blur-md">
+<span class="material-symbols-outlined text-sm">home_pin</span>
+<span class="font-label-md text-label-md">Welcome to the epitome of modern living</span>
+</div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface">
+                        Discover Your Sanctuary at <br class="hidden md:block"/>
+<span class="text-primary-container">Dwipapuri</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                        Experience a harmonious blend of architectural brilliance, lush natural surroundings, and an vibrant community designed for those who appreciate the finer things in life.
+                    </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<a class="bg-primary-container text-on-primary px-8 py-4 rounded-lg font-label-md text-label-md hover:bg-primary transition-colors shadow-soft inline-flex items-center gap-2" href="#properties">
+                            Explore Properties
+                            <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+<a class="bg-surface-glass text-primary-container border border-border-subtle px-8 py-4 rounded-lg font-label-md text-label-md hover:bg-surface-container transition-colors inline-flex items-center gap-2 backdrop-blur-md" href="#tour">
+                            Schedule a Tour
+                        </a>
+</div>
+</div>
+<!-- Quick Stats / Feature Glass Card -->
+<div class="md:col-span-4 md:col-start-9 hidden md:block reveal" style="transition-delay: 0.2s;">
+<div class="glass-panel p-8 rounded-2xl shadow-glass flex flex-col gap-6">
+<div class="flex items-center gap-4 border-b border-border-subtle pb-4">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">forest</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">45 Acres</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Lush Greenery</p>
+</div>
+</div>
+<div class="flex items-center gap-4 border-b border-border-subtle pb-4">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">pool</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Resort Style</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Amenities</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">24/7</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Security &amp; Concierge</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Events Section (Bento Grid) -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-bright" id="events">
+<div class="max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-12 reveal">
+<div class="max-w-2xl">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-4">Community Events</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Engage with neighbors and enrich your lifestyle through our carefully curated community events and gatherings.</p>
+</div>
+<a class="inline-flex items-center gap-2 font-label-md text-label-md text-primary-container hover:text-primary transition-colors mt-4 md:mt-0 group" href="#">
+                        View Full Calendar
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_right_alt</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[300px]">
+<!-- Featured Event (Large) -->
+<div class="md:col-span-8 row-span-2 rounded-2xl overflow-hidden relative group reveal shadow-soft">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://lh3.googleusercontent.com/aida/AP1WRLtthZrfVP8Nf5pHCwDmEobmFpYsnxvcE8NZgrHdsokDh-MUKXL7dWR51Iqyh0sKssQa5iE4lWAkE5dzWwbdL9Fyp5bVoQ0WN_HBavUXsL87BoPm-w_qbK30yuxVsp7ejeFubSl_g3sjWII3CHDe7h9FbaMR27lqWF-57N9Uloz7jIoyEUtlU-L3dhtRQtu7u3PIMEBWPMxgxMp9Nlv43svLUhhBw7lxkbvthyJHgMBKPMZgcCdn0rEZ01c')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<div class="flex gap-3 mb-4">
+<span class="px-3 py-1 bg-surface-glass backdrop-blur-md rounded-full font-label-sm text-label-sm text-primary-fixed-dim">Upcoming</span>
+<span class="px-3 py-1 bg-surface-glass backdrop-blur-md rounded-full font-label-sm text-label-sm text-white">Oct 15</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-white mb-2">Annual Garden Gala &amp; Wine Tasting</h3>
+<p class="font-body-md text-body-md text-white/80 max-w-xl">Join us in the central gardens for an elegant evening of fine wines, live classical music, and gourmet hors d'oeuvres under the stars.</p>
+</div>
+</div>
+<!-- Secondary Event 1 -->
+<div class="md:col-span-4 rounded-2xl overflow-hidden relative group reveal shadow-soft" style="transition-delay: 0.1s;">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://lh3.googleusercontent.com/aida/AP1WRLvkUKAaBrOuLTP_Cr2GX3tEXjCRwQ8y1e_BJ0A4uT6J_rc3UbwyQwy1_sGQQkn-5Xc6KDZyGZK5MY5-LSwWNTrc2YyooqwGbf3K9dxm4XhF83vipiIt2oBqhgKHHUxTGifBj5MZmn_8D_eaOjDYV9XrXvytKc9rscryGUkBTR-OouP55rRQ1hG1rDau1SpTe782ryufUSJdllHnOGlq7oQSAr6tpFZnJoTuETygXS5DvPc5jYHZ1_Z0UIA')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<div class="mb-2">
+<span class="px-2 py-1 bg-primary-container/80 backdrop-blur-md rounded font-label-sm text-label-sm text-on-primary">Nov 02</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-white line-clamp-2">Sunset Yoga by the Infinity Pool</h4>
+</div>
+</div>
+<!-- Secondary Event 2 -->
+<div class="md:col-span-4 rounded-2xl overflow-hidden relative group reveal shadow-soft" style="transition-delay: 0.2s;">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://lh3.googleusercontent.com/aida/AP1WRLuTNDBghlVA7Ni2U6D6cqsc70ztU4UMcA1yi7AlXpy_fJDpZBH4awobt0m7YyVt4f8lmRXsDCMpbUVxmoFEGZTsdcZiDXOpvK768Han1CD0-oe3e7Wr-V72h82cUDOTa8PVbeyfSbwqKjgYmkgdzYiZ_hv6r1Rv-jevV8l7_CBgGE3TpG2-C_mrDu7iroIbi188NJ7mGpJJwP_NKa-BaJbfqdiPPpPW3Sncq_o8r2ZUOHcsgZTadTlgybo')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<div class="mb-2">
+<span class="px-2 py-1 bg-tertiary-container/80 backdrop-blur-md rounded font-label-sm text-label-sm text-on-tertiary">Dec 10</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-white line-clamp-2">Holiday Architectural Tour &amp; Dinner</h4>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary dark:bg-primary-container w-full py-section-gap">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto border-t border-primary-container pt-12">
+<!-- Brand Column -->
+<div class="space-y-6">
+<a class="font-headline-sm text-headline-sm text-on-primary flex items-center gap-2 opacity-90 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">apartment</span>
+                    Dwipapuri Residence
+                </a>
+<p class="font-body-md text-body-md text-on-primary/80 max-w-xs">
+                    Elevating modern living through exceptional design, pristine environments, and unparalleled community experiences.
+                </p>
+<p class="font-label-sm text-label-sm text-on-primary/60">
+                    © 2026 Dwipapuri Residential. All rights reserved.
+                </p>
+</div>
+<!-- Links Column 1 -->
+<div>
+<h4 class="font-label-md text-label-md text-on-primary mb-6 uppercase tracking-widest">Navigation</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-body-md text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block transition-transform duration-200" href="#">Home</a></li>
+<li><a class="font-body-md text-body-md text-on-primary font-semibold underline hover:translate-x-1 inline-block transition-transform duration-200" href="#events">Events</a></li>
+<li><a class="font-body-md text-body-md text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block transition-transform duration-200" href="#gallery">Gallery</a></li>
+<li><a class="font-body-md text-body-md text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block transition-transform duration-200" href="#bulletins">Bulletins</a></li>
+</ul>
+</div>
+<!-- Links Column 2 -->
+<div>
+<h4 class="font-label-md text-label-md text-on-primary mb-6 uppercase tracking-widest">Information</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-body-md text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block transition-transform duration-200" href="#about">About</a></li>
+<li><a class="font-body-md text-body-md text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block transition-transform duration-200" href="#contact">Contact Us</a></li>
+<li><a class="font-body-md text-body-md text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block transition-transform duration-200" href="#privacy">Privacy Policy</a></li>
+</ul>
+</div>
+</div>
+</footer>
+<script>
+        // Scroll reveal animation
+        const revealElements = document.querySelectorAll('.reveal');
+        
+        const revealCallback = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    // Optional: stop observing once revealed
+                    // observer.unobserve(entry.target); 
+                }
+            });
+        };
+        
+        const revealObserver = new IntersectionObserver(revealCallback, {
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px"
+        });
+        
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Sticky Nav visual change on scroll
+        const nav = document.getElementById('main-nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.classList.add('shadow-glass');
+                nav.classList.replace('bg-surface-glass', 'bg-surface/90');
+            } else {
+                nav.classList.remove('shadow-glass');
+                nav.classList.replace('bg-surface/90', 'bg-surface-glass');
+            }
+        });
+    </script>
+</body></html>

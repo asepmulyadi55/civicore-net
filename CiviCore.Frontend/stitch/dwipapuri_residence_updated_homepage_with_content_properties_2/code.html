@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dwipapuri Residence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#707974",
+                      "on-tertiary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "primary": "#003527",
+                      "on-surface": "#191c1d",
+                      "on-primary-fixed": "#002117",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "surface-bright": "#f8f9fa",
+                      "tertiary-fixed-dim": "#ffb68e",
+                      "on-primary-container": "#80bea6",
+                      "tertiary-container": "#733100",
+                      "error": "#ba1a1a",
+                      "secondary-fixed": "#d9e3f6",
+                      "secondary-fixed-dim": "#bdc7d9",
+                      "surface-glass": "rgba(255, 255, 255, 0.7)",
+                      "surface-dim": "#d9dadb",
+                      "surface-container-high": "#e7e8e9",
+                      "inverse-on-surface": "#f0f1f2",
+                      "primary-fixed-dim": "#95d3ba",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-container": "#ff985a",
+                      "primary-container": "#064e3b",
+                      "border-subtle": "#e5e7eb",
+                      "on-tertiary-fixed-variant": "#763300",
+                      "on-background": "#191c1d",
+                      "tertiary": "#502000",
+                      "on-secondary-fixed-variant": "#3d4756",
+                      "surface-variant": "#e1e3e4",
+                      "surface-container": "#edeeef",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-surface": "#2e3132",
+                      "on-error-container": "#93000a",
+                      "surface-container-highest": "#e1e3e4",
+                      "surface-container-low": "#f3f4f5",
+                      "on-secondary-container": "#596373",
+                      "surface-tint": "#2b6954",
+                      "background": "#f8f9fa",
+                      "error-container": "#ffdad6",
+                      "inverse-primary": "#95d3ba",
+                      "tertiary-fixed": "#ffdbca",
+                      "outline-variant": "#bfc9c3",
+                      "primary-fixed": "#b0f0d6",
+                      "secondary": "#555f6f",
+                      "on-surface-variant": "#404944",
+                      "secondary-container": "#d6e0f3",
+                      "on-tertiary-fixed": "#331200",
+                      "on-secondary-fixed": "#121c2a",
+                      "surface": "#f8f9fa",
+                      "text-muted": "#6b7280"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "container-max": "1280px",
+                      "section-gap": "80px",
+                      "gutter": "24px",
+                      "margin-desktop": "40px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "label-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-sm": [
+                              "Playfair Display"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg-mobile": [
+                              "36px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300">
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 w-full z-50 bg-surface-glass backdrop-blur-md dark:bg-primary/80 border-b border-border-subtle dark:border-primary-container shadow-sm transition-all duration-300">
+<div class="flex justify-between items-center px-margin-desktop h-20 max-w-container-max mx-auto">
+<a class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed-dim flex items-center gap-2 scale-95 active:scale-90 transition-transform" href="#">
+<img alt="Community Logo" class="h-8 w-8 object-contain rounded-full bg-surface-container dark:bg-primary-container" data-alt="Community Logo placeholder. Small minimalist vector logo suitable for a real estate brand, high contrast against light background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAh5mErpvIJnoPbyiiUpIFLnHZAxIINopH427UxwS3p3vHEcEItFwg2Lf3ekKgWlXS9bYV03ETIDY0bPfMD4jl7I8J5ycPQj7KxfMSLSIdsemXyKt_OV4UkMnOsizBO_E1ZE_3VSCA2Rdzxr_XVfFHY_St3H3EXEdn-GY21dDXVwV2oTL1nnqLo0iF0RZKQz6DYgS4ECJvQdgERdhzhOqcsiZW97gcfojRbqJ-nT5GRdQgbPqhzJOMCIVgcj_rK7sq6nrt6T4LwpW8"/>
+                Dwipapuri Residence
+            </a>
+<nav class="hidden md:flex items-center gap-gutter">
+<a class="text-label-md font-label-md text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary dark:border-primary-fixed-dim pb-1 hover:bg-surface-container-low/50 dark:hover:bg-primary-container/50 transition-all duration-300 rounded px-2" href="#">Home</a>
+<a class="text-label-md font-label-md text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors hover:bg-surface-container-low/50 dark:hover:bg-primary-container/50 duration-300 rounded px-2 pb-1" href="#events">Events</a>
+<a class="text-label-md font-label-md text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors hover:bg-surface-container-low/50 dark:hover:bg-primary-container/50 duration-300 rounded px-2 pb-1" href="#gallery">Gallery</a>
+<a class="text-label-md font-label-md text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors hover:bg-surface-container-low/50 dark:hover:bg-primary-container/50 duration-300 rounded px-2 pb-1" href="#bulletins">Bulletins</a>
+<a class="text-label-md font-label-md text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors hover:bg-surface-container-low/50 dark:hover:bg-primary-container/50 duration-300 rounded px-2 pb-1" href="#about">About</a>
+</nav>
+<div class="flex items-center gap-4">
+<button aria-label="Toggle Dark Mode" class="text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<button aria-label="Change Language" class="text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="language">language</span>
+</button>
+</div>
+</div>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative h-[80vh] min-h-[600px] flex items-center justify-center mt-20">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A sweeping, high-angle wide shot of a modern, luxury residential neighborhood. Pristine green lawns, elegant minimalist houses with large glass windows, lined along a quiet, curving street. Bathed in the warm, golden hour light of early evening. The mood is tranquil, exclusive, and welcoming. A subtle dark gradient overlay adds depth." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAOH9-wkerT9L_3UHiLus4rfP0iIYILydReiA4c1YgVrKb9FXHlKChiO-5ca6dGMsI3bScitsulEeeBAa_lw9C8Q4nWjpu7yc4Qli__5V6s4A4BwbiAEJPWdLQYGXs5B6jy7mP07iWtYt-kk58IVBMD6UT_fPKNJXu0OfdQuF3MTYxFgQqfc9wgKe2z6M7ZiVfCAsET3eySbL2bJ0xVqP-AYqjtp5UxnEsXHGP54KOr6j-kCwy4_WBKjXksawAKK4MnYkm8Zj2cvhU')">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/60 via-primary/40 to-surface-container-lowest dark:to-primary"></div>
+</div>
+<div class="relative z-10 text-center px-margin-mobile md:px-margin-desktop max-w-4xl mx-auto flex flex-col items-center">
+<h1 class="text-display-lg-mobile md:text-display-lg font-display-lg text-on-primary mb-6 animate-fade-in-up drop-shadow-lg">
+                    Welcome to Dwipapuri Residence
+                </h1>
+<p class="text-body-lg font-body-lg text-on-primary/90 mb-10 max-w-2xl font-light tracking-wide">
+                    Modern Living in Harmony. Experience tranquility and luxury in every detail.
+                </p>
+<a class="inline-flex items-center justify-center px-8 py-4 bg-[#b45309] text-white font-label-md text-label-md rounded-lg hover:bg-[#8b4006] transition-colors shadow-lg hover:shadow-xl scale-95 active:scale-90" href="#contact">
+                    Schedule a Visit
+                </a>
+</div>
+</section>
+<!-- Events Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="events">
+<div class="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4">
+<div>
+<span class="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Discover More</span>
+<h2 class="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Events</h2>
+</div>
+<a class="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="#">
+                    View All 
+                    <span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group">
+<div class="h-48 overflow-hidden relative">
+<img alt="Event Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcznvVK2f2TkbuY6sy-PZMgOSdo_kRR-2Qfso47BVm7LWAZuEq9UWnQ29d6RFx00Qg50WfrZdaKXGMpYc7s-2TdKkcdEpU8uhurr_cnQDrP4xA1dePRfB-5tW8d9L7p_2pwiEqN4g8QYj9CwS8z3vqv3bK28IQp2aEanu2mz8DgbpGg7yp9QmlTEieQec3U6eiVUMiJLrB_zje7RCZu2bA8ChaOzagFlfLQUc8EbVbnQzRA8KiYgwFYKrIvR91ss3cEqAtrwWkqtQ"/>
+<div class="absolute top-4 left-4 bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
+                Aug 15
+            </div>
+</div>
+<div class="p-6">
+<h3 class="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">Summer Garden Party</h3>
+<p class="text-body-md text-text-muted dark:text-on-primary/70 mb-4 line-clamp-2">Join us for an evening of music, local food, and community connection in the central garden.</p>
+<a class="text-primary dark:text-primary-fixed-dim font-label-md hover:underline inline-flex items-center" href="#">Read More <span class="material-symbols-outlined text-sm ml-1">chevron_right</span></a>
+</div>
+</div>
+<div class="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group">
+<div class="h-48 overflow-hidden relative bg-surface-container-low dark:bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-outline/50 dark:text-on-primary/30" data-icon="celebration">celebration</span>
+<div class="absolute top-4 left-4 bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
+                Sep 02
+            </div>
+</div>
+<div class="p-6">
+<h3 class="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">Community Workshop</h3>
+<p class="text-body-md text-text-muted dark:text-on-primary/70 mb-4 line-clamp-2">Learn sustainable gardening practices from local experts in our monthly green living series.</p>
+<a class="text-primary dark:text-primary-fixed-dim font-label-md hover:underline inline-flex items-center" href="#">Read More <span class="material-symbols-outlined text-sm ml-1">chevron_right</span></a>
+</div>
+</div>
+<div class="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group">
+<div class="h-48 overflow-hidden relative bg-surface-container-low dark:bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-outline/50 dark:text-on-primary/30" data-icon="music_note">music_note</span>
+<div class="absolute top-4 left-4 bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
+                Sep 20
+            </div>
+</div>
+<div class="p-6">
+<h3 class="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">Acoustic Evening</h3>
+<p class="text-body-md text-text-muted dark:text-on-primary/70 mb-4 line-clamp-2">Unwind with live acoustic music by the clubhouse pool. Bring your own picnic blankets!</p>
+<a class="text-primary dark:text-primary-fixed-dim font-label-md hover:underline inline-flex items-center" href="#">Read More <span class="material-symbols-outlined text-sm ml-1">chevron_right</span></a>
+</div>
+</div>
+</div>
+</section>
+<!-- Gallery Section -->
+<section class="py-section-gap bg-surface-container-low dark:bg-primary-container/20 px-margin-mobile md:px-margin-desktop" id="gallery">
+<div class="max-w-container-max mx-auto">
+<div class="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4">
+<div>
+<span class="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Visual Tour</span>
+<h2 class="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Gallery</h2>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="rounded-xl overflow-hidden aspect-square relative group">
+<img alt="Clubhouse Interior" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD55aFz8NDn0tXi_fzmIam_RZaFwDhAczD1L4kTGDx3sbMlR0oF0fEJB5qFaP04Btkcj6aHz6QlpxgzjIYCilYWKVHAUZys336usIkE5SzFmXdvI3NvErNZ0g2TMOrUu1c-4tth-d3jBfcLR85PhiVZ-By3Hj2sgF0VsRp1fP7NyU97aIp0YyjjBQkx4-gGQIjtxX_CFAevCygShudFFGofPbQX20yTk7WXTZJxCtg4SvhN88iP29cXUKzOB9OXHuNDpxl0_s61314"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+<span class="text-white font-headline-sm">Clubhouse</span>
+</div>
+</div>
+<div class="rounded-xl overflow-hidden aspect-square relative group">
+<img alt="Aerial View" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqmJbXJfWPbdc2pd8BtFwTYl1KGyL-YtzdJWtn6C-PLLYeGND0o9idmDEkCLCNadXGgEk1D4fczrphhSJwrRdQFTxhjEbSgye3NmOeVIuhT_QKw2fGu1lpXSl9gMn2R9scg5z09MOxMCxYoOf7LkuNdi34YzT6Q_VfZ3fAk7YiLbqlQlkcyb2qZoN9Be7w8EFfFiF5sZZCo46zPenk5RHo29Pk2H9rHqSZhvXUM0t5VHWRyzss9ONZBqgL1jCs8vK7MrpVHPNY1Og"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+<span class="text-white font-headline-sm">Aerial View</span>
+</div>
+</div>
+<div class="rounded-xl overflow-hidden aspect-square relative group">
+<img alt="Pool Area" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcYSxDLk_010u5mOyR_cijkXwWyIyptM-8yp5_4RAe6ZRQtodAbNSdHc80FooCWs9ykxeHdHLmLfIjpcGeZ-OXAN1f6bMyV0rpLYvBVnRktdK_B8EOFmp6JryCf9e7giLDFQGO5heJirDMTp6yQh2Q6umMQkmduc12_7S2HsFcPWX8wuAdf1GCtzCWfmn9P7XiZbVNUINPPQ5Z2c70y9eKeijUWwn-bFTTd2AI-P9MXrgXBehO0bMFqxGV4tLwuzGrD7GdGWcXw-w"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+<span class="text-white font-headline-sm">Pool Area</span>
+</div>
+</div>
+<div class="rounded-xl overflow-hidden aspect-square relative group">
+<img alt="Parks" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6mYNDEVswdRuYbIfZl7VAevQ3fzwhBQmg-mn6f9f7AIWn_24WqWoOC2rXq2j54oAn3lmmFCeTRLCb6q3tQ-1_iTIfv9uEpeDRup9XDIy8hZ7N8FKZ2mNgWQtFKAaS2mF3paAcuefkaD0B1y3ivYUpW6sjfDCihgUhTiS0dD4ZxOerZDyHCNBsKOElC__P5T3Mrqa4MAuksqpDx9hmYQwxx1KOWE7bEkn265wYA_g6NQ3B6FYXtstWk8X-XbspWPiDEv4EispMSqA"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+<span class="text-white font-headline-sm">Green Spaces</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bulletins Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="bulletins">
+<div class="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4">
+<div>
+<span class="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Informasi</span>
+<h2 class="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Buletin</h2>
+</div>
+<a class="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="#">
+                    View All 
+                    <span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface dark:bg-primary-container rounded-2xl p-6 shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
+<div class="text-label-sm text-text-muted dark:text-on-primary/50 mb-2">October 12, 2026</div>
+<h3 class="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-3">Monthly Security Update</h3>
+<p class="text-body-md text-on-surface-variant dark:text-on-primary/80 mb-4">A brief overview of the new gate access protocols and updated patrol schedules for this month.</p>
+<a class="text-[#b45309] dark:text-[#d97706] font-label-md hover:underline" href="#">Read Full Bulletin</a>
+</div>
+<div class="bg-surface dark:bg-primary-container rounded-2xl p-6 shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
+<div class="text-label-sm text-text-muted dark:text-on-primary/50 mb-2">September 28, 2026</div>
+<h3 class="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-3">Landscaping Schedule</h3>
+<p class="text-body-md text-on-surface-variant dark:text-on-primary/80 mb-4">Details on the upcoming seasonal planting and maintenance work across common areas.</p>
+<a class="text-[#b45309] dark:text-[#d97706] font-label-md hover:underline" href="#">Read Full Bulletin</a>
+</div>
+<div class="bg-surface dark:bg-primary-container rounded-2xl p-6 shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
+<div class="text-label-sm text-text-muted dark:text-on-primary/50 mb-2">September 15, 2026</div>
+<h3 class="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-3">Community Board Nominations</h3>
+<p class="text-body-md text-on-surface-variant dark:text-on-primary/80 mb-4">Call for nominations for the upcoming HOA board elections. Submit your candidates by Oct 1st.</p>
+<a class="text-[#b45309] dark:text-[#d97706] font-label-md hover:underline" href="#">Read Full Bulletin</a>
+</div>
+</div>
+</section>
+<!-- Available Properties Section -->
+<section class="py-section-gap bg-surface-container-low dark:bg-primary-container/20 px-margin-mobile md:px-margin-desktop" id="properties">
+<div class="max-w-container-max mx-auto">
+<div class="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4">
+<div>
+<span class="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">Find Your Home</span>
+<h2 class="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">Available Properties</h2>
+</div>
+<a class="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="#">
+                    View All Listings
+                    <span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Property 1: Sale -->
+<div class="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden flex flex-col group">
+<div class="h-56 overflow-hidden relative">
+<img alt="Luxury Villa" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgQjp1zRS5bEW5kyJnCdZ1pKGLloPZ3aw2373P7YoJQxR38ckj8iywKwVpF_nfQx4Au2Pz06PyEa2J6icsa32JDPt89qDrrHUAgT8vrKg7v8uPHFMdQxiA_FQYzphaZlRonLb8CCp2GShtlfCPZgN3XvnCw3SgU_6a3cWY87CrCwnMHBFbgalIS-_U1l1WYLifoKpzrqiVFNudotHA7dWlTuGTlKnH8kl3CxjZk5nKDLy_ErWLfM8D79Ub5FFHIGLRaZddPTLri7c"/>
+<div class="absolute top-4 left-4 bg-[#b45309] text-white px-3 py-1 rounded text-label-sm font-bold uppercase">
+                For Sale
+            </div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<h3 class="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">The Emerald Villa</h3>
+<p class="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">$1,250,000</p>
+<div class="flex gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">bed</span> 4 Beds</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">shower</span> 3.5 Baths</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">square_foot</span> 3,200 sqft</div>
+</div>
+<button class="mt-auto w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</button>
+</div>
+</div>
+<!-- Property 2: Sale -->
+<div class="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden flex flex-col group">
+<div class="h-56 overflow-hidden relative">
+<img alt="Modern Townhouse" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrbFAnIsIz8UdqhMnjmlduWj1jsfnfBFymuK9YHBflcc5AaopwrNda-IQgc2FRFLtzuJIZzuhZ_oVDd_o0fN7NpZdJmNyfnR--asSVO_97yCwnTN0pMNyeydM3nPlmr1XzY3VS7mQdIMz4csWVZVmpbSCwArAB8ACcDwjz766z8z6qyo1m4-P7_TvkZWNoLT8ka4RKIg7p6U3i9EgsojfZKraLrv5bWkMMtl7K-KEFGnI0-UETCnGr-ua9_yd9jEb5ExMACEpb_cE"/>
+<div class="absolute top-4 left-4 bg-[#b45309] text-white px-3 py-1 rounded text-label-sm font-bold uppercase">
+                For Sale
+            </div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<h3 class="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">Modern Townhouse</h3>
+<p class="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">$850,000</p>
+<div class="flex gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">bed</span> 3 Beds</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">shower</span> 2.5 Baths</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">square_foot</span> 2,100 sqft</div>
+</div>
+<button class="mt-auto w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</button>
+</div>
+</div>
+<!-- Property 3: Rent -->
+<div class="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden flex flex-col group">
+<div class="h-56 overflow-hidden relative">
+<img alt="Garden Apartment" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB4RNuKDKy-TEmLeQZVcU27TbdNm9QEIiFT9FoPv2g75HNcUupN-xKMy5_vJfswxXj8yPMH7UxSWBGrmRR4t19RdY0SD66hfqYm_u1xrSx-RZ93Cn6IRKrM55xMs63V0NxqBWevUoSCZP2V4wmSOfzQe_oLpyO6k1kgqjxvScgozchHCd0WfKXRwimA0TUuXlMCf82XOM2CNRBZSFDQxsExDtX20cx5-jGw_SEocYzqLz51us9SfFwVdbjgkN8G3ISg2_2kKVQqvY"/>
+<div class="absolute top-4 left-4 bg-primary dark:bg-primary-fixed-dim text-white dark:text-primary px-3 py-1 rounded text-label-sm font-bold uppercase">
+                For Rent
+            </div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<h3 class="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">Garden Apartment</h3>
+<p class="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">$4,200 <span class="text-body-md text-text-muted dark:text-on-primary/70">/mo</span></p>
+<div class="flex gap-4 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">bed</span> 2 Beds</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">shower</span> 2 Baths</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">square_foot</span> 1,400 sqft</div>
+</div>
+<button class="mt-auto w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full py-section-gap bg-primary dark:bg-[#002117] border-t border-primary-container text-on-primary dark:text-on-primary" id="contact">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter px-margin-desktop max-w-container-max mx-auto mb-12">
+<!-- Quick Links -->
+<div>
+<h4 class="font-headline-sm text-headline-sm mb-6">Quick Links</h4>
+<ul class="space-y-4 font-body-md text-body-md">
+<li><a class="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href="#">Home</a></li>
+<li><a class="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href="#events">Events</a></li>
+<li><a class="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href="#gallery">Gallery</a></li>
+<li><a class="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href="#bulletins">Bulletins</a></li>
+<li><a class="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href="#about">About</a></li>
+</ul>
+</div>
+<!-- Contact -->
+<div>
+<h4 class="font-headline-sm text-headline-sm mb-6">Contact</h4>
+<ul class="space-y-6 font-body-md text-body-md text-on-primary/80">
+<li class="flex items-start gap-4">
+<span class="material-symbols-outlined shrink-0" data-icon="location_on">location_on</span>
+<span>Jl. Desa Cipadung, Cipadung, Kec.<br/>Cibiru, Kota Bandung, Jawa Barat<br/>40615</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined shrink-0" data-icon="phone">phone</span>
+<span>+62 (0) 123 456 789</span>
+</li>
+<li class="flex items-center gap-4">
+<span class="material-symbols-outlined shrink-0" data-icon="mail">mail</span>
+<span>cs.dwipapuri@gmail.com</span>
+</li>
+</ul>
+</div>
+<!-- Submit Feedback -->
+<div>
+<h4 class="font-headline-sm text-headline-sm mb-6">Submit Feedback</h4>
+<form class="space-y-6">
+<div>
+<input class="w-full bg-transparent border-0 border-b border-on-primary/30 text-on-primary placeholder:text-on-primary/50 focus:ring-0 focus:border-on-primary transition-colors px-0 py-2 font-body-md" placeholder="Subject" type="text"/>
+</div>
+<div>
+<textarea class="w-full bg-transparent border-0 border-b border-on-primary/30 text-on-primary placeholder:text-on-primary/50 focus:ring-0 focus:border-on-primary transition-colors px-0 py-2 font-body-md resize-none" placeholder="Your message..." rows="3"></textarea>
+</div>
+<div class="flex justify-end">
+<button class="group flex items-center gap-2 text-label-md font-label-md text-[#b45309] dark:text-[#d97706] hover:text-[#d97706] dark:hover:text-[#f59e0b] transition-colors uppercase tracking-wider" type="submit">
+                            Send
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+<div class="px-margin-desktop max-w-container-max mx-auto border-t border-on-primary/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-label-sm text-label-sm text-on-primary/70">
+                © 2026 Dwipapuri Residential. All rights reserved.
+            </p>
+<div class="flex gap-6 font-label-sm text-label-sm">
+<a class="text-on-primary/70 hover:text-on-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-primary/70 hover:text-on-primary transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</footer>
+<!-- Back to top FAB -->
+<a aria-label="Back to top" class="fixed bottom-8 right-8 w-12 h-12 bg-[#b45309] text-white rounded-full flex items-center justify-center shadow-lg hover:bg-[#8b4006] transition-all duration-300 hover:-translate-y-1 z-40" href="#">
+<span class="material-symbols-outlined" data-icon="arrow_upward">arrow_upward</span>
+</a>
+</body></html>

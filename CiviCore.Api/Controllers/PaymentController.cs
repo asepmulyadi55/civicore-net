@@ -6,6 +6,8 @@ using CiviCore.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using CiviCore.Api.Services;
+using ClosedXML.Excel;
+using CiviCore.Api.Models;
 
 namespace CiviCore.Api.Controllers;
 
@@ -31,9 +33,9 @@ public class PaymentController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ISupabaseStorageService _storageService;
+    private readonly ILocalStorageService _storageService;
 
-    public PaymentController(AppDbContext context, UserManager<ApplicationUser> userManager, ISupabaseStorageService storageService)
+    public PaymentController(AppDbContext context, UserManager<ApplicationUser> userManager, ILocalStorageService storageService)
     {
         _context = context;
         _userManager = userManager;
@@ -55,7 +57,7 @@ public class PaymentController : ControllerBase
         var query = _context.Set<PaymentRecord>()
             .Include(p => p.Block)
             .Include(p => p.Householder)
-                .ThenInclude(h => h.Unit)
+                .ThenInclude(h => h!.Unit)
             .AsQueryable();
 
         // Search filter
@@ -108,7 +110,7 @@ public class PaymentController : ControllerBase
         }
 
         var allRecords = await query
-            .OrderByDescending(p => p.PaymentMonth)
+            .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 
         var grouped = allRecords
@@ -139,7 +141,8 @@ public class PaymentController : ControllerBase
             })
             .OrderByDescending(x => x.status == "pending")
             .ThenByDescending(x => x.status == "rejected")
-            .ThenByDescending(x => x.paymentMonth)
+            .ThenBy(x => x.householderName)
+            .ThenByDescending(x => x.createdAt)
             .ToList();
 
         int pageSize = per_page;
@@ -257,7 +260,7 @@ public class PaymentController : ControllerBase
     }
 
     [HttpPost("{batchId}/proof")]
-    public async Task<IActionResult> UploadProof(Guid batchId, [FromForm] IFormFile file, [FromServices] IConfiguration configuration)
+    public async Task<IActionResult> UploadProof(Guid batchId, IFormFile file, [FromServices] IConfiguration configuration)
     {
         if (file == null || file.Length == 0) return BadRequest("No file provided");
 
@@ -267,14 +270,20 @@ public class PaymentController : ControllerBase
             
         if (!records.Any()) return NotFound("Batch not found");
 
-        var bucket = configuration["Supabase:PrivateBucket"] ?? "civicore-private";
+        var oldProofPath = records.First().ProofPath;
+        if (!string.IsNullOrEmpty(oldProofPath) && oldProofPath.StartsWith("/api/media/path/"))
+        {
+            var internalPath = oldProofPath.Replace("/api/media/path/", "");
+            try { await _storageService.RemoveFileAsync(true, internalPath); } catch {}
+        }
+
         var ext = Path.GetExtension(file.FileName);
-        var filePath = $"proofs/{batchId}{ext}";
+        var filePath = $"payments/{Guid.NewGuid()}{ext}";
 
         using var stream = file.OpenReadStream();
-        await _storageService.UploadFileAsync(bucket, filePath, stream);
+        await _storageService.UploadFileAsync(true, filePath, stream);
 
-        var publicUrl = await _storageService.GetSignedUrlAsync(bucket, filePath, 31536000); 
+        var publicUrl = $"/api/media/path/{filePath}";
 
         foreach(var record in records)
         {
@@ -517,5 +526,167 @@ public class PaymentController : ControllerBase
             .Select(b => new { b.Id, b.Name })
             .ToListAsync();
         return Ok(blocks);
+    }
+    [HttpGet("import-status/{jobId}")]
+    [Authorize(Roles = "Admin,Treasurer")]
+    public IActionResult GetImportStatus(Guid jobId, [FromServices] ImportJobTracker tracker)
+    {
+        var job = tracker.GetJob(jobId);
+        if (job == null) return NotFound(new { message = "Job not found." });
+        return Ok(job);
+    }
+
+    [HttpPost("import")]
+    [Authorize(Roles = "Admin,Treasurer")]
+    public async Task<IActionResult> ImportExcel(
+        IFormFile excel_file, 
+        [FromForm] int year = 2026,
+        [FromServices] ImportJobTracker? tracker = null,
+        [FromServices] IServiceScopeFactory? scopeFactory = null)
+    {
+        if (excel_file == null || excel_file.Length == 0)
+            return BadRequest(new { message = "Please choose an Excel file to upload." });
+
+        if (tracker == null || scopeFactory == null)
+            return BadRequest(new { message = "Services not configured for background import." });
+
+        var tempFile = Path.GetTempFileName();
+        using (var stream = new FileStream(tempFile, FileMode.Create))
+        {
+            await excel_file.CopyToAsync(stream);
+        }
+
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var job = tracker.CreateJob();
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                job.Status = "Processing";
+
+                using var workbookStream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var workbook = new XLWorkbook(workbookStream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+                job.TotalRows = rowCount > 1 ? rowCount - 1 : 0;
+
+                int paymentsCreated = 0;
+                int paymentsSkipped = 0;
+
+                var allBlocks = await dbContext.Set<Block>().ToListAsync();
+                var blockCache = allBlocks.ToDictionary(b => b.Name, StringComparer.OrdinalIgnoreCase);
+
+                var allUnits = await dbContext.Set<Unit>().ToListAsync();
+                var unitCache = allUnits.ToDictionary(u => $"{u.BlockId}_{u.UnitNumber}");
+
+                var allHouseholders = await dbContext.Set<Householder>().Where(h => h.IsActive).ToListAsync();
+                var householderCache = allHouseholders.ToDictionary(h => h.UnitId);
+
+                string lastBlockLetter = "";
+                var newPayments = new List<PaymentRecord>();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    job.ProcessedRows = row - 1;
+
+                    var blockLetter = worksheet.Cell(row, 1).GetString().Trim().ToUpper();
+                    if (!string.IsNullOrEmpty(blockLetter))
+                        lastBlockLetter = blockLetter;
+                    else
+                        blockLetter = lastBlockLetter;
+
+                    var unitNum = worksheet.Cell(row, 2).GetString().Trim();
+                    var name = worksheet.Cell(row, 3).GetString().Trim();
+                    var rawStatus = System.Text.RegularExpressions.Regex.Replace(
+                        worksheet.Cell(row, 4).GetString().Trim().ToLower(), 
+                        @"\s+", " ");
+
+                    if (string.IsNullOrEmpty(blockLetter) || string.IsNullOrEmpty(unitNum) || string.IsNullOrEmpty(name)) continue;
+                    
+                    if (rawStatus == "fasum" || rawStatus == "fasilitasumum" || rawStatus == "developer") continue;
+
+                    if (!blockCache.TryGetValue(blockLetter, out var block)) continue;
+                    if (!unitCache.TryGetValue($"{block.Id}_{unitNum}", out var unit)) continue;
+                    if (!householderCache.TryGetValue(unit.Id, out var householder)) continue;
+
+                    var amountStr = worksheet.Cell(row, 5).GetString().Trim();
+                    if (!decimal.TryParse(amountStr, out var amount) || amount <= 0) continue;
+
+                    var batchId = Guid.NewGuid();
+
+                    for (int col = 6; col <= 17; col++)
+                    {
+                        var monthNum = col - 5;
+                        var cellValue = worksheet.Cell(row, col).GetString().Trim().ToUpper();
+
+                        if (cellValue == "L")
+                        {
+                            var paymentMonth = new DateTime(year, monthNum, 1, 0, 0, 0, DateTimeKind.Utc);
+                            
+                            var exists = await dbContext.Set<PaymentRecord>()
+                                .AnyAsync(p => p.HouseholderId == householder.Id && p.PaymentMonth == paymentMonth);
+
+                            if (exists)
+                            {
+                                paymentsSkipped++;
+                                continue;
+                            }
+
+                            var payment = new PaymentRecord
+                            {
+                                HouseholderId = householder.Id,
+                                HouseholderName = householder.Fullname,
+                                BlockId = householder.BlockId,
+                                UnitNumber = householder.Unit?.UnitNumber ?? unitNum,
+                                PaymentMonth = paymentMonth,
+                                Amount = amount,
+                                Status = PaymentStatus.Approved,
+                                ApprovedById = userId != null ? Guid.Parse(userId) : null,
+                                ApprovedAt = DateTime.UtcNow,
+                                SubmittedById = userId != null ? Guid.Parse(userId) : null,
+                                Notes = $"Imported from Excel ({year})",
+                                BatchId = batchId
+                            };
+                            newPayments.Add(payment);
+                            paymentsCreated++;
+                        }
+                    }
+
+                    if (newPayments.Count > 100)
+                    {
+                        dbContext.Set<PaymentRecord>().AddRange(newPayments);
+                        await dbContext.SaveChangesAsync();
+                        newPayments.Clear();
+                    }
+                }
+
+                if (newPayments.Any())
+                {
+                    dbContext.Set<PaymentRecord>().AddRange(newPayments);
+                    await dbContext.SaveChangesAsync();
+                }
+
+                job.Status = "Completed";
+                job.Message = $"Import complete! Created {paymentsCreated} payments. Skipped {paymentsSkipped} (already exists).";
+            }
+            catch (Exception ex)
+            {
+                job.Status = "Failed";
+                job.Message = "Error processing Excel file: " + ex.Message;
+            }
+            finally
+            {
+                if (System.IO.File.Exists(tempFile))
+                {
+                    try { System.IO.File.Delete(tempFile); } catch { }
+                }
+            }
+        });
+
+        return Accepted(new { jobId = job.JobId });
     }
 }

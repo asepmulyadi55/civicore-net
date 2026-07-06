@@ -25,6 +25,8 @@ public class PropertyListing
     public int? Bathrooms { get; set; }
     public decimal? LandArea { get; set; }
     public decimal? BuildingArea { get; set; }
+    public string? Amenities { get; set; } // comma separated list
+    public List<string> Images { get; set; } = new();
     
     public bool IsActive { get; set; } = true;
     

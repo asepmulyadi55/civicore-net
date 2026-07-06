@@ -60,11 +60,10 @@ public class AttendanceRecordDto
 public class MeetingController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly ISupabaseStorageService _storageService;
+    private readonly ILocalStorageService _storageService;
     private readonly IConfiguration _configuration;
-    private string PrivateBucket => _configuration["Supabase:PrivateBucket"] ?? "civicore-private";
 
-    public MeetingController(AppDbContext context, ISupabaseStorageService storageService, IConfiguration configuration)
+    public MeetingController(AppDbContext context, ILocalStorageService storageService, IConfiguration configuration)
     {
         _context = context;
         _storageService = storageService;
@@ -242,7 +241,7 @@ public class MeetingController : ControllerBase
     }
 
     [HttpPost("{id}/images")]
-    public async Task<IActionResult> UploadImage(Guid id, [FromForm] IFormFile file)
+    public async Task<IActionResult> UploadImage(Guid id, IFormFile file)
     {
         var meeting = await _context.Meetings.FindAsync(id);
         if (meeting == null) return NotFound("Meeting not found");
@@ -250,10 +249,10 @@ public class MeetingController : ControllerBase
         if (file == null || file.Length == 0) return BadRequest("No file uploaded");
 
         var extension = System.IO.Path.GetExtension(file.FileName);
-        var filePath = $"meetings/{id}/{Guid.NewGuid()}{extension}";
+        var filePath = $"meetings/{Guid.NewGuid()}{extension}";
 
         using var stream = file.OpenReadStream();
-        await _storageService.UploadFileAsync(PrivateBucket, filePath, stream);
+        await _storageService.UploadFileAsync(true, filePath, stream);
 
         var meetingImage = new MeetingImage
         {
@@ -279,7 +278,7 @@ public class MeetingController : ControllerBase
 
         try
         {
-            await _storageService.RemoveFileAsync(PrivateBucket, image.ImagePath);
+            await _storageService.RemoveFileAsync(true, image.ImagePath);
         }
         catch (Exception ex)
         {
