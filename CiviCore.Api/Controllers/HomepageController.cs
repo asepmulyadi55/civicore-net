@@ -8,6 +8,8 @@ using System.Text.Json;
 
 using CiviCore.Api.Services;
 
+using Microsoft.Extensions.Caching.Distributed;
+
 namespace CiviCore.Api.Controllers;
 
 [ApiController]
@@ -17,18 +19,35 @@ public class HomepageController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILocalStorageService _storageService;
+    private readonly IDistributedCache _cache;
 
-    public HomepageController(AppDbContext context, ILocalStorageService storageService)
+    public HomepageController(AppDbContext context, ILocalStorageService storageService, IDistributedCache cache)
     {
         _context = context;
         _storageService = storageService;
+        _cache = cache;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private async Task<string?> GetSettingValue(string key)
     {
+        var cacheKey = $"Setting_{key}";
+        var cachedValue = await _cache.GetStringAsync(cacheKey);
+        
+        if (!string.IsNullOrEmpty(cachedValue))
+        {
+            return cachedValue;
+        }
+
         var s = await _context.Settings.FirstOrDefaultAsync(s => s.Key == key);
+        if (s != null && s.Value != null)
+        {
+            await _cache.SetStringAsync(cacheKey, s.Value, new DistributedCacheEntryOptions 
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24) // Cache settings for a long time
+            });
+        }
         return s?.Value;
     }
 
@@ -45,6 +64,9 @@ public class HomepageController : ControllerBase
             _context.Settings.Add(new Setting { Key = key, Value = value });
         }
         await _context.SaveChangesAsync();
+        
+        // Invalidate cache immediately when updated
+        await _cache.RemoveAsync($"Setting_{key}");
     }
 
     private async Task<string?> SaveUploadedFile(IFormFile file, string subFolder)

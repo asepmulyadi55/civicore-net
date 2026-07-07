@@ -5,19 +5,19 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   async rewrites() {
-    const backendUrl = process.env.API_INTERNAL_URL || 'http://localhost:5075';
+    const apiUrl = process.env.API_URL || 'http://localhost:5075';
     return [
       {
         source: '/api/:path*',
-        destination: `${backendUrl}/api/:path*`
+        destination: `${apiUrl}/api/:path*`
       },
       {
         source: '/public-media/:path*',
-        destination: `${backendUrl}/public-media/:path*`
+        destination: `${apiUrl}/public-media/:path*`
       },
       {
         source: '/uploads/:path*',
-        destination: `${backendUrl}/uploads/:path*`
+        destination: `${apiUrl}/uploads/:path*`
       }
     ]
   }

@@ -3,12 +3,11 @@ import type { Metadata } from 'next';
 
 export const revalidate = 60; // ISR every 60 seconds
 
-
-const getApiUrl = () => process.env.API_INTERNAL_URL || 'http://localhost:5075';
+const API_URL = process.env.API_URL || 'http://localhost:5075';
 
 async function getData(endpoint: string) {
     try {
-        const res = await fetch(`${getApiUrl()}/api/homepage/${endpoint}`, { next: { revalidate: 60 } });
+        const res = await fetch(`${API_URL}/api/homepage/${endpoint}`, { next: { revalidate: 60 } });
         if (!res.ok) return null;
         return res.json();
     } catch {
@@ -18,7 +17,7 @@ async function getData(endpoint: string) {
 
 async function getProperties() {
     try {
-        const res = await fetch(`${getApiUrl()}/api/property`, { next: { revalidate: 60 } });
+        const res = await fetch(`${API_URL}/api/property`, { next: { revalidate: 60 } });
         if (!res.ok) return { data: [] };
         return res.json();
     } catch {
@@ -76,7 +75,7 @@ export default async function Page() {
             propertySettings={propertySettings || {}}
             properties={properties} 
             footerData={footer || {}}
-            apiUrl={getApiUrl()}
+            apiUrl={API_URL}
         />
     );
 }

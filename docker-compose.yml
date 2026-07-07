@@ -1,5 +1,6 @@
 services:
   api:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: CiviCore.Api/Dockerfile
@@ -7,16 +8,29 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Redis=redis:6379
     volumes:
-      - civicore_public_media:/app/wwwroot/public-media
-      - civicore_private_media:/app/App_Data/PrivateMedia
+      - ./CiviCore.Api/wwwroot/public-media:/app/wwwroot/public-media
+      - ./CiviCore.Api/App_Data/PrivateMedia:/app/App_Data/PrivateMedia
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
   web:
     build:
       context: ./CiviCore.Web
       dockerfile: Dockerfile
+      args:
+        - API_URL=http://api:8080
     ports:
       - "3000:3000"
+    environment:
+      - API_URL=http://api:8080
 
   frontend:
     build:
@@ -26,5 +40,4 @@ services:
       - "8080:80"
 
 volumes:
-  civicore_public_media:
-  civicore_private_media:
+  redis_data:

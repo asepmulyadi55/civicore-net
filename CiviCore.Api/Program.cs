@@ -50,7 +50,20 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-builder.Services.AddMemoryCache();
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnectionString))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnectionString;
+        options.InstanceName = "CiviCore_";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache(); // Fallback for local development if Redis isn't running natively
+}
+
 builder.Services.AddSingleton<ImportJobTracker>();
 
 // Rate Limiting Setup
