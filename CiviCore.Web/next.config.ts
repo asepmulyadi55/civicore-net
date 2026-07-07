@@ -5,18 +5,19 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   async rewrites() {
+    const apiUrl = process.env.API_URL || 'http://localhost:5075';
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5075/api/:path*'
+        destination: `${apiUrl}/api/:path*`
       },
       {
         source: '/public-media/:path*',
-        destination: 'http://localhost:5075/public-media/:path*'
+        destination: `${apiUrl}/public-media/:path*`
       },
       {
         source: '/uploads/:path*',
-        destination: 'http://localhost:5075/uploads/:path*'
+        destination: `${apiUrl}/uploads/:path*`
       }
     ]
   }
