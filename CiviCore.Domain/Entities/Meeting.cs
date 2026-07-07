@@ -8,8 +8,8 @@ public class Meeting
     public DateTime Date { get; set; }
     public string Location { get; set; } = string.Empty;
     
-    public Guid CreatedById { get; set; }
-    public ApplicationUser CreatedBy { get; set; } = null!;
+    public Guid? CreatedById { get; set; }
+    public ApplicationUser? CreatedBy { get; set; }
 
     public string Status { get; set; } = "scheduled";
 

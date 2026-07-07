@@ -50,7 +50,7 @@ const NAV_GROUPS = [
       { key: 'events', label: 'Events', icon: 'event', path: '/admin/homepage/events', permission: 'homepage_events.view' },
       { key: 'gallery', label: 'Gallery', icon: 'photo_library', path: '/admin/homepage/gallery', permission: 'homepage_gallery.view' },
       { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/admin/homepage/bulletin', permission: 'homepage_bulletin.view' },
-      { key: 'property', label: 'Properties', icon: 'home_work', path: '/admin/homepage/property', permission: 'homepage_property.view' },
+      { key: 'hp-property', label: 'Properties', icon: 'home_work', path: '/admin/homepage/properties', permission: 'homepage_property.view' },
       { key: 'navigation', label: 'Navigation', icon: 'menu', path: '/admin/homepage/navigation', permission: 'homepage_navigation.view' },
       { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/admin/homepage/footer', permission: 'homepage_footer.view' },
       { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/admin/homepage/metadata', permission: 'homepage_metadata.view' },
@@ -146,7 +146,7 @@ function NavGroup({ group, activePath, userRole, permissions }) {
   );
 }
 
-export default function AdminLayout({ children, title, subtitle }) {
+export default function AdminLayout({ children, title, subtitle }: { children: React.ReactNode, title?: string, subtitle?: string }) {
   const { i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();

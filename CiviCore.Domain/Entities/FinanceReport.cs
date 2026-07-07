@@ -17,8 +17,8 @@ public class FinanceReport
     public FinanceReportStatus Status { get; set; } = FinanceReportStatus.Pending;
     public string? RejectedReason { get; set; }
     
-    public Guid CreatedById { get; set; }
-    public ApplicationUser CreatedBy { get; set; } = null!;
+    public Guid? CreatedById { get; set; }
+    public ApplicationUser? CreatedBy { get; set; }
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

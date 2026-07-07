@@ -52,7 +52,7 @@ export function Pagination({ meta, onChange }: { meta: any; onChange: (page: num
   for (let p = start; p <= end; p++) pages.push(p);
 
   const btnBase = 'inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg border text-sm font-semibold transition-colors';
-  const btnActive = 'bg-primary border-primary text-white cursor-default select-none';
+  const btnActive = 'bg-primary border-primary text-white dark:text-surface font-bold shadow-lg shadow-primary/20 cursor-default select-none';
   const btnNormal = 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-primary/10 hover:border-primary/40 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary cursor-pointer';
   const btnDisabled = 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed';
 
@@ -435,6 +435,42 @@ export function CustomSelect({ label, value, onChange, options, placeholder = 'S
             </li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+}
+
+export function ImageUploadBox({ id, label, currentUrl, onFileChange, file, recommendedSize }: any) {
+  const inputRef = React.useRef<any>(null);
+  return (
+    <div className="space-y-1.5">
+      {label && <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{label}</label>}
+      {currentUrl && !file && (
+        <div className="flex items-center gap-4 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 mb-2">
+          <img src={currentUrl} alt="Current" className="w-20 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Current Image</p>
+            <p className="text-xs text-slate-400 truncate">{currentUrl}</p>
+          </div>
+        </div>
+      )}
+      {file ? (
+        <div className="flex items-center gap-3 p-3 rounded-xl border border-primary/30 bg-primary/5">
+          <img src={URL.createObjectURL(file)} alt="Preview" className="w-16 h-12 object-cover rounded-lg flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-primary">Ready to upload</p>
+            <p className="text-xs text-slate-400 truncate">{file.name}</p>
+          </div>
+          <button type="button" onClick={() => { onFileChange(null); if (inputRef.current) inputRef.current.value = ''; }} className="text-slate-400 hover:text-rose-500 transition-colors cursor-pointer">
+            <span className="material-icons text-lg">close</span>
+          </button>
+        </div>
+      ) : (
+        <label className="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer">
+          <span className="material-icons text-slate-400 text-2xl">cloud_upload</span>
+          <span className="text-xs font-semibold text-slate-500">Upload New Image <span className="text-slate-400 font-normal">(optional · max 1 MB auto-compressed{recommendedSize ? ` · rec: ${recommendedSize}` : ''})</span></span>
+          <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={e => onFileChange(e.target.files?.[0] || null)} />
+        </label>
       )}
     </div>
   );

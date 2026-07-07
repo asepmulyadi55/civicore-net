@@ -88,3 +88,21 @@ body {
 .dark .ql-snow .ql-toolbar button.ql-active .ql-fill {
     fill: #e2e8f0;
 }
+
+/* ReactQuill Editor Content Formatting */
+/* Tailwind strips default margins, so we must restore them for the editor */
+.ql-editor p {
+    margin-bottom: 1em;
+}
+.ql-editor p:empty::after {
+    content: "\00a0";
+}
+.ql-editor p:has(br:only-child) {
+    min-height: 1em;
+}
+.ql-editor ol, .ql-editor ul {
+    margin-bottom: 1em;
+}
+.ql-editor li > p {
+    margin-bottom: 0;
+}

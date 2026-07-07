@@ -240,7 +240,7 @@ function ApproveModal({ open, onClose, user, onApproved, householders }: { open:
         <HouseholderSelect label={t('users.linked_householder')} value={householderId} onChange={setHouseholderId} options={hhOptions} />
         <div className="flex justify-end gap-3 pt-2">
           <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">{t('users.btn_cancel')}</button>
-          <button onClick={handle} disabled={!roleId || loading} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold flex justify-center items-center gap-2 cursor-pointer hover:scale-[1.02] shadow-lg shadow-emerald-500/20 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all duration-200">
+          <button onClick={handle} disabled={!roleId || !householderId || loading} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold flex justify-center items-center gap-2 cursor-pointer hover:scale-[1.02] shadow-lg shadow-emerald-500/20 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all duration-200">
             {loading ? t('users.approving') : t('users.btn_approve')}
           </button>
         </div>
@@ -292,7 +292,10 @@ export default function Users() {
   const doDelete = async () => {
     setConfirm(c => ({ ...c, loading: true }));
     try { await axios.delete(`/api/users/${confirm.item!.id}`); fetchData(); setConfirm({ open: false, item: null, loading: false }); }
-    catch { setConfirm(c => ({ ...c, loading: false })); }
+    catch (err: any) { 
+      alert(err.response?.data?.message || err.response?.data?.title || 'Failed to delete user. They might have related records.');
+      setConfirm(c => ({ ...c, loading: false })); 
+    }
   };
 
   const roleOptions = roles.map(r => ({ value: String(r.id), label: r.name }));
@@ -309,7 +312,7 @@ export default function Users() {
       <ApproveModal open={approveModal.open} onClose={() => setApproveModal({ open: false, user: null })} user={approveModal.user} onApproved={fetchData} householders={householders} />
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="person_remove"
-        title={t('users.delete_title')} message={<Trans i18nKey="users.delete_message" values={{ name: confirm.item?.name }}>Permanently delete <strong>{{name: confirm.item?.name}}</strong>? This cannot be undone.</Trans>}
+        title={t('users.delete_title')} message={t('users.delete_message', { name: confirm.item?.name, defaultValue: `Permanently delete <strong>{{name}}</strong>? This cannot be undone.` })}
         confirmLabel={t('users.btn_delete')} />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

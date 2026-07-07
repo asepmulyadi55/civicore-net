@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using CiviCore.Api.Services;
 using ClosedXML.Excel;
 using CiviCore.Api.Models;
+using System.Text.Json;
+using CiviCore.Api.Extensions;
 
 namespace CiviCore.Api.Controllers;
 
@@ -54,11 +56,18 @@ public class PaymentController : ControllerBase
         [FromQuery] Guid? householderId = null,
         [FromQuery] int per_page = 20)
     {
+        var userBlockId = await User.GetBlockIdAsync(_context);
+
         var query = _context.Set<PaymentRecord>()
             .Include(p => p.Block)
             .Include(p => p.Householder)
                 .ThenInclude(h => h!.Unit)
             .AsQueryable();
+
+        if (userBlockId.HasValue)
+        {
+            block_id = userBlockId.Value.ToString();
+        }
 
         // Search filter
         if (!string.IsNullOrEmpty(search))
@@ -141,7 +150,6 @@ public class PaymentController : ControllerBase
             })
             .OrderByDescending(x => x.status == "pending")
             .ThenByDescending(x => x.status == "rejected")
-            .ThenBy(x => x.householderName)
             .ThenByDescending(x => x.createdAt)
             .ToList();
 

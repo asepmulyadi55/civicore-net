@@ -128,7 +128,7 @@ export default function EventDetailPage() {
                                 {event.title}
                             </h1>
 
-                            <div className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/80 mb-8 leading-relaxed space-y-4" dangerouslySetInnerHTML={{ __html: event.description || '' }}></div>
+                            <div className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/80 mb-8 leading-relaxed space-y-4 rte-content" dangerouslySetInnerHTML={{ __html: (event.description || '').replace(/&nbsp;/g, ' ') }}></div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                                 <div className="flex items-start gap-4 p-4 rounded-xl bg-surface-bright dark:bg-[#002117] border border-border-subtle/50 dark:border-primary-container/50">

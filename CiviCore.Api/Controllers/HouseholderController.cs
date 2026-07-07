@@ -7,6 +7,7 @@ using CiviCore.Api.Services;
 using ClosedXML.Excel;
 using Microsoft.Extensions.DependencyInjection;
 using CiviCore.Api.Models;
+using CiviCore.Api.Extensions; // Import the extensions
 
 namespace CiviCore.Api.Controllers;
 
@@ -27,11 +28,19 @@ public class HouseholderController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] Guid? block_id, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int per_page = 10)
     {
+        var userBlockId = await User.GetBlockIdAsync(_context);
+
         var query = _context.Set<Householder>()
             .Include(h => h.Block)
             .Include(h => h.Unit)
             .Include(h => h.FeeHistories)
             .AsQueryable();
+
+        // Overwrite block_id filter if the user is restricted to a block
+        if (userBlockId.HasValue)
+        {
+            block_id = userBlockId.Value;
+        }
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -298,6 +307,7 @@ public class HouseholderController : ControllerBase
                     {
                         householder = new Householder
                         {
+                            Id = Guid.NewGuid(),
                             UnitId = unit.Id,
                             BlockId = block.Id,
                             Fullname = name,

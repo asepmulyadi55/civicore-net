@@ -4,6 +4,7 @@ using CiviCore.Infrastructure.Data;
 using CiviCore.Domain.Entities;
 using CiviCore.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
+using CiviCore.Api.Extensions;
 
 namespace CiviCore.Api.Controllers;
 
@@ -26,6 +27,12 @@ public class ReportController : ControllerBase
         [FromQuery] string? search,
         [FromQuery] int page = 1)
     {
+        var userBlockId = await User.GetBlockIdAsync(_context);
+        if (userBlockId.HasValue)
+        {
+            block_id = userBlockId.Value.ToString();
+        }
+
         int reportYear = year ?? DateTime.UtcNow.Year;
         int pageSize = 25;
 
@@ -50,8 +57,8 @@ public class ReportController : ControllerBase
 
         var total = await householderQuery.CountAsync();
         var householders = await householderQuery
-            .OrderBy(h => h.BlockId)
-            .ThenBy(h => h.Unit != null ? h.Unit.UnitNumber : "")
+            .OrderBy(h => h.Fullname)
+            .ThenBy(h => h.BlockId)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -107,6 +114,12 @@ public class ReportController : ControllerBase
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats([FromQuery] int? year, [FromQuery] string? block_id)
     {
+        var userBlockId = await User.GetBlockIdAsync(_context);
+        if (userBlockId.HasValue)
+        {
+            block_id = userBlockId.Value.ToString();
+        }
+
         int reportYear = year ?? DateTime.UtcNow.Year;
 
         var paymentQuery = _context.Set<PaymentRecord>()

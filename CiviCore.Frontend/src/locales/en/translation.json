@@ -518,7 +518,7 @@
     "email": "Email",
     "role": "Role",
     "select_role": "Select Role",
-    "linked_householder": "Linked Householder (Optional)",
+    "linked_householder": "Linked Householder *",
     "password": "Password",
     "password_hint": "(leave blank to keep current)",
     "password_placeholder": "••••••••",

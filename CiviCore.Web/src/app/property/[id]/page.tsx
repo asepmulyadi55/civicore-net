@@ -187,7 +187,7 @@ export default function PropertyDetailPage() {
                             <h2 className="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim mb-6">About This Property</h2>
                             <div className="prose prose-lg max-w-none text-on-surface-variant dark:text-on-primary/80 font-body-lg text-body-lg leading-relaxed space-y-4">
                                 {property.description ? (
-                                    <div dangerouslySetInnerHTML={{ __html: property.description }} />
+                                    <div className="rte-content" dangerouslySetInnerHTML={{ __html: (property.description || '').replace(/&nbsp;/g, ' ') }} />
                                 ) : (
                                     <p>No description provided.</p>
                                 )}

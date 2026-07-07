@@ -23,7 +23,13 @@ export default function Login() {
   const [dark, toggleDark] = useDarkMode();
   const { t } = useTranslation();
 
-  const [successMessage, setSuccessMessage] = useState(location.state?.message);
+  const [successMessage, setSuccessMessage] = useState(() => {
+    const msg = location.state?.message;
+    if (msg) {
+      window.history.replaceState({}, document.title);
+    }
+    return msg;
+  });
 
   React.useEffect(() => {
     if (localStorage.getItem('admin_token')) {
