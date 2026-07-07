@@ -518,7 +518,7 @@
     "email": "Email",
     "role": "Peran",
     "select_role": "Pilih Peran",
-    "linked_householder": "Tautan Kepala Keluarga (Opsional)",
+    "linked_householder": "Tautan Kepala Keluarga *",
     "password": "Kata Sandi",
     "password_hint": "(biarkan kosong untuk menyimpan yang saat ini)",
     "password_placeholder": "••••••••",

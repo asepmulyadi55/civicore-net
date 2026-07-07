@@ -81,7 +81,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             .HasOne(p => p.SubmittedBy)
             .WithMany()
             .HasForeignKey(p => p.SubmittedById)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.Entity<PaymentRecord>()
             .HasOne(p => p.ApprovedBy)
@@ -94,14 +94,14 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             .HasOne(f => f.CreatedBy)
             .WithMany()
             .HasForeignKey(f => f.CreatedById)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
             
         // Meeting
         builder.Entity<Meeting>()
             .HasOne(m => m.CreatedBy)
             .WithMany()
             .HasForeignKey(m => m.CreatedById)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
 
         // OrganizationPosition Hierarchy
         builder.Entity<OrganizationPosition>()

@@ -171,8 +171,8 @@ export default function Finance() {
       {/* Dashboard Tab */}
       {activeTab === 'dashboard' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 bg-[#1B2236] p-3 rounded-lg border border-white/10">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-2 mr-2">{t('finance.viewing_period')}</span>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 bg-slate-50 dark:bg-[#1B2236] p-3 rounded-lg border border-slate-200 dark:border-white/10">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-2 mr-2">{t('finance.viewing_period')}</span>
             <SelectFilter 
               value={dashboardFilters.month} 
               onChange={(v) => setDashboardFilters(p => ({ ...p, month: String(v) }))} 
@@ -192,39 +192,39 @@ export default function Finance() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#242C44] rounded-xl p-5 border border-white/5 relative overflow-hidden group">
+            <div className="bg-white dark:bg-[#242C44] rounded-xl p-5 border border-slate-200 dark:border-white/5 relative overflow-hidden group">
               <div className="absolute top-4 right-4 text-emerald-400"><span className="material-icons">account_balance_wallet</span></div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">{t('finance.current_balance')}</p>
-              <h3 className="text-2xl font-bold text-white mb-1">Rp {(stats?.balance || 0).toLocaleString('id-ID')}</h3>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">{t('finance.current_balance')}</p>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">Rp {(stats?.balance || 0).toLocaleString('id-ID')}</h3>
               <p className="text-xs text-slate-500">{t('finance.from_last_approved')}</p>
             </div>
             
-            <div className="bg-[#242C44] rounded-xl p-5 border border-white/5 relative overflow-hidden">
+            <div className="bg-white dark:bg-[#242C44] rounded-xl p-5 border border-slate-200 dark:border-white/5 relative overflow-hidden">
               <div className="absolute top-4 right-4 text-emerald-400"><span className="material-icons text-[18px]">trending_up</span></div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">{t('finance.monthly_income')}</p>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">{t('finance.monthly_income')}</p>
               <h3 className="text-2xl font-bold text-emerald-400 mb-1">Rp {(stats?.period_income || 0).toLocaleString('id-ID')}</h3>
               <p className="text-xs text-slate-500">{currentMonthName} {currentYear}</p>
             </div>
             
-            <div className="bg-[#242C44] rounded-xl p-5 border border-white/5 relative overflow-hidden">
+            <div className="bg-white dark:bg-[#242C44] rounded-xl p-5 border border-slate-200 dark:border-white/5 relative overflow-hidden">
               <div className="absolute top-4 right-4 text-rose-400"><span className="material-icons text-[18px]">trending_down</span></div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">{t('finance.monthly_expense')}</p>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">{t('finance.monthly_expense')}</p>
               <h3 className="text-2xl font-bold text-rose-400 mb-1">Rp {(stats?.period_expense || 0).toLocaleString('id-ID')}</h3>
               <p className="text-xs text-slate-500">{currentMonthName} {currentYear}</p>
             </div>
             
-            <div className="bg-[#242C44] rounded-xl p-5 border border-white/5 relative overflow-hidden">
+            <div className="bg-white dark:bg-[#242C44] rounded-xl p-5 border border-slate-200 dark:border-white/5 relative overflow-hidden">
               <div className="absolute top-4 right-4 text-amber-400"><span className="material-icons">pending_actions</span></div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">{t('finance.pending_payments')}</p>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">{t('finance.pending_payments')}</p>
               <h3 className="text-2xl font-bold text-amber-400 mb-1">Rp {(stats?.pending_payments || 0).toLocaleString('id-ID')}</h3>
               <p className="text-xs text-slate-500">{t('finance.payments_awaiting', { count: 0 })}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-[#242C44] rounded-xl p-6 border border-white/5 flex flex-col h-[300px]">
-              <h3 className="text-sm font-semibold text-white mb-6">{t('finance.monthly_trend')}</h3>
-              <div className="flex-1 flex items-end justify-between gap-4 px-2 relative border-b border-white/10 pb-2">
+            <div className="lg:col-span-2 bg-white dark:bg-[#242C44] rounded-xl p-6 border border-slate-200 dark:border-white/5 flex flex-col h-[300px]">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-white mb-6">{t('finance.monthly_trend')}</h3>
+              <div className="flex-1 flex items-end justify-between gap-4 px-2 relative border-b border-slate-200 dark:border-white/10 pb-2">
                 {stats?.trends?.map((tr: any, i: number) => {
                   const maxVal = Math.max(...(stats.trends.map((x: any) => Math.max(x.income, x.expense)) as number[]), 1);
                   const inH = (tr.income / maxVal) * 100;
@@ -246,26 +246,26 @@ export default function Finance() {
               </div>
             </div>
 
-            <div className="bg-[#242C44] rounded-xl p-6 border border-white/5">
-              <h3 className="text-sm font-semibold text-white mb-4">{t('finance.pending_approvals')}</h3>
+            <div className="bg-white dark:bg-[#242C44] rounded-xl p-6 border border-slate-200 dark:border-white/5">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-white mb-4">{t('finance.pending_approvals')}</h3>
               <div className="flex items-center justify-center h-[200px] text-slate-500 text-sm">
                 {t('finance.no_reports_awaiting')}
               </div>
             </div>
           </div>
 
-          <div className="bg-[#242C44] rounded-xl border border-white/5 overflow-hidden">
-            <div className="p-4 border-b border-white/10 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white">{t('finance.recent_transactions')}</h3>
+          <div className="bg-white dark:bg-[#242C44] rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden">
+            <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-white">{t('finance.recent_transactions')}</h3>
               <button onClick={() => setActiveTab('transactions')} className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer">{t('finance.view_all')}</button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <tbody>
                   {transactions.slice(0, 5).map(tr => (
-                    <tr key={tr.id} className="border-b border-white/5 hover:bg-white/5">
-                      <td className="p-4 text-xs text-slate-400">{new Date(tr.date).toLocaleDateString('en-US', { dateStyle: 'medium' })}</td>
-                      <td className="p-4 text-sm font-medium text-white">{tr.description}</td>
+                    <tr key={tr.id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5">
+                      <td className="p-4 text-xs text-slate-500 dark:text-slate-400">{new Date(tr.date).toLocaleDateString('en-US', { dateStyle: 'medium' })}</td>
+                      <td className="p-4 text-sm font-medium text-slate-800 dark:text-white">{tr.description}</td>
                       <td className="p-4 text-xs text-slate-400 capitalize">{t(`finance.cat_${tr.category}`)}</td>
                       <td className="p-4">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${tr.type === 'income' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-rose-400/10 text-rose-400'}`}>
@@ -290,7 +290,7 @@ export default function Finance() {
       {/* Transactions Tab */}
       {activeTab === 'transactions' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 bg-[#1B2236] p-3 rounded-lg border border-white/10">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 bg-slate-50 dark:bg-[#1B2236] p-3 rounded-lg border border-slate-200 dark:border-white/10">
             <SelectFilter 
               value={filters.type} 
               onChange={(v) => setFilter('type', v)}
@@ -323,11 +323,11 @@ export default function Finance() {
           {loading ? (
             <div className="flex items-center justify-center py-24"><span className="material-icons text-emerald-400 text-4xl animate-spin">autorenew</span></div>
           ) : (
-            <div className="bg-[#242C44] rounded-xl border border-white/5 overflow-hidden">
+            <div className="bg-white dark:bg-[#242C44] rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[800px]">
                   <thead>
-                    <tr className="bg-[#1B2236] border-b border-white/10">
+                    <tr className="bg-slate-50 dark:bg-[#1B2236] border-b border-slate-200 dark:border-white/10">
                       <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('finance.th_transaction_date')}</th>
                       <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('finance.th_description')}</th>
                       <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('finance.th_category')}</th>
@@ -340,10 +340,10 @@ export default function Finance() {
                     {transactions.length === 0 ? (
                       <tr><td colSpan={6} className="p-12 text-center"><EmptyState icon="account_balance" title={t('finance.no_transactions_title')} subtitle={t('finance.no_transactions_subtitle')} /></td></tr>
                     ) : transactions.map((tr) => (
-                      <tr key={tr.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <tr key={tr.id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                         <td className="p-4 text-xs text-slate-400 whitespace-nowrap">{new Date(tr.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                         <td className="p-4">
-                          <p className="text-sm font-medium text-white">{tr.description}</p>
+                          <p className="text-sm font-medium text-slate-800 dark:text-white">{tr.description}</p>
                         </td>
                         <td className="p-4 text-xs text-slate-400 capitalize">{t(`finance.cat_${tr.category}`)}</td>
                         <td className="p-4">
@@ -365,7 +365,7 @@ export default function Finance() {
                   </tbody>
                 </table>
               </div>
-              {meta && meta.last_page > 1 && <div className="p-4 border-t border-white/5 flex justify-center"><Pagination meta={meta} onChange={(p) => { setFilters((f) => ({ ...f, page: p })); fetchData(); }} /></div>}
+              {meta && meta.last_page > 1 && <div className="p-4 border-t border-slate-200 dark:border-white/5 flex justify-center"><Pagination meta={meta} onChange={(p) => { setFilters((f) => ({ ...f, page: p })); fetchData(); }} /></div>}
             </div>
           )}
         </div>
@@ -374,7 +374,7 @@ export default function Finance() {
       {/* Reports Tab */}
       {activeTab === 'reports' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 bg-[#1B2236] p-3 rounded-lg border border-white/10">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 bg-slate-50 dark:bg-[#1B2236] p-3 rounded-lg border border-slate-200 dark:border-white/10">
             <SelectFilter 
               value={reportYear} 
               onChange={(v) => setReportYear(String(v))} 
@@ -389,11 +389,11 @@ export default function Finance() {
             )}
           </div>
 
-          <div className="bg-[#242C44] rounded-xl border border-white/5 overflow-hidden">
+          <div className="bg-white dark:bg-[#242C44] rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[900px]">
                 <thead>
-                  <tr className="bg-[#1B2236] border-b border-white/10">
+                  <tr className="bg-slate-50 dark:bg-[#1B2236] border-b border-slate-200 dark:border-white/10">
                     <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('finance.th_period')}</th>
                     <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('finance.th_opening_balance')}</th>
                     <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('finance.th_total_income')}</th>
@@ -407,12 +407,12 @@ export default function Finance() {
                   {reports.length === 0 ? (
                     <tr><td colSpan={7} className="p-12 text-center text-slate-500">{t('finance.no_reports_generated')}</td></tr>
                   ) : reports.map((r: any) => (
-                    <tr key={r.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="p-4 text-sm font-bold text-white whitespace-nowrap">{new Date(r.periodEnd).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</td>
+                    <tr key={r.id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                      <td className="p-4 text-sm font-bold text-slate-800 dark:text-white whitespace-nowrap">{new Date(r.periodEnd).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</td>
                       <td className="p-4 text-sm font-medium text-slate-400">Rp {(r.openingBalance || 0).toLocaleString('id-ID')}</td>
                       <td className="p-4 text-sm font-bold text-emerald-400">Rp {(r.totalIncome || 0).toLocaleString('id-ID')}</td>
                       <td className="p-4 text-sm font-bold text-rose-400">Rp {(r.totalExpense || 0).toLocaleString('id-ID')}</td>
-                      <td className="p-4 text-sm font-bold text-white">Rp {(r.closingBalance || 0).toLocaleString('id-ID')}</td>
+                      <td className="p-4 text-sm font-bold text-slate-800 dark:text-white">Rp {(r.closingBalance || 0).toLocaleString('id-ID')}</td>
                       <td className="p-4">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize tracking-wider ${r.status === 0 ? 'bg-slate-500/20 text-slate-300' : r.status === 1 ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
                           {r.status === 0 ? t('finance.status_draft') : r.status === 1 ? t('finance.status_pending') : t('finance.status_approved')}

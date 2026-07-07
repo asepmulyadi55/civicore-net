@@ -203,13 +203,26 @@ public class UserController : ControllerBase
         var user = await _userManager.FindByIdAsync(id.ToString());
         if (user == null) return NotFound();
 
-        await _userManager.DeleteAsync(user);
+        // Unlink Householders attached to this user
+        var householders = await _context.Set<Householder>().Where(h => h.UserId == id).ToListAsync();
+        foreach (var h in householders)
+        {
+            h.UserId = null;
+        }
+        await _context.SaveChangesAsync();
+
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded) return BadRequest(new { message = "Failed to delete user.", errors = result.Errors });
+        
         return NoContent();
     }
 
     [HttpPost("{id}/approve")]
     public async Task<IActionResult> Approve(Guid id, [FromBody] ApproveDto dto)
     {
+        if (!dto.HouseholderId.HasValue || dto.HouseholderId.Value == Guid.Empty)
+            return BadRequest(new { message = "Linked householder is required." });
+
         var user = await _userManager.FindByIdAsync(id.ToString());
         if (user == null) return NotFound();
 
@@ -222,6 +235,13 @@ public class UserController : ControllerBase
             var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
             if (role != null && role.Name != null)
             {
+                var expectedNormalized = _roleManager.NormalizeKey(role.Name);
+                if (role.NormalizedName != expectedNormalized)
+                {
+                    role.NormalizedName = expectedNormalized;
+                    await _roleManager.UpdateAsync(role);
+                }
+
                 var currentRoles = await _userManager.GetRolesAsync(user);
                 await _userManager.RemoveFromRolesAsync(user, currentRoles);
                 await _userManager.AddToRoleAsync(user, role.Name);
@@ -272,12 +292,32 @@ public class UserController : ControllerBase
             h.UserId = null;
         }
 
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user != null)
+        {
+            user.BlockId = null;
+        }
+
         if (householderId.HasValue)
         {
             var newLink = await _context.Set<Householder>().FindAsync(householderId.Value);
             if (newLink != null)
             {
                 newLink.UserId = userId;
+                if (user != null)
+                {
+                    user.BlockId = newLink.BlockId;
+                }
+            }
+        }
+
+        if (user != null)
+        {
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                var errors = string.Join(", ", updateResult.Errors.Select(e => e.Description));
+                throw new Exception($"Failed to update user block ID: {errors}");
             }
         }
 

@@ -79,6 +79,9 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+    volumes:
+      - civicore_public_media:/app/wwwroot/public-media
+      - civicore_private_media:/app/App_Data/PrivateMedia
 
   web:
     build:
@@ -86,6 +89,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      - API_INTERNAL_URL=http://api:8080
 
   frontend:
     build:
@@ -93,6 +98,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
+
+volumes:
+  civicore_public_media:
+  civicore_private_media:
 ```
 
 ### 2. .NET API Dockerfile
@@ -205,6 +214,13 @@ server {
         proxy_cache_bypass $http_upgrade;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 4. Public Media: Route to .NET API Docker Container
+    location /public-media/ {
+        proxy_pass http://127.0.0.1:5000/public-media/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
     }
 }
 ```

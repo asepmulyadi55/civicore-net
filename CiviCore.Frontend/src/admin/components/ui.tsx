@@ -52,7 +52,7 @@ export function Pagination({ meta, onChange }: { meta: any; onChange: (page: num
   for (let p = start; p <= end; p++) pages.push(p);
 
   const btnBase = 'inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg border text-sm font-semibold transition-colors';
-  const btnActive = 'bg-primary border-primary text-white cursor-default select-none';
+  const btnActive = 'bg-primary border-primary text-white dark:text-surface font-bold shadow-lg shadow-primary/20 cursor-default select-none';
   const btnNormal = 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-primary/10 hover:border-primary/40 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary cursor-pointer';
   const btnDisabled = 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed';
 

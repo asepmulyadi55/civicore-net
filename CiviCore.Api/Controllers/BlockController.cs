@@ -7,6 +7,7 @@ using CiviCore.Api.Services;
 using ClosedXML.Excel;
 using Microsoft.Extensions.DependencyInjection;
 using CiviCore.Api.Models;
+using CiviCore.Api.Extensions; // Import the extensions
 
 namespace CiviCore.Api.Controllers;
 
@@ -25,10 +26,20 @@ public class BlockController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var blocks = await _context.Set<Block>()
+        var userBlockId = await User.GetBlockIdAsync(_context);
+
+        var query = _context.Set<Block>()
             .Include(b => b.Units)
             .Include(b => b.Coordinators).ThenInclude(c => c.Resident)
             .Include(b => b.Coordinators).ThenInclude(c => c.Householder)
+            .AsQueryable();
+
+        if (userBlockId.HasValue)
+        {
+            query = query.Where(b => b.Id == userBlockId.Value);
+        }
+
+        var blocks = await query
             .OrderBy(b => b.Name)
             .Select(b => new {
                 b.Id,
@@ -59,6 +70,12 @@ public class BlockController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        var userBlockId = await User.GetBlockIdAsync(_context);
+        if (userBlockId.HasValue && userBlockId.Value != id)
+        {
+            return Forbid();
+        }
+
         var block = await _context.Set<Block>()
             .Include(b => b.Units)
                 .ThenInclude(u => u.Householder)
