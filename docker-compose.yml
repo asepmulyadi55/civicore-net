@@ -8,9 +8,18 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Redis=redis:6379
     volumes:
       - ./CiviCore.Api/wwwroot/public-media:/app/wwwroot/public-media
       - ./CiviCore.Api/App_Data/PrivateMedia:/app/App_Data/PrivateMedia
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
   web:
     build:
@@ -29,3 +38,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
+
+volumes:
+  redis_data:
