@@ -326,7 +326,7 @@ Create `CiviCore.Web/Dockerfile`:
 ```dockerfile
 FROM node:20-alpine
 WORKDIR /app
-COPY package*.json ./
+COPY package.json ./
 RUN npm install
 COPY . .
 RUN npm run build
@@ -340,7 +340,7 @@ Create `CiviCore.Frontend/Dockerfile`:
 # Build stage
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY package*.json ./
+COPY package.json ./
 RUN npm install
 COPY . .
 RUN npm run build
@@ -489,20 +489,20 @@ Here is the simple workflow to pull the latest code and restart the containers w
 2. **Rebuild and restart the containers:**
    Docker Compose is smart enough to only recreate containers that have changed. Running this command will rebuild any images that have changed code, and restart only those affected containers:
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
    *Optional: If you know exactly which app you changed (e.g. only the `.NET API`), you can tell Docker to only rebuild that specific service to save time:*
    ```bash
    # Rebuild only the API
-   docker-compose up -d --build api
+   docker compose up -d --build api
    
    # Rebuild only the Next.js Web and React Admin Frontend
-   docker-compose up -d --build web frontend
+   docker compose up -d --build web frontend
    ```
 
 3. **Verify:**
    You can check the status of your containers at any time to ensure they are running properly:
    ```bash
-   docker-compose ps
+   docker compose ps
    ```
