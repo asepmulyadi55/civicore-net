@@ -152,7 +152,7 @@ function MediaCard({ file, onDelete, canDelete, folderReadonly }) {
             className="absolute inset-0 flex flex-col items-center justify-center bg-rose-900/60 opacity-0 hover:opacity-100 transition-opacity cursor-pointer group"
           >
             <span className="material-icons text-white text-3xl group-hover:scale-110 transition-transform">delete_forever</span>
-            <span className="text-white text-[11px] font-bold mt-1">Delete record</span>
+            <span className="text-white text-[11px] font-bold mt-1">{t('media.delete_record', 'Delete record')}</span>
           </button>
         )}
       </div>
@@ -176,7 +176,7 @@ function MediaCard({ file, onDelete, canDelete, folderReadonly }) {
             </a>
           )}
 
-          {isBroken && <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wide">Ghost record</span>}
+          {isBroken && <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wide">{t('media.ghost_record', 'Ghost record')}</span>}
 
           {showDelete && (
             <button

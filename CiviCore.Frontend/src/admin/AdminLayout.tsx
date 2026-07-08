@@ -329,9 +329,9 @@ export default function AdminLayout({ children, title, subtitle }: { children: R
               <div className="w-20 h-20 bg-rose-50 dark:bg-rose-900/20 text-rose-500 rounded-full flex items-center justify-center mb-6">
                 <span className="material-icons text-4xl">gpp_bad</span>
               </div>
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Access Denied</h2>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">{t('admin.access_denied', 'Access Denied')}</h2>
               <p className="text-slate-500 dark:text-slate-400 max-w-md">
-                You do not have permission to view this page. If you believe this is an error, please contact your administrator.
+                {t('admin.permission_denied_msg', 'You do not have permission to view this page. If you believe this is an error, please contact your administrator.')}
               </p>
             </div>
           ) : (

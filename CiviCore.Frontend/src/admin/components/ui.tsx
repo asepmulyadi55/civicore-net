@@ -45,6 +45,7 @@ export function EmptyState({ icon = 'search_off', title, subtitle, action }: { i
 }
 
 export function Pagination({ meta, onChange }: { meta: any; onChange: (page: number) => void }) {
+  const { t } = useTranslation();
   if (!meta || meta.last_page <= 1) return null;
   const { current_page, last_page, from, to, total } = meta;
   const pages = [];
@@ -60,7 +61,7 @@ export function Pagination({ meta, onChange }: { meta: any; onChange: (page: num
   return (
     <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center sm:justify-between gap-3">
       <p className="text-sm text-slate-500">
-        Showing {from}–{to} of {total}
+        {t('common.text_showing', 'Showing')} {from}–{to} {t('common.text_of', 'of')} {total}
       </p>
       <div className="flex items-center gap-1">
         <button className={`${btnBase} ${current_page === 1 ? btnDisabled : btnNormal}`}
@@ -218,12 +219,13 @@ export function SelectFilter({ value, onChange, options, placeholder = 'All', hi
 }
 
 export function BulkActionBar({ count, onDelete }: { count: number; onDelete: () => void }) {
+  const { t } = useTranslation();
   if (count === 0) return null;
   return (
     <div className="mb-4 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between shadow-sm">
-      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-2">{count} selected</span>
+      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-2">{count} {t('common.text_selected', 'selected')}</span>
       <button onClick={onDelete} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
-        <span className="material-icons text-sm">delete</span> Delete Selected
+        <span className="material-icons text-sm">delete</span> {t('common.button_delete_selected', 'Delete Selected')}
       </button>
     </div>
   );
@@ -329,13 +331,11 @@ export function SecureImage({ src, alt, className }: { src: string, alt?: string
     if (!src) return;
     let isMounted = true;
     
-    import('axios').then(({ default: axios }) => {
-      axios.get(src, { responseType: 'blob' })
-        .then(res => {
-          if (isMounted) setObjectUrl(URL.createObjectURL(res.data));
-        })
-        .catch(err => console.error('Failed to load secure image', err));
-    });
+    axios.get(src, { responseType: 'blob' })
+      .then(res => {
+        if (isMounted) setObjectUrl(URL.createObjectURL(res.data));
+      })
+      .catch(err => console.error('Failed to load secure image', err));
 
     return () => {
       isMounted = false;
@@ -446,6 +446,7 @@ export function CustomSelect({ label, value, onChange, options, placeholder = 'S
 
 export function ImageUploadBox({ id, label, currentUrl, onFileChange, file, recommendedSize }: any) {
   const inputRef = React.useRef<any>(null);
+  const { t } = useTranslation();
   return (
     <div className="space-y-1.5">
       {label && <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">{label}</label>}
@@ -453,7 +454,7 @@ export function ImageUploadBox({ id, label, currentUrl, onFileChange, file, reco
         <div className="flex items-center gap-4 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 mb-2">
           <img src={currentUrl} alt="Current" className="w-20 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Current Image</p>
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">{t('common.label_current_image', 'Current Image')}</p>
             <p className="text-xs text-slate-400 truncate">{currentUrl}</p>
           </div>
         </div>
@@ -462,7 +463,7 @@ export function ImageUploadBox({ id, label, currentUrl, onFileChange, file, reco
         <div className="flex items-center gap-3 p-3 rounded-xl border border-primary/30 bg-primary/5">
           <img src={URL.createObjectURL(file)} alt="Preview" className="w-16 h-12 object-cover rounded-lg flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-primary">Ready to upload</p>
+            <p className="text-xs font-semibold text-primary">{t('common.label_ready_to_upload', 'Ready to upload')}</p>
             <p className="text-xs text-slate-400 truncate">{file.name}</p>
           </div>
           <button type="button" onClick={() => { onFileChange(null); if (inputRef.current) inputRef.current.value = ''; }} className="text-slate-400 hover:text-rose-500 transition-colors cursor-pointer">
@@ -472,7 +473,7 @@ export function ImageUploadBox({ id, label, currentUrl, onFileChange, file, reco
       ) : (
         <label className="flex flex-col items-center justify-center gap-2 w-full h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 hover:border-primary/60 hover:bg-primary/5 transition-all cursor-pointer">
           <span className="material-icons text-slate-400 text-2xl">cloud_upload</span>
-          <span className="text-xs font-semibold text-slate-500">Upload New Image <span className="text-slate-400 font-normal">(optional · max 1 MB auto-compressed{recommendedSize ? ` · rec: ${recommendedSize}` : ''})</span></span>
+          <span className="text-xs font-semibold text-slate-500">{t('common.label_upload_new_image', 'Upload New Image')} <span className="text-slate-400 font-normal">({t('common.text_upload_hints', 'optional · max 1 MB auto-compressed')}{recommendedSize ? ` · rec: ${recommendedSize}` : ''})</span></span>
           <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={e => onFileChange(e.target.files?.[0] || null)} />
         </label>
       )}

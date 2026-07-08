@@ -268,7 +268,7 @@ export default function ResidentHousehold() {
   return (
     <AdminLayout title={t('resident_household.title')} subtitle={t('resident_household.subtitle_manage', { block: data.blockName, unit: data.unitNumber })}>
       <ResidentModal open={residentModal.open} onClose={() => setResidentModal({ open: false, data: null })} onSaved={fetchHousehold} data={residentModal.data} />
-      <div className="max-w-5xl mx-auto pb-12 mt-4">
+      <div className="w-[80%] max-w-7xl mx-auto pb-12 mt-4">
 
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">

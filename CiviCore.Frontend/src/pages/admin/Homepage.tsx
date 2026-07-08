@@ -79,11 +79,12 @@ function SaveButton({ onClick, loading, label = 'Save Changes', disabled = false
 
 
 function SuccessBanner({ show }) {
+  const { t } = useTranslation();
   if (!show) return null;
   return (
     <div className="mx-6 mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl flex items-center gap-3">
       <span className="material-icons text-emerald-500">check_circle</span>
-      <p className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">Changes saved successfully!</p>
+      <p className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">{t('homepage.msg_save_success', 'Changes saved successfully!')}</p>
     </div>
   );
 }
@@ -297,6 +298,7 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
 }
 
 function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
+  const { t } = useTranslation();
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -358,14 +360,14 @@ function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={`Manage Photos - ${album?.title}`} size="xl">
+    <Modal open={open} onClose={onClose} title={`${t('homepage.title_manage_photos', 'Manage Photos')} - ${album?.title}`} size="xl">
       <div className="space-y-6">
         {canEdit && (
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
-            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Upload New Photo</h4>
+            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">{t('homepage.title_upload_new_photo', 'Upload New Photo')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <FormInput label="Title (Optional)" id="p-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Pool Area" />
-              <FormInput label="Description (Optional)" id="p-desc" value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Enjoying the sunset..." />
+              <FormInput label={t('homepage.label_title_optional', 'Title (Optional)')} id="p-title" value={title} onChange={e => setTitle(e.target.value)} placeholder={t('homepage.placeholder_title', 'e.g. Pool Area')} />
+              <FormInput label={t('homepage.label_description_optional', 'Description (Optional)')} id="p-desc" value={description} onChange={e => setDescription(e.target.value)} placeholder={t('homepage.placeholder_desc', 'e.g. Enjoying the sunset...')} />
             </div>
             <div className="flex items-end gap-4">
               <div className="flex-1">
@@ -373,18 +375,18 @@ function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
               </div>
               <button onClick={uploadPhoto} disabled={!file || uploading} className="px-5 h-[100px] rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed mb-1.5 flex flex-col items-center justify-center gap-1">
                 {uploading ? <span className="material-icons animate-spin">autorenew</span> : <span className="material-icons">cloud_upload</span>}
-                {uploading ? 'Uploading...' : 'Upload'}
+                {uploading ? t('homepage.text_uploading', 'Uploading...') : t('homepage.text_upload', 'Upload')}
               </button>
             </div>
           </div>
         )}
 
         <div>
-          <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Album Photos ({photos.length})</h4>
+          <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">{t('homepage.text_album_photos', 'Album Photos')} ({photos.length})</h4>
           {loading ? (
             <div className="flex justify-center py-8"><span className="material-icons animate-spin text-primary text-3xl">autorenew</span></div>
           ) : photos.length === 0 ? (
-            <EmptyState icon="photo_library" title="No photos yet" subtitle="Upload your first photo above" />
+            <EmptyState icon="photo_library" title={t('homepage.title_no_photos', 'No photos yet')} subtitle={t('homepage.subtitle_no_photos', 'Upload your first photo above')} />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2">
               {photos.map(p => (
@@ -554,7 +556,7 @@ function GalleryTab({ canEdit }: { canEdit: boolean }) {
 
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
         onConfirm={deleteAlbum} loading={deleteModal.loading} icon="delete_outline"
-        title="Delete Album?" message={`Delete <strong>${deleteModal.title}</strong>? This cannot be undone.`} confirmLabel="Yes, Delete" />
+        title={t('homepage.title_delete_album', 'Delete Album?')} message={<>{t('homepage.text_delete_before', 'Delete')} <strong>{deleteModal.title}</strong>? {t('homepage.text_delete_after', 'This cannot be undone.')}</>} confirmLabel={t('homepage.btn_yes_delete', 'Yes, Delete')} />
 
       <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title={t('homepage.title_gallery_settings', 'Gallery Settings')} subtitle={t('homepage.subtitle_gallery_settings', 'Configure the main gallery header')}>
         <SuccessBanner show={success === 'settings'} />
@@ -589,7 +591,7 @@ function GalleryTab({ canEdit }: { canEdit: boolean }) {
               <>
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                    <Th>Title</Th><Th>Description</Th><Th>Photos</Th><Th className="text-center">Actions</Th>
+                    <Th>{t('homepage.label_title', 'TITLE')}</Th><Th>{t('homepage.table_description', 'DESCRIPTION')}</Th><Th>{t('homepage.table_photos', 'PHOTOS')}</Th><Th className="text-center">{t('homepage.table_actions', 'ACTIONS')}</Th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -691,8 +693,8 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
         <SuccessBanner show={success === 'settings'} />
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <FormInput label="Eyebrow Label" id="b-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Informasi" />
-            <FormInput label="Section Title" id="b-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Buletin" />
+            <FormInput label={t('homepage.label_eyebrow', 'Eyebrow Label')} id="b-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Informasi" />
+            <FormInput label={t('homepage.label_section_title', 'Section Title')} id="b-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Buletin" />
             <div className="md:col-span-2"><FormInput label={t('homepage.label_subtitle', 'Subtitle')} id="b-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder={t('homepage.placeholder_explore_bulletins', 'Explore our bulletins...')} /></div>
           </div>
         </div>
@@ -705,7 +707,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
 
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
         onConfirm={deleteBulletin} loading={deleteModal.loading} icon="delete_outline"
-        title="Delete Bulletin?" message={`Delete <strong>${deleteModal.title}</strong>? This cannot be undone.`} confirmLabel="Yes, Delete" />
+        title={t('homepage.title_delete_bulletin', 'Delete Bulletin?')} message={<>{t('homepage.text_delete_before', 'Delete')} <strong>{deleteModal.title}</strong>? {t('homepage.text_delete_after', 'This cannot be undone.')}</>} confirmLabel={t('homepage.btn_yes_delete', 'Yes, Delete')} />
 
       <SectionCard icon="article" iconBg="bg-sky-100 dark:bg-sky-900/30" iconColor="text-sky-500" title="Bulletin" subtitle="Manage information bulletins" badge={items.length}>
         <SuccessBanner show={success === 'item'} />
@@ -726,7 +728,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
               <>
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                    <Th>Title</Th><Th>Date</Th><Th className="text-center">Actions</Th>
+                    <Th>{t('homepage.label_title', 'TITLE')}</Th><Th>{t('homepage.table_date', 'DATE')}</Th><Th className="text-center">{t('homepage.table_actions', 'ACTIONS')}</Th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -863,7 +865,7 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
 
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
-        title="Delete Property?" message={`Delete <strong>${confirm.item?.title}</strong>? This cannot be undone.`}
+        title={t('homepage.title_delete_property', 'Delete Property?')} message={<>{t('homepage.text_delete_before', 'Delete')} <strong>{confirm.item?.title}</strong>? {t('homepage.text_delete_after', 'This cannot be undone.')}</>} confirmLabel={t('homepage.btn_yes_delete', 'Yes, Delete')}
         confirmLabel="Yes, Delete" />
 
       {imageModal.open && imageModal.property && (
@@ -990,6 +992,7 @@ function FooterTab({ canEdit }: { canEdit: boolean }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [logo, setLogo] = useState(null);
 
   useEffect(() => {
     axios.get('/api/homepage/footer').then(r => setData(r.data || {})).catch(() => { }).finally(() => setLoading(false));
@@ -999,8 +1002,11 @@ function FooterTab({ canEdit }: { canEdit: boolean }) {
   
   const save = async () => {
     setSaving(true);
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => fd.append(k, v as string));
+    if (logo) fd.append('logo', await compressImage(logo));
     try {
-      await axios.put('/api/homepage/footer', data);
+      await axios.put('/api/homepage/footer', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess(true); setTimeout(() => setSuccess(false), 3000);
     } catch { }
     setSaving(false);
@@ -1012,6 +1018,7 @@ function FooterTab({ canEdit }: { canEdit: boolean }) {
     <SectionCard icon="web_asset" iconBg="bg-slate-100 dark:bg-slate-800" iconColor="text-slate-500" title={t('homepage.title_footer', 'Footer')} subtitle={t('homepage.subtitle_footer', 'Manage footer content and links')}>
       <SuccessBanner show={success} />
       <div className="p-6 space-y-5">
+        <ImageUploadBox label="Site Logo" currentUrl={data.logo_url} file={logo} onFileChange={setLogo} recommendedSize="800x800" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput label={t('homepage.label_brand_name', 'Brand Name')} id="ft-brand" value={data.brand_name || ''} onChange={e => set('brand_name', e.target.value)} placeholder={t('homepage.placeholder_brand_name', 'e.g. Dwipapuri')} />
           <FormInput label={t('homepage.label_tagline', 'Tagline')} id="ft-tag" value={data.tagline || ''} onChange={e => set('tagline', e.target.value)} placeholder={t('homepage.placeholder_tagline', 'e.g. Cultivating a better lifestyle...')} />

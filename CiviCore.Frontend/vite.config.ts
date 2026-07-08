@@ -15,5 +15,17 @@ export default defineConfig({
       '/public-media': 'http://localhost:5075',
       '/uploads': 'http://localhost:5075'
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
   }
 })

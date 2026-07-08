@@ -35,6 +35,7 @@ export default function Navigation() {
   const showSuccess = (msg) => { setSuccessMsg(msg); setTimeout(() => setSuccessMsg(''), 3000); };
   const showError = (msg) => { setErrorMsg(msg); setTimeout(() => setErrorMsg(''), 3000); };
 
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     title: '',
     url: '',
@@ -62,6 +63,7 @@ export default function Navigation() {
   };
 
   const handleOpenModal = (link = null) => {
+    setFormErrors({});
     if (link) {
       setEditingId(link.id);
       setFormData({
@@ -85,12 +87,24 @@ export default function Navigation() {
   };
 
   const handleCloseModal = () => {
+    setFormErrors({});
     setIsModalOpen(false);
     setEditingId(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const errors: Record<string, string> = {};
+    if (!formData.title.trim()) errors.title = t('homepage.error_title_required', 'Judul wajib diisi.');
+    if (!formData.url.trim()) errors.url = t('homepage.error_url_required', 'URL / Jalur wajib diisi.');
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
+
     try {
       if (editingId) {
         await axios.put(`/api/navigation/${editingId}`, formData);
@@ -253,27 +267,27 @@ export default function Navigation() {
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('homepage.label_title', 'Title')}</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('homepage.label_title', 'Title')} <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  required
                   value={formData.title}
-                  onChange={e => setFormData({...formData, title: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white"
+                  onChange={e => { setFormData({...formData, title: e.target.value}); if (formErrors.title) setFormErrors({...formErrors, title: ''}); }}
+                  className={`w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border ${formErrors.title ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white`}
                   placeholder={t('homepage.placeholder_e_g_about_us', 'e.g. About Us')}
                 />
+                {formErrors.title && <p className="text-red-500 text-xs mt-1">{formErrors.title}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('homepage.text_url_path', 'URL / Path')}</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('homepage.text_url_path', 'URL / Path')} <span className="text-red-500">*</span></label>
                 <input
                   type="text"
-                  required
                   value={formData.url}
-                  onChange={e => setFormData({...formData, url: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white"
+                  onChange={e => { setFormData({...formData, url: e.target.value}); if (formErrors.url) setFormErrors({...formErrors, url: ''}); }}
+                  className={`w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border ${formErrors.url ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white`}
                   placeholder={t('homepage.placeholder_e_g_about_or_about', 'e.g. /about or /#about')}
                 />
+                {formErrors.url && <p className="text-red-500 text-xs mt-1">{formErrors.url}</p>}
                 <p className="text-xs text-slate-500 mt-1">{t('homepage.text_for_anchor_links_on_homepage_use_section_e_g_properties_for_separate_pages_use_page_e_g_gallery', 'For anchor links on homepage, use /#section (e.g. /#properties). For separate pages, use /page (e.g. /gallery).')}</p>
               </div>
 
