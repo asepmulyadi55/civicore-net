@@ -23,7 +23,40 @@ export default function RootLayout({
           .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         `}</style>
       </head>
-      <body className="min-h-screen flex flex-col">{children}</body>
+      <body className="min-h-screen flex flex-col">
+        {children}
+        <AnalyticsScript />
+      </body>
     </html>
   );
+}
+
+async function AnalyticsScript() {
+  try {
+    const apiUrl = process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5075';
+    const res = await fetch(`${apiUrl}/api/homepage/config`, { next: { revalidate: 0 } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const gaId = data.ga_measurement_id || data.gaMeasurementId;
+    
+    if (!gaId) return null;
+
+    return (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${gaId}');
+            `,
+          }}
+        />
+      </>
+    );
+  } catch (error) {
+    return null;
+  }
 }

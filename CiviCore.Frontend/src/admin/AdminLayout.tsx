@@ -210,6 +210,41 @@ export default function AdminLayout({ children, title, subtitle }: { children: R
     navigate('/admin/login');
   };
 
+  React.useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    let sessionTimeoutMinutes = 30; // default
+
+    const resetTimeout = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        handleLogout();
+      }, sessionTimeoutMinutes * 60 * 1000);
+    };
+
+    // Fetch the timeout setting from security settings
+    axios.get('/api/settings/security')
+      .then(res => {
+        sessionTimeoutMinutes = res.data.sessionTimeoutMinutes ?? res.data.session_timeout_minutes ?? 30;
+        resetTimeout();
+      })
+      .catch(() => {
+        resetTimeout();
+      });
+
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    const handleUserActivity = () => {
+      resetTimeout();
+    };
+
+    events.forEach(name => window.addEventListener(name, handleUserActivity, { passive: true }));
+    resetTimeout();
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach(name => window.removeEventListener(name, handleUserActivity));
+    };
+  }, []);
+
   return (
     <div className={`admin-theme min-h-screen bg-slate-50 dark:bg-surface ${dark ? 'dark' : ''}`}>
       {/* Mobile overlay */}

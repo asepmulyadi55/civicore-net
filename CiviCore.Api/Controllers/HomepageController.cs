@@ -796,6 +796,16 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Section labels saved." });
     }
 
+    // ── Global Config (Public) ────────────────────────────────────────────────
+
+    [HttpGet("config")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetConfig()
+    {
+        var gaId = await GetSettingValue("ga_measurement_id");
+        return Ok(new { ga_measurement_id = gaId });
+    }
+
     // ── Legacy endpoint (keep backward compat) ──────────────────────────────
 
     [HttpGet("content")]

@@ -86,7 +86,8 @@ public class DashboardController : ControllerBase
             AdminMemo = adminMemo
         };
         
-        var serializedStats = JsonSerializer.Serialize(stats);
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var serializedStats = JsonSerializer.Serialize(stats, options);
         await _cache.SetStringAsync(cacheKey, serializedStats, new DistributedCacheEntryOptions 
         { 
             AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) 

@@ -50,8 +50,9 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+var useRedis = builder.Configuration.GetValue<bool>("UseRedis", true);
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
-if (!string.IsNullOrEmpty(redisConnectionString))
+if (useRedis && !string.IsNullOrEmpty(redisConnectionString))
 {
     builder.Services.AddStackExchangeRedisCache(options =>
     {

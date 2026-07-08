@@ -258,7 +258,10 @@ function SecurityTab({ flash, setFlash }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    axios.get('/api/settings/security').then(res => setData(res.data)).catch(() => {});
+    axios.get('/api/settings/security').then(res => setData({
+      session_timeout_minutes: res.data.sessionTimeoutMinutes ?? res.data.session_timeout_minutes ?? 30,
+      ga_measurement_id: res.data.gaMeasurementId ?? res.data.ga_measurement_id ?? ''
+    })).catch(() => {});
   }, []);
 
   const handleSave = async () => {
@@ -329,7 +332,7 @@ function MemoTab({ flash, setFlash }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    axios.get('/api/settings/memo').then(res => setMemo(res.data.admin_memo || '')).catch(() => {});
+    axios.get('/api/settings/memo').then(res => setMemo(res.data.adminMemo ?? res.data.admin_memo ?? '')).catch(() => {});
   }, []);
 
   const handleSave = async () => {
@@ -382,7 +385,13 @@ function PosyanduTab({ flash, setFlash }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    axios.get('/api/settings/posyandu').then(res => setData(res.data)).catch(() => {});
+    axios.get('/api/settings/posyandu').then(res => setData({
+      posyandu_baby_max_months: res.data.posyanduBabyMaxMonths ?? res.data.posyandu_baby_max_months ?? 12,
+      posyandu_toddler_max_months: res.data.posyanduToddlerMaxMonths ?? res.data.posyandu_toddler_max_months ?? 36,
+      posyandu_child_max_months: res.data.posyanduChildMaxMonths ?? res.data.posyandu_child_max_months ?? 72,
+      posyandu_teen_max_months: res.data.posyanduTeenMaxMonths ?? res.data.posyandu_teen_max_months ?? 168,
+      posyandu_adult_max_months: res.data.posyanduAdultMaxMonths ?? res.data.posyandu_adult_max_months ?? 720,
+    })).catch(() => {});
   }, []);
 
   const handleSave = async () => {
@@ -492,7 +501,7 @@ export default function Settings() {
 
   return (
     <AdminLayout title={tabTitle}>
-      <div className="max-w-4xl mx-auto pb-12">
+      <div className="w-[80%] mx-auto pb-12">
         {/* Flash */}
         <Flash message={flash.message} type={flash.type} />
 
