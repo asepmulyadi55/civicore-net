@@ -6,6 +6,7 @@ import AdminLayout from '../../admin/AdminLayout';
 import { Modal, FormInput, FormSelect, ConfirmModal, SecureImage } from '../../admin/components/ui';
 import { compressImage } from '../../utils/imageCompressor';
 import { usePermissions } from '../../admin/PermissionsContext';
+import { formatApiErrors } from '../../utils/formatErrors';
 
 function ResidentModal({ open, onClose, onSaved, data, householderId }) {
   const { t } = useTranslation();
@@ -15,6 +16,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
     gender: '', education: '', occupation: '', photoPath: ''
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
@@ -34,8 +36,11 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
   }, [data, open]);
 
   const handleSave = async () => {
-    if (!form.fullname.trim()) return;
-    setLoading(true);
+    const errs: Record<string, string> = {};
+    if (!form.fullname.trim()) errs.fullname = t('edit_householder.error_fullname_required', 'Full name is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
+    setLoading(true); setErrors({});
     try {
       const payload = { ...form, householderId };
       if (!payload.birthDate) payload.birthDate = null;
@@ -43,8 +48,8 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
       else await axios.post('/api/residents', payload);
       onSaved();
       onClose();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setErrors(formatApiErrors(err));
     } finally {
       setLoading(false);
     }
@@ -56,6 +61,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.full_name')} <span className="text-rose-500">*</span></label>
           <input type="text" value={form.fullname} onChange={e => setForm(p => ({ ...p, fullname: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all" placeholder={t('edit_householder.full_name')} />
+          {errors.fullname && <p className="mt-1.5 text-xs text-rose-500">{errors.fullname}</p>}
         </div>
 
         <div>
@@ -156,7 +162,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
 
         <div className="flex justify-end gap-3 pt-6">
           <button onClick={onClose} className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">{t('edit_householder.btn_cancel')}</button>
-          <button onClick={handleSave} disabled={loading || !form.fullname.trim()} className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+          <button onClick={handleSave} disabled={loading} className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
             {loading ? t('edit_householder.btn_saving') : isEdit ? t('edit_householder.btn_save_resident') : t('edit_householder.btn_add_resident')}
           </button>
         </div>
@@ -177,6 +183,7 @@ export default function EditHouseholder() {
   const [residentModal, setResidentModal] = useState({ open: false, data: null });
   const [confirmDelete, setConfirmDelete] = useState<{ open: boolean, item: any, loading: boolean }>({ open: false, item: null, loading: false });
   const [uploadingHouseholdPhoto, setUploadingHouseholdPhoto] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const fetchData = async () => {
     try {
@@ -211,12 +218,29 @@ export default function EditHouseholder() {
   };
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {};
+    if (!data?.fullname?.trim()) errs.fullname = t('edit_householder.error_fullname_required', 'Owner name is required.');
+    if (!data?.blockId) errs.blockId = t('edit_householder.error_block_required', 'Block is required.');
+    if (!data?.unitId) errs.unitId = t('edit_householder.error_unit_required', 'Unit is required.');
+    
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      setErrorModal(t('edit_householder.error_fill_required', 'Please fill in all required fields.'));
+      return;
+    }
+
+    setErrors({});
     try {
       await axios.put(`/api/householders/${id}`, data);
       navigate('/admin/householders');
-    } catch (err) {
-      console.error(err);
-      setErrorModal('Failed to save household details. Please try again.');
+    } catch (err: any) {
+      const apiErrs = formatApiErrors(err);
+      if (Object.keys(apiErrs).length > 0) {
+        setErrors(apiErrs);
+        setErrorModal(apiErrs.general || t('edit_householder.error_save_failed', 'Failed to save household details. Please try again.'));
+      } else {
+        setErrorModal(t('edit_householder.error_save_failed', 'Failed to save household details. Please try again.'));
+      }
     }
   };
 
@@ -226,7 +250,7 @@ export default function EditHouseholder() {
   return (
     <AdminLayout title="Householders" subtitle={t('edit_householder.page_subtitle')}>
       <ResidentModal open={residentModal.open} onClose={() => setResidentModal({ open: false, data: null })} onSaved={fetchData} data={residentModal.data} householderId={id} />
-      <div className="max-w-5xl mx-auto pb-12">
+      <div className="w-[80%] max-w-7xl mx-auto pb-12">
 
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -301,6 +325,7 @@ export default function EditHouseholder() {
                     onChange={e => setData({ ...data, blockId: e.target.value, unitId: '' })} 
                     options={blocks.map(b => ({ value: b.id, label: b.name }))} 
                     placeholder={t('edit_householder.select_block')} 
+                    error={errors.blockId}
                     required 
                   />
                 </div>
@@ -317,12 +342,14 @@ export default function EditHouseholder() {
                       return { value: u.id, label, disabled: isOccupied };
                     })} 
                     placeholder={t('edit_householder.select_unit')} 
+                    error={errors.unitId}
                     required 
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.owner_name')} <span className="text-rose-500">*</span></label>
-                  <input type="text" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none" value={data.fullname || ''} onChange={e => setData({ ...data, fullname: e.target.value })} />
+                  <input type="text" className={`w-full bg-slate-50 dark:bg-slate-800 border ${errors.fullname ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none`} value={data.fullname || ''} onChange={e => setData({ ...data, fullname: e.target.value })} />
+                  {errors.fullname && <p className="mt-1.5 text-xs text-rose-500">{errors.fullname}</p>}
                   <p className="text-xs text-slate-500 mt-1.5">{t('edit_householder.owner_name_hint')}</p>
                 </div>
                 <div>

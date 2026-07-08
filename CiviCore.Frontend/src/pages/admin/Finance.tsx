@@ -5,6 +5,7 @@ import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, TableWrapper, Th, EmptyState, Pagination, FilterBar, SelectFilter, SearchInput, Modal, ConfirmModal, FormInput, FormSelect } from '../../admin/components/ui';
 import { usePermissions } from '../../admin/PermissionsContext';
+import { formatApiErrors } from '../../utils/formatErrors';
 
 type FinanceTab = 'dashboard' | 'transactions' | 'reports';
 
@@ -53,6 +54,12 @@ function TransactionModal({ open, onClose, onSaved, initialData }: { open: boole
     setForm((p) => ({ ...p, [f]: e.target.value }));
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {};
+    if (!form.category) errs.category = t('finance.error_category_required', 'Category is required.');
+    if (!form.amount || Number(form.amount) <= 0) errs.amount = t('finance.error_amount_required', 'Amount must be greater than 0.');
+    if (!form.date) errs.date = t('finance.error_date_required', 'Date is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
     setLoading(true); setErrors({});
     try {
       if (initialData) {
@@ -62,7 +69,7 @@ function TransactionModal({ open, onClose, onSaved, initialData }: { open: boole
       }
       onSaved(); onClose();
     } catch (err: any) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+      setErrors(formatApiErrors(err));
     } finally { setLoading(false); }
   };
 

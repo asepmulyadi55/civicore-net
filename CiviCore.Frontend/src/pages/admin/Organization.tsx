@@ -5,6 +5,7 @@ import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, EmptyState, Modal, ConfirmModal, FormInput, FormSelect, SecureImage, CustomSelect, SearchableSelect } from '../../admin/components/ui';
 import { useTranslation } from 'react-i18next';
 import { usePermissions } from '../../admin/PermissionsContext';
+import { formatApiErrors } from '../../utils/formatErrors';
 
 interface OrgPeriod {
   id: string;
@@ -32,7 +33,7 @@ function PeriodModal({ open, onClose, onSaved, data }: { open: boolean; onClose:
   const isEdit = !!data?.id;
   const currentYear = new Date().getFullYear();
   const [form, setForm] = useState({ name: '', startYear: currentYear, endYear: currentYear + 1 });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -42,17 +43,17 @@ function PeriodModal({ open, onClose, onSaved, data }: { open: boolean; onClose:
   }, [data, open, currentYear]);
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {};
+    if (!form.name.trim()) errs.name = t('organization.error_period_name_required', 'Period name is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
     setLoading(true); setErrors({});
     try {
       if (isEdit) await axios.put(`/api/organization/periods/${data!.id}`, form);
       else await axios.post('/api/organization/periods', form);
       onSaved(); onClose();
     } catch (err: any) {
-      let msg = err.response?.data?.message || 'Save failed.';
-      if (err.response?.data?.errors) {
-        msg = Object.values(err.response.data.errors).flat().join(' ');
-      }
-      setErrors({ general: msg });
+      setErrors(formatApiErrors(err));
     } finally { setLoading(false); }
   };
 
@@ -78,7 +79,7 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
   const { t } = useTranslation();
   const isEdit = !!data?.id;
   const [form, setForm] = useState({ positionName: '', parentId: '', residentId: '', householderId: '', sortOrder: 0 });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   // For resident assignment dropdown
@@ -107,6 +108,10 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
   }, [data, open]);
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {};
+    if (!form.positionName.trim()) errs.positionName = t('organization.error_pos_name_required', 'Position name is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
     setLoading(true); setErrors({});
     const payload = {
       periodId,
@@ -122,11 +127,7 @@ function PositionModal({ open, onClose, onSaved, data, periodId, allPositions }:
       else await axios.post('/api/organization/positions', payload);
       onSaved(); onClose();
     } catch (err: any) {
-      let msg = err.response?.data?.message || 'Save failed.';
-      if (err.response?.data?.errors) {
-        msg = Object.values(err.response.data.errors).flat().join(' ');
-      }
-      setErrors({ general: msg });
+      setErrors(formatApiErrors(err));
     } finally { setLoading(false); }
   };
 

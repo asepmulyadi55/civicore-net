@@ -213,7 +213,7 @@ export default function EditRole() {
   };
 
   const handleSave = async () => {
-    if (!name.trim()) { setErrors({ name: 'Role name is required.' }); return; }
+    if (!name.trim()) { setErrors({ name: t('edit_role.error_name_required', 'Role name is required.') }); return; }
     setSaving(true); setErrors({});
     try {
       const payload = {

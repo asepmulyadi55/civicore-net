@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { ConfirmModal } from '../../admin/components/ui';
 
@@ -23,6 +24,7 @@ function ErrorBanner({ message }) {
 }
 
 export default function Navigation() {
+  const { t } = useTranslation();
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -156,7 +158,7 @@ export default function Navigation() {
           onClick={() => handleOpenModal()}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap"
         >
-          <span className="material-icons text-[18px]">add</span> Add Link
+          <span className="material-icons text-[18px]">add</span> {t('homepage.text_add_link', 'Add Link')}
         </button>
       </div>
 
@@ -167,12 +169,12 @@ export default function Navigation() {
         <table className="w-full text-left min-w-[600px]">
           <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Order</th>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Title</th>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">URL</th>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Show In Nav</th>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Show In Footer</th>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Actions</th>
+              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">{t('homepage.label_order', 'Order')}</th>
+              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">{t('homepage.label_title', 'Title')}</th>
+              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">{t('homepage.label_url', 'URL')}</th>
+              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">{t('homepage.label_show_in_nav', 'Show In Nav')}</th>
+              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">{t('homepage.label_show_in_footer', 'Show In Footer')}</th>
+              <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">{t('homepage.label_actions', 'Actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -196,16 +198,16 @@ export default function Navigation() {
                 <td className="px-6 py-4 text-slate-500">{link.url}</td>
                 <td className="px-6 py-4">
                   {link.showInNavigation ? (
-                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">Yes</span>
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_yes', 'Yes')}</span>
                   ) : (
-                    <span className="bg-slate-100 text-slate-800 text-xs px-2 py-1 rounded-full font-medium">No</span>
+                    <span className="bg-slate-100 text-slate-800 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_no', 'No')}</span>
                   )}
                 </td>
                 <td className="px-6 py-4">
                   {link.showInFooter ? (
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">Yes</span>
+                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_yes', 'Yes')}</span>
                   ) : (
-                    <span className="bg-slate-100 text-slate-800 text-xs px-2 py-1 rounded-full font-medium">No</span>
+                    <span className="bg-slate-100 text-slate-800 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_no', 'No')}</span>
                   )}
                 </td>
                 <td className="px-6 py-4 text-right">
@@ -232,7 +234,7 @@ export default function Navigation() {
         
         {links.length === 0 && (
           <div className="p-8 text-center text-slate-500">
-            No navigation links found. Click "Add Link" to create one.
+            {t('homepage.text_no_navigation_links_found_click_add_link_to_create_one', 'No navigation links found. Click "Add Link" to create one.')}
           </div>
         )}
       </div>
@@ -242,7 +244,7 @@ export default function Navigation() {
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-slate-200 dark:border-slate-700">
             <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-700">
               <h3 className="text-xl font-bold text-slate-800 dark:text-white">
-                {editingId ? 'Edit Link' : 'Add Link'}
+                {editingId ? t('homepage.edit_link', 'Edit Link') : t('homepage.add_link', 'Add Link')}
               </h3>
               <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
                 <span className="material-icons">close</span>
@@ -251,28 +253,28 @@ export default function Navigation() {
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('homepage.label_title', 'Title')}</label>
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={e => setFormData({...formData, title: e.target.value})}
                   className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white"
-                  placeholder="e.g. About Us"
+                  placeholder={t('homepage.placeholder_e_g_about_us', 'e.g. About Us')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">URL / Path</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('homepage.text_url_path', 'URL / Path')}</label>
                 <input
                   type="text"
                   required
                   value={formData.url}
                   onChange={e => setFormData({...formData, url: e.target.value})}
                   className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white"
-                  placeholder="e.g. /about or /#about"
+                  placeholder={t('homepage.placeholder_e_g_about_or_about', 'e.g. /about or /#about')}
                 />
-                <p className="text-xs text-slate-500 mt-1">For anchor links on homepage, use /#section (e.g. /#properties). For separate pages, use /page (e.g. /gallery).</p>
+                <p className="text-xs text-slate-500 mt-1">{t('homepage.text_for_anchor_links_on_homepage_use_section_e_g_properties_for_separate_pages_use_page_e_g_gallery', 'For anchor links on homepage, use /#section (e.g. /#properties). For separate pages, use /page (e.g. /gallery).')}</p>
               </div>
 
               <div className="flex items-center space-x-3 pt-2">
@@ -284,7 +286,7 @@ export default function Navigation() {
                   className="w-4 h-4 text-primary bg-slate-50 border-slate-300 rounded focus:ring-primary"
                 />
                 <label htmlFor="showInNav" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Show in Top Navigation
+                  {t('homepage.text_show_in_top_navigation', 'Show in Top Navigation')}
                 </label>
               </div>
 
@@ -297,7 +299,7 @@ export default function Navigation() {
                   className="w-4 h-4 text-primary bg-slate-50 border-slate-300 rounded focus:ring-primary"
                 />
                 <label htmlFor="showInFooter" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Show in Footer Quick Links
+                  {t('homepage.text_show_in_footer_quick_links', 'Show in Footer Quick Links')}
                 </label>
               </div>
 
@@ -307,13 +309,13 @@ export default function Navigation() {
                   onClick={handleCloseModal}
                   className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t('homepage.text_cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
                 >
-                  {editingId ? 'Save Changes' : 'Create Link'}
+                  {editingId ? t('homepage.text_save_changes', 'Save Changes') : t('homepage.text_create_link', 'Create Link')}
                 </button>
               </div>
             </form>
@@ -327,9 +329,9 @@ export default function Navigation() {
         onConfirm={handleDelete} 
         loading={deleteModal.loading} 
         icon="delete_outline"
-        title="Delete Link?" 
-        message={`Are you sure you want to delete <strong>${deleteModal.title}</strong>? This cannot be undone.`} 
-        confirmLabel="Yes, Delete" 
+        title={t('homepage.label_delete_link', 'Delete Link?')} 
+        message={<>{t('homepage.text_are_you_sure_you_want_to_delete', 'Are you sure you want to delete')} <strong>{deleteModal.title}</strong>? {t('homepage.msg_cannot_be_undone', 'This cannot be undone.')}</>} 
+        confirmLabel={t('homepage.text_yes_delete', 'Yes, Delete')} 
       />
     </div>
   );

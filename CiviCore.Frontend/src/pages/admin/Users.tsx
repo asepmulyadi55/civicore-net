@@ -9,6 +9,7 @@ import {
 } from '../../admin/components/ui';
 import { useTranslation, Trans } from 'react-i18next';
 import { usePermissions } from '../../admin/PermissionsContext';
+import { formatApiErrors } from '../../utils/formatErrors';
 
 interface UserRole {
   id: number;
@@ -136,6 +137,14 @@ function UserModal({ open, onClose, onSaved, data, roles, householders }: { open
   const set = (f: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(p => ({ ...p, [f]: e.target.value }));
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {};
+    if (!form.name.trim()) errs.name = t('users.error_name_required', 'Name is required.');
+    if (!form.username.trim()) errs.username = t('users.error_username_required', 'Username is required.');
+    if (!form.email.trim()) errs.email = t('users.error_email_required', 'Email is required.');
+    if (!form.role_id) errs.role_id = t('users.error_role_required', 'Role is required.');
+    if (!form.HouseholderId) errs.HouseholderId = t('users.error_householder_required', 'Householder is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
     setLoading(true); setErrors({});
     try {
       const payload: any = { ...form };
@@ -145,7 +154,7 @@ function UserModal({ open, onClose, onSaved, data, roles, householders }: { open
       else await axios.post('/api/users', payload);
       onSaved(); onClose();
     } catch (err: any) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+      setErrors(formatApiErrors(err));
     } finally { setLoading(false); }
   };
 
@@ -214,8 +223,14 @@ function ApproveModal({ open, onClose, user, onApproved, householders }: { open:
     }
   }, [open, user]);
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const handle = async () => {
-    setLoading(true);
+    const errs: Record<string, string> = {};
+    if (!roleId) errs.roleId = t('users.error_role_required', 'Role is required.');
+    if (!householderId) errs.householderId = t('users.error_householder_required', 'Householder is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
+    setLoading(true); setErrors({});
     try {
       await axios.post(`/api/users/${user!.id}/approve`, { 
         role_id: roleId, 
@@ -236,11 +251,11 @@ function ApproveModal({ open, onClose, user, onApproved, householders }: { open:
             Approve <strong className="text-slate-900 dark:text-white">{{name: user.name}}</strong> and assign a role.
           </Trans>
         </p>
-        <FormSelect label={t('users.assign_role')} id="approve-role" value={roleId} onChange={e => setRoleId(e.target.value)} options={(roles || []).map(r => ({ value: String(r.id), label: r.name }))} placeholder={t('users.select_role')} required />
-        <HouseholderSelect label={t('users.linked_householder')} value={householderId} onChange={setHouseholderId} options={hhOptions} />
+        <FormSelect label={t('users.assign_role')} id="approve-role" value={roleId} onChange={e => setRoleId(e.target.value)} options={(roles || []).map(r => ({ value: String(r.id), label: r.name }))} placeholder={t('users.select_role')} error={errors.roleId} required />
+        <HouseholderSelect label={t('users.linked_householder')} value={householderId} onChange={setHouseholderId} options={hhOptions} error={errors.householderId} />
         <div className="flex justify-end gap-3 pt-2">
           <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">{t('users.btn_cancel')}</button>
-          <button onClick={handle} disabled={!roleId || !householderId || loading} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold flex justify-center items-center gap-2 cursor-pointer hover:scale-[1.02] shadow-lg shadow-emerald-500/20 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all duration-200">
+          <button onClick={handle} disabled={loading} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold flex justify-center items-center gap-2 cursor-pointer hover:scale-[1.02] shadow-lg shadow-emerald-500/20 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all duration-200">
             {loading ? t('users.approving') : t('users.btn_approve')}
           </button>
         </div>

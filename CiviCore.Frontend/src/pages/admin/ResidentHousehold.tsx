@@ -6,6 +6,7 @@ import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { Modal, FormSelect, SecureImage, ConfirmModal } from '../../admin/components/ui';
 import { compressImage } from '../../utils/imageCompressor';
+import { formatApiErrors } from '../../utils/formatErrors';
 
 function ResidentModal({ open, onClose, onSaved, data }) {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ function ResidentModal({ open, onClose, onSaved, data }) {
   });
   const [loading, setLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (data) {
@@ -34,8 +36,11 @@ function ResidentModal({ open, onClose, onSaved, data }) {
   }, [data, open]);
 
   const handleSave = async () => {
-    if (!form.fullname.trim()) return;
-    setLoading(true);
+    const errs: Record<string, string> = {};
+    if (!form.fullname.trim()) errs.fullname = t('resident_household.error_fullname_required', 'Full name is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
+    setLoading(true); setErrors({});
     try {
       const payload = { ...form };
       if (!payload.birthDate) payload.birthDate = null;
@@ -43,8 +48,8 @@ function ResidentModal({ open, onClose, onSaved, data }) {
       else await axios.post('/api/resident-portal/household/residents', payload);
       onSaved();
       onClose();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setErrors(formatApiErrors(err));
     } finally {
       setLoading(false);
     }
@@ -56,6 +61,7 @@ function ResidentModal({ open, onClose, onSaved, data }) {
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('resident_household.label_fullname')} <span className="text-rose-500">*</span></label>
           <input type="text" value={form.fullname} onChange={e => setForm(p => ({ ...p, fullname: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all" placeholder={t('resident_household.label_fullname')} />
+          {errors.fullname && <p className="mt-1.5 text-xs text-rose-600">{errors.fullname}</p>}
         </div>
 
         <div>
@@ -156,7 +162,7 @@ function ResidentModal({ open, onClose, onSaved, data }) {
 
         <div className="flex justify-end gap-3 pt-6">
           <button type="button" onClick={onClose} className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">{t('resident_household.btn_cancel')}</button>
-          <button type="button" onClick={handleSave} disabled={loading || !form.fullname.trim()} className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+          <button type="button" onClick={handleSave} disabled={loading} className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
             {loading ? 'Saving...' : isEdit ? t('resident_household.btn_save_changes') : t('resident_household.btn_add_member')}
           </button>
         </div>

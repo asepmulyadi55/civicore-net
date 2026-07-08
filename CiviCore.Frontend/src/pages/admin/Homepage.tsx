@@ -92,6 +92,7 @@ function SuccessBanner({ show }) {
    TAB 1: FEATURED EVENT
    ═══════════════════════════════════════════════════════════════════════════ */
 function HeroTab({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -123,22 +124,22 @@ function HeroTab({ canEdit }: { canEdit: boolean }) {
   if (loading) return <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>;
 
   return (
-    <SectionCard icon="star" iconBg="bg-amber-100 dark:bg-amber-900/30" iconColor="text-amber-500" title="Hero Section" subtitle="The main header on the public homepage">
+    <SectionCard icon="star" iconBg="bg-amber-100 dark:bg-amber-900/30" iconColor="text-amber-500" title={t('homepage.title_hero_section', 'Hero Section')} subtitle={t('homepage.subtitle_hero_section', 'The main header on the public homepage')}>
       <SuccessBanner show={success} />
       <div className="p-6 space-y-5">
-        <FormInput label="Main Title" id="hero-title" value={data.title || ''} onChange={e => set('title', e.target.value)} placeholder="e.g. Welcome to Dwipapuri Residence" />
+        <FormInput label={t('homepage.label_main_title', 'Main Title')} id="hero-title" value={data.title || ''} onChange={e => set('title', e.target.value)} placeholder={t('homepage.placeholder_welcome', 'e.g. Welcome to Dwipapuri Residence')} />
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Subtitle</label>
-          <textarea value={data.subtitle || ''} onChange={e => set('subtitle', e.target.value)} rows={3} placeholder="e.g. Modern Living in Harmony..."
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('homepage.label_subtitle', 'Subtitle')}</label>
+          <textarea value={data.subtitle || ''} onChange={e => set('subtitle', e.target.value)} rows={3} placeholder={t('homepage.placeholder_modern_living', 'e.g. Modern Living in Harmony...')}
             className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none resize-none" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput label="CTA Button Text" id="hero-cta" value={data.cta_label || ''} onChange={e => set('cta_label', e.target.value)} placeholder="e.g. Schedule a Visit" />
-          <FormInput label="CTA Button URL" id="hero-cta-url" value={data.cta_url || ''} onChange={e => set('cta_url', e.target.value)} placeholder="e.g. /schedule-visit" />
+          <FormInput label={t('homepage.label_cta_text', 'CTA Button Text')} id="hero-cta" value={data.cta_label || ''} onChange={e => set('cta_label', e.target.value)} placeholder={t('homepage.placeholder_schedule_visit', 'e.g. Schedule a Visit')} />
+          <FormInput label={t('homepage.label_cta_url', 'CTA Button URL')} id="hero-cta-url" value={data.cta_url || ''} onChange={e => set('cta_url', e.target.value)} placeholder={t('homepage.placeholder_schedule_url', 'e.g. /schedule-visit')} />
         </div>
-        <ImageUploadBox label="Background Image" currentUrl={data.background_image_url} file={bgImage} onFileChange={setBgImage} recommendedSize="1920x1080" />
+        <ImageUploadBox label={t('homepage.label_background_image', 'Background Image')} currentUrl={data.background_image_url} file={bgImage} onFileChange={setBgImage} recommendedSize="1920x1080" />
       </div>
-      {canEdit && <SaveButton onClick={save} loading={saving} label="Save Hero Section" />}
+      {canEdit && <SaveButton onClick={save} loading={saving} label={t('homepage.btn_save_hero', 'Save Hero Section')} />}
     </SectionCard>
   );
 }
@@ -147,6 +148,7 @@ function HeroTab({ canEdit }: { canEdit: boolean }) {
    TAB 2: EVENTS
    ═══════════════════════════════════════════════════════════════════════════ */
 function EventsTab({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -215,32 +217,32 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
     <>
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
         onConfirm={deleteEvent} loading={deleteModal.loading} icon="delete_outline"
-        title="Delete Event?" message={`Delete <strong>${deleteModal.title}</strong>? This cannot be undone.`} confirmLabel="Yes, Delete" />
+        title={t('homepage.title_delete_event', 'Delete Event?')} message={<>{t('homepage.text_delete_before', 'Delete')} <strong>{deleteModal.title}</strong>? {t('homepage.text_delete_after', 'This cannot be undone.')}</>} confirmLabel={t('homepage.btn_yes_delete', 'Yes, Delete')} />
 
-      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Event Settings" subtitle="Configure the main events header">
+      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title={t('homepage.title_event_settings', 'Event Settings')} subtitle={t('homepage.subtitle_event_settings', 'Configure the main events header')}>
         <SuccessBanner show={success === 'settings'} />
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <FormInput label="Eyebrow Label" id="e-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Discover More" />
-            <FormInput label="Section Title" id="e-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Events" />
-            <div className="md:col-span-2"><FormInput label="Subtitle" id="e-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore..." /></div>
+            <FormInput label={t('homepage.label_eyebrow', 'Eyebrow Label')} id="e-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder={t('homepage.placeholder_discover_more', 'e.g. Discover More')} />
+            <FormInput label={t('homepage.label_section_title', 'Section Title')} id="e-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder={t('homepage.placeholder_events', 'e.g. Events')} />
+            <div className="md:col-span-2"><FormInput label={t('homepage.label_subtitle', 'Subtitle')} id="e-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder={t('homepage.placeholder_explore', 'Explore...')} /></div>
           </div>
         </div>
-        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />}
+        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label={t('homepage.btn_save_settings', 'Save Settings')} />}
       </SectionCard>
 
       <div className="h-6"></div>
 
-      <SectionCard icon="event" iconBg="bg-emerald-100 dark:bg-emerald-900/30" iconColor="text-emerald-500" title="Events" subtitle="Manage community events displayed on the homepage" badge={events.length}>
+      <SectionCard icon="event" iconBg="bg-emerald-100 dark:bg-emerald-900/30" iconColor="text-emerald-500" title={t('homepage.title_events', 'Events')} subtitle={t('homepage.subtitle_events', 'Manage community events displayed on the homepage')} badge={events.length}>
         <SuccessBanner show={success === 'event'} />
 
         <div className="p-6">
           <FilterBar>
-            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search events..." />
-            <SelectFilter value={catFilter} onChange={v => { setCatFilter(v); setPage(1); }} options={CATEGORY_OPTIONS} placeholder="All Categories" />
+            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder={t('homepage.placeholder_search_events', 'Search events...')} />
+            <SelectFilter value={catFilter} onChange={v => { setCatFilter(v); setPage(1); }} options={CATEGORY_OPTIONS} placeholder={t('homepage.placeholder_all_categories', 'All Categories')} />
             <div className="flex-grow"></div>
             {canEdit && <Link to="/admin/homepage/events/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
-              <span className="material-icons text-[18px]">add</span> Add Event
+              <span className="material-icons text-[18px]">add</span> {t('homepage.btn_add_event', 'Add Event')}
             </Link>}
           </FilterBar>
 
@@ -251,12 +253,12 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
               <>
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                    <Th>Title</Th><Th>Category</Th><Th>Date</Th><Th>Time</Th><Th>Location</Th><Th>Status</Th><Th className="text-center">Actions</Th>
+                    <Th>{t('homepage.table_title', 'TITLE')}</Th><Th>{t('homepage.table_category', 'CATEGORY')}</Th><Th>{t('homepage.table_date', 'DATE')}</Th><Th>{t('homepage.table_time', 'TIME')}</Th><Th>{t('homepage.table_location', 'LOCATION')}</Th><Th>{t('homepage.table_status', 'STATUS')}</Th><Th className="text-center">{t('homepage.table_actions', 'ACTIONS')}</Th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {paged.length === 0 ? (
-                    <tr><td colSpan={7}><EmptyState icon="event_busy" title="No events found" subtitle={search || catFilter ? 'Try adjusting your filters' : 'Add your first event above'} /></td></tr>
+                    <tr><td colSpan={7}><EmptyState icon="event_busy" title={t('homepage.empty_events_title', 'No events found')} subtitle={t('homepage.empty_events_subtitle', 'Try adjusting your filters or add your first event above')} /></td></tr>
                   ) : paged.map(ev => (
                     <tr key={ev.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-3.5">
@@ -409,8 +411,8 @@ function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
         open={!!deleteConfirmId}
         onClose={() => setDeleteConfirmId(null)}
         onConfirm={deletePhoto}
-        title="Delete Photo"
-        message="Are you sure you want to delete this photo? This action cannot be undone."
+        title={t('homepage.title_delete_photo', 'Delete Photo')}
+            message={t('homepage.text_delete_photo_confirm', 'Are you sure you want to delete this photo? This action cannot be undone.')}
         loading={!!deleting}
       />
     </Modal>
@@ -420,6 +422,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
    TAB 3: GALLERY
    ═══════════════════════════════════════════════════════════════════════════ */
 function GalleryTab({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
   const [settings, setSettings] = useState<any>({});
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -432,6 +435,7 @@ function GalleryTab({ canEdit }: { canEdit: boolean }) {
 
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingAlbum, setSavingAlbum] = useState(false);
+  const [albumErrors, setAlbumErrors] = useState<Record<string, string>>({});
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, title: '', loading: false });
   const [success, setSuccess] = useState('');
   const [page, setPage] = useState(1);
@@ -481,14 +485,19 @@ function GalleryTab({ canEdit }: { canEdit: boolean }) {
     setModal({ open: true, data: item });
     if (item) {
       setForm({ title: item.title || '', description: item.description || '' });
+      setAlbumErrors({});
     } else {
       setForm({ title: '', description: '' });
+      setAlbumErrors({});
     }
     setImage(null);
   };
 
   const saveAlbum = async () => {
-    if (!form.title.trim()) return;
+    const errs: Record<string, string> = {};
+    if (!form.title.trim()) errs.title = t('homepage.error_album_title_required', 'Album title is required.');
+    if (Object.keys(errs).length > 0) { setAlbumErrors(errs); return; }
+    setAlbumErrors({});
     setSavingAlbum(true);
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => fd.append(k, v));
@@ -514,22 +523,22 @@ function GalleryTab({ canEdit }: { canEdit: boolean }) {
 
   return (
     <>
-      <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })} title={modal.data ? "Edit Album" : "Add Album"} size="lg">
+      <Modal open={modal.open} onClose={() => setModal({ open: false, data: null })} title={modal.data ? t('homepage.text_edit_album', 'Edit Album') : t('homepage.text_add_album', 'Add Album')} size="lg">
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-            <FormInput label="Album Title" id="a-title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required placeholder="e.g. Clubhouse Inauguration" />
+            <FormInput label={t('homepage.label_album_title', 'Album Title')} id="a-title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required error={albumErrors.title} placeholder={t('homepage.placeholder_e_g_clubhouse_inauguration', 'e.g. Clubhouse Inauguration')} />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Album description..."
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('homepage.label_description', 'Description')}</label>
+            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder={t('homepage.placeholder_album_description', 'Album description...')}
               className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none resize-none" />
           </div>
-          <ImageUploadBox label="Cover Image" currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} recommendedSize="1000x800" />
+          <ImageUploadBox label={t('homepage.label_cover_image', 'Cover Image')} currentUrl={modal.data?.image_url} file={image} onFileChange={setImage} recommendedSize="1000x800" />
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
-            <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Cancel</button>
+            <button onClick={() => setModal({ open: false, data: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">{t('homepage.label_cancel', 'Cancel')}</button>
             {canEdit && <button onClick={saveAlbum} disabled={savingAlbum} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
-              {savingAlbum ? 'Saving...' : 'Save Changes'}
+              {savingAlbum ? t('homepage.btn_saving', 'Saving...') : t('homepage.btn_save_changes', 'Save Changes')}
             </button>}
           </div>
         </div>
@@ -547,29 +556,29 @@ function GalleryTab({ canEdit }: { canEdit: boolean }) {
         onConfirm={deleteAlbum} loading={deleteModal.loading} icon="delete_outline"
         title="Delete Album?" message={`Delete <strong>${deleteModal.title}</strong>? This cannot be undone.`} confirmLabel="Yes, Delete" />
 
-      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Gallery Settings" subtitle="Configure the main gallery header">
+      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title={t('homepage.title_gallery_settings', 'Gallery Settings')} subtitle={t('homepage.subtitle_gallery_settings', 'Configure the main gallery header')}>
         <SuccessBanner show={success === 'settings'} />
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <FormInput label="Eyebrow Label" id="g-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Visual Tour" />
-            <FormInput label="Section Title" id="g-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Gallery" />
-            <div className="md:col-span-2"><FormInput label="Subtitle" id="g-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore..." /></div>
+            <FormInput label={t('homepage.label_eyebrow', 'Eyebrow Label')} id="g-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder={t('homepage.placeholder_visual_tour', 'e.g. Visual Tour')} />
+            <FormInput label={t('homepage.label_section_title', 'Section Title')} id="g-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder={t('homepage.placeholder_gallery', 'e.g. Gallery')} />
+            <div className="md:col-span-2"><FormInput label={t('homepage.label_subtitle', 'Subtitle')} id="g-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder={t('homepage.placeholder_explore', 'Explore...')} /></div>
           </div>
         </div>
-        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />}
+        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label={t('homepage.btn_save_settings', 'Save Settings')} />}
       </SectionCard>
 
       <div className="h-6"></div>
 
-      <SectionCard icon="photo_library" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Albums" subtitle="Manage gallery albums" badge={albums.length}>
+      <SectionCard icon="photo_library" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title={t('homepage.title_albums', 'Albums')} subtitle={t('homepage.subtitle_albums', 'Manage gallery albums')} badge={albums.length}>
         <SuccessBanner show={success === 'album'} />
 
         <div className="p-6">
           <FilterBar>
-            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search albums..." />
+            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder={t('homepage.placeholder_search_albums', 'Search albums...')} />
             <div className="flex-grow"></div>
             {canEdit && <button onClick={() => openModal()} className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
-              <span className="material-icons text-[18px]">add</span> Add Album
+              <span className="material-icons text-[18px]">add</span> {t('homepage.text_add_album', 'Add Album')}
             </button>}
           </FilterBar>
 
@@ -621,6 +630,7 @@ function GalleryTab({ canEdit }: { canEdit: boolean }) {
    TAB 4: BULLETIN
    ═══════════════════════════════════════════════════════════════════════════ */
 function BulletinTab({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -677,16 +687,16 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
 
   return (
     <>
-      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Bulletin Settings" subtitle="Configure the main bulletin header">
+      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title={t('homepage.title_bulletin_settings', 'Bulletin Settings')} subtitle={t('homepage.subtitle_bulletin_settings', 'Configure the main bulletin header')}>
         <SuccessBanner show={success === 'settings'} />
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <FormInput label="Eyebrow Label" id="b-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Informasi" />
             <FormInput label="Section Title" id="b-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Buletin" />
-            <div className="md:col-span-2"><FormInput label="Subtitle" id="b-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore our bulletins..." /></div>
+            <div className="md:col-span-2"><FormInput label={t('homepage.label_subtitle', 'Subtitle')} id="b-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder={t('homepage.placeholder_explore_bulletins', 'Explore our bulletins...')} /></div>
           </div>
         </div>
-        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />}
+        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label={t('homepage.btn_save_settings', 'Save Settings')} />}
       </SectionCard>
 
       <div className="h-6"></div>
@@ -702,10 +712,10 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
 
         <div className="p-6">
           <FilterBar>
-            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder="Search bulletins..." />
+            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder={t('homepage.placeholder_search_bulletins', 'Search bulletins...')} />
             <div className="flex-grow"></div>
             {canEdit && <Link to="/admin/homepage/bulletin/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
-              <span className="material-icons text-[18px]">add</span> Add Bulletin
+              <span className="material-icons text-[18px]">add</span> {t('homepage.text_add_bulletin', 'Add Bulletin')}
             </Link>}
           </FilterBar>
 
@@ -721,7 +731,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {paged.length === 0 ? (
-                    <tr><td colSpan={3}><EmptyState icon="article" title="No bulletins found" subtitle={search ? 'Try adjusting your search' : 'Add your first bulletin above'} /></td></tr>
+                    <tr><td colSpan={3}><EmptyState icon="article" title={t('homepage.empty_bulletins_title', 'No bulletins found')} subtitle={t('homepage.empty_bulletins_subtitle', 'Try adjusting your search or add your first bulletin above')} /></td></tr>
                   ) : paged.map((b: any) => (
                     <tr key={b.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-3.5">
@@ -758,6 +768,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
    TAB 5: PROPERTY
    ═══════════════════════════════════════════════════════════════════════════ */
 function PropertyTab({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
   const [data, setData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -836,16 +847,16 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
 
   return (
     <>
-      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title="Property Settings" subtitle="Configure the main properties header">
+      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title={t('homepage.title_property_settings', 'Property Settings')} subtitle={t('homepage.subtitle_property_settings', 'Configure the main properties header')}>
         <SuccessBanner show={success === 'settings'} />
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <FormInput label="Eyebrow Label" id="p-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder="e.g. Properties" />
-            <FormInput label="Section Title" id="p-title-set" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder="e.g. Featured Listings" />
-            <div className="md:col-span-2"><FormInput label="Subtitle" id="p-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder="Explore available properties..." /></div>
+            <FormInput label={t('homepage.label_eyebrow', 'Eyebrow Label')} id="p-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder={t('homepage.placeholder_properties', 'e.g. Properties')} />
+            <FormInput label={t('homepage.label_section_title', 'Section Title')} id="p-title-set" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder={t('homepage.placeholder_featured_listings', 'e.g. Featured Listings')} />
+            <div className="md:col-span-2"><FormInput label={t('homepage.label_subtitle', 'Subtitle')} id="p-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder={t('homepage.placeholder_explore_properties', 'Explore available properties...')} /></div>
           </div>
         </div>
-        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label="Save Settings" />}
+        {canEdit && <SaveButton onClick={saveSettings} loading={savingSettings} label={t('homepage.btn_save_settings', 'Save Settings')} />}
       </SectionCard>
 
 
@@ -856,7 +867,7 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
         confirmLabel="Yes, Delete" />
 
       {imageModal.open && imageModal.property && (
-        <Modal open={imageModal.open} onClose={() => setImageModal({ open: false, property: null })} title="Manage Property Images" icon="image" size="lg">
+        <Modal open={imageModal.open} onClose={() => setImageModal({ open: false, property: null })} title={t('homepage.title_manage_property_images', 'Manage Property Images')} icon="image" size="lg">
           <div className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {(imageModal.property.images || []).map((img: string, i: number) => (
@@ -877,7 +888,7 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
               <label className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <span className="material-icons text-4xl text-slate-400 mb-2">{uploadingImage ? 'hourglass_empty' : 'cloud_upload'}</span>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {uploadingImage ? 'Uploading...' : 'Click to upload image'}
+                  {uploadingImage ? t('homepage.text_uploading', 'Uploading...') : t('homepage.text_click_to_upload', 'Click to upload image')}
                 </p>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed text-center">
                   JPG, PNG, WebP.<br/>Automatically compressed before upload.<br/>(Recommended: 1200x800)
@@ -887,32 +898,32 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
             )}
           </div>
           <div className="flex justify-end pt-6 border-t border-slate-100 dark:border-white/5 mt-6">
-            <button onClick={() => setImageModal({ open: false, property: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">Done</button>
+            <button onClick={() => setImageModal({ open: false, property: null })} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">{t('homepage.btn_done', 'Done')}</button>
           </div>
           <ConfirmModal
             open={!!deleteImageConfirmUrl}
             onClose={() => setDeleteImageConfirmUrl(null)}
             onConfirm={deleteImage}
-            title="Delete Photo"
-            message="Are you sure you want to delete this photo? This action cannot be undone."
+            title={t('homepage.title_delete_photo', 'Delete Photo')}
+            message={t('homepage.text_delete_photo_confirm', 'Are you sure you want to delete this photo? This action cannot be undone.')}
           />
         </Modal>
       )}
 
-      <SectionCard icon="home_work" iconBg="bg-teal-100 dark:bg-teal-900/30" iconColor="text-teal-500" title="Property Listings" subtitle="Manage available, sold, and rented properties" badge={data.length}>
+      <SectionCard icon="home_work" iconBg="bg-teal-100 dark:bg-teal-900/30" iconColor="text-teal-500" title={t('homepage.title_property_listings', 'Property Listings')} subtitle={t('homepage.subtitle_property_listings', 'Manage available, sold, and rented properties')} badge={data.length}>
         <SuccessBanner show={success === 'item'} />
 
         <div className="p-6">
           <FilterBar>
-            <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder="Search title, location…" />
-            <SelectFilter value={filters.status} onChange={(v) => setFilter('status', v)} options={PROPERTY_STATUS_OPTIONS} placeholder="All Status" />
+            <SearchInput value={filters.search} onChange={(v) => setFilter('search', v)} placeholder={t('homepage.placeholder_search_property', 'Search title, location…')} />
+            <SelectFilter value={filters.status} onChange={(v) => setFilter('status', v)} options={PROPERTY_STATUS_OPTIONS} placeholder={t('homepage.placeholder_all_status', 'All Status')} />
             <button onClick={() => setFilters({ search: '', type: '', status: '', page: 1 })}
               className="flex items-center gap-1 px-3 py-2 text-sm text-slate-500 hover:text-primary transition-colors cursor-pointer">
               <span className="material-icons text-sm">close</span> Clear
             </button>
             <div className="flex-grow"></div>
             {canEdit && <Link to="/admin/homepage/properties/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
-              <span className="material-icons text-[18px]">add</span> Add Property
+              <span className="material-icons text-[18px]">add</span> {t('homepage.text_add_property', 'Add Property')}
             </Link>}
           </FilterBar>
 
@@ -923,16 +934,16 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
               <>
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                    <Th>Property</Th>
-                    <Th className="text-right">Price</Th>
-                    <Th>Status</Th>
-                    <Th>Listed</Th>
-                    <Th className="text-center">Actions</Th>
+                    <Th>{t('homepage.table_property', 'PROPERTY')}</Th>
+                    <Th className="text-right">{t('homepage.table_price', 'PRICE')}</Th>
+                    <Th>{t('homepage.table_status', 'STATUS')}</Th>
+                    <Th>{t('homepage.table_listed', 'LISTED')}</Th>
+                    <Th className="text-center">{t('homepage.table_actions', 'ACTIONS')}</Th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {data.length === 0 ? (
-                    <tr><td colSpan={5}><EmptyState icon="home_work" title="No properties found" subtitle="Add your first property listing" /></td></tr>
+                    <tr><td colSpan={5}><EmptyState icon="home_work" title={t('homepage.empty_properties_title', 'No properties found')} subtitle={t('homepage.empty_properties_subtitle', 'Add your first property listing')} /></td></tr>
                   ) : data.map((p) => (
                     <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-4">
@@ -974,6 +985,7 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
    TAB 6: FOOTER
    ═══════════════════════════════════════════════════════════════════════════ */
 function FooterTab({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -997,35 +1009,35 @@ function FooterTab({ canEdit }: { canEdit: boolean }) {
   if (loading) return <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>;
 
   return (
-    <SectionCard icon="web_asset" iconBg="bg-slate-100 dark:bg-slate-800" iconColor="text-slate-500" title="Footer" subtitle="Manage footer content and links">
+    <SectionCard icon="web_asset" iconBg="bg-slate-100 dark:bg-slate-800" iconColor="text-slate-500" title={t('homepage.title_footer', 'Footer')} subtitle={t('homepage.subtitle_footer', 'Manage footer content and links')}>
       <SuccessBanner show={success} />
       <div className="p-6 space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormInput label="Brand Name" id="ft-brand" value={data.brand_name || ''} onChange={e => set('brand_name', e.target.value)} placeholder="e.g. Dwipapuri" />
-          <FormInput label="Tagline" id="ft-tag" value={data.tagline || ''} onChange={e => set('tagline', e.target.value)} placeholder="e.g. Cultivating a better lifestyle..." />
+          <FormInput label={t('homepage.label_brand_name', 'Brand Name')} id="ft-brand" value={data.brand_name || ''} onChange={e => set('brand_name', e.target.value)} placeholder={t('homepage.placeholder_brand_name', 'e.g. Dwipapuri')} />
+          <FormInput label={t('homepage.label_tagline', 'Tagline')} id="ft-tag" value={data.tagline || ''} onChange={e => set('tagline', e.target.value)} placeholder={t('homepage.placeholder_tagline', 'e.g. Cultivating a better lifestyle...')} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormInput label="Contact Email" id="ft-email" value={data.contact_email || ''} onChange={e => set('contact_email', e.target.value)} placeholder="e.g. hello@dwipapuri.com" />
-          <FormInput label="Contact Phone" id="ft-phone" value={data.contact_phone || ''} onChange={e => set('contact_phone', e.target.value)} placeholder="e.g. +62 123 4567 890" />
+          <FormInput label={t('homepage.label_contact_email', 'Contact Email')} id="ft-email" value={data.contact_email || ''} onChange={e => set('contact_email', e.target.value)} placeholder={t('homepage.placeholder_contact_email', 'e.g. hello@dwipapuri.com')} />
+          <FormInput label={t('homepage.label_contact_phone', 'Contact Phone')} id="ft-phone" value={data.contact_phone || ''} onChange={e => set('contact_phone', e.target.value)} placeholder={t('homepage.placeholder_contact_phone', 'e.g. +62 123 4567 890')} />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Contact Information / Location</label>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('homepage.label_contact_info', 'Contact Information / Location')}</label>
           <ReactQuill theme="snow" value={data.location || ''} onChange={v => set('location', v)} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg mb-4" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <FormInput label="Copyright" id="ft-copy" value={data.copyright || ''} onChange={e => set('copyright', e.target.value)} placeholder="e.g. © 2025 Dwipapuri. All rights reserved." />
-            <p className="text-xs text-slate-400 mt-1">Shown at the bottom of the footer.</p>
+            <FormInput label={t('homepage.label_copyright', 'Copyright')} id="ft-copy" value={data.copyright || ''} onChange={e => set('copyright', e.target.value)} placeholder={t('homepage.placeholder_copyright', 'e.g. © 2025 Dwipapuri. All rights reserved.')} />
+            <p className="text-xs text-slate-400 mt-1">{t('homepage.hint_copyright', 'Shown at the bottom of the footer.')}</p>
           </div>
           <div>
-            <FormInput label="Bottom Note" id="ft-note" value={data.bottom_note || ''} onChange={e => set('bottom_note', e.target.value)} placeholder="e.g. Built for a better community experience." />
-            <p className="text-xs text-slate-400 mt-1">Small note below the copyright text.</p>
+            <FormInput label={t('homepage.label_bottom_note', 'Bottom Note')} id="ft-note" value={data.bottom_note || ''} onChange={e => set('bottom_note', e.target.value)} placeholder={t('homepage.placeholder_bottom_note', 'e.g. Built for a better community experience.')} />
+            <p className="text-xs text-slate-400 mt-1">{t('homepage.hint_bottom_note', 'Small note below the copyright text.')}</p>
           </div>
         </div>
       </div>
-      {canEdit && <SaveButton onClick={save} loading={saving} label="Save Footer" />}
+      {canEdit && <SaveButton onClick={save} loading={saving} label={t('homepage.btn_save_footer', 'Save Footer')} />}
     </SectionCard>
   );
 }
@@ -1034,6 +1046,7 @@ function FooterTab({ canEdit }: { canEdit: boolean }) {
    TAB 7: SEO & METADATA
    ═══════════════════════════════════════════════════════════════════════════ */
 function MetadataTab({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
   const [data, setData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1076,8 +1089,8 @@ function MetadataTab({ canEdit }: { canEdit: boolean }) {
           <span className="material-icons text-violet-500 text-[22px]">manage_search</span>
         </div>
         <div>
-          <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">SEO & Metadata</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Control how the homepage appears in search engines and social media shares.</p>
+          <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">{t('homepage.title_seo', 'SEO & Metadata')}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{t('homepage.subtitle_seo', 'Control how the homepage appears in search engines and social media shares.')}</p>
         </div>
       </div>
 
@@ -1086,34 +1099,34 @@ function MetadataTab({ canEdit }: { canEdit: boolean }) {
       {/* Basic SEO */}
       <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-200 dark:border-slate-700 space-y-5">
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-          <span className="material-icons text-[16px] text-slate-400">search</span> Search Engine Optimisation (SEO)
+          <span className="material-icons text-[16px] text-slate-400">search</span> {t('homepage.heading_seo_basic', 'Search Engine Optimisation (SEO)')}
         </h3>
         <div>
-          <FormInput label="Page Title" id="seo-title" value={data.page_title || ''} onChange={e => set('page_title', e.target.value)} placeholder="e.g. Dwipapuri – Residential Community" />
+          <FormInput label={t('homepage.label_page_title', 'Page Title')} id="seo-title" value={data.page_title || ''} onChange={e => set('page_title', e.target.value)} placeholder={t('homepage.placeholder_page_title', 'e.g. Dwipapuri – Residential Community')} />
           <div className="flex items-center justify-between mt-1">
-            <p className="text-xs text-slate-400">Recommended: 50–60 characters for optimal display.</p>
-            <span className={`text-xs tabular-nums ${titleLen > 60 ? 'text-amber-500' : 'text-slate-400'}`}>{titleLen} / 60 recommended</span>
+            <p className="text-xs text-slate-400">{t('homepage.hint_page_title', 'Recommended: 50–60 characters for optimal display.')}</p>
+            <span className={`text-xs tabular-nums ${titleLen > 60 ? 'text-amber-500' : 'text-slate-400'}`}>{titleLen} / 60 {t('homepage.text_recommended', 'recommended')}</span>
           </div>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Meta Description</label>
-          <textarea value={data.meta_description || ''} onChange={e => set('meta_description', e.target.value)} rows={3} maxLength={300} placeholder="e.g. Official portal of Dwipapuri Residential Community..."
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('homepage.label_meta_description', 'Meta Description')}</label>
+          <textarea value={data.meta_description || ''} onChange={e => set('meta_description', e.target.value)} rows={3} maxLength={300} placeholder={t('homepage.placeholder_meta_desc', 'e.g. Official portal of Dwipapuri Residential Community...')}
             className="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 outline-none resize-none" />
           <div className="flex items-center justify-between mt-1">
-            <p className="text-xs text-slate-400">Recommended: 120–160 characters.</p>
-            <span className={`text-xs tabular-nums ${descLen > 160 ? 'text-amber-500' : 'text-slate-400'}`}>{descLen} / 160 recommended</span>
+            <p className="text-xs text-slate-400">{t('homepage.hint_meta_desc', 'Recommended: 120–160 characters.')}</p>
+            <span className={`text-xs tabular-nums ${descLen > 160 ? 'text-amber-500' : 'text-slate-400'}`}>{descLen} / 160 {t('homepage.text_recommended', 'recommended')}</span>
           </div>
         </div>
         <div>
-          <FormInput label="Meta Keywords (optional)" id="seo-kw" value={data.meta_keywords || ''} onChange={e => set('meta_keywords', e.target.value)} placeholder="e.g. perumahan, iuran warga, komunitas, dwipapuri" />
-          <p className="text-xs text-slate-400 mt-1">Comma-separated keywords. Mostly ignored by Google but used by some search engines.</p>
+          <FormInput label={t('homepage.label_meta_keywords', 'Meta Keywords (optional)')} id="seo-kw" value={data.meta_keywords || ''} onChange={e => set('meta_keywords', e.target.value)} placeholder={t('homepage.placeholder_meta_kw', 'e.g. perumahan, iuran warga, komunitas, dwipapuri')} />
+          <p className="text-xs text-slate-400 mt-1">{t('homepage.hint_meta_keywords', 'Comma-separated keywords. Mostly ignored by Google but used by some search engines.')}</p>
         </div>
       </div>
 
       {/* Open Graph */}
       <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-200 dark:border-slate-700 space-y-5">
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-          <span className="material-icons text-[16px] text-slate-400">share</span> Open Graph — Social Share Preview
+          <span className="material-icons text-[16px] text-slate-400">share</span> {t('homepage.heading_og', 'Open Graph — Social Share Preview')}
         </h3>
 
         {/* Live Preview */}
@@ -1132,16 +1145,16 @@ function MetadataTab({ canEdit }: { canEdit: boolean }) {
           </div>
         </div>
 
-        <FormInput label="OG Title (optional)" id="og-title" value={data.og_title || ''} onChange={e => set('og_title', e.target.value)} placeholder={data.page_title || 'Defaults to Page Title'} />
+        <FormInput label={t('homepage.label_og_title', 'OG Title (optional)')} id="og-title" value={data.og_title || ''} onChange={e => set('og_title', e.target.value)} placeholder={data.page_title || t('homepage.placeholder_default_page_title', 'Defaults to Page Title')} />
         <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">OG Description (optional)</label>
-          <textarea value={data.og_description || ''} onChange={e => set('og_description', e.target.value)} rows={2} maxLength={300} placeholder={data.meta_description || 'Defaults to Meta Description'}
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('homepage.label_og_desc', 'OG Description (optional)')}</label>
+          <textarea value={data.og_description || ''} onChange={e => set('og_description', e.target.value)} rows={2} maxLength={300} placeholder={data.meta_description || t('homepage.placeholder_default_meta_desc', 'Defaults to Meta Description')}
             className="block w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 outline-none resize-none" />
         </div>
-        <ImageUploadBox label="OG Image (optional)" currentUrl={data.og_image} file={ogFile} onFileChange={setOgFile} recommendedSize="1200x630" />
+        <ImageUploadBox label={t('homepage.label_og_image', 'OG Image (optional)')} currentUrl={data.og_image} file={ogFile} onFileChange={setOgFile} recommendedSize="1200x630" />
       </div>
 
-      {canEdit && <SaveButton onClick={save} loading={saving} label="Save Metadata" />}
+      {canEdit && <SaveButton onClick={save} loading={saving} label={t('homepage.btn_save_metadata', 'Save Metadata')} />}
     </div>
   );
 }

@@ -52,13 +52,18 @@ function MeetingModal({ open, onClose, onSaved, data }: { open: boolean; onClose
     setForm((p) => ({ ...p, [f]: e.target.value }));
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {};
+    if (!form.title.trim()) errs.title = t('meetings.error_title_required', 'Meeting title is required.');
+    if (!form.meeting_date) errs.meeting_date = t('meetings.error_date_required', 'Meeting date and time is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
     setLoading(true); setErrors({});
     try {
       if (isEdit) await axios.put(`/api/meetings/${data!.id}`, { ...data, ...form });
       else await axios.post('/api/meetings', form);
       onSaved(); onClose();
     } catch (err: any) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+      setErrors(formatApiErrors(err));
     } finally { setLoading(false); }
   };
 

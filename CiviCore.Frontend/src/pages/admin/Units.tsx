@@ -10,6 +10,7 @@ import {
   TableWrapper, Th, FormInput, FormSelect, CustomSelect
 } from '../../admin/components/ui';
 import { usePermissions } from '../../admin/PermissionsContext';
+import { formatApiErrors } from '../../utils/formatErrors';
 
 function UnitModal({ open, onClose, onSaved, data, blockId }) {
   const { t } = useTranslation();
@@ -27,6 +28,10 @@ function UnitModal({ open, onClose, onSaved, data, blockId }) {
   const set = f => e => setForm(p => ({ ...p, [f]: e.target.value }));
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {};
+    if (!form.unit_number.trim()) errs.unitNumber = t('units.error_unit_number_required', 'Unit number is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
     setLoading(true); setErrors({});
     try {
       const payload = {
@@ -39,8 +44,8 @@ function UnitModal({ open, onClose, onSaved, data, blockId }) {
       else await axios.post('/api/units', payload);
       
       onSaved(); onClose();
-    } catch (err) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+    } catch (err: any) {
+      setErrors(formatApiErrors(err));
     } finally { setLoading(false); }
   };
 
@@ -56,7 +61,7 @@ function UnitModal({ open, onClose, onSaved, data, blockId }) {
     <Modal open={open} onClose={onClose} title={isEdit ? t('units.modal_title_edit') : t('units.modal_title_add')} size="md">
       <div className="space-y-4">
         {errors.general && <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-lg">{errors.general}</div>}
-        <FormInput label={t('units.unit_number')} id="u-number" value={form.unit_number} onChange={set('unit_number')} error={errors.unit_number} required placeholder={t('units.unit_number_placeholder')} />
+        <FormInput label={t('units.unit_number')} id="u-number" value={form.unit_number} onChange={set('unit_number')} error={errors.unitNumber} required placeholder={t('units.unit_number_placeholder')} />
         
         <CustomSelect 
           label={t('units.house_status')}

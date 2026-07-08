@@ -179,12 +179,21 @@ function PasswordTab({ flash, setFlash }) {
   const hasGoogleId = !!profile?.googleId;
 
   const handleSave = async () => {
+    if (!form.password) {
+      setFlash({ message: t('settings.error_password_required', 'New password is required.'), type: 'error' });
+      return;
+    }
+    if (form.password !== form.passwordConfirmation) {
+      setFlash({ message: t('settings.error_password_mismatch', 'Passwords do not match.'), type: 'error' });
+      return;
+    }
+    
     setSaving(true);
     try {
       await axios.put('/api/settings/password', form);
       setFlash({ message: t('settings.success_password'), type: 'success' });
       setForm({ currentPassword: '', password: '', passwordConfirmation: '' });
-    } catch (err) {
+    } catch (err: any) {
       setFlash({ message: err.response?.data?.message || t('settings.error_password'), type: 'error' });
     } finally { setSaving(false); }
   };
@@ -242,7 +251,7 @@ function PasswordTab({ flash, setFlash }) {
       </div>
 
       <div className="flex justify-end pt-1">
-        <button onClick={handleSave} disabled={saving || !form.password || form.password !== form.passwordConfirmation}
+        <button onClick={handleSave} disabled={saving}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
           <span className="material-icons text-sm">save</span> {saving ? t('settings.saving') : t('settings.save_password')}
         </button>

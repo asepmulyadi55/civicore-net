@@ -7,9 +7,10 @@ import {
   StatusBadge, EmptyState, Pagination, Modal, ConfirmModal,
   Avatar, PageHeader, FilterBar, SearchInput, SelectFilter,
   BulkActionBar, TableWrapper, Th, FormInput, FormSelect,
-  SecureImage
+  SecureImage, SearchableSelect, DateFilter
 } from '../../admin/components/ui';
 import { usePermissions } from '../../admin/PermissionsContext';
+import { formatApiErrors } from '../../utils/formatErrors';
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -244,6 +245,12 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
   };
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {};
+    if (!form.householderId) errs.householderId = t('payments.error_householder_required', 'Householder is required.');
+    if (!form.amount || form.amount <= 0) errs.amount = t('payments.error_amount_required', 'Amount must be greater than 0.');
+    if (selectedMonths.size === 0) errs.months = t('payments.error_months_required', 'At least one month must be selected.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
     setLoading(true); setErrors({});
     try {
       const selectedResident = householders.find(h => h.id === form.householderId);
@@ -274,8 +281,8 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
       }
       
       onSaved(); onClose();
-    } catch (err) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Failed to save payment.' });
+    } catch (err: any) {
+      setErrors(formatApiErrors(err));
     } finally { setLoading(false); }
   };
 
@@ -348,6 +355,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
                  </div>
                )}
             </div>
+            {errors.householderId && <p className="mt-1.5 text-xs text-rose-500">{errors.householderId}</p>}
           </div>
 
           {/* Year */}
@@ -405,6 +413,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
               );
             })}
           </div>
+          {errors.months && <p className="mt-2 text-xs text-rose-500">{errors.months}</p>}
         </div>
 
         {/* Method & Status and Proof & Notes */}
@@ -478,6 +487,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
             />
           </div>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 font-medium">{t('payments.amount_hint')}</p>
+          {errors.amount && <p className="mt-1 text-xs text-rose-500">{errors.amount}</p>}
         </div>
 
         {/* Footer */}
@@ -488,7 +498,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
         )}
         <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-white/5 px-2 mt-4">
           <button onClick={onClose} className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">{t('payments.btn_cancel')}</button>
-          <button onClick={handleSave} disabled={loading || !form.householderId || !form.amount || selectedMonths.size === 0} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
+          <button onClick={handleSave} disabled={loading} className="px-5 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">
             <span className="material-icons text-sm">verified</span> {loading ? t('payments.btn_saving') : (editData ? t('payments.btn_save') : t('payments.btn_confirm'))}
           </button>
         </div>

@@ -2,6 +2,7 @@
 // Shared admin UI components
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 export function StatusBadge({ status }: { status?: string }) {
   const map: Record<string, string> = {
@@ -102,7 +103,8 @@ export function Modal({ open, onClose, title, subtitle, children, size = 'md' }:
   );
 }
 
-export function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel = 'Confirm', confirmClass = 'bg-rose-600 hover:bg-rose-700 text-white', icon = 'warning', loading = false }: { open: boolean; onClose: () => void; onConfirm: () => void; title: string; message: string; confirmLabel?: string; confirmClass?: string; icon?: string; loading?: boolean }) {
+export function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel, confirmClass = 'bg-rose-600 hover:bg-rose-700 text-white', icon = 'warning', loading = false }: { open: boolean; onClose: () => void; onConfirm: () => void; title: string; message: string | React.ReactNode; confirmLabel?: string; confirmClass?: string; icon?: string; loading?: boolean }) {
+  const { t } = useTranslation();
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
@@ -113,14 +115,16 @@ export function ConfirmModal({ open, onClose, onConfirm, title, message, confirm
             <span className="material-icons text-rose-600 text-3xl">{icon}</span>
           </div>
           <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{title}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed" dangerouslySetInnerHTML={{ __html: message }} />
+          {typeof message === 'string' ? (
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed" dangerouslySetInnerHTML={{ __html: message }} />
+          ) : (
+            <div className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{message}</div>
+          )}
         </div>
         <div className="flex gap-3 px-6 pb-6">
-          <button onClick={onClose} disabled={loading} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-            Cancel
-          </button>
+          <button onClick={onClose} disabled={loading} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">{t('homepage.label_cancel', 'Cancel')}</button>
           <button onClick={onConfirm} disabled={loading} className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${confirmClass}`}>
-            {loading ? 'Processing...' : confirmLabel}
+            {loading ? t('homepage.text_processing', 'Processing...') : (confirmLabel || t('homepage.text_confirm', 'Confirm'))}
           </button>
         </div>
       </div>
@@ -182,7 +186,7 @@ export function SelectFilter({ value, onChange, options, placeholder = 'All', hi
           type="button"
           onClick={() => setOpen(!open)}
           onBlur={() => setTimeout(() => setOpen(false), 200)}
-          className="w-full text-left pl-4 pr-9 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+          className="w-full text-left pl-4 pr-9 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all truncate block"
         >
           {selectedLabel}
         </button>

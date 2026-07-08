@@ -11,6 +11,7 @@ import {
   SearchableSelect, CustomSelect
 } from '../../admin/components/ui';
 import { usePermissions } from '../../admin/PermissionsContext';
+import { formatApiErrors } from '../../utils/formatErrors';
 
 const HOUSE_STATUS_OPTIONS = [
   { value: 'owner_occupied', label: 'Owner Occupied' },
@@ -39,14 +40,18 @@ function HouseholderModal({ open, onClose, onSaved, data, blocks }) {
   const set = f => e => setForm(p => ({ ...p, [f]: e.target.value }));
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {};
+    if (!form.fullname.trim()) errs.fullname = t('householders.error_fullname_required', 'Full name is required.');
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+
     setLoading(true); setErrors({});
     try {
       if (isEdit) await axios.put(`/api/householders/${data.id}`, form);
       else await axios.post('/api/householders', form);
       onSaved();
       onClose();
-    } catch (err) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+    } catch (err: any) {
+      setErrors(formatApiErrors(err));
     } finally { setLoading(false); }
   };
 

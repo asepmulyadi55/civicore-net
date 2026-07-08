@@ -10,12 +10,13 @@ import {
   BulkActionBar
 } from '../../admin/components/ui';
 import { usePermissions } from '../../admin/PermissionsContext';
+import { formatApiErrors } from '../../utils/formatErrors';
 
 function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
   const { t } = useTranslation();
   const isEdit = !!data?.id;
   const [form, setForm] = useState({ name: '', description: '', is_active: true, coordinators: [] });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   const [personType, setPersonType] = useState('resident');
@@ -47,13 +48,15 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
   };
 
   const handleSave = async () => {
+    if (!form.name.trim()) { setErrors({ name: t('blocks.error_name_required', 'Block name is required.') }); return; }
+    
     setLoading(true); setErrors({});
     try {
       if (isEdit) await axios.put(`/api/blocks/${data.id}`, form);
       else await axios.post('/api/blocks', form);
       onSaved(); onClose();
-    } catch (err) {
-      setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
+    } catch (err: any) {
+      setErrors(formatApiErrors(err));
     } finally { setLoading(false); }
   };
 
