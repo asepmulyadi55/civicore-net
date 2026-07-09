@@ -277,6 +277,8 @@ export default function Users() {
   const [modal, setModal] = useState<{ open: boolean; data: User | null }>({ open: false, data: null });
   const [approveModal, setApproveModal] = useState<{ open: boolean; user: User | null }>({ open: false, user: null });
   const [confirm, setConfirm] = useState<{ open: boolean; item: User | null; loading: boolean }>({ open: false, item: null, loading: false });
+  const [qrConfirm, setQrConfirm] = useState<{ open: boolean; item: User | null; type: 'send' | 'regenerate' | null; loading: boolean }>({ open: false, item: null, type: null, loading: false });
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const token = localStorage.getItem('admin_token');
   if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -313,6 +315,26 @@ export default function Users() {
     }
   };
 
+  const doQrAction = async () => {
+    setQrConfirm(c => ({ ...c, loading: true }));
+    setMessage(null);
+    try {
+      if (qrConfirm.type === 'send') {
+        await axios.post(`/api/users/${qrConfirm.item!.id}/2fa/send-qr`);
+        setMessage({ type: 'success', text: t('users.alert_qr_sent', 'Email sent!') });
+      } else {
+        await axios.post(`/api/users/${qrConfirm.item!.id}/2fa/regenerate-qr`);
+        setMessage({ type: 'success', text: t('users.alert_qr_regen', 'Email sent with new QR code!') });
+      }
+      setTimeout(() => setMessage(null), 5000);
+      setQrConfirm({ open: false, item: null, type: null, loading: false });
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to send.' });
+      setTimeout(() => setMessage(null), 5000);
+      setQrConfirm({ open: false, item: null, type: null, loading: false });
+    }
+  };
+
   const roleOptions = roles.map(r => ({ value: String(r.id), label: r.name }));
   const statCards = [
     { label: t('users.stat_total'), value: stats?.total ?? 0, icon: 'group', iconBg: 'bg-primary/10', iconColor: 'text-primary' },
@@ -329,6 +351,12 @@ export default function Users() {
         onConfirm={doDelete} loading={confirm.loading} icon="person_remove"
         title={t('users.delete_title')} message={t('users.delete_message', { name: confirm.item?.name, defaultValue: `Permanently delete <strong>{{name}}</strong>? This cannot be undone.` })}
         confirmLabel={t('users.btn_delete')} />
+      <ConfirmModal open={qrConfirm.open} onClose={() => setQrConfirm({ open: false, item: null, type: null, loading: false })}
+        onConfirm={doQrAction} loading={qrConfirm.loading} icon={qrConfirm.type === 'send' ? 'qr_code' : 'autorenew'}
+        title={qrConfirm.type === 'send' ? t('users.confirm_send_qr_title', 'Send QR Code') : t('users.confirm_regen_qr_title', 'Regenerate QR Code')} 
+        message={qrConfirm.type === 'send' ? t('users.confirm_send_qr', 'Send existing 2FA QR code to this user via email?') : t('users.confirm_regen_qr', 'Regenerate 2FA secret and send new QR code to this user? They will need to update their authenticator app.')}
+        confirmLabel={t('users.btn_send', 'Send')}
+        confirmClass="bg-indigo-600 hover:bg-indigo-700 text-white" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {statCards.map(s => (
@@ -354,6 +382,14 @@ export default function Users() {
           )
         }
       />
+
+      {message && (
+        <div className={`mb-4 px-4 py-3 rounded-lg flex items-center gap-3 ${message.type === 'success' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/30' : 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/30'}`}>
+          <span className="material-icons text-xl">{message.type === 'success' ? 'check_circle' : 'error'}</span>
+          <span className="text-sm font-medium">{message.text}</span>
+          <button onClick={() => setMessage(null)} className="ml-auto opacity-70 hover:opacity-100 flex items-center justify-center"><span className="material-icons text-sm">close</span></button>
+        </div>
+      )}
 
       <FilterBar>
         <SearchInput value={filters.search} onChange={v => setFilter('search', v)} placeholder={t('users.search_placeholder')} />
@@ -432,6 +468,16 @@ export default function Users() {
                       {can('users.edit') && !isPending && !u.is_active && (
                         <button onClick={async () => { try { await axios.post(`/api/users/${u.id}/reactivate`); fetchData(); } catch {} }} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_reactivate')}>
                           <span className="material-icons text-lg">person_add</span>
+                        </button>
+                      )}
+                      {can('users.edit') && !isPending && (
+                        <button onClick={() => setQrConfirm({ open: true, item: u, type: 'send', loading: false })} className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_send_qr', 'Send Existing 2FA QR Code')}>
+                          <span className="material-icons text-lg">qr_code</span>
+                        </button>
+                      )}
+                      {can('users.edit') && !isPending && (
+                        <button onClick={() => setQrConfirm({ open: true, item: u, type: 'regenerate', loading: false })} className="p-1.5 text-slate-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors cursor-pointer" title={t('users.tooltip_regen_qr', 'Regenerate & Send New 2FA QR Code')}>
+                          <span className="material-icons text-lg">autorenew</span>
                         </button>
                       )}
                       {can('users.delete') && (

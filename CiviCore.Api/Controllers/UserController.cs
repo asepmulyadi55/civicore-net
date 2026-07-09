@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using CiviCore.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using CiviCore.Infrastructure.Data;
+using CiviCore.Api.Services;
+using OtpNet;
+using QRCoder;
 
 namespace CiviCore.Api.Controllers;
 
@@ -15,12 +18,14 @@ public class UserController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly AppDbContext _context;
+    private readonly IEmailService _emailService;
 
-    public UserController(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, AppDbContext context)
+    public UserController(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, AppDbContext context, IEmailService emailService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _context = context;
+        _emailService = emailService;
     }
 
     [HttpGet]
@@ -322,6 +327,72 @@ public class UserController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+    }
+
+    [HttpPost("{id}/2fa/send-qr")]
+    public async Task<IActionResult> SendQrCode(Guid id)
+    {
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        if (user == null) return NotFound(new { message = "User not found." });
+
+        if (string.IsNullOrEmpty(user.TwoFactorSecretKey))
+        {
+            return BadRequest(new { message = "User does not have 2FA set up. Please use regenerate option instead." });
+        }
+
+        await SendQrEmailAsync(user, user.TwoFactorSecretKey);
+        return Ok(new { message = "QR code sent." });
+    }
+
+    [HttpPost("{id}/2fa/regenerate-qr")]
+    public async Task<IActionResult> RegenerateQrCode(Guid id)
+    {
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        if (user == null) return NotFound(new { message = "User not found." });
+
+        var key = KeyGeneration.GenerateRandomKey(20);
+        var secret = Base32Encoding.ToString(key);
+
+        user.TwoFactorSecretKey = secret;
+        await _userManager.UpdateAsync(user);
+
+        await SendQrEmailAsync(user, secret);
+        return Ok(new { message = "New QR code generated and sent." });
+    }
+
+    private async Task SendQrEmailAsync(ApplicationUser user, string secret)
+    {
+        var totpUri = new OtpUri(OtpType.Totp, secret, user.Email, "CiviCore");
+        
+        using var qrGenerator = new QRCodeGenerator();
+        using var qrCodeData = qrGenerator.CreateQrCode(totpUri.ToString(), QRCodeGenerator.ECCLevel.Q);
+        using var qrCode = new PngByteQRCode(qrCodeData);
+        var qrCodeImage = qrCode.GetGraphic(10); // Reduced from 20 to 10 pixels per module
+        
+        var cid = "qr-code-image";
+
+        var emailBody = $@"
+<div style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"">
+    <div style=""text-align: center; margin-bottom: 25px;"">
+        <h2 style=""color: #1e293b; margin: 0; font-size: 24px;"">Two-Factor Authentication Setup</h2>
+    </div>
+    <p style=""color: #475569; font-size: 16px; line-height: 1.6;"">Hello {user.Name},</p>
+    <p style=""color: #475569; font-size: 16px; line-height: 1.6;"">Here is your Two-Factor Authentication QR code. Please scan this with Google Authenticator or a similar app.</p>
+    
+    <div style=""text-align: center; margin: 30px 0;"">
+        <img src=""cid:{cid}"" alt=""QR Code"" style=""width: 200px; max-width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;"" />
+    </div>
+
+    <p style=""color: #475569; font-size: 16px; line-height: 1.6; text-align: center;"">
+        Or enter this code manually: <br/>
+        <strong style=""font-size: 20px; letter-spacing: 2px; color: #3b82f6;"">{secret}</strong>
+    </p>
+
+    <hr style=""border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;"">
+    <p style=""color: #94a3b8; font-size: 14px; text-align: center; margin: 0;"">Best regards,<br><strong>The CiviCore Team</strong></p>
+</div>";
+
+        await _emailService.SendEmailAsync(user.Email!, "Your 2FA QR Code", emailBody, qrCodeImage, cid);
     }
 }
 

@@ -61,6 +61,10 @@ namespace CiviCore.Api.Controllers
                 // Mirror Laravel exactly: Force 2FA Challenge if they have a secret configured
                 if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
                 {
+                    var claims = new List<Claim> { new Claim(System.Security.Claims.ClaimTypes.Name, user.Id.ToString()) };
+                    var identity = new System.Security.Claims.ClaimsIdentity(claims, IdentityConstants.TwoFactorUserIdScheme);
+                    await HttpContext.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, new System.Security.Claims.ClaimsPrincipal(identity));
+                    
                     return StatusCode(403, new { message = "Two factor authentication required", requires_2fa = true });
                 }
 
@@ -281,7 +285,7 @@ namespace CiviCore.Api.Controllers
 
             if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
             {
-                var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()) };
+                var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Id.ToString()) };
                 var identity = new ClaimsIdentity(claims, IdentityConstants.TwoFactorUserIdScheme);
                 await HttpContext.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, new ClaimsPrincipal(identity));
                 return Redirect($"{loginUrl}?requires_2fa=true&email={Uri.EscapeDataString(user.Email)}");

@@ -14,7 +14,7 @@ namespace CiviCore.Api.Services
             _config = config;
         }
 
-        public async Task SendEmailAsync(string toEmail, string subject, string body)
+        public async Task SendEmailAsync(string toEmail, string subject, string body, byte[]? inlineImage = null, string? inlineImageCid = null)
         {
             var message = new MimeMessage();
             var fromAddress = _config["MailSettings:FromAddress"] ?? "noreply@civicore.com";
@@ -23,10 +23,17 @@ namespace CiviCore.Api.Services
             message.To.Add(new MailboxAddress("", toEmail));
             message.Subject = subject;
 
-            message.Body = new TextPart("html")
+            if (inlineImage != null && !string.IsNullOrEmpty(inlineImageCid))
             {
-                Text = body
-            };
+                var builder = new BodyBuilder { HtmlBody = body };
+                var image = builder.LinkedResources.Add("image.png", inlineImage, new MimeKit.ContentType("image", "png"));
+                image.ContentId = inlineImageCid;
+                message.Body = builder.ToMessageBody();
+            }
+            else
+            {
+                message.Body = new TextPart("html") { Text = body };
+            }
 
             using var client = new SmtpClient();
             var host = _config["MailSettings:Host"] ?? "localhost";
@@ -47,9 +54,10 @@ namespace CiviCore.Api.Services
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore in dev if SMTP not running
+                // Throw so the API returns 500 and the frontend sees the real error
+                throw new Exception($"Failed to send email: {ex.Message}", ex);
             }
         }
     }
