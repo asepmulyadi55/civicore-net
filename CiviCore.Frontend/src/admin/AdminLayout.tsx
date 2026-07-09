@@ -147,7 +147,7 @@ function NavGroup({ group, activePath, userRole, permissions }) {
 }
 
 export default function AdminLayout({ children, title, subtitle }: { children: React.ReactNode, title?: string, subtitle?: string }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [dark, toggleDark] = useDarkMode();

@@ -31,6 +31,9 @@ export default function Login() {
     return msg;
   });
 
+  const [tempToken, setTempToken] = useState<string | null>(null);
+  const [tempUserStr, setTempUserStr] = useState<string | null>(null);
+
   React.useEffect(() => {
     if (localStorage.getItem('admin_token')) {
       navigate('/admin/dashboard');
@@ -42,13 +45,33 @@ export default function Login() {
     const userStr = searchParams.get('user');
     const msg = searchParams.get('message');
     const isError = searchParams.get('isError');
+    const req2fa = searchParams.get('requires_2fa');
+    const req2faSetup = searchParams.get('requires_2fa_setup');
+    const email = searchParams.get('email');
 
     if (msg) {
       if (isError) setError(msg);
       else setSuccessMessage(msg);
     }
 
-    if (token && userStr) {
+    if (req2fa === 'true') {
+      setRequires2FA(true);
+      if (email) setUsername(email);
+      window.history.replaceState({}, document.title, '/admin/login');
+      return;
+    }
+
+    if (req2faSetup === 'true' && token) {
+      setTempToken(token);
+      if (userStr) setTempUserStr(userStr);
+      if (email) setUsername(email);
+      setIsSettingUp2FA(true);
+      fetch2FASetup(email, '', token);
+      window.history.replaceState({}, document.title, '/admin/login');
+      return;
+    }
+
+    if (token && userStr && req2faSetup !== 'true') {
       localStorage.setItem('admin_token', token);
       localStorage.setItem('admin_user', userStr);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -81,7 +104,7 @@ export default function Login() {
         setRequires2FA(true);
       } else if (err.response?.data?.requires_2fa_setup) {
         setIsSettingUp2FA(true);
-        fetch2FASetup();
+        fetch2FASetup(username, password);
       } else {
         setError(err.response?.data?.message || t('login.err_default'));
       }
@@ -90,13 +113,14 @@ export default function Login() {
     }
   };
 
-  const fetch2FASetup = async () => {
+  const fetch2FASetup = async (userEmail = username, userPassword = password, tkn = tempToken) => {
     setIsLoading(true);
     try {
+      const config = tkn ? { headers: { Authorization: `Bearer ${tkn}` } } : {};
       const response = await axios.post('/api/auth/2fa/setup', {
-        email: username,
-        password: password,
-      });
+        email: userEmail,
+        password: userPassword,
+      }, config);
       setSetupQRCode(response.data.qrCode);
       setSetupSecret(response.data.secret);
     } catch (err) {
@@ -116,17 +140,43 @@ export default function Login() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/auth/login-2fa', {
-        email: username,
-        password: password,
-        code: twoFaCode,
-        rememberMe: remember,
-      });
-      const { token, user } = response.data;
-      localStorage.setItem('admin_token', token);
-      localStorage.setItem('admin_user', JSON.stringify(user));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      navigate('/admin/dashboard');
+      let response;
+      if (isSettingUp2FA) {
+        const config = tempToken ? { headers: { Authorization: `Bearer ${tempToken}` } } : {};
+        response = await axios.post('/api/auth/2fa/verify', { code: twoFaCode }, config);
+        
+        // Setup successful. Now we can fully login.
+        if (tempToken && tempUserStr) {
+          localStorage.setItem('admin_token', tempToken);
+          localStorage.setItem('admin_user', tempUserStr);
+          axios.defaults.headers.common['Authorization'] = `Bearer ${tempToken}`;
+          navigate('/admin/dashboard');
+          return;
+        } else {
+          // Normal flow fallback
+          response = await axios.post('/api/auth/login-2fa', {
+            email: username,
+            password: password,
+            code: twoFaCode,
+            rememberMe: remember,
+          });
+        }
+      } else {
+        response = await axios.post('/api/auth/login-2fa', {
+          email: username,
+          password: password,
+          code: twoFaCode,
+          rememberMe: remember,
+        });
+      }
+
+      if (response.data.token) {
+        const { token, user } = response.data;
+        localStorage.setItem('admin_token', token);
+        localStorage.setItem('admin_user', JSON.stringify(user));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        navigate('/admin/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid 2FA code.');
     } finally {

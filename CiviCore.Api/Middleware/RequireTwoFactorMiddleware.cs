@@ -27,7 +27,11 @@ public class RequireTwoFactorMiddleware
                 if (user != null && string.IsNullOrEmpty(user.TwoFactorSecretKey))
                 {
                     var path = context.Request.Path.Value?.ToLower();
-                    if (path != null && !path.Contains("/api/auth/2fa/setup") && !path.Contains("/api/auth/2fa/verify") && !path.Contains("/api/auth/logout"))
+                    if (path != null && 
+                        !path.Contains("/api/auth/2fa/setup") && 
+                        !path.Contains("/api/auth/2fa/verify") && 
+                        !path.Contains("/api/auth/logout") &&
+                        !path.Contains("/api/auth/google"))
                     {
                         context.Response.StatusCode = 403;
                         await context.Response.WriteAsJsonAsync(new { code = "REQUIRES_2FA_SETUP", message = "Mandatory Security: You must enable Two-Factor Authentication to access this application." });

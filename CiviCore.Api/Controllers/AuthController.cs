@@ -274,19 +274,25 @@ namespace CiviCore.Api.Controllers
                 return Redirect($"{loginUrl}?message={Uri.EscapeDataString("Your account is still pending admin approval.")}&isError=true");
             }
 
-            user.SessionToken = Guid.NewGuid().ToString();
-            await _userManager.UpdateAsync(user);
-
-            await _signInManager.SignInAsync(user, isPersistent: true);
-            
             var roles = await _userManager.GetRolesAsync(user);
             var userRole = roles.FirstOrDefault() ?? "";
-
             var userJson = System.Text.Json.JsonSerializer.Serialize(new { name = user.Name, email = user.Email, role = userRole });
             var encodedUser = Uri.EscapeDataString(userJson);
+
+            if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
+            {
+                var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()) };
+                var identity = new ClaimsIdentity(claims, IdentityConstants.TwoFactorUserIdScheme);
+                await HttpContext.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, new ClaimsPrincipal(identity));
+                return Redirect($"{loginUrl}?requires_2fa=true&email={Uri.EscapeDataString(user.Email)}");
+            }
+            
+            user.SessionToken = Guid.NewGuid().ToString();
+            await _userManager.UpdateAsync(user);
+            await _signInManager.SignInAsync(user, isPersistent: true);
             
             // Redirect to login page with token so the React frontend can save it to localStorage
-            return Redirect($"{loginUrl}?token={user.SessionToken}&user={encodedUser}");
+            return Redirect($"{loginUrl}?requires_2fa_setup=true&token={user.SessionToken}&user={encodedUser}&email={Uri.EscapeDataString(user.Email)}");
         }
 
         [HttpPost("2fa/setup")]
@@ -294,6 +300,16 @@ namespace CiviCore.Api.Controllers
         {
             // Try to get user from Identity session first
             var user = await _userManager.GetUserAsync(User);
+            
+            // Fallback: Check if Bearer token is provided
+            if (user == null && Request.Headers.TryGetValue("Authorization", out var authHeader))
+            {
+                var token = authHeader.ToString().Replace("Bearer ", "").Trim();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    user = await _userManager.Users.FirstOrDefaultAsync(u => u.SessionToken == token);
+                }
+            }
             
             // Fallback for stateless 2FA setup during login flow
             if (user == null && !string.IsNullOrEmpty(request.Email) && !string.IsNullOrEmpty(request.Password))
@@ -307,11 +323,18 @@ namespace CiviCore.Api.Controllers
 
             if (user == null) return Unauthorized(new { message = "Invalid credentials." });
 
-            var key = KeyGeneration.GenerateRandomKey(20);
-            var secret = Base32Encoding.ToString(key);
-
-            user.TwoFactorSecretKey = secret;
-            await _userManager.UpdateAsync(user);
+            string secret;
+            if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
+            {
+                secret = user.TwoFactorSecretKey;
+            }
+            else
+            {
+                var key = KeyGeneration.GenerateRandomKey(20);
+                secret = Base32Encoding.ToString(key);
+                user.TwoFactorSecretKey = secret;
+                await _userManager.UpdateAsync(user);
+            }
 
             var totpUri = new OtpUri(OtpType.Totp, secret, user.Email, "CiviCore");
             
