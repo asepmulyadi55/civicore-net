@@ -17,7 +17,7 @@ public static class DataSeeder
         // We do NOT call MigrateAsync() automatically here so the user has control over running migrations manually.
         
         // Seed Roles
-        var roles = new[] { "admin", "treasurer", "block_coordinator", "resident" };
+        var roles = new[] { "admin", "treasurer", "coordinator", "resident" };
         foreach (var role in roles)
         {
             if (!await roleManager.RoleExistsAsync(role))
@@ -33,7 +33,7 @@ public static class DataSeeder
         {
             var admin = new ApplicationUser
             {
-                UserName = "admin",
+                UserName = "Admin",
                 Email = adminEmail,
                 Name = "Admin",
                 IsActive = true,

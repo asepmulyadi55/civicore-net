@@ -113,7 +113,7 @@ namespace CiviCore.Api.Controllers
                 var roles = await _userManager.GetRolesAsync(user);
                 var userRole = roles.FirstOrDefault() ?? "";
 
-                return Ok(new { message = "Login successful", token = user.SessionToken, user = new { name = user.Name, email = user.Email, role = userRole } });
+                return Ok(new { message = "Login successful", token = user.SessionToken, user = new { name = user.Name, email = user.Email, role = userRole, language = user.Language } });
             }
 
             return Unauthorized(new { message = "Invalid 2FA code." });
@@ -280,7 +280,7 @@ namespace CiviCore.Api.Controllers
 
             var roles = await _userManager.GetRolesAsync(user);
             var userRole = roles.FirstOrDefault() ?? "";
-            var userJson = System.Text.Json.JsonSerializer.Serialize(new { name = user.Name, email = user.Email, role = userRole });
+            var userJson = System.Text.Json.JsonSerializer.Serialize(new { name = user.Name, email = user.Email, role = userRole, language = user.Language });
             var encodedUser = Uri.EscapeDataString(userJson);
 
             if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))

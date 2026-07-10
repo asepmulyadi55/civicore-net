@@ -12,10 +12,11 @@ import { formatApiErrors } from '../../utils/formatErrors';
 export default function HomepageEventForm() {
   const { t } = useTranslation();
   const CATEGORY_OPTIONS = [
-    { value: 'community', label: t('homepage.text_community', 'Community') },
-    { value: 'maintenance', label: t('homepage.text_maintenance', 'Maintenance') },
-    { value: 'announcement', label: t('homepage.text_announcement', 'Announcement') },
-    { value: 'other', label: t('homepage.text_other', 'Other') },
+    { value: 'media', label: t('homepage.cat_media', 'Media') },
+    { value: 'religious', label: t('homepage.cat_religious', 'Religious') },
+    { value: 'national', label: t('homepage.cat_national', 'National') },
+    { value: 'social', label: t('homepage.cat_social', 'Social') },
+    { value: 'other', label: t('homepage.cat_other', 'Other') },
 ];
 
     const { id } = useParams();
@@ -119,9 +120,10 @@ export default function HomepageEventForm() {
                         </div>
                         <FormInput label={t('homepage.field_location', 'Location')} id="ev-location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder={t('homepage.placeholder_location', 'e.g. Central Garden')} />
                         <FormSelect label={t('homepage.field_category', 'Category')} id="ev-cat" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} options={[
-                            { value: 'community', label: t('homepage.cat_community', 'Community') },
-                            { value: 'maintenance', label: t('homepage.cat_maintenance', 'Maintenance') },
-                            { value: 'announcement', label: t('homepage.cat_announcement', 'Announcement') },
+                            { value: 'media', label: t('homepage.cat_media', 'Media') },
+                            { value: 'religious', label: t('homepage.cat_religious', 'Religious') },
+                            { value: 'national', label: t('homepage.cat_national', 'National') },
+                            { value: 'social', label: t('homepage.cat_social', 'Social') },
                             { value: 'other', label: t('homepage.cat_other', 'Other') }
                         ]} placeholder={t('homepage.placeholder_none', 'None')} />
                     </div>
