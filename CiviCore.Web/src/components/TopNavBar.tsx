@@ -72,11 +72,8 @@ export default function TopNavBar({ activeTab, setActiveTab, isDark, toggleDark 
                     })}
                 </nav>
                 <div className="flex items-center gap-2 sm:gap-4">
-                    <button onClick={toggleDark} aria-label="Toggle Dark Mode" className="text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors scale-95 active:scale-90 p-1 sm:p-2">
+                    <button onClick={toggleDark} aria-label="Ganti Mode Gelap" className="text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors scale-95 active:scale-90 p-1 sm:p-2">
                         <span className="material-symbols-outlined">{isDark ? 'light_mode' : 'dark_mode'}</span>
-                    </button>
-                    <button aria-label="Change Language" className="text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors scale-95 active:scale-90 p-1 sm:p-2">
-                        <span className="material-symbols-outlined">language</span>
                     </button>
                     <button
                         aria-label="Toggle Menu"

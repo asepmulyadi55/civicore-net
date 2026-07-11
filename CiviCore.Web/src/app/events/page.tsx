@@ -117,9 +117,9 @@ export default function EventsPage() {
                     {/* Page heading */}
                     <div className="mb-10">
                         <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
-                            <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Home</Link>
+                            <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Beranda</Link>
                             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                            <span className="text-on-surface dark:text-on-primary">Events</span>
+                            <span className="text-on-surface dark:text-on-primary">Acara</span>
                         </div>
                         <h1 className="text-display-lg-mobile md:text-display-lg font-display-lg text-primary dark:text-primary-fixed-dim">
                             {settings.title || 'Community Events'}
@@ -135,7 +135,7 @@ export default function EventsPage() {
                                 type="text"
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                placeholder="Search events…"
+                                placeholder="Cari acara…"
                                 className="w-full pl-11 pr-4 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-primary dark:text-on-primary focus:outline-none focus:border-primary dark:focus:border-primary-fixed-dim transition-all shadow-sm"
                             />
                         </div>
@@ -145,12 +145,12 @@ export default function EventsPage() {
                                 onClick={() => { setIsCategoryOpen(!isCategoryOpen); setIsStatusOpen(false); }}
                                 className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-48 shadow-sm text-left flex items-center justify-between"
                             >
-                                <span className="truncate">{category ? CATEGORIES.find(c => c === category)?.charAt(0).toUpperCase() + (CATEGORIES.find(c => c === category)?.slice(1) || "") : "All Categories"}</span>
+                                <span className="truncate">{category ? CATEGORIES.find(c => c === category)?.charAt(0).toUpperCase() + (CATEGORIES.find(c => c === category)?.slice(1) || "") : "Semua Kategori"}</span>
                                 <span className="material-symbols-outlined absolute right-3 pointer-events-none transition-transform duration-200" style={{ transform: isCategoryOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
                             </button>
                             {isCategoryOpen && (
                                 <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                                    <li onClick={() => { setCategory(''); setIsCategoryOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">All Categories</li>
+                                    <li onClick={() => { setCategory(''); setIsCategoryOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Semua Kategori</li>
                                     {CATEGORIES.map(c => (
                                         <li key={c} onClick={() => { setCategory(c); setIsCategoryOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">
                                             {c.charAt(0).toUpperCase() + c.slice(1)}
@@ -166,15 +166,15 @@ export default function EventsPage() {
                                 onClick={() => { setIsStatusOpen(!isStatusOpen); setIsCategoryOpen(false); }}
                                 className="pl-4 pr-10 py-3 rounded-xl border border-border-subtle/50 dark:border-primary-container/50 bg-surface dark:bg-primary-container text-text-muted dark:text-on-primary/80 focus:outline-none w-full sm:w-48 shadow-sm text-left flex items-center justify-between"
                             >
-                                <span className="truncate">{status === 'upcoming' ? 'Upcoming' : status === 'past' ? 'Past' : status === 'ongoing' ? 'Ongoing' : 'All Events'}</span>
+                                <span className="truncate">{status === 'upcoming' ? 'Akan Datang' : status === 'past' ? 'Berlalu' : status === 'ongoing' ? 'Berlangsung' : 'Semua Acara'}</span>
                                 <span className="material-symbols-outlined absolute right-3 pointer-events-none transition-transform duration-200" style={{ transform: isStatusOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
                             </button>
                             {isStatusOpen && (
                                 <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                                    <li onClick={() => { setStatus('all'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">All Events</li>
-                                    <li onClick={() => { setStatus('upcoming'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Upcoming</li>
-                                    <li onClick={() => { setStatus('ongoing'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Ongoing</li>
-                                    <li onClick={() => { setStatus('past'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Past</li>
+                                    <li onClick={() => { setStatus('all'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Semua Acara</li>
+                                    <li onClick={() => { setStatus('upcoming'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Akan Datang</li>
+                                    <li onClick={() => { setStatus('ongoing'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Berlangsung</li>
+                                    <li onClick={() => { setStatus('past'); setIsStatusOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 truncate">Berlalu</li>
                                 </ul>
                             )}
                         </div>
@@ -182,23 +182,23 @@ export default function EventsPage() {
                         {hasFilters && (
                             <button onClick={clearFilters}
                                 className="px-6 py-3 rounded-xl bg-surface-container dark:bg-primary-container/50 text-primary dark:text-on-primary hover:bg-surface-container-low transition-colors w-full sm:w-auto">
-                                Clear
+                                Hapus Filter
                             </button>
                         )}
                     </div>
 
                     <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-8">
-                        {filtered.length} event{filtered.length !== 1 ? 's' : ''} {hasFilters ? 'found' : 'total'}
+                        {filtered.length} acara {hasFilters ? 'ditemukan' : 'tersedia'}
                     </p>
 
                     {/* Grid */}
                     {paginated.length === 0 ? (
                         <div className="text-center py-20 rounded-2xl bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50">
                             <span className="material-symbols-outlined text-5xl mb-4 text-text-muted dark:text-on-primary/30">event_busy</span>
-                            <p className="font-headline-sm text-primary dark:text-on-primary">No events found</p>
+                            <p className="font-headline-sm text-primary dark:text-on-primary">Tidak ada acara ditemukan</p>
                             {hasFilters && (
                                 <button onClick={clearFilters} className="mt-4 text-[#b45309] dark:text-[#d97706] hover:underline">
-                                    Clear filters
+                                    Hapus filter
                                 </button>
                             )}
                         </div>
@@ -216,14 +216,14 @@ export default function EventsPage() {
                                             <div className="absolute top-4 left-4 flex gap-2">
                                                 {ev.date && (
                                                     <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
-                                                        {new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
+                                                        {new Date(ev.date).toLocaleDateString('id-ID', { month: 'short', day: '2-digit' })}
                                                     </div>
                                                 )}
                                                 {isPast && (
-                                                    <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">Past</div>
+                                                    <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">Berlalu</div>
                                                 )}
                                                 {ev.status === 'ongoing' && (
-                                                    <div className="bg-[#b45309] text-white px-3 py-1 rounded font-bold text-sm">Ongoing</div>
+                                                    <div className="bg-[#b45309] text-white px-3 py-1 rounded font-bold text-sm">Berlangsung</div>
                                                 )}
                                             </div>
                                         </div>
@@ -234,7 +234,7 @@ export default function EventsPage() {
 
                                             <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
                                                 <span className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link">
-                                                    <span className="group-hover/link:underline">View Details</span>
+                                                    <span className="group-hover/link:underline">Lihat Detail</span>
                                                     <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
                                                 </span>
                                                 <span className="text-label-sm text-text-muted dark:text-on-primary/50">

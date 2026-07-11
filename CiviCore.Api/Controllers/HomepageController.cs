@@ -20,12 +20,14 @@ public class HomepageController : ControllerBase
     private readonly AppDbContext _context;
     private readonly ILocalStorageService _storageService;
     private readonly IDistributedCache _cache;
+    private readonly IEmailService _emailService;
 
-    public HomepageController(AppDbContext context, ILocalStorageService storageService, IDistributedCache cache)
+    public HomepageController(AppDbContext context, ILocalStorageService storageService, IDistributedCache cache, IEmailService emailService)
     {
         _context = context;
         _storageService = storageService;
         _cache = cache;
+        _emailService = emailService;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -701,9 +703,49 @@ public class HomepageController : ControllerBase
     }
 
     [HttpPut("footer")]
-    public async Task<IActionResult> UpdateFooter([FromBody] JsonElement body)
+    public async Task<IActionResult> UpdateFooter(IFormCollection formData, IFormFile? logo)
     {
-        await SaveSetting("homepage_footer", body.GetRawText());
+        var dict = new Dictionary<string, object>();
+        foreach (var key in formData.Keys)
+        {
+            if (key != "logo")
+            {
+                dict[key] = formData[key].ToString();
+            }
+        }
+
+        if (logo != null)
+        {
+            var oldJson = await GetSettingValue("homepage_footer");
+            if (!string.IsNullOrEmpty(oldJson))
+            {
+                var oldDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(oldJson);
+                if (oldDict != null && oldDict.TryGetValue("logo", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+                {
+                    var oldImgUrl = imgEl.GetString();
+                    if (!string.IsNullOrEmpty(oldImgUrl))
+                    {
+                        await DeleteUploadedFile(oldImgUrl);
+                    }
+                }
+            }
+            dict["logo"] = await SaveUploadedFile(logo, "footer");
+        }
+        else
+        {
+            var oldJson = await GetSettingValue("homepage_footer");
+            if (!string.IsNullOrEmpty(oldJson))
+            {
+                var oldDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(oldJson);
+                if (oldDict != null && oldDict.TryGetValue("logo", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+                {
+                    dict["logo"] = imgEl.GetString()!;
+                }
+            }
+        }
+
+        var json = JsonSerializer.Serialize(dict);
+        await SaveSetting("homepage_footer", json);
         return Ok(new { message = "Footer saved." });
     }
     // ── Property Settings ─────────────────────────────────────────────────────
@@ -821,5 +863,201 @@ public class HomepageController : ControllerBase
             result[key] = setting?.Value;
         }
         return Ok(result);
+    }
+
+    // ── Emergency Contacts ─────────────────────────────────────────────────────
+
+    [HttpGet("emergency-contacts")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetEmergencyContacts()
+    {
+        var json = await GetSettingValue("homepage_emergency_contacts");
+        if (string.IsNullOrEmpty(json))
+        {
+            // Default contacts
+            var defaults = new[]
+            {
+                new { label = "Pos Keamanan", phone = "+62 123 4567 890", icon = "local_police" },
+                new { label = "Klinik Setempat", phone = "+62 111 2222 333", icon = "local_hospital" },
+                new { label = "Pemadam Kebakaran", phone = "113", icon = "local_fire_department" },
+                new { label = "Kantor Manajemen", phone = "+62 987 6543 210", icon = "support_agent" },
+            };
+            return Ok(defaults);
+        }
+        return Content(json, "application/json");
+    }
+
+    [HttpPut("emergency-contacts")]
+    public async Task<IActionResult> UpdateEmergencyContacts([FromBody] JsonElement body)
+    {
+        await SaveSetting("homepage_emergency_contacts", body.GetRawText());
+        return Ok(new { message = "Kontak darurat disimpan." });
+    }
+
+    // ── Form Submissions ──────────────────────────────────────────────────────
+
+    private async Task<string> GetReceiverEmail()
+    {
+        var footerJson = await GetSettingValue("homepage_footer");
+        if (!string.IsNullOrEmpty(footerJson))
+        {
+            try
+            {
+                var footer = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(footerJson);
+                if (footer != null && footer.TryGetValue("contact_email", out var emailEl) && emailEl.ValueKind == JsonValueKind.String)
+                {
+                    var email = emailEl.GetString();
+                    if (!string.IsNullOrWhiteSpace(email)) return email;
+                }
+            }
+            catch { }
+        }
+        return _emailService != null ? (await Task.FromResult("admin@civicore.com")) : "admin@civicore.com";
+    }
+
+    private string BuildEmailHtml(string title, Dictionary<string, string?> fields)
+    {
+        var rows = string.Join("", fields.Select(f =>
+        {
+            var valueHtml = System.Web.HttpUtility.HtmlEncode(f.Value ?? "-");
+            if (!string.IsNullOrEmpty(f.Value) && f.Value.StartsWith("http") && f.Key.Contains("Foto"))
+            {
+                valueHtml = $"<a href='{f.Value}' style='color:#064e3b;text-decoration:underline;'>Lihat Foto</a><br/><img src='{f.Value}' style='max-width:100%;max-height:300px;margin-top:10px;border-radius:8px;border:1px solid #e5e7eb;' alt='Lampiran'/>";
+            }
+            else if (!string.IsNullOrEmpty(f.Value) && f.Value.StartsWith("cid:"))
+            {
+                valueHtml = $"<img src='{f.Value}' style='max-width:100%;max-height:300px;margin-top:10px;border-radius:8px;border:1px solid #e5e7eb;' alt='Lampiran Foto'/>";
+            }
+            return "<tr><td style='padding:8px 12px;font-weight:600;background:#f3f4f6;border:1px solid #e5e7eb;white-space:nowrap;vertical-align:top'>" + f.Key + "</td>" +
+                   "<td style='padding:8px 12px;border:1px solid #e5e7eb;vertical-align:top'>" + valueHtml + "</td></tr>";
+        }));
+        return "<html><body style='font-family:sans-serif;color:#111'>" +
+               "<h2 style='color:#064e3b'>" + title + "</h2>" +
+               "<table style='border-collapse:collapse;width:100%;max-width:600px'>" + rows + "</table>" +
+               "<p style='margin-top:24px;color:#6b7280;font-size:13px'>Pesan ini dikirim otomatis dari sistem CiviCore.</p>" +
+               "</body></html>";
+    }
+
+    [HttpPost("submit/visit")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SubmitVisit([FromForm] string name, [FromForm] string phone, [FromForm] string email,
+        [FromForm] string? property, [FromForm] string? date, [FromForm] string? time, [FromForm] string? notes)
+    {
+        var submission = new CiviCore.Domain.Entities.FormSubmission
+        {
+            Type = "visit",
+            Data = System.Text.Json.JsonSerializer.Serialize(new { name, phone, email, property, date, time, notes }),
+        };
+        _context.FormSubmissions.Add(submission);
+        await _context.SaveChangesAsync();
+
+        try
+        {
+            var receiver = await GetReceiverEmail();
+            var html = BuildEmailHtml("📅 Permintaan Jadwal Kunjungan Baru", new Dictionary<string, string?>
+            {
+                ["Nama"] = name, ["Telepon"] = phone, ["Email"] = email,
+                ["Properti"] = property, ["Tanggal"] = date, ["Waktu"] = time, ["Catatan"] = notes
+            });
+            await _emailService.SendEmailAsync(receiver, "Permintaan Jadwal Kunjungan Baru", html);
+        }
+        catch { /* Email failures should not block submission */ }
+
+        return Ok(new { message = "Permintaan kunjungan Anda telah diterima. Kami akan menghubungi Anda segera." });
+    }
+
+    [HttpPost("submit/report")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SubmitReport([FromForm] string? category, [FromForm] string? location,
+        [FromForm] string subject, [FromForm] string description, [FromForm] string? reporter_name, [FromForm] string? reporter_phone, IFormFile? photo)
+    {
+        string? photoUrl = null;
+        byte[]? photoBytes = null;
+        string? photoCid = null;
+        if (photo != null)
+        {
+            photoUrl = await SaveUploadedFile(photo, "reports");
+            using var ms = new System.IO.MemoryStream();
+            await photo.CopyToAsync(ms);
+            photoBytes = ms.ToArray();
+            photoCid = Guid.NewGuid().ToString();
+        }
+
+        var submission = new CiviCore.Domain.Entities.FormSubmission
+        {
+            Type = "report",
+            Data = System.Text.Json.JsonSerializer.Serialize(new { category, location, subject, description, reporter_name, reporter_phone, photo_url = photoUrl }),
+        };
+        _context.FormSubmissions.Add(submission);
+        await _context.SaveChangesAsync();
+
+        try
+        {
+            var receiver = await GetReceiverEmail();
+            var html = BuildEmailHtml("🚨 Laporan Warga Baru", new Dictionary<string, string?>
+            {
+                ["Kategori"] = category, ["Lokasi"] = location, ["Subjek"] = subject,
+                ["Deskripsi"] = description, ["Pelapor"] = reporter_name, ["Telepon"] = reporter_phone,
+                ["Foto"] = photoCid != null ? $"cid:{photoCid}" : null
+            });
+            await _emailService.SendEmailAsync(receiver, $"Laporan Warga Baru: {subject}", html, photoBytes, photoCid);
+        }
+        catch { }
+
+        return Ok(new { message = "Laporan Anda telah berhasil dikirim. Terima kasih telah membantu menjaga komunitas kita." });
+    }
+
+    [HttpPost("submit/rsvp")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SubmitRsvp([FromForm] string name, [FromForm] string unit,
+        [FromForm] string? guests, [FromForm] string? event_id, [FromForm] string? event_title)
+    {
+        var submission = new CiviCore.Domain.Entities.FormSubmission
+        {
+            Type = "rsvp",
+            Data = System.Text.Json.JsonSerializer.Serialize(new { name, unit, guests, event_id, event_title }),
+        };
+        _context.FormSubmissions.Add(submission);
+        await _context.SaveChangesAsync();
+
+        try
+        {
+            var receiver = await GetReceiverEmail();
+            var html = BuildEmailHtml($"✅ RSVP Acara: {event_title}", new Dictionary<string, string?>
+            {
+                ["Acara"] = event_title, ["Nama"] = name, ["Nomor Unit"] = unit, ["Jumlah Tamu"] = guests
+            });
+            await _emailService.SendEmailAsync(receiver, $"RSVP Baru: {event_title}", html);
+        }
+        catch { }
+
+        return Ok(new { message = "RSVP Anda telah berhasil dikirim! Kami menantikan kehadiran Anda." });
+    }
+
+    [HttpPost("submit/message")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SubmitMessage([FromForm] string name, [FromForm] string? email, [FromForm] string? phone,
+        [FromForm] string message, [FromForm] string? related_to)
+    {
+        var submission = new CiviCore.Domain.Entities.FormSubmission
+        {
+            Type = "message",
+            Data = System.Text.Json.JsonSerializer.Serialize(new { name, email, phone, message, related_to }),
+        };
+        _context.FormSubmissions.Add(submission);
+        await _context.SaveChangesAsync();
+
+        try
+        {
+            var receiver = await GetReceiverEmail();
+            var html = BuildEmailHtml("💬 Pesan Dukungan Baru", new Dictionary<string, string?>
+            {
+                ["Nama"] = name, ["Email"] = email, ["Telepon"] = phone, ["Terkait"] = related_to, ["Pesan"] = message
+            });
+            await _emailService.SendEmailAsync(receiver, "Pesan Dukungan Baru dari Warga", html);
+        }
+        catch { }
+
+        return Ok(new { message = "Pesan Anda telah terkirim. Tim kami akan segera merespons." });
     }
 }

@@ -34,9 +34,34 @@ export default function PropertyDetailPage() {
     const [isGalleryOpen, setIsGalleryOpen] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+    const [formName, setFormName] = useState('');
+    const [formEmail, setFormEmail] = useState('');
+    const [formPhone, setFormPhone] = useState('');
+    const [formMessage, setFormMessage] = useState('');
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [submitMsg, setSubmitMsg] = useState('');
+
     const openGallery = (index: number = 0) => {
         setCurrentImageIndex(index);
         setIsGalleryOpen(true);
+    };
+
+    const handleInquiry = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitStatus('loading');
+        const fd = new FormData();
+        fd.append('name', formName);
+        fd.append('email', formEmail);
+        fd.append('phone', formPhone);
+        fd.append('message', formMessage);
+        fd.append('related_to', `Properti: ${property?.title}`);
+        
+        try {
+            const res = await fetch('/api/homepage/submit/message', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (res.ok) { setSubmitStatus('success'); setSubmitMsg(data.message); }
+            else { setSubmitStatus('error'); setSubmitMsg(data.message || 'Terjadi kesalahan.'); }
+        } catch { setSubmitStatus('error'); setSubmitMsg('Tidak dapat terhubung ke server.'); }
     };
 
     const propertyImages = property?.images || [
@@ -225,36 +250,46 @@ export default function PropertyDetailPage() {
                     {/* Right Column: Sticky Inquiry Form (4 cols) */}
                     <div className="lg:col-span-4">
                         <div className="sticky top-28 bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 p-6 md:p-8">
-                            <h3 className="font-headline-sm text-headline-sm text-primary dark:text-on-primary mb-2">Interested in this property?</h3>
-                            <p className="text-text-muted dark:text-on-primary/70 font-body-md text-body-md mb-6">Schedule a private viewing or request more details.</p>
+                            <h3 className="font-headline-sm text-headline-sm text-primary dark:text-on-primary mb-2">Tertarik dengan properti ini?</h3>
+                            <p className="text-text-muted dark:text-on-primary/70 font-body-md text-body-md mb-6">Jadwalkan kunjungan atau minta informasi lebih lanjut.</p>
 
-                            <form className="space-y-4">
-                                <div>
-                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="name">Full Name</label>
-                                    <input type="text" id="name" placeholder="John Doe" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
+                            {submitStatus === 'success' ? (
+                                <div className="text-center py-8">
+                                    <span className="material-symbols-outlined text-5xl text-green-600 mb-4 block">check_circle</span>
+                                    <p className="font-headline-sm text-primary dark:text-primary-fixed-dim">Pesan Terkirim!</p>
+                                    <p className="text-body-md text-text-muted dark:text-on-primary/70 mt-2">{submitMsg}</p>
                                 </div>
-                                <div>
-                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="email">Email Address</label>
-                                    <input type="email" id="email" placeholder="john@example.com" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="phone">Phone Number</label>
-                                    <input type="tel" id="phone" placeholder="+1 (555) 000-0000" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="message">Message</label>
-                                    <textarea id="message" placeholder="I would like to schedule a viewing..." rows={3} className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 resize-none focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors"></textarea>
-                                </div>
+                            ) : (
+                                <form className="space-y-4" onSubmit={handleInquiry}>
+                                    <div>
+                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="name">Nama Lengkap</label>
+                                        <input required type="text" id="name" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Nama Anda" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="email">Alamat Email</label>
+                                        <input required type="email" id="email" value={formEmail} onChange={e => setFormEmail(e.target.value)} placeholder="email@contoh.com" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="phone">Nomor Telepon</label>
+                                        <input type="tel" id="phone" value={formPhone} onChange={e => setFormPhone(e.target.value)} placeholder="081234567890" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="message">Pesan</label>
+                                        <textarea required id="message" value={formMessage} onChange={e => setFormMessage(e.target.value)} placeholder="Saya ingin menjadwalkan kunjungan..." rows={3} className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-2 px-3 resize-none focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors"></textarea>
+                                    </div>
 
-                                <Link href="/schedule-visit" className="w-full bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 mt-4 flex justify-center items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px]">calendar_month</span>
-                                    Schedule a Visit
-                                </Link>
+                                    {submitStatus === 'error' && <p className="text-red-600 text-sm">{submitMsg}</p>}
 
-                                <button type="button" className="w-full bg-transparent border border-border-subtle dark:border-primary-container/50 text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-primary-container font-label-md text-label-md py-3 rounded-lg transition-all duration-300 mt-2">
-                                    Request Brochure
-                                </button>
-                            </form>
+                                    <button disabled={submitStatus === 'loading'} type="submit" className="w-full bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 mt-4 flex justify-center items-center gap-2 disabled:opacity-60">
+                                        {submitStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span> : <span className="material-symbols-outlined text-[18px]">calendar_month</span>}
+                                        {submitStatus === 'loading' ? 'Mengirim...' : 'Jadwalkan Kunjungan'}
+                                    </button>
+
+                                    <button type="button" className="w-full bg-transparent border border-border-subtle dark:border-primary-container/50 text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-primary-container font-label-md text-label-md py-3 rounded-lg transition-all duration-300 mt-2">
+                                        Minta Brosur
+                                    </button>
+                                </form>
+                            )}
 
                             <div className="mt-6 pt-6 border-t border-border-subtle dark:border-primary-container/50 flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full bg-primary-container/20 dark:bg-primary-fixed-dim/20 flex items-center justify-center text-primary dark:text-primary-fixed-dim shrink-0">

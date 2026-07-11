@@ -30,6 +30,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<MeetingImage> MeetingImages { get; set; } = null!;
     public DbSet<PropertyListing> PropertyListings { get; set; } = null!;
     public DbSet<NavigationLink> NavigationLinks { get; set; } = null!;
+    public DbSet<FormSubmission> FormSubmissions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

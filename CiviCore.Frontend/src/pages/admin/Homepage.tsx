@@ -1018,7 +1018,6 @@ function FooterTab({ canEdit }: { canEdit: boolean }) {
     <SectionCard icon="web_asset" iconBg="bg-slate-100 dark:bg-slate-800" iconColor="text-slate-500" title={t('homepage.title_footer', 'Footer')} subtitle={t('homepage.subtitle_footer', 'Manage footer content and links')}>
       <SuccessBanner show={success} />
       <div className="p-6 space-y-5">
-        <ImageUploadBox label="Site Logo" currentUrl={data.logo_url} file={logo} onFileChange={setLogo} recommendedSize="800x800" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput label={t('homepage.label_brand_name', 'Brand Name')} id="ft-brand" value={data.brand_name || ''} onChange={e => set('brand_name', e.target.value)} placeholder={t('homepage.placeholder_brand_name', 'e.g. Dwipapuri')} />
           <FormInput label={t('homepage.label_tagline', 'Tagline')} id="ft-tag" value={data.tagline || ''} onChange={e => set('tagline', e.target.value)} placeholder={t('homepage.placeholder_tagline', 'e.g. Cultivating a better lifestyle...')} />

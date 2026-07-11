@@ -10,17 +10,12 @@ export default function ScheduleVisitPage() {
     });
     const [activeTab, setActiveTab] = useState('');
 
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
+    useEffect(() => { window.scrollTo(0, 0); }, []);
 
     useEffect(() => {
         const html = document.documentElement;
-        if (isDark) {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
+        if (isDark) html.classList.add('dark');
+        else html.classList.remove('dark');
     }, [isDark]);
 
     const toggleDark = () => {
@@ -35,23 +30,43 @@ export default function ScheduleVisitPage() {
     const [selectedTime, setSelectedTime] = useState('');
     const [isPropertyOpen, setIsPropertyOpen] = useState(false);
     const [isTimeOpen, setIsTimeOpen] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [submitMsg, setSubmitMsg] = useState('');
 
     const propertyOptions = [
         { value: 'emerald', label: 'The Emerald Villa' },
         { value: 'sapphire', label: 'The Sapphire Townhouse' },
         { value: 'ruby', label: 'The Ruby Loft' },
-        { value: 'general', label: 'General Community Tour' },
+        { value: 'general', label: 'Tur Komunitas Umum' },
     ];
 
     const timeOptions = [
-        { value: 'morning', label: 'Morning (09:00 AM - 12:00 PM)' },
-        { value: 'afternoon', label: 'Afternoon (12:00 PM - 04:00 PM)' },
-        { value: 'evening', label: 'Evening (04:00 PM - 06:00 PM)' },
+        { value: 'morning', label: 'Pagi (09:00 - 12:00)' },
+        { value: 'afternoon', label: 'Siang (12:00 - 16:00)' },
+        { value: 'evening', label: 'Sore (16:00 - 18:00)' },
     ];
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        alert("Your visit request has been submitted successfully! One of our agents will contact you shortly to confirm.");
+        setSubmitStatus('loading');
+        const formEl = e.currentTarget;
+        const fd = new FormData(formEl);
+        fd.set('property', selectedProperty);
+        fd.set('time', selectedTime);
+        try {
+            const res = await fetch('/api/homepage/submit/visit', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (res.ok) {
+                setSubmitStatus('success');
+                setSubmitMsg(data.message);
+            } else {
+                setSubmitStatus('error');
+                setSubmitMsg(data.message || 'Terjadi kesalahan. Silakan coba lagi.');
+            }
+        } catch {
+            setSubmitStatus('error');
+            setSubmitMsg('Tidak dapat terhubung ke server.');
+        }
     };
 
     return (
@@ -62,162 +77,137 @@ export default function ScheduleVisitPage() {
                 {/* Header & Breadcrumb */}
                 <div className="mb-8 mt-4">
                     <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
-                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Home</Link>
+                        <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Beranda</Link>
                         <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                        <span className="text-on-surface dark:text-on-primary">Schedule a Visit</span>
+                        <span className="text-on-surface dark:text-on-primary">Jadwalkan Kunjungan</span>
                     </div>
                     <div className="max-w-2xl">
-                        <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">Experience Dwipapuri</h1>
+                        <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">Rasakan Pengalaman Dwipapuri</h1>
                         <p className="text-text-muted dark:text-on-primary/70 font-body-md text-body-md">
-                            Seeing is believing. Schedule a personalized, guided tour of our exquisite properties, world-class amenities, and beautifully landscaped community.
+                            Melihat langsung adalah pengalaman terbaik. Jadwalkan tur personal eksklusif bersama kami untuk melihat properti, fasilitas kelas dunia, dan taman komunitas yang indah.
                         </p>
                     </div>
                 </div>
 
                 {/* Two Column Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-12">
-                    {/* Left Column: Form (8 cols) */}
+                    {/* Left Column: Form */}
                     <div className="lg:col-span-8">
                         <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 p-6 md:p-8">
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Full Name */}
-                                    <div>
-                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="name">Full Name</label>
-                                        <input type="text" id="name" required placeholder="John Doe" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
-                                    </div>
-                                    
-                                    {/* Phone */}
-                                    <div>
-                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="phone">Phone Number</label>
-                                        <input type="tel" id="phone" required placeholder="+1 (555) 000-0000" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
-                                    </div>
+                            {submitStatus === 'success' ? (
+                                <div className="text-center py-12">
+                                    <span className="material-symbols-outlined text-6xl text-green-600 mb-4 block">check_circle</span>
+                                    <h2 className="font-headline-md text-primary dark:text-primary-fixed-dim mb-2">Permintaan Diterima!</h2>
+                                    <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6">{submitMsg}</p>
+                                    <button onClick={() => setSubmitStatus('idle')} className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-container transition-colors font-label-md">Buat Permintaan Baru</button>
                                 </div>
-
-                                {/* Email */}
-                                <div>
-                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="email">Email Address</label>
-                                    <input type="email" id="email" required placeholder="john@example.com" className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
-                                </div>
-
-                                {/* Preferred Property */}
-                                <div>
-                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="property">Property of Interest</label>
-                                    <div className="relative">
-                                        <button 
-                                            type="button" 
-                                            onClick={() => { setIsPropertyOpen(!isPropertyOpen); setIsTimeOpen(false); }} 
-                                            className="w-full flex items-center justify-between rounded-lg border border-border-subtle dark:border-primary-container/50 bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 transition-colors text-left focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim"
-                                        >
-                                            <span className={!selectedProperty ? "text-on-surface/50 dark:text-on-primary/50" : ""}>
-                                                {selectedProperty ? propertyOptions.find(o => o.value === selectedProperty)?.label : "Select a property to view..."}
-                                            </span>
-                                            <span className="material-symbols-outlined text-text-muted pointer-events-none transition-transform duration-200" style={{ transform: isPropertyOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
-                                        </button>
-                                        
-                                        {isPropertyOpen && (
-                                            <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
-                                                {propertyOptions.map((option) => (
-                                                    <li 
-                                                        key={option.value} 
-                                                        onClick={() => { setSelectedProperty(option.value); setIsPropertyOpen(false); }}
-                                                        className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate"
-                                                    >
-                                                        {option.label}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                        {/* Hidden input for form submission validation if needed */}
-                                        <input type="hidden" required value={selectedProperty} />
+                            ) : (
+                                <form onSubmit={handleSubmit} className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="name">Nama Lengkap</label>
+                                            <input type="text" id="name" name="name" required placeholder="John Doe" className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
+                                        </div>
+                                        <div>
+                                            <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="phone">Nomor Telepon</label>
+                                            <input type="tel" id="phone" name="phone" required placeholder="+62 812 3456 7890" className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-                                    {/* Date */}
                                     <div>
-                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="date">Preferred Date</label>
-                                        <input 
-                                            type="date" 
-                                            id="date" 
-                                            required 
-                                            min={new Date().toISOString().split('T')[0]}
-                                            className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" 
-                                        />
+                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="email">Alamat Email</label>
+                                        <input type="email" id="email" name="email" required placeholder="contoh@email.com" className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors" />
                                     </div>
-                                    
-                                    {/* Time */}
+
+                                    {/* Preferred Property */}
                                     <div>
-                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="time">Preferred Time</label>
+                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2">Properti yang Diminati</label>
                                         <div className="relative">
-                                            <button 
-                                                type="button" 
-                                                onClick={() => { setIsTimeOpen(!isTimeOpen); setIsPropertyOpen(false); }} 
-                                                className="w-full flex items-center justify-between rounded-lg border border-border-subtle dark:border-primary-container/50 bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 transition-colors text-left focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim"
-                                            >
-                                                <span className={!selectedTime ? "text-on-surface/50 dark:text-on-primary/50" : ""}>
-                                                    {selectedTime ? timeOptions.find(o => o.value === selectedTime)?.label : "Select a time slot..."}
+                                            <button type="button" onClick={() => { setIsPropertyOpen(!isPropertyOpen); setIsTimeOpen(false); }} className="w-full flex items-center justify-between rounded-lg border border-border-subtle dark:border-primary-container/50 bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 transition-colors text-left focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim">
+                                                <span className={!selectedProperty ? "text-on-surface/50 dark:text-on-primary/50" : ""}>
+                                                    {selectedProperty ? propertyOptions.find(o => o.value === selectedProperty)?.label : "Pilih properti yang ingin dikunjungi..."}
                                                 </span>
-                                                <span className="material-symbols-outlined text-text-muted pointer-events-none transition-transform duration-200" style={{ transform: isTimeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
+                                                <span className="material-symbols-outlined text-text-muted pointer-events-none transition-transform duration-200" style={{ transform: isPropertyOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
                                             </button>
-                                            
-                                            {isTimeOpen && (
+                                            {isPropertyOpen && (
                                                 <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
-                                                    {timeOptions.map((option) => (
-                                                        <li 
-                                                            key={option.value} 
-                                                            onClick={() => { setSelectedTime(option.value); setIsTimeOpen(false); }}
-                                                            className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate"
-                                                        >
+                                                    {propertyOptions.map((option) => (
+                                                        <li key={option.value} onClick={() => { setSelectedProperty(option.value); setIsPropertyOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
                                                             {option.label}
                                                         </li>
                                                     ))}
                                                 </ul>
                                             )}
-                                            {/* Hidden input for form validation */}
-                                            <input type="hidden" required value={selectedTime} />
+                                            <input type="hidden" required value={selectedProperty} />
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Notes */}
-                                <div>
-                                    <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="notes">Additional Notes</label>
-                                    <textarea id="notes" placeholder="Any specific requirements or questions you have before the tour..." rows={4} className="w-full rounded-lg border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 resize-none focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors"></textarea>
-                                </div>
-                                
-                                {/* Submit */}
-                                <div className="pt-4 border-t border-border-subtle dark:border-primary-container/50 flex justify-end">
-                                    <button type="submit" className="bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-4 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 w-full sm:w-auto justify-center">
-                                        <span className="material-symbols-outlined text-[18px]">calendar_month</span>
-                                        Confirm Appointment
-                                    </button>
-                                </div>
-                            </form>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+                                        <div>
+                                            <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="date">Tanggal yang Diinginkan</label>
+                                            <input type="date" id="date" name="date" required min={new Date().toISOString().split('T')[0]} onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch(err) {} }} className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors cursor-pointer" />
+                                        </div>
+                                        <div>
+                                            <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2">Waktu yang Diinginkan</label>
+                                            <div className="relative">
+                                                <button type="button" onClick={() => { setIsTimeOpen(!isTimeOpen); setIsPropertyOpen(false); }} className="w-full flex items-center justify-between rounded-lg border border-border-subtle dark:border-primary-container/50 bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 transition-colors text-left focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim">
+                                                    <span className={!selectedTime ? "text-on-surface/50 dark:text-on-primary/50" : ""}>
+                                                        {selectedTime ? timeOptions.find(o => o.value === selectedTime)?.label : "Pilih slot waktu..."}
+                                                    </span>
+                                                    <span className="material-symbols-outlined text-text-muted pointer-events-none transition-transform duration-200" style={{ transform: isTimeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
+                                                </button>
+                                                {isTimeOpen && (
+                                                    <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
+                                                        {timeOptions.map((option) => (
+                                                            <li key={option.value} onClick={() => { setSelectedTime(option.value); setIsTimeOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
+                                                                {option.label}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                                <input type="hidden" required value={selectedTime} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="notes">Catatan Tambahan</label>
+                                        <textarea id="notes" name="notes" placeholder="Pertanyaan atau permintaan khusus sebelum tur..." rows={4} className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 resize-none focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors"></textarea>
+                                    </div>
+
+                                    {submitStatus === 'error' && (
+                                        <p className="text-red-600 text-sm bg-red-50 dark:bg-red-900/20 px-4 py-3 rounded-lg">{submitMsg}</p>
+                                    )}
+
+                                    <div className="pt-4 border-t border-border-subtle dark:border-primary-container/50 flex justify-end">
+                                        <button type="submit" disabled={submitStatus === 'loading'} className="bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-4 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 w-full sm:w-auto justify-center disabled:opacity-60">
+                                            {submitStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span> : <span className="material-symbols-outlined text-[18px]">calendar_month</span>}
+                                            {submitStatus === 'loading' ? 'Mengirim...' : 'Konfirmasi Jadwal'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
                         </div>
                     </div>
 
-                    {/* Right Column: Sidebar (4 cols) */}
+                    {/* Right Column: Sidebar */}
                     <div className="lg:col-span-4 space-y-6">
                         <div className="sticky top-28 bg-primary dark:bg-primary-container text-on-primary rounded-2xl shadow-sm p-6 md:p-8 overflow-hidden relative border border-transparent dark:border-border-subtle/20">
-                            {/* Decorative background element */}
                             <div className="absolute -right-8 -top-8 text-white/5 dark:text-primary-fixed-dim/5 rotate-12 pointer-events-none">
                                 <span className="material-symbols-outlined text-[200px]">home</span>
                             </div>
-                            
                             <div className="flex items-center gap-3 mb-6 relative z-10">
                                 <span className="material-symbols-outlined text-[32px] text-primary-fixed-dim dark:text-primary-fixed">diamond</span>
-                                <h3 className="font-headline-md text-headline-sm">Why Visit Us?</h3>
+                                <h3 className="font-headline-md text-headline-sm">Mengapa Harus Berkunjung?</h3>
                             </div>
-                            
                             <ul className="space-y-6 relative z-10 mb-8">
                                 <li className="flex gap-4">
                                     <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 dark:bg-primary/50 flex items-center justify-center text-primary-fixed-dim dark:text-primary-fixed">
                                         <span className="material-symbols-outlined text-[20px]">person_check</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-label-lg text-label-lg mb-1">Guided Expert Tour</h4>
-                                        <p className="font-body-sm text-body-sm text-on-primary/70">Our dedicated property specialists will walk you through every detail of the home and community.</p>
+                                        <h4 className="font-label-lg text-label-lg mb-1">Tur Dipandu oleh Ahli</h4>
+                                        <p className="font-body-sm text-body-sm text-on-primary/70">Spesialis properti kami akan memandu Anda melihat setiap detail rumah dan fasilitas komunitas.</p>
                                     </div>
                                 </li>
                                 <li className="flex gap-4">
@@ -225,8 +215,8 @@ export default function ScheduleVisitPage() {
                                         <span className="material-symbols-outlined text-[20px]">pool</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-label-lg text-label-lg mb-1">Experience the Amenities</h4>
-                                        <p className="font-body-sm text-body-sm text-on-primary/70">See our clubhouse, olympic pool, and meticulously maintained parks firsthand.</p>
+                                        <h4 className="font-label-lg text-label-lg mb-1">Rasakan Fasilitas Langsung</h4>
+                                        <p className="font-body-sm text-body-sm text-on-primary/70">Lihat clubhouse, kolam renang olimpik, dan taman terawat kami secara langsung.</p>
                                     </div>
                                 </li>
                                 <li className="flex gap-4">
@@ -234,28 +224,11 @@ export default function ScheduleVisitPage() {
                                         <span className="material-symbols-outlined text-[20px]">handshake</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-label-lg text-label-lg mb-1">Meet the Community</h4>
-                                        <p className="font-body-sm text-body-sm text-on-primary/70">Get a true feel for the neighborhood and meet potential future neighbors during your visit.</p>
+                                        <h4 className="font-label-lg text-label-lg mb-1">Kenali Komunitas</h4>
+                                        <p className="font-body-sm text-body-sm text-on-primary/70">Rasakan suasana lingkungan dan temui calon tetangga Anda saat berkunjung.</p>
                                     </div>
                                 </li>
                             </ul>
-                            
-                            <div className="pt-6 border-t border-white/10 dark:border-primary/20 relative z-10">
-                                <h4 className="font-label-md text-label-md mb-4 uppercase tracking-wider text-primary-fixed-dim dark:text-primary-fixed">Speak to an Agent Now</h4>
-                                <div className="flex items-center gap-4 bg-white/5 dark:bg-primary/20 p-4 rounded-xl">
-                                    <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden border border-white/20">
-                                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd10O6kzfY7B-aZVNu3M9Oo0Q-wAibYX561w0waoJEPSAxLZICTcqE7mpoYhcisKosGX2rY4SxW-0gMSssENOcwT9hzCkqPwhG3CLXpYEExSOKEN64-vzIf-FthydLsHtSgWrMz6oktpWoiUetI5EHDdDdq6mxuOcidXKgMpH-qpSpfK0N94NtznAXYmmD7SSS4oRZTQmVHqLLqU0CRtiIbSYaF7HM3j6xVlXIveZ3rCHSstpGNzRDI1Q67_adu6aA4Yq87Xj50uQ" alt="Agent" className="w-full h-full object-cover" />
-                                    </div>
-                                    <div>
-                                        <p className="font-label-lg text-label-lg mb-0.5">Sarah Jenkins</p>
-                                        <p className="font-body-sm text-body-sm text-on-primary/70 mb-1">Senior Property Consultant</p>
-                                        <a href="tel:+15550000000" className="flex items-center gap-1 font-label-md text-label-md text-[#b45309] dark:text-[#d97706] group no-underline">
-                                            <span className="material-symbols-outlined text-[16px] no-underline">call</span>
-                                            <span className="group-hover:underline">+1 (555) 000-0000</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

@@ -74,13 +74,13 @@ export default function Footer({ setActiveTab, footerData }: FooterProps) {
                     </ul>
                 </div>
                 <div>
-                    <h4 className="font-headline-sm text-headline-sm mb-6">Need Help?</h4>
+                    <h4 className="font-headline-sm text-headline-sm mb-6">Butuh Bantuan?</h4>
                     <div className="bg-white/5 border border-white/10 rounded-xl p-6">
                         <p className="font-body-md text-body-md text-on-primary/80 mb-6">
-                            Have an issue, complaint, or feedback for the community? Let us know.
+                            Ada masalah, keluhan, atau masukan untuk komunitas? Beri tahu kami.
                         </p>
                         <Link href="/report" className="group flex items-center justify-between w-full bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-3 px-4 rounded-lg transition-colors">
-                            File a Resident Report
+                            Buat Laporan Warga
                             <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                         </Link>
                     </div>
