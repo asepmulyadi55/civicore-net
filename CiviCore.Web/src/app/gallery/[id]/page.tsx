@@ -28,6 +28,19 @@ export default function GalleryDetailPage() {
 
     const [album, setAlbum] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+    // Keyboard navigation for lightbox
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (selectedIndex === null || !album || !album.photos) return;
+            if (e.key === 'Escape') setSelectedIndex(null);
+            if (e.key === 'ArrowLeft') setSelectedIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : (album.photos.length - 1)));
+            if (e.key === 'ArrowRight') setSelectedIndex((prev) => (prev !== null && prev < album.photos.length - 1 ? prev + 1 : 0));
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedIndex, album]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -93,7 +106,7 @@ export default function GalleryDetailPage() {
                         // Alternating spans for a dynamic masonry-like look if no colSpan is provided
                         const span = img.colSpan || (idx % 4 === 0 || idx % 4 === 3 ? 'col-span-1 md:col-span-12 lg:col-span-8' : 'col-span-1 md:col-span-6 lg:col-span-4');
                         return (
-                            <div key={idx} className={`group relative rounded-2xl overflow-hidden ${span} h-[300px] md:h-full shadow-sm hover:shadow-lg border border-border-subtle/50 dark:border-primary-container/50 bg-surface-container-lowest dark:bg-primary-container`}>
+                            <div key={idx} onClick={() => setSelectedIndex(idx)} className={`cursor-pointer group relative rounded-2xl overflow-hidden ${span} h-[300px] md:h-full shadow-sm hover:shadow-lg border border-border-subtle/50 dark:border-primary-container/50 bg-surface-container-lowest dark:bg-primary-container`}>
                                 <img alt={img.title || 'Gallery image'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={url} />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
                                 <div className="absolute bottom-0 left-0 w-full p-6 bg-surface-glass dark:bg-black/60 backdrop-blur-md border-t border-border-subtle/20 dark:border-white/10 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
@@ -105,6 +118,53 @@ export default function GalleryDetailPage() {
                     })}
                 </div>
             </main>
+
+            {/* Lightbox */}
+            {selectedIndex !== null && album?.photos && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" onClick={() => setSelectedIndex(null)}>
+                    {/* Close button */}
+                    <button 
+                        onClick={() => setSelectedIndex(null)}
+                        className="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-colors z-[110]"
+                    >
+                        <span className="material-symbols-outlined text-3xl">close</span>
+                    </button>
+                    
+                    {/* Prev button */}
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => prev !== null && prev > 0 ? prev - 1 : album.photos.length - 1); }}
+                        className="absolute left-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-3 transition-colors z-[110]"
+                    >
+                        <span className="material-symbols-outlined text-3xl">chevron_left</span>
+                    </button>
+                    
+                    {/* Image */}
+                    <div className="relative max-w-[90vw] max-h-[90vh] flex flex-col items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                        <img 
+                            src={album.photos[selectedIndex].image_url?.startsWith('http') ? album.photos[selectedIndex].image_url : album.photos[selectedIndex].image_url} 
+                            alt={album.photos[selectedIndex].title || 'Gallery image'}
+                            className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                        />
+                        <div className="mt-4 text-center">
+                            <h3 className="text-white text-xl font-headline-sm">{album.photos[selectedIndex].title}</h3>
+                            {album.photos[selectedIndex].description && (
+                                <p className="text-white/70 mt-2 max-w-2xl text-body-md mx-auto">{album.photos[selectedIndex].description}</p>
+                            )}
+                            <div className="text-white/50 text-sm mt-2">
+                                {selectedIndex + 1} / {album.photos.length}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Next button */}
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => prev !== null && prev < album.photos.length - 1 ? prev + 1 : 0); }}
+                        className="absolute right-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-3 transition-colors z-[110]"
+                    >
+                        <span className="material-symbols-outlined text-3xl">chevron_right</span>
+                    </button>
+                </div>
+            )}
 
             <Footer setActiveTab={setActiveTab} />
         </div>

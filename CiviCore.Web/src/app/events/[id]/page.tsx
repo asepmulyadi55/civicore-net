@@ -85,7 +85,7 @@ export default function EventDetailPage() {
                     <div className="absolute inset-0 bg-primary/20 dark:bg-primary/60 z-10 mix-blend-multiply"></div>
                     <img
                         alt={event.title}
-                        className={`w-full h-full object-cover object-center absolute inset-0 z-0 ${isPast ? 'grayscale opacity-80' : ''}`}
+                        className="w-full h-full object-cover object-center absolute inset-0 z-0"
                         src={event.image_url ? (event.image_url.startsWith('http') ? event.image_url : event.image_url) : '/placeholder-event.png'}
                     />
                     <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-surface-container-lowest dark:from-primary to-transparent h-48 z-10"></div>

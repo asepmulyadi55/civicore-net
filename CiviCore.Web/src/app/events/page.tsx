@@ -212,7 +212,7 @@ export default function EventsPage() {
                                     <Link href={ev.url || `/events/${ev.id}`} key={ev.id} className="group flex flex-col bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                                         <div className="relative h-56 w-full overflow-hidden bg-surface-container-low dark:bg-primary/30">
                                             <div className="absolute inset-0 bg-primary/10 dark:bg-primary/40 mix-blend-multiply z-10 group-hover:opacity-50 transition-opacity"></div>
-                                            <img alt={ev.title} className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${isPast ? 'grayscale opacity-80' : ''}`} src={imgUrl} />
+                                            <img alt={ev.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={imgUrl} />
                                             <div className="absolute top-4 left-4 flex gap-2">
                                                 {ev.date && (
                                                     <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">

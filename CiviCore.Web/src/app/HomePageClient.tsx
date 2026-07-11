@@ -126,7 +126,7 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                                         {ev.image_url && (
                                             <div className="h-48 overflow-hidden relative bg-surface-container-low dark:bg-primary/30">
                                                 <div className="absolute inset-0 bg-primary/10 dark:bg-primary/40 mix-blend-multiply z-10 group-hover:opacity-50 transition-opacity"></div>
-                                                <img alt={ev.title} className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isPast ? 'grayscale opacity-80' : ''}`} src={getImageUrl(ev.image_url)} />
+                                                <img alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={getImageUrl(ev.image_url)} />
                                                 <div className="absolute top-4 left-4 flex gap-2 z-20">
                                                     {ev.date && (
                                                         <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
