@@ -39,6 +39,8 @@ public class HomepageController : ControllerBase
         
         if (!string.IsNullOrEmpty(cachedValue))
         {
+            if (!Response.Headers.ContainsKey("X-Cache"))
+                Response.Headers.Append("X-Cache", "HIT");
             return cachedValue;
         }
 
@@ -50,6 +52,8 @@ public class HomepageController : ControllerBase
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24) // Cache settings for a long time
             });
         }
+        if (!Response.Headers.ContainsKey("X-Cache"))
+            Response.Headers.Append("X-Cache", "MISS");
         return s?.Value;
     }
 
