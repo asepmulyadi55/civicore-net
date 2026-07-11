@@ -167,11 +167,6 @@ app.UseMiddleware<RequireTwoFactorMiddleware>();
 app.UseMiddleware<RequirePermissionMiddleware>();
 
 app.MapControllers();
-app.MapGet("/debug-env", (IWebHostEnvironment env) => new { 
-    env.WebRootPath, 
-    env.ContentRootPath, 
-    env.EnvironmentName 
-});
 
 app.MapFallbackToFile("admin/{**slug}", "admin.html");
 app.MapFallbackToFile("index.html");

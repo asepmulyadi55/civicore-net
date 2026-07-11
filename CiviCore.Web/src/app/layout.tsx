@@ -22,6 +22,7 @@ export default function RootLayout({
         <style>{`
           .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         `}</style>
+        <script src="https://www.google.com/recaptcha/api.js?render=6LcYAU4tAAAAAIOUBvSBiUsCre0iHTwZRds2WpI5" async defer></script>
       </head>
       <body className="min-h-screen flex flex-col">
         {children}

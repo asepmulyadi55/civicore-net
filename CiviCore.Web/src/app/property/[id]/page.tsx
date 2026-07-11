@@ -57,6 +57,13 @@ export default function PropertyDetailPage() {
         fd.append('related_to', `Properti: ${property?.title}`);
         
         try {
+            const token = await new Promise((resolve) => {
+                (window as any).grecaptcha.ready(() => {
+                    (window as any).grecaptcha.execute('6LcYAU4tAAAAAIOUBvSBiUsCre0iHTwZRds2WpI5', { action: 'submit' }).then(resolve);
+                });
+            });
+            fd.append('captchaToken', token as string);
+
             const res = await fetch('/api/homepage/submit/message', { method: 'POST', body: fd });
             const data = await res.json();
             if (res.ok) { setSubmitStatus('success'); setSubmitMsg(data.message); }

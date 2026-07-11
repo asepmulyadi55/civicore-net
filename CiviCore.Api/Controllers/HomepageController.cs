@@ -9,6 +9,7 @@ using System.Text.Json;
 using CiviCore.Api.Services;
 
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CiviCore.Api.Controllers;
 
@@ -21,13 +22,15 @@ public class HomepageController : ControllerBase
     private readonly ILocalStorageService _storageService;
     private readonly IDistributedCache _cache;
     private readonly IEmailService _emailService;
+    private readonly IRecaptchaService _recaptcha;
 
-    public HomepageController(AppDbContext context, ILocalStorageService storageService, IDistributedCache cache, IEmailService emailService)
+    public HomepageController(AppDbContext context, ILocalStorageService storageService, IDistributedCache cache, IEmailService emailService, IRecaptchaService recaptcha)
     {
         _context = context;
         _storageService = storageService;
         _cache = cache;
         _emailService = emailService;
+        _recaptcha = recaptcha;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -944,9 +947,14 @@ public class HomepageController : ControllerBase
 
     [HttpPost("submit/visit")]
     [AllowAnonymous]
+    [EnableRateLimiting("AuthLimit")]
     public async Task<IActionResult> SubmitVisit([FromForm] string name, [FromForm] string phone, [FromForm] string email,
-        [FromForm] string? property, [FromForm] string? date, [FromForm] string? time, [FromForm] string? notes)
+        [FromForm] string? property, [FromForm] string? date, [FromForm] string? time, [FromForm] string? notes,
+        [FromForm] string? captchaToken)
     {
+        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
+            return BadRequest(new { message = "CAPTCHA verification failed. Please try again." });
+
         var submission = new CiviCore.Domain.Entities.FormSubmission
         {
             Type = "visit",
@@ -972,9 +980,25 @@ public class HomepageController : ControllerBase
 
     [HttpPost("submit/report")]
     [AllowAnonymous]
+    [EnableRateLimiting("AuthLimit")]
     public async Task<IActionResult> SubmitReport([FromForm] string? category, [FromForm] string? location,
-        [FromForm] string subject, [FromForm] string description, [FromForm] string? reporter_name, [FromForm] string? reporter_phone, IFormFile? photo)
+        [FromForm] string subject, [FromForm] string description, [FromForm] string? reporter_name, [FromForm] string? reporter_phone,
+        IFormFile? photo, [FromForm] string? captchaToken)
     {
+        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
+            return BadRequest(new { message = "CAPTCHA verification failed. Please try again." });
+
+        // File validation
+        if (photo != null)
+        {
+            if (photo.Length > 5 * 1024 * 1024)
+                return BadRequest(new { message = "File foto terlalu besar. Maksimum 5MB." });
+
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!allowedTypes.Contains(photo.ContentType.ToLower()))
+                return BadRequest(new { message = "Hanya file JPG, PNG, dan WEBP yang diizinkan." });
+        }
+
         string? photoUrl = null;
         byte[]? photoBytes = null;
         string? photoCid = null;
@@ -1013,9 +1037,13 @@ public class HomepageController : ControllerBase
 
     [HttpPost("submit/rsvp")]
     [AllowAnonymous]
+    [EnableRateLimiting("AuthLimit")]
     public async Task<IActionResult> SubmitRsvp([FromForm] string name, [FromForm] string unit,
-        [FromForm] string? guests, [FromForm] string? event_id, [FromForm] string? event_title)
+        [FromForm] string? guests, [FromForm] string? event_id, [FromForm] string? event_title,
+        [FromForm] string? captchaToken)
     {
+        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
+            return BadRequest(new { message = "CAPTCHA verification failed. Please try again." });
         var submission = new CiviCore.Domain.Entities.FormSubmission
         {
             Type = "rsvp",
@@ -1040,9 +1068,12 @@ public class HomepageController : ControllerBase
 
     [HttpPost("submit/message")]
     [AllowAnonymous]
+    [EnableRateLimiting("AuthLimit")]
     public async Task<IActionResult> SubmitMessage([FromForm] string name, [FromForm] string? email, [FromForm] string? phone,
-        [FromForm] string message, [FromForm] string? related_to)
+        [FromForm] string message, [FromForm] string? related_to, [FromForm] string? captchaToken)
     {
+        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
+            return BadRequest(new { message = "CAPTCHA verification failed. Please try again." });
         var submission = new CiviCore.Domain.Entities.FormSubmission
         {
             Type = "message",

@@ -68,6 +68,12 @@ export default function BulletinDetailPage() {
             form.append('phone', msgPhone);
             form.append('message', msgText);
             form.append('related_to', bulletin?.title || '');
+            const token = await new Promise((resolve) => {
+                (window as any).grecaptcha.ready(() => {
+                    (window as any).grecaptcha.execute('6LcYAU4tAAAAAIOUBvSBiUsCre0iHTwZRds2WpI5', { action: 'submit' }).then(resolve);
+                });
+            });
+            form.append('captchaToken', token as string);
             const res = await fetch('/api/homepage/submit/message', { method: 'POST', body: form });
             const data = await res.json();
             if (res.ok) {

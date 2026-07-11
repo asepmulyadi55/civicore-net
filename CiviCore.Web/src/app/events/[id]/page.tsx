@@ -89,6 +89,13 @@ export default function EventDetailPage() {
         fd.append('event_id', String(id));
         fd.append('event_title', event.title);
         try {
+            const token = await new Promise((resolve) => {
+                (window as any).grecaptcha.ready(() => {
+                    (window as any).grecaptcha.execute('6LcYAU4tAAAAAIOUBvSBiUsCre0iHTwZRds2WpI5', { action: 'submit' }).then(resolve);
+                });
+            });
+            fd.append('captchaToken', token as string);
+
             const res = await fetch('/api/homepage/submit/rsvp', { method: 'POST', body: fd });
             const data = await res.json();
             if (res.ok) { setRsvpStatus('success'); setRsvpMsg(data.message); }

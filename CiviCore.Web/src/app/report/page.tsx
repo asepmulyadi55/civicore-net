@@ -56,6 +56,13 @@ export default function ResidentReportPage() {
         fd.set('category', category);
         if (selectedPhoto) fd.set('photo', await compressImage(selectedPhoto));
         try {
+            const token = await new Promise((resolve) => {
+                (window as any).grecaptcha.ready(() => {
+                    (window as any).grecaptcha.execute('6LcYAU4tAAAAAIOUBvSBiUsCre0iHTwZRds2WpI5', { action: 'submit' }).then(resolve);
+                });
+            });
+            fd.set('captchaToken', token as string);
+
             const res = await fetch('/api/homepage/submit/report', { method: 'POST', body: fd });
             const data = await res.json();
             if (res.ok) {
