@@ -22,14 +22,16 @@ namespace CiviCore.Api.Controllers
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
+        private readonly IRecaptchaService _recaptcha;
 
-        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IEmailService emailService, IConfiguration config)
+        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IEmailService emailService, IConfiguration config, IRecaptchaService recaptcha)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _roleManager = roleManager;
             _emailService = emailService;
             _config = config;
+            _recaptcha = recaptcha;
         }
 
         [HttpPost("login")]
@@ -58,7 +60,19 @@ namespace CiviCore.Api.Controllers
                         return Unauthorized(new { message = "Your account is pending admin approval." });
                 }
 
-                // Mirror Laravel exactly: Force 2FA Challenge if they have a secret configured
+                // Determine the user's role security mode
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleName = roles.FirstOrDefault();
+                var role = roleName != null ? await _roleManager.FindByNameAsync(roleName) : null;
+                var securityMode = role?.SecurityMode ?? "2fa";
+
+                if (securityMode == "captcha")
+                {
+                    // Return a signal to the client to complete CAPTCHA verification
+                    return StatusCode(403, new { message = "CAPTCHA verification required.", requires_captcha = true });
+                }
+
+                // 2FA flow (default)
                 if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
                 {
                     var claims = new List<Claim> { new Claim(System.Security.Claims.ClaimTypes.Name, user.Id.ToString()) };
@@ -68,11 +82,61 @@ namespace CiviCore.Api.Controllers
                     return StatusCode(403, new { message = "Two factor authentication required", requires_2fa = true });
                 }
 
-                // If they don't have a secret, MANDATORY 2FA dictates they MUST set it up now!
+                if (securityMode == "none")
+                {
+                    // No extra security — issue token directly
+                    user.SessionToken = Guid.NewGuid().ToString();
+                    user.LastLoginAt = DateTime.UtcNow;
+                    user.LastActiveAt = DateTime.UtcNow;
+                    await _userManager.UpdateAsync(user);
+                    await _signInManager.SignInAsync(user, false);
+                    return Ok(new { message = "Login successful", token = user.SessionToken, user = new { name = user.Name, email = user.Email, role = roleName ?? "", language = user.Language } });
+                }
+
+                // Mandatory 2FA setup
                 return StatusCode(403, new { message = "Mandatory Security: You must set up Two-Factor Authentication.", requires_2fa_setup = true });
             }
 
             return Unauthorized(new { message = "Invalid credentials" });
+        }
+
+        [HttpPost("login-captcha")]
+        [EnableRateLimiting("AuthLimit")]
+        public async Task<IActionResult> LoginCaptcha([FromBody] LoginCaptchaRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+                return BadRequest(new { message = "Email and password are required." });
+
+            if (string.IsNullOrEmpty(request.CaptchaToken))
+                return BadRequest(new { message = "CAPTCHA token is required." });
+
+            var isHuman = await _recaptcha.ValidateAsync(request.CaptchaToken);
+            if (!isHuman)
+                return Unauthorized(new { message = "CAPTCHA verification failed. Please try again." });
+
+            var user = await _userManager.FindByEmailAsync(request.Email) ?? await _userManager.FindByNameAsync(request.Email);
+            if (user == null)
+                return Unauthorized(new { message = "Invalid credentials" });
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+            if (result.IsLockedOut)
+                return Unauthorized(new { message = "Account locked out due to multiple failed attempts." });
+
+            if (!result.Succeeded)
+                return Unauthorized(new { message = "Invalid credentials" });
+
+            if (!user.IsActive)
+                return Unauthorized(new { message = user.EmailConfirmed ? "Your account has been deactivated." : "Your account is pending admin approval." });
+
+            await _signInManager.SignInAsync(user, request.RememberMe);
+            user.SessionToken = Guid.NewGuid().ToString();
+            user.LastLoginAt = DateTime.UtcNow;
+            user.LastActiveAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var userRole = userRoles.FirstOrDefault() ?? "";
+            return Ok(new { message = "Login successful", token = user.SessionToken, user = new { name = user.Name, email = user.Email, role = userRole, language = user.Language } });
         }
 
         [HttpPost("login-2fa")]
@@ -398,6 +462,14 @@ namespace CiviCore.Api.Controllers
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
+        public bool RememberMe { get; set; } = false;
+    }
+
+    public class LoginCaptchaRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string CaptchaToken { get; set; } = string.Empty;
         public bool RememberMe { get; set; } = false;
     }
 

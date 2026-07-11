@@ -123,6 +123,7 @@ RUN dotnet publish "CiviCore.Api.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+USER root
 ENTRYPOINT ["dotnet", "CiviCore.Api.dll"]
 ```
 
@@ -183,6 +184,9 @@ Paste this configuration:
 server {
     listen 80;
     server_name your_domain_or_ip; 
+    
+    # Allow large file uploads (for photos/reports)
+    client_max_body_size 50M;
 
     # 1. Main Website: Route to Next.js Docker Container
     location / {
@@ -318,6 +322,7 @@ RUN dotnet publish "CiviCore.Api.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+USER root
 ENTRYPOINT ["dotnet", "CiviCore.Api.dll"]
 ```
 
@@ -378,6 +383,9 @@ Paste this configuration:
 server {
     listen 80;
     server_name your_domain_or_ip; 
+
+    # Allow large file uploads (for photos/reports)
+    client_max_body_size 50M;
 
     # Security Headers
     add_header X-Frame-Options "SAMEORIGIN" always;

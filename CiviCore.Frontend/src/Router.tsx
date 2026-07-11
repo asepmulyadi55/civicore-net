@@ -35,6 +35,7 @@ import Media from './pages/admin/Media';
 // Resident Portal
 import Overview from './pages/admin/Overview';
 import ResidentHousehold from './pages/admin/ResidentHousehold';
+import NotFound from './pages/admin/NotFound';
 
 function GaTracker() {
   const location = useLocation();
@@ -114,6 +115,9 @@ export default function Router() {
         <Route path="/admin/overview" element={<RequireAuth><Overview /></RequireAuth>} />
         <Route path="/admin/residents" element={<RequireAuth><ResidentHousehold /></RequireAuth>} />
         <Route path="/admin/posyandu" element={<RequireAuth><RequirePermission perm="posyandu.view"><Posyandu /></RequirePermission></RequireAuth>} />
+
+        {/* Catch-all: show 404 page for any unknown route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

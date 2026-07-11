@@ -143,6 +143,9 @@ function UserModal({ open, onClose, onSaved, data, roles, householders }: { open
     if (!form.email.trim()) errs.email = t('users.error_email_required', 'Email is required.');
     if (!form.role_id) errs.role_id = t('users.error_role_required', 'Role is required.');
     if (!form.HouseholderId) errs.HouseholderId = t('users.error_householder_required', 'Householder is required.');
+    if (form.password && form.password !== form.password_confirmation) {
+      errs.password_confirmation = t('users.error_password_mismatch', 'Kata sandi tidak cocok.');
+    }
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
     setLoading(true); setErrors({});

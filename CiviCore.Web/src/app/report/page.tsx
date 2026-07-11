@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
+import { compressImage } from '@/utils/imageCompressor';
 
 export default function ResidentReportPage() {
     const [isDark, setIsDark] = useState(() => {
@@ -53,7 +54,7 @@ export default function ResidentReportPage() {
         const formEl = e.currentTarget;
         const fd = new FormData(formEl);
         fd.set('category', category);
-        if (selectedPhoto) fd.set('photo', selectedPhoto);
+        if (selectedPhoto) fd.set('photo', await compressImage(selectedPhoto));
         try {
             const res = await fetch('/api/homepage/submit/report', { method: 'POST', body: fd });
             const data = await res.json();
@@ -168,7 +169,7 @@ export default function ResidentReportPage() {
                                             ) : (
                                                 <>
                                                     <p className="font-label-md text-label-md text-on-surface dark:text-on-primary mb-1">Klik untuk unggah atau seret file ke sini</p>
-                                                    <p className="font-body-sm text-sm text-text-muted dark:text-on-primary/50">PNG, JPG, atau GIF (maks. 5MB)</p>
+                                                    <p className="font-body-sm text-sm text-text-muted dark:text-on-primary/50">JPG, PNG, WebP (Otomatis dikompresi &lt; 1MB)</p>
                                                 </>
                                             )}
                                         </div>

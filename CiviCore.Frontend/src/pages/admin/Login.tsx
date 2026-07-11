@@ -13,6 +13,7 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [requires2FA, setRequires2FA] = useState(false);
+  const [requiresCaptcha, setRequiresCaptcha] = useState(false);
   const [isSettingUp2FA, setIsSettingUp2FA] = useState(false);
   const [setupQRCode, setSetupQRCode] = useState(null);
   const [setupSecret, setSetupSecret] = useState(null);
@@ -102,12 +103,61 @@ export default function Login() {
     } catch (err) {
       if (err.response?.data?.requires_2fa) {
         setRequires2FA(true);
+      } else if (err.response?.data?.requires_captcha) {
+        setRequiresCaptcha(true);
       } else if (err.response?.data?.requires_2fa_setup) {
         setIsSettingUp2FA(true);
         fetch2FASetup(username, password);
       } else {
         setError(err.response?.data?.message || t('login.err_default'));
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const RECAPTCHA_SITE_KEY = '6LcYAU4tAAAAAIOUBvSBiUsCre0iHTwZRds2WpI5';
+
+  const loadRecaptcha = (): Promise<void> => {
+    return new Promise((resolve) => {
+      if ((window as any).grecaptcha) { resolve(); return; }
+      const script = document.createElement('script');
+      script.src = `https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`;
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
+  };
+
+  const handleCaptchaLogin = async (e) => {
+    e.preventDefault();
+    if (!username || !password) { setError(t('login.err_empty')); return; }
+    setIsLoading(true);
+    setError(null);
+    try {
+      await loadRecaptcha();
+      const token = await new Promise((resolve, reject) => {
+        (window as any).grecaptcha.ready(async () => {
+          try {
+            const t = await (window as any).grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'login' });
+            resolve(t);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
+      const response = await axios.post('/api/auth/login-captcha', {
+        email: username,
+        password,
+        captchaToken: token,
+        rememberMe: remember,
+      });
+      const { token: sessionToken, user } = response.data;
+      localStorage.setItem('admin_token', sessionToken);
+      localStorage.setItem('admin_user', JSON.stringify(user));
+      axios.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+      navigate('/admin/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'CAPTCHA login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -220,7 +270,33 @@ export default function Login() {
                 </div>
               )}
 
-              {requires2FA ? (
+              {requiresCaptcha ? (
+                <form onSubmit={handleCaptchaLogin} className="space-y-5" noValidate>
+                  <div className="flex flex-col items-center text-center py-4">
+                    <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
+                      <span className="material-icons text-emerald-600 text-3xl">verified_user</span>
+                    </div>
+                    <h3 className="text-base font-bold text-on-surface mb-1">Security Verification</h3>
+                    <p className="text-sm text-on-surface-var">
+                      Click the button below to verify. Google reCAPTCHA will run silently in the background.
+                    </p>
+                  </div>
+                  <button
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-emerald-600/20 hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    type="submit"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <><span className="material-icons text-sm animate-spin">autorenew</span> Verifying...</>
+                    ) : (
+                      <><span className="material-icons text-sm">shield</span> Verify &amp; Sign In</>
+                    )}
+                  </button>
+                  <button type="button" onClick={() => setRequiresCaptcha(false)} className="w-full text-sm text-center text-on-surface-var hover:text-on-surface underline cursor-pointer">
+                    ← Back to login
+                  </button>
+                </form>
+              ) : requires2FA ? (
                 <form onSubmit={handle2FASubmit} className="space-y-5" noValidate>
                   <div>
                     <label className="block text-sm font-semibold text-on-surface mb-1.5" htmlFor="twoFaCode">

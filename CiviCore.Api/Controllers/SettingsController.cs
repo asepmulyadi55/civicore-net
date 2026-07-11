@@ -140,10 +140,6 @@ public class SettingsController : ControllerBase
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
-            return Forbid();
-
         var timeout = await GetSettingValue("session_timeout_minutes", "30");
         var gaId = await GetSettingValue("ga_measurement_id", "");
 

@@ -6,6 +6,7 @@ import AdminLayout from '../../admin/AdminLayout';
 import { PageHeader, TableWrapper, Th, EmptyState, ConfirmModal } from '../../admin/components/ui';
 import { useTranslation, Trans } from 'react-i18next';
 import { usePermissions } from '../../admin/PermissionsContext';
+import RoleSecurityModal from './components/RoleSecurityModal';
 
 interface Role {
   id: number;
@@ -13,6 +14,7 @@ interface Role {
   guard_name: string;
   permissions?: string[];
   users_count?: number;
+  securityMode?: string;
 }
 
 const SYSTEM_ROLES = ['admin', 'super-admin', 'superadmin'];
@@ -24,6 +26,7 @@ export default function Roles() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirm, setConfirm] = useState<{ open: boolean; item: Role | null; loading: boolean }>({ open: false, item: null, loading: false });
+  const [securityModal, setSecurityModal] = useState<{ open: boolean; role: Role | null }>({ open: false, role: null });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -32,6 +35,10 @@ export default function Roles() {
       setRoles(Array.isArray(res.data) ? res.data : (res.data?.data || []));
     } catch { setRoles([]); } finally { setLoading(false); }
   }, []);
+
+  const handleSecuritySaved = (roleId: string, newMode: string) => {
+    setRoles(prev => prev.map(r => String(r.id) === String(roleId) ? { ...r, securityMode: newMode } : r));
+  };
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -48,6 +55,12 @@ export default function Roles() {
 
   return (
     <AdminLayout title={t('roles.title')}>
+      <RoleSecurityModal
+        role={securityModal.role}
+        open={securityModal.open}
+        onClose={() => setSecurityModal({ open: false, role: null })}
+        onSaved={handleSecuritySaved}
+      />
       <ConfirmModal
         open={confirm.open}
         onClose={() => setConfirm({ open: false, item: null, loading: false })}
@@ -117,11 +130,18 @@ export default function Roles() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => setSecurityModal({ open: true, role: r })}
+                        className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors cursor-pointer"
+                        title="Mode Keamanan"
+                      >
+                        <span className="material-icons text-lg">shield</span>
+                      </button>
                       {can('roles.edit') && (
                         <button
                           onClick={() => navigate(`/admin/roles/${r.id}/edit`)}
                           className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"
-                          title="Edit role & permissions"
+                          title="Edit peran & izin"
                         >
                           <span className="material-icons text-lg">edit</span>
                         </button>

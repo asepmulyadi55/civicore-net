@@ -14,4 +14,5 @@ RUN dotnet publish "CiviCore.Api.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+USER root
 ENTRYPOINT ["dotnet", "CiviCore.Api.dll"]

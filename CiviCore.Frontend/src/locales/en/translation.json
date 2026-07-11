@@ -584,7 +584,20 @@
     "btn_cancel": "Cancel",
     "btn_save": "Save Changes",
     "btn_create": "Create Role",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "security_mode_2fa_label": "2FA (Authenticator App)",
+    "security_mode_2fa_desc": "Users must verify via a TOTP app (e.g. Google Authenticator). Recommended for admins and staff.",
+    "security_mode_captcha_label": "CAPTCHA (Invisible)",
+    "security_mode_captcha_desc": "Google reCAPTCHA v3 runs silently in the background. Does not inconvenience users — ideal for residents.",
+    "security_mode_none_label": "None",
+    "security_mode_none_desc": "No additional verification after password. Not recommended — use only for internal/developer roles.",
+    "error_updating_security": "Failed to update security mode.",
+    "security_mode_title": "Security Mode",
+    "role": "Role",
+    "security_mode_subtitle": "Select how users with this role will verify their identity after entering their password.",
+    "selected": "SELECTED",
+    "cancel": "Cancel",
+    "save": "Save Changes"
   },
   "edit_role": {
     "page_title_create": "Create Role",

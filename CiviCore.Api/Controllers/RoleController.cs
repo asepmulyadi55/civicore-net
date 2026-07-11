@@ -37,6 +37,7 @@ public class RoleController : ControllerBase
             r.Description,
             r.Style,
             r.Permissions,
+            r.SecurityMode,
             users_count = userRoleCounts.FirstOrDefault(uc => uc.RoleId == r.Id)?.Count ?? 0
         });
 
@@ -117,4 +118,24 @@ public class RoleController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
+    [HttpPatch("{id}/security-mode")]
+    public async Task<IActionResult> UpdateSecurityMode(Guid id, [FromBody] SecurityModeRequest request)
+    {
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id == id);
+        if (role == null) return NotFound();
+
+        var allowed = new[] { "2fa", "captcha", "none" };
+        if (!allowed.Contains(request.SecurityMode?.ToLower()))
+            return BadRequest(new { message = "Invalid security mode. Allowed: 2fa, captcha, none." });
+
+        role.SecurityMode = request.SecurityMode!.ToLower();
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "Security mode updated.", securityMode = role.SecurityMode });
+    }
+}
+
+public class SecurityModeRequest
+{
+    public string? SecurityMode { get; set; }
 }

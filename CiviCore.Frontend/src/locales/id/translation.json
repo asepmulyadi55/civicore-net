@@ -584,7 +584,20 @@
     "btn_cancel": "Batal",
     "btn_save": "Simpan Perubahan",
     "btn_create": "Buat Peran",
-    "saving": "Menyimpan..."
+    "saving": "Menyimpan...",
+    "security_mode_2fa_label": "2FA (Aplikasi Autentikator)",
+    "security_mode_2fa_desc": "Pengguna harus memverifikasi melalui aplikasi TOTP (contoh: Google Authenticator). Direkomendasikan untuk admin dan staf.",
+    "security_mode_captcha_label": "CAPTCHA (Tak Terlihat)",
+    "security_mode_captcha_desc": "Google reCAPTCHA v3 berjalan tanpa disadari di latar belakang. Tidak menyulitkan pengguna — ideal untuk warga.",
+    "security_mode_none_label": "Tidak Ada",
+    "security_mode_none_desc": "Tidak ada verifikasi tambahan setelah kata sandi. Tidak direkomendasikan — gunakan hanya untuk peran internal/pengembang.",
+    "error_updating_security": "Gagal memperbarui mode keamanan.",
+    "security_mode_title": "Mode Keamanan",
+    "role": "Peran",
+    "security_mode_subtitle": "Pilih bagaimana pengguna dengan peran ini akan memverifikasi identitas mereka setelah memasukkan kata sandi.",
+    "selected": "DIPILIH",
+    "cancel": "Batal",
+    "save": "Simpan"
   },
   "edit_role": {
     "page_title_create": "Buat Peran",
