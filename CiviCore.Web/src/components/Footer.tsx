@@ -42,7 +42,7 @@ export default function Footer({ setActiveTab, footerData }: FooterProps) {
                     <ul className="space-y-4 font-body-md text-body-md">
                         {displayLinks.map((link: any, i: number) => (
                             <li key={i}>
-                                <a className="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href={link.url} onClick={() => setActiveTab?.(link.url.replace('/#', ''))}>
+                                <a className="text-on-primary/80 hover:text-on-primary transition-colors hover:translate-x-1 inline-block opacity-90 hover:opacity-100" href={link.url}  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setActiveTab?.(link.url.replace('/#', ''))}>
                                     {link.label}
                                 </a>
                             </li>

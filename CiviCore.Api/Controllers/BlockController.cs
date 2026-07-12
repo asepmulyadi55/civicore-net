@@ -16,6 +16,8 @@ namespace CiviCore.Api.Controllers;
 [Authorize]
 public class BlockController : ControllerBase
 {
+    private const string ResidentRole = "resident";
+    private const string HouseholderRole = "householder";
     private readonly AppDbContext _context;
 
     public BlockController(AppDbContext context)
@@ -52,7 +54,7 @@ public class BlockController : ControllerBase
                 public_facility_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.PublicFacility),
                 developer_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Developer),
                 Coordinators = b.Coordinators.Select(c => new {
-                    type = c.ResidentId != null ? "resident" : "householder",
+                    type = c.ResidentId != null ? ResidentRole : HouseholderRole,
                     id = c.ResidentId ?? c.HouseholderId,
                     name = c.Resident != null ? c.Resident.Fullname : (c.Householder != null ? c.Householder.Fullname : "Unknown")
                 }).ToList(),
@@ -96,7 +98,7 @@ public class BlockController : ControllerBase
             public_facility_units_count = block.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.PublicFacility),
             developer_units_count = block.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Developer),
             Coordinators = block.Coordinators.Select(c => new {
-                type = c.ResidentId != null ? "resident" : "householder",
+                type = c.ResidentId != null ? ResidentRole : HouseholderRole,
                 id = c.ResidentId ?? c.HouseholderId,
                 name = c.Resident != null ? c.Resident.Fullname : (c.Householder != null ? c.Householder.Fullname : "Unknown")
             }).ToList(),
@@ -127,8 +129,8 @@ public class BlockController : ControllerBase
                 if (Guid.TryParse(coord.Id, out var coordId))
                 {
                     var bc = new BlockCoordinator { BlockId = block.Id };
-                    if (coord.Type == "resident") bc.ResidentId = coordId;
-                    else if (coord.Type == "householder") bc.HouseholderId = coordId;
+                    if (coord.Type == ResidentRole) bc.ResidentId = coordId;
+                    else if (coord.Type == HouseholderRole) bc.HouseholderId = coordId;
                     _context.Set<BlockCoordinator>().Add(bc);
                 }
             }
@@ -159,8 +161,8 @@ public class BlockController : ControllerBase
                 if (Guid.TryParse(coord.Id, out var coordId))
                 {
                     var bc = new BlockCoordinator { BlockId = block.Id };
-                    if (coord.Type == "resident") bc.ResidentId = coordId;
-                    else if (coord.Type == "householder") bc.HouseholderId = coordId;
+                    if (coord.Type == ResidentRole) bc.ResidentId = coordId;
+                    else if (coord.Type == HouseholderRole) bc.HouseholderId = coordId;
                     _context.Set<BlockCoordinator>().Add(bc);
                 }
             }
@@ -235,6 +237,7 @@ public class BlockController : ControllerBase
     }
 
     [HttpPost("import")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> ImportExcel(
         IFormFile excel_file,
         [FromServices] ImportJobTracker? tracker = null,
@@ -246,7 +249,7 @@ public class BlockController : ControllerBase
         if (tracker == null || scopeFactory == null)
             return BadRequest(new { message = "Services not configured for background import." });
 
-        var tempFile = Path.GetTempFileName();
+        var tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         using (var stream = new FileStream(tempFile, FileMode.Create))
         {
             await excel_file.CopyToAsync(stream);
@@ -297,7 +300,7 @@ public class BlockController : ControllerBase
                     var unitNum = worksheet.Cell(row, 2).GetString().Trim();
                     var rawStatus = System.Text.RegularExpressions.Regex.Replace(
                         worksheet.Cell(row, 4).GetString().Trim().ToLower(), 
-                        @"\s+", " ");
+                        @"\s+", " ", System.Text.RegularExpressions.RegexOptions.None, System.TimeSpan.FromMilliseconds(500));
 
                     if (string.IsNullOrEmpty(blockLetter) || string.IsNullOrEmpty(unitNum)) continue;
 
@@ -382,7 +385,7 @@ public class BlockController : ControllerBase
             {
                 if (System.IO.File.Exists(tempFile))
                 {
-                    try { System.IO.File.Delete(tempFile); } catch { }
+                    try { System.IO.File.Delete(tempFile); } catch { /* Ignored by design */ }
                 }
             }
         });

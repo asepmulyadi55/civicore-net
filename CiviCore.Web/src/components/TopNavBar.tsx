@@ -61,7 +61,7 @@ export default function TopNavBar({ activeTab, setActiveTab, isDark, toggleDark 
                             <a
                                 key={link.id}
                                 href={link.href}
-                                onClick={() => setActiveTab?.(link.id)}
+                                 tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setActiveTab?.(link.id)}
                                 className={`text-label-md font-label-md transition-all duration-300 rounded px-2 pb-1 ${isActive
                                     ? 'text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary dark:border-primary-fixed-dim hover:bg-surface-container-low/50 dark:hover:bg-primary-container/50'
                                     : 'text-on-surface-variant dark:text-on-primary/80 hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-low/50 dark:hover:bg-primary-container/50'}`}
@@ -94,7 +94,7 @@ export default function TopNavBar({ activeTab, setActiveTab, isDark, toggleDark 
                             <a
                                 key={link.id}
                                 href={link.href}
-                                onClick={() => { setActiveTab?.(link.id); setIsMobileMenuOpen(false); }}
+                                 tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setActiveTab?.(link.id); setIsMobileMenuOpen(false); }}
                                 className={`px-margin-mobile py-4 border-b border-border-subtle/50 dark:border-primary-container/50 font-label-md text-label-md ${isActive
                                     ? 'text-primary dark:text-primary-fixed-dim bg-surface-container-low/50 dark:bg-primary/20'
                                     : 'text-on-surface dark:text-on-primary/80 hover:bg-surface-container-low/50 dark:hover:bg-primary/20'}`}

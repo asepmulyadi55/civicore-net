@@ -362,7 +362,7 @@ export default function FeaturedEvent({ featuredEvent = {}, loading, isDark = fa
                                         {calOpen && (
                                             <div className="absolute bottom-full mb-2 left-0 w-52 rounded-2xl shadow-xl overflow-hidden z-50" style={{ background: dropdownBg, border: `1px solid ${dropdownBorder}` }}>
                                                 <a href={buildGoogleCalUrl()} target="_blank" rel="noopener noreferrer"
-                                                    onClick={() => setCalOpen(false)}
+                                                     tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setCalOpen(false)}
                                                     className="flex items-center gap-3 px-4 py-3 text-sm transition-colors"
                                                     style={{ color: dropdownText }}
                                                     onMouseEnter={e => e.currentTarget.style.background = dropdownHoverBg}
@@ -424,7 +424,7 @@ export default function FeaturedEvent({ featuredEvent = {}, loading, isDark = fa
                                                 </button>
                                             ) : (
                                                 <a key={opt.label} href={opt.url} target="_blank" rel="noopener noreferrer"
-                                                    onClick={() => setShareOpen(false)}
+                                                     tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setShareOpen(false)}
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
                                                     style={{ color: dropdownText }}
                                                     onMouseEnter={e => e.currentTarget.style.background = dropdownHoverBg}

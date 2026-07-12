@@ -247,7 +247,7 @@ public class MediaController : ControllerBase
                 if (!isGhost)
                 {
                     // Also delete the physical file since it's unused
-                    try { System.IO.File.Delete(fullPath); } catch { }
+                    try { System.IO.File.Delete(fullPath); } catch { /* Ignored by design */ }
                 }
             }
         }

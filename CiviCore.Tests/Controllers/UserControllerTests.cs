@@ -9,15 +9,19 @@ using System.Collections.Generic;
 using Moq;
 using System.Linq;
 
+using CiviCore.Api.Services;
+
 namespace CiviCore.Tests.Controllers;
 
 public class UserControllerTests : TestBase
 {
     private readonly UserController _controller;
+    private readonly Mock<IEmailService> _mockEmailService;
 
     public UserControllerTests()
     {
-        _controller = new UserController(MockUserManager.Object, MockRoleManager.Object, DbContext);
+        _mockEmailService = new Mock<IEmailService>();
+        _controller = new UserController(MockUserManager.Object, MockRoleManager.Object, DbContext, _mockEmailService.Object);
         
         var adminUser = new ApplicationUser { Id = Guid.NewGuid(), UserName = "admin", Email = "admin@test.com" };
         SetControllerContextUser(_controller, adminUser, new[] { "Admin" });

@@ -16,7 +16,8 @@ namespace CiviCore.Api.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
-    {
+{
+    private const string InvalidCredentialsMsg = "Invalid credentials";
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
@@ -43,7 +44,7 @@ namespace CiviCore.Api.Controllers
 
             var user = await _userManager.FindByEmailAsync(request.Email) ?? await _userManager.FindByNameAsync(request.Email);
             if (user == null)
-                return Unauthorized(new { message = "Invalid credentials" });
+                return Unauthorized(new { message = InvalidCredentialsMsg });
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
             
@@ -97,7 +98,7 @@ namespace CiviCore.Api.Controllers
                 return StatusCode(403, new { message = "Mandatory Security: You must set up Two-Factor Authentication.", requires_2fa_setup = true });
             }
 
-            return Unauthorized(new { message = "Invalid credentials" });
+            return Unauthorized(new { message = InvalidCredentialsMsg });
         }
 
         [HttpPost("login-captcha")]
@@ -116,14 +117,14 @@ namespace CiviCore.Api.Controllers
 
             var user = await _userManager.FindByEmailAsync(request.Email) ?? await _userManager.FindByNameAsync(request.Email);
             if (user == null)
-                return Unauthorized(new { message = "Invalid credentials" });
+                return Unauthorized(new { message = InvalidCredentialsMsg });
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
             if (result.IsLockedOut)
                 return Unauthorized(new { message = "Account locked out due to multiple failed attempts." });
 
             if (!result.Succeeded)
-                return Unauthorized(new { message = "Invalid credentials" });
+                return Unauthorized(new { message = InvalidCredentialsMsg });
 
             if (!user.IsActive)
                 return Unauthorized(new { message = user.EmailConfirmed ? "Your account has been deactivated." : "Your account is pending admin approval." });

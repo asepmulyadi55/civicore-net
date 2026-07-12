@@ -13,7 +13,7 @@ public class FinanceTransactionDto
 {
     public string Type { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
-    public decimal Amount { get; set; }
+    required public decimal Amount { get; set; }
     public string Description { get; set; } = string.Empty;
     public string Date { get; set; } = string.Empty;
 }
@@ -104,7 +104,7 @@ public class FinanceController : ControllerBase
             Category = dto.Category ?? "other",
             Amount = dto.Amount,
             Description = dto.Description ?? string.Empty,
-            Date = DateTime.Parse(dto.Date).ToUniversalTime()
+            Date = DateTime.Parse(dto.Date, System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime()
         };
 
         _context.Set<FinanceTransaction>().Add(transaction);
@@ -127,7 +127,7 @@ public class FinanceController : ControllerBase
         transaction.Category = dto.Category ?? "other";
         transaction.Amount = dto.Amount;
         transaction.Description = dto.Description ?? string.Empty;
-        transaction.Date = DateTime.Parse(dto.Date).ToUniversalTime();
+        transaction.Date = DateTime.Parse(dto.Date, System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
 
         await _context.SaveChangesAsync();
         return Ok(transaction);
@@ -247,8 +247,8 @@ public class FinanceController : ControllerBase
 
     public class GenerateReportDto
     {
-        public int Month { get; set; }
-        public int Year { get; set; }
+        public required int Month { get; set; }
+        public required int Year { get; set; }
     }
 
     [HttpPost("reports/generate")]

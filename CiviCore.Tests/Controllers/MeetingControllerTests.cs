@@ -20,7 +20,7 @@ public class MeetingControllerTests : TestBase
     {
         _mockStorageService = new Mock<ILocalStorageService>();
         
-        var myConfiguration = new System.Collections.Generic.Dictionary<string, string>
+        var myConfiguration = new System.Collections.Generic.Dictionary<string, string?>
         {
             {"AppUrl", "http://localhost"}
         };

@@ -147,7 +147,7 @@ export default function BulletinDetailPage() {
                             <img
                                 alt={bulletin.title || "Sampul Buletin"}
                                 className="w-full h-auto max-h-[400px] rounded-xl shadow-sm object-cover mb-10"
-                                src={bulletin.image_url.startsWith('http') ? bulletin.image_url : bulletin.image_url}
+                                src={bulletin.image_url}
                             />
                         )}
                         <div className="rte-content" dangerouslySetInnerHTML={{ __html: (bulletin.description || '').replace(/&nbsp;/g, ' ') }} />
@@ -219,8 +219,8 @@ export default function BulletinDetailPage() {
 
             {/* Message Support Modal */}
             {showMsgModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" onClick={() => setShowMsgModal(false)}>
-                    <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-2xl p-8 w-full max-w-md relative" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setShowMsgModal(false)}>
+                    <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-2xl p-8 w-full max-w-md relative"  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={e => e.stopPropagation()}>
                         <button onClick={() => setShowMsgModal(false)} className="absolute top-4 right-4 text-text-muted hover:text-primary transition-colors">
                             <span className="material-symbols-outlined">close</span>
                         </button>

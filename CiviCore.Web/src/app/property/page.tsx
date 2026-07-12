@@ -98,7 +98,7 @@ export default function PropertyPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredProperties.map(property => {
                             const firstImg = (property.images && property.images.length > 0) ? property.images[0] : property.thumbnail_url;
-                            const url = firstImg ? (firstImg.startsWith('http') ? firstImg : firstImg) : '';
+                            const url = firstImg ? (firstImg) : '';
                             return (
                                 <div key={property.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden flex flex-col group">
                                     <div className="h-56 overflow-hidden relative">

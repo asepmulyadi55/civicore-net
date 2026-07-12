@@ -124,7 +124,7 @@ export default function ResidentReportPage() {
                                             {isCategoryOpen && (
                                                 <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
                                                     {categoryOptions.map((option) => (
-                                                        <li key={option.value} onClick={() => { setCategory(option.value); setIsCategoryOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
+                                                        <li key={option.value}  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setCategory(option.value); setIsCategoryOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
                                                             {option.label}
                                                         </li>
                                                     ))}
@@ -165,7 +165,7 @@ export default function ResidentReportPage() {
                                         <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2">Foto Bukti (Opsional)</label>
                                         <div
                                             className="w-full border-2 border-dashed border-border-subtle dark:border-primary-container/50 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-surface-container-low dark:hover:bg-primary-container/20 transition-colors cursor-pointer group"
-                                            onClick={() => fileInputRef.current?.click()}
+                                             tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => fileInputRef.current?.click()}
                                         >
                                             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => setSelectedPhoto(e.target.files?.[0] || null)} />
                                             <div className="w-12 h-12 rounded-full bg-primary-container/10 dark:bg-primary-fixed-dim/10 flex items-center justify-center text-primary dark:text-primary-fixed-dim mb-4 group-hover:scale-110 transition-transform">

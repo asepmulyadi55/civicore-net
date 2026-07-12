@@ -17,8 +17,9 @@ public class AuthControllerTests : TestBase
     public AuthControllerTests()
     {
         _mockEmailService = new Mock<IEmailService>();
+        var _mockRecaptchaService = new Mock<IRecaptchaService>();
         
-        var inMemorySettings = new Dictionary<string, string> {
+        var inMemorySettings = new Dictionary<string, string?> {
             {"Jwt:Key", "SuperSecretKeyForTestingWhichNeedsToBeLongEnough"},
             {"Jwt:Issuer", "TestIssuer"},
             {"Jwt:Audience", "TestAudience"}
@@ -30,7 +31,8 @@ public class AuthControllerTests : TestBase
             MockUserManager.Object,
             MockRoleManager.Object,
             _mockEmailService.Object,
-            _config
+            _config,
+            _mockRecaptchaService.Object
         );
     }
 

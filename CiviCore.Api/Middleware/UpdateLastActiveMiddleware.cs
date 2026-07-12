@@ -15,12 +15,9 @@ public class UpdateLastActiveMiddleware
 
     public async Task InvokeAsync(HttpContext context, UserManager<ApplicationUser> userManager)
     {
-        if (context.User.Identity?.IsAuthenticated == true)
+        if (context.User.Identity?.IsAuthenticated == true && context.User.FindFirstValue(ClaimTypes.NameIdentifier) is string userId)
         {
-            var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId != null)
-            {
-                var user = await userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByIdAsync(userId);
                 if (user != null)
                 {
                     // Only update if last active was more than 5 minutes ago to save DB calls
@@ -31,7 +28,6 @@ public class UpdateLastActiveMiddleware
                     }
                 }
             }
-        }
         await _next(context);
     }
 }

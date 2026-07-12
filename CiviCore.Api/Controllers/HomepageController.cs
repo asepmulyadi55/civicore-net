@@ -18,6 +18,17 @@ namespace CiviCore.Api.Controllers;
 [Authorize]
 public class HomepageController : ControllerBase
 {
+    private const string HeaderXCache = "X-Cache";
+    private const string MediaTypeJson = "application/json";
+    private const string PropBackgroundImageUrl = "background_image_url";
+    private const string KeyHomepageEvents = "homepage_events";
+    private const string PropImageUrl = "image_url";
+    private const string KeyHomepageGallery = "homepage_gallery";
+    private const string PropPhotos = "photos";
+    private const string MsgAlbumNotFound = "Album not found.";
+    private const string KeyHomepageBuletin = "homepage_buletin";
+    private const string KeyHomepageFooter = "homepage_footer";
+    private const string MsgCaptchaFailed = "CAPTCHA verification failed. Please try again.";
     private readonly AppDbContext _context;
     private readonly ILocalStorageService _storageService;
     private readonly IDistributedCache _cache;
@@ -42,8 +53,8 @@ public class HomepageController : ControllerBase
         
         if (!string.IsNullOrEmpty(cachedValue))
         {
-            if (!Response.Headers.ContainsKey("X-Cache"))
-                Response.Headers.Append("X-Cache", "HIT");
+            if (!Response.Headers.ContainsKey(HeaderXCache))
+                Response.Headers.Append(HeaderXCache, "HIT");
             return cachedValue;
         }
 
@@ -55,8 +66,8 @@ public class HomepageController : ControllerBase
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24) // Cache settings for a long time
             });
         }
-        if (!Response.Headers.ContainsKey("X-Cache"))
-            Response.Headers.Append("X-Cache", "MISS");
+        if (!Response.Headers.ContainsKey(HeaderXCache))
+            Response.Headers.Append(HeaderXCache, "MISS");
         return s?.Value;
     }
 
@@ -132,7 +143,7 @@ public class HomepageController : ControllerBase
     {
         var json = await GetSettingValue("homepage_hero");
         if (string.IsNullOrEmpty(json)) return Ok(new { });
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPut("hero")]
@@ -152,15 +163,15 @@ public class HomepageController : ControllerBase
 
         if (background_image != null)
         {
-            if (existing.TryGetValue("background_image_url", out var img) && img.ValueKind != JsonValueKind.Null)
+            if (existing.TryGetValue(PropBackgroundImageUrl, out var img) && img.ValueKind != JsonValueKind.Null)
             {
                 await DeleteUploadedFile(img.GetString());
             }
-            data["background_image_url"] = await SaveUploadedFile(background_image, "hero");
+            data[PropBackgroundImageUrl] = await SaveUploadedFile(background_image, "hero");
         }
-        else if (existing.TryGetValue("background_image_url", out var img))
+        else if (existing.TryGetValue(PropBackgroundImageUrl, out var img))
         {
-            data["background_image_url"] = img.GetString();
+            data[PropBackgroundImageUrl] = img.GetString();
         }
 
         await SaveSetting("homepage_hero", JsonSerializer.Serialize(data));
@@ -173,9 +184,9 @@ public class HomepageController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetEvents()
     {
-        var json = await GetSettingValue("homepage_events");
+        var json = await GetSettingValue(KeyHomepageEvents);
         if (string.IsNullOrEmpty(json)) return Ok(new List<object>());
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPost("events")]
@@ -183,7 +194,7 @@ public class HomepageController : ControllerBase
         [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
-            await GetSettingValue("homepage_events") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageEvents) ?? "[]") ?? new();
 
         string? imageUrl = null;
         if (image_file != null) imageUrl = await SaveUploadedFile(image_file, "events");
@@ -191,7 +202,7 @@ public class HomepageController : ControllerBase
         var eventStatus = status;
         if (string.IsNullOrEmpty(eventStatus))
         {
-            eventStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, out var d) && d < DateTime.Today ? "past" : "upcoming";
+            eventStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d) && d < DateTime.Today ? "past" : "upcoming";
         }
 
         events.Add(new Dictionary<string, object?>
@@ -203,11 +214,11 @@ public class HomepageController : ControllerBase
             ["location"] = location,
             ["category"] = category,
             ["url"] = url,
-            ["image_url"] = imageUrl,
+            [PropImageUrl] = imageUrl,
             ["status"] = eventStatus,
         });
 
-        await SaveSetting("homepage_events", JsonSerializer.Serialize(events));
+        await SaveSetting(KeyHomepageEvents, JsonSerializer.Serialize(events));
         return Ok(new { message = "Event added." });
     }
 
@@ -216,7 +227,7 @@ public class HomepageController : ControllerBase
         [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_events") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageEvents) ?? "[]") ?? new();
 
         var found = false;
         for (int i = 0; i < events.Count; i++)
@@ -226,7 +237,7 @@ public class HomepageController : ControllerBase
                 var eventStatus = status;
                 if (string.IsNullOrEmpty(eventStatus))
                 {
-                    eventStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, out var d) && d < DateTime.Today ? "past" : "upcoming";
+                    eventStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d) && d < DateTime.Today ? "past" : "upcoming";
                 }
 
                 var updated = new Dictionary<string, object?>
@@ -243,15 +254,15 @@ public class HomepageController : ControllerBase
 
                 if (image_file != null)
                 {
-                    if (events[i].TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+                    if (events[i].TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
                     {
                         await DeleteUploadedFile(imgEl.GetString());
                     }
-                    updated["image_url"] = await SaveUploadedFile(image_file, "events");
+                    updated[PropImageUrl] = await SaveUploadedFile(image_file, "events");
                 }
-                else if (events[i].TryGetValue("image_url", out var img))
+                else if (events[i].TryGetValue(PropImageUrl, out var img))
                 {
-                    updated["image_url"] = img.GetString();
+                    updated[PropImageUrl] = img.GetString();
                 }
 
                 events[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(updated))!;
@@ -262,7 +273,7 @@ public class HomepageController : ControllerBase
 
         if (!found) return NotFound(new { message = "Event not found." });
 
-        await SaveSetting("homepage_events", JsonSerializer.Serialize(events));
+        await SaveSetting(KeyHomepageEvents, JsonSerializer.Serialize(events));
         return Ok(new { message = "Event updated." });
     }
 
@@ -270,17 +281,17 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> DestroyEvent(string id)
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_events") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageEvents) ?? "[]") ?? new();
 
         var eventToRemove = events.FirstOrDefault(e => e.TryGetValue("id", out var idEl) && idEl.GetString() == id);
-        if (eventToRemove != null && eventToRemove.TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+        if (eventToRemove != null && eventToRemove.TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
         {
             await DeleteUploadedFile(imgEl.GetString());
         }
 
         events = events.Where(e => !(e.TryGetValue("id", out var idEl) && idEl.GetString() == id)).ToList();
 
-        await SaveSetting("homepage_events", JsonSerializer.Serialize(events));
+        await SaveSetting(KeyHomepageEvents, JsonSerializer.Serialize(events));
         return Ok(new { message = "Event removed." });
     }
 
@@ -292,7 +303,7 @@ public class HomepageController : ControllerBase
     {
         var json = await GetSettingValue("homepage_event_settings");
         if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Discover More", title = "Events", subtitle = "" });
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPut("event-settings")]
@@ -317,7 +328,7 @@ public class HomepageController : ControllerBase
     {
         var json = await GetSettingValue("homepage_gallery_settings");
         if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Visual Tour", title = "Gallery", subtitle = "" });
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPut("gallery-settings")]
@@ -340,16 +351,16 @@ public class HomepageController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetGallery()
     {
-        var json = await GetSettingValue("homepage_gallery");
+        var json = await GetSettingValue(KeyHomepageGallery);
         if (string.IsNullOrEmpty(json)) return Ok(new List<object>());
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPost("gallery")]
     public async Task<IActionResult> StoreAlbum([FromForm] string title, [FromForm] string? description, IFormFile? image_file)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
-            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageGallery) ?? "[]") ?? new();
 
         string? imageUrl = null;
         if (image_file != null) imageUrl = await SaveUploadedFile(image_file, "gallery");
@@ -359,11 +370,11 @@ public class HomepageController : ControllerBase
             ["id"] = Guid.NewGuid().ToString(),
             ["title"] = title,
             ["description"] = description,
-            ["image_url"] = imageUrl,
-            ["photos"] = new List<object>(),
+            [PropImageUrl] = imageUrl,
+            [PropPhotos] = new List<object>(),
         });
 
-        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        await SaveSetting(KeyHomepageGallery, JsonSerializer.Serialize(items));
         return Ok(new { message = "Album added." });
     }
 
@@ -371,7 +382,7 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> UpdateAlbum(string id, [FromForm] string title, [FromForm] string? description, IFormFile? image_file)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageGallery) ?? "[]") ?? new();
 
         var found = false;
         for (int i = 0; i < items.Count; i++)
@@ -385,26 +396,26 @@ public class HomepageController : ControllerBase
                     ["description"] = description,
                 };
 
-                if (items[i].TryGetValue("photos", out var photosEl))
+                if (items[i].TryGetValue(PropPhotos, out var photosEl))
                 {
-                    updated["photos"] = photosEl;
+                    updated[PropPhotos] = photosEl;
                 }
                 else
                 {
-                    updated["photos"] = new List<object>();
+                    updated[PropPhotos] = new List<object>();
                 }
 
                 if (image_file != null)
                 {
-                    if (items[i].TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+                    if (items[i].TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
                     {
                         await DeleteUploadedFile(imgEl.GetString());
                     }
-                    updated["image_url"] = await SaveUploadedFile(image_file, "gallery");
+                    updated[PropImageUrl] = await SaveUploadedFile(image_file, "gallery");
                 }
-                else if (items[i].TryGetValue("image_url", out var img))
+                else if (items[i].TryGetValue(PropImageUrl, out var img))
                 {
-                    updated["image_url"] = img.GetString();
+                    updated[PropImageUrl] = img.GetString();
                 }
 
                 items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(updated))!;
@@ -413,9 +424,9 @@ public class HomepageController : ControllerBase
             }
         }
 
-        if (!found) return NotFound(new { message = "Album not found." });
+        if (!found) return NotFound(new { message = MsgAlbumNotFound });
 
-        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        await SaveSetting(KeyHomepageGallery, JsonSerializer.Serialize(items));
         return Ok(new { message = "Album updated." });
     }
 
@@ -423,23 +434,23 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> DestroyAlbum(string id)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageGallery) ?? "[]") ?? new();
 
         var albumToRemove = items.FirstOrDefault(e => e.TryGetValue("id", out var idEl) && idEl.GetString() == id);
         if (albumToRemove != null)
         {
-            if (albumToRemove.TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+            if (albumToRemove.TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
             {
                 await DeleteUploadedFile(imgEl.GetString());
             }
-            if (albumToRemove.TryGetValue("photos", out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
+            if (albumToRemove.TryGetValue(PropPhotos, out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
             {
                 var photosList = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(photosEl.GetRawText());
                 if (photosList != null)
                 {
                     foreach (var photo in photosList)
                     {
-                        if (photo.TryGetValue("image_url", out var pImgEl) && pImgEl.ValueKind != JsonValueKind.Null)
+                        if (photo.TryGetValue(PropImageUrl, out var pImgEl) && pImgEl.ValueKind != JsonValueKind.Null)
                         {
                             await DeleteUploadedFile(pImgEl.GetString());
                         }
@@ -450,7 +461,7 @@ public class HomepageController : ControllerBase
 
         items = items.Where(e => !(e.TryGetValue("id", out var idEl) && idEl.GetString() == id)).ToList();
 
-        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        await SaveSetting(KeyHomepageGallery, JsonSerializer.Serialize(items));
         return Ok(new { message = "Album removed." });
     }
 
@@ -459,12 +470,12 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> GetAlbum(string id)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageGallery) ?? "[]") ?? new();
 
         var album = items.FirstOrDefault(a => a.TryGetValue("id", out var idEl) && idEl.GetString() == id || 
                                               a.TryGetValue("title", out var titleEl) && titleEl.GetString()?.ToLower().Replace(" ", "-") == id);
 
-        if (album == null) return NotFound(new { message = "Album not found." });
+        if (album == null) return NotFound(new { message = MsgAlbumNotFound });
         return Ok(album);
     }
 
@@ -474,7 +485,7 @@ public class HomepageController : ControllerBase
         if (image_file == null) return BadRequest(new { message = "Image file is required." });
 
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageGallery) ?? "[]") ?? new();
 
         var found = false;
         for (int i = 0; i < items.Count; i++)
@@ -484,7 +495,7 @@ public class HomepageController : ControllerBase
                 var albumDict = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(items[i]))!;
                 var photosList = new List<object>();
 
-                if (items[i].TryGetValue("photos", out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
+                if (items[i].TryGetValue(PropPhotos, out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
                 {
                     photosList = JsonSerializer.Deserialize<List<object>>(photosEl.GetRawText()) ?? new List<object>();
                 }
@@ -495,20 +506,20 @@ public class HomepageController : ControllerBase
                     ["id"] = Guid.NewGuid().ToString(),
                     ["title"] = title,
                     ["description"] = description,
-                    ["image_url"] = imageUrl,
+                    [PropImageUrl] = imageUrl,
                     ["created_at"] = DateTime.UtcNow.ToString("O")
                 });
 
-                albumDict["photos"] = photosList;
+                albumDict[PropPhotos] = photosList;
                 items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(albumDict))!;
                 found = true;
                 break;
             }
         }
 
-        if (!found) return NotFound(new { message = "Album not found." });
+        if (!found) return NotFound(new { message = MsgAlbumNotFound });
 
-        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        await SaveSetting(KeyHomepageGallery, JsonSerializer.Serialize(items));
         return Ok(new { message = "Photo added." });
     }
 
@@ -516,7 +527,7 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> DestroyPhoto(string id, string photoId)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_gallery") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageGallery) ?? "[]") ?? new();
 
         var found = false;
         for (int i = 0; i < items.Count; i++)
@@ -525,16 +536,16 @@ public class HomepageController : ControllerBase
             {
                 var albumDict = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(items[i]))!;
                 
-                if (items[i].TryGetValue("photos", out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
+                if (items[i].TryGetValue(PropPhotos, out var photosEl) && photosEl.ValueKind == JsonValueKind.Array)
                 {
                     var photosList = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(photosEl.GetRawText()) ?? new();
                     var photoToRemove = photosList.FirstOrDefault(p => p.TryGetValue("id", out var pId) && pId.GetString() == photoId);
-                    if (photoToRemove != null && photoToRemove.TryGetValue("image_url", out var pImg) && pImg.ValueKind != JsonValueKind.Null)
+                    if (photoToRemove != null && photoToRemove.TryGetValue(PropImageUrl, out var pImg) && pImg.ValueKind != JsonValueKind.Null)
                     {
                         await DeleteUploadedFile(pImg.GetString());
                     }
                     var updatedPhotosList = photosList.Where(p => !(p.TryGetValue("id", out var pId) && pId.GetString() == photoId)).ToList();
-                    albumDict["photos"] = updatedPhotosList;
+                    albumDict[PropPhotos] = updatedPhotosList;
                 }
 
                 items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(albumDict))!;
@@ -543,9 +554,9 @@ public class HomepageController : ControllerBase
             }
         }
 
-        if (!found) return NotFound(new { message = "Album not found." });
+        if (!found) return NotFound(new { message = MsgAlbumNotFound });
 
-        await SaveSetting("homepage_gallery", JsonSerializer.Serialize(items));
+        await SaveSetting(KeyHomepageGallery, JsonSerializer.Serialize(items));
         return Ok(new { message = "Photo removed." });
     }
 
@@ -557,7 +568,7 @@ public class HomepageController : ControllerBase
     {
         var json = await GetSettingValue("homepage_bulletin_settings");
         if (string.IsNullOrEmpty(json)) return Ok(new { });
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPut("bulletin-settings")]
@@ -579,7 +590,7 @@ public class HomepageController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetBulletin()
     {
-        var json = await GetSettingValue("homepage_buletin");
+        var json = await GetSettingValue(KeyHomepageBuletin);
         if (string.IsNullOrEmpty(json)) return Ok(new List<object>());
 
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json) ?? new();
@@ -587,7 +598,7 @@ public class HomepageController : ControllerBase
         {
             if (i.TryGetValue("date", out var d) && d.ValueKind == JsonValueKind.String)
             {
-                if (DateTime.TryParse(d.GetString(), out var dateVal)) return dateVal;
+                if (DateTime.TryParse(d.GetString(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dateVal)) return dateVal;
             }
             return DateTime.MinValue;
         }).ToList();
@@ -600,7 +611,7 @@ public class HomepageController : ControllerBase
         [FromForm] string? date, [FromForm] string? category, [FromForm] string? url, IFormFile? image_file)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
-            await GetSettingValue("homepage_buletin") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageBuletin) ?? "[]") ?? new();
 
         string? imageUrl = null;
         if (image_file != null) imageUrl = await SaveUploadedFile(image_file, "bulletin");
@@ -613,10 +624,10 @@ public class HomepageController : ControllerBase
             ["date"] = date,
             ["category"] = category,
             ["url"] = url,
-            ["image_url"] = imageUrl,
+            [PropImageUrl] = imageUrl,
         });
 
-        await SaveSetting("homepage_buletin", JsonSerializer.Serialize(items));
+        await SaveSetting(KeyHomepageBuletin, JsonSerializer.Serialize(items));
         return Ok(new { message = "Bulletin added." });
     }
 
@@ -625,7 +636,7 @@ public class HomepageController : ControllerBase
         [FromForm] string? date, [FromForm] string? category, [FromForm] string? url, IFormFile? image_file)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_buletin") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageBuletin) ?? "[]") ?? new();
 
         var found = false;
         for (int i = 0; i < items.Count; i++)
@@ -644,15 +655,15 @@ public class HomepageController : ControllerBase
 
                 if (image_file != null)
                 {
-                    if (items[i].TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+                    if (items[i].TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
                     {
                         await DeleteUploadedFile(imgEl.GetString());
                     }
-                    updated["image_url"] = await SaveUploadedFile(image_file, "bulletin");
+                    updated[PropImageUrl] = await SaveUploadedFile(image_file, "bulletin");
                 }
-                else if (items[i].TryGetValue("image_url", out var img))
+                else if (items[i].TryGetValue(PropImageUrl, out var img))
                 {
-                    updated["image_url"] = img.GetString();
+                    updated[PropImageUrl] = img.GetString();
                 }
 
                 items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(updated))!;
@@ -663,7 +674,7 @@ public class HomepageController : ControllerBase
 
         if (!found) return NotFound(new { message = "Bulletin not found." });
 
-        await SaveSetting("homepage_buletin", JsonSerializer.Serialize(items));
+        await SaveSetting(KeyHomepageBuletin, JsonSerializer.Serialize(items));
         return Ok(new { message = "Bulletin updated." });
     }
 
@@ -672,7 +683,7 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> GetBulletinById(string id)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_buletin") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageBuletin) ?? "[]") ?? new();
 
         var bulletin = items.FirstOrDefault(a => a.TryGetValue("id", out var idEl) && idEl.GetString() == id);
         if (bulletin == null) return NotFound(new { message = "Bulletin not found." });
@@ -684,17 +695,17 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> DestroyBulletin(string id)
     {
         var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue("homepage_buletin") ?? "[]") ?? new();
+            await GetSettingValue(KeyHomepageBuletin) ?? "[]") ?? new();
 
         var bulletinToRemove = items.FirstOrDefault(e => e.TryGetValue("id", out var idEl) && idEl.GetString() == id);
-        if (bulletinToRemove != null && bulletinToRemove.TryGetValue("image_url", out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+        if (bulletinToRemove != null && bulletinToRemove.TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
         {
             await DeleteUploadedFile(imgEl.GetString());
         }
 
         items = items.Where(e => !(e.TryGetValue("id", out var idEl) && idEl.GetString() == id)).ToList();
 
-        await SaveSetting("homepage_buletin", JsonSerializer.Serialize(items));
+        await SaveSetting(KeyHomepageBuletin, JsonSerializer.Serialize(items));
         return Ok(new { message = "Bulletin removed." });
     }
 
@@ -704,9 +715,9 @@ public class HomepageController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetFooter()
     {
-        var json = await GetSettingValue("homepage_footer");
+        var json = await GetSettingValue(KeyHomepageFooter);
         if (string.IsNullOrEmpty(json)) return Ok(new { });
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPut("footer")]
@@ -723,7 +734,7 @@ public class HomepageController : ControllerBase
 
         if (logo != null)
         {
-            var oldJson = await GetSettingValue("homepage_footer");
+            var oldJson = await GetSettingValue(KeyHomepageFooter);
             if (!string.IsNullOrEmpty(oldJson))
             {
                 var oldDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(oldJson);
@@ -740,7 +751,7 @@ public class HomepageController : ControllerBase
         }
         else
         {
-            var oldJson = await GetSettingValue("homepage_footer");
+            var oldJson = await GetSettingValue(KeyHomepageFooter);
             if (!string.IsNullOrEmpty(oldJson))
             {
                 var oldDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(oldJson);
@@ -752,7 +763,7 @@ public class HomepageController : ControllerBase
         }
 
         var json = JsonSerializer.Serialize(dict);
-        await SaveSetting("homepage_footer", json);
+        await SaveSetting(KeyHomepageFooter, json);
         return Ok(new { message = "Footer saved." });
     }
     // ── Property Settings ─────────────────────────────────────────────────────
@@ -763,7 +774,7 @@ public class HomepageController : ControllerBase
     {
         var json = await GetSettingValue("homepage_property_settings");
         if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Find Your Home", title = "Available Properties", subtitle = "" });
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPut("property-settings")]
@@ -788,7 +799,7 @@ public class HomepageController : ControllerBase
     {
         var json = await GetSettingValue("homepage_metadata");
         if (string.IsNullOrEmpty(json)) return Ok(new { });
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPut("metadata")]
@@ -826,7 +837,7 @@ public class HomepageController : ControllerBase
     {
         var json = await GetSettingValue("homepage_section_labels");
         if (string.IsNullOrEmpty(json)) return Ok(new { });
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPut("section-labels")]
@@ -891,7 +902,7 @@ public class HomepageController : ControllerBase
             };
             return Ok(defaults);
         }
-        return Content(json, "application/json");
+        return Content(json, MediaTypeJson);
     }
 
     [HttpPut("emergency-contacts")]
@@ -905,7 +916,7 @@ public class HomepageController : ControllerBase
 
     private async Task<string> GetReceiverEmail()
     {
-        var footerJson = await GetSettingValue("homepage_footer");
+        var footerJson = await GetSettingValue(KeyHomepageFooter);
         if (!string.IsNullOrEmpty(footerJson))
         {
             try
@@ -917,12 +928,12 @@ public class HomepageController : ControllerBase
                     if (!string.IsNullOrWhiteSpace(email)) return email;
                 }
             }
-            catch { }
+            catch { /* Ignored by design */ }
         }
         return _emailService != null ? (await Task.FromResult("admin@civicore.com")) : "admin@civicore.com";
     }
 
-    private string BuildEmailHtml(string title, Dictionary<string, string?> fields)
+    private static string BuildEmailHtml(string title, Dictionary<string, string?> fields)
     {
         var rows = string.Join("", fields.Select(f =>
         {
@@ -953,7 +964,7 @@ public class HomepageController : ControllerBase
         [FromForm] string? captchaToken)
     {
         if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
-            return BadRequest(new { message = "CAPTCHA verification failed. Please try again." });
+            return BadRequest(new { message = MsgCaptchaFailed });
 
         var submission = new CiviCore.Domain.Entities.FormSubmission
         {
@@ -986,7 +997,7 @@ public class HomepageController : ControllerBase
         IFormFile? photo, [FromForm] string? captchaToken)
     {
         if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
-            return BadRequest(new { message = "CAPTCHA verification failed. Please try again." });
+            return BadRequest(new { message = MsgCaptchaFailed });
 
         // File validation
         if (photo != null)
@@ -1030,7 +1041,7 @@ public class HomepageController : ControllerBase
             });
             await _emailService.SendEmailAsync(receiver, $"Laporan Warga Baru: {subject}", html, photoBytes, photoCid);
         }
-        catch { }
+        catch { /* Ignored by design */ }
 
         return Ok(new { message = "Laporan Anda telah berhasil dikirim. Terima kasih telah membantu menjaga komunitas kita." });
     }
@@ -1043,7 +1054,7 @@ public class HomepageController : ControllerBase
         [FromForm] string? captchaToken)
     {
         if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
-            return BadRequest(new { message = "CAPTCHA verification failed. Please try again." });
+            return BadRequest(new { message = MsgCaptchaFailed });
         var submission = new CiviCore.Domain.Entities.FormSubmission
         {
             Type = "rsvp",
@@ -1061,7 +1072,7 @@ public class HomepageController : ControllerBase
             });
             await _emailService.SendEmailAsync(receiver, $"RSVP Baru: {event_title}", html);
         }
-        catch { }
+        catch { /* Ignored by design */ }
 
         return Ok(new { message = "RSVP Anda telah berhasil dikirim! Kami menantikan kehadiran Anda." });
     }
@@ -1073,7 +1084,7 @@ public class HomepageController : ControllerBase
         [FromForm] string message, [FromForm] string? related_to, [FromForm] string? captchaToken)
     {
         if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
-            return BadRequest(new { message = "CAPTCHA verification failed. Please try again." });
+            return BadRequest(new { message = MsgCaptchaFailed });
         var submission = new CiviCore.Domain.Entities.FormSubmission
         {
             Type = "message",
@@ -1091,7 +1102,7 @@ public class HomepageController : ControllerBase
             });
             await _emailService.SendEmailAsync(receiver, "Pesan Dukungan Baru dari Warga", html);
         }
-        catch { }
+        catch { /* Ignored by design */ }
 
         return Ok(new { message = "Pesan Anda telah terkirim. Tim kami akan segera merespons." });
     }

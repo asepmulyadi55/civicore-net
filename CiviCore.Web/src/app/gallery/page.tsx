@@ -58,7 +58,7 @@ export default function GalleryPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {albums.map(album => {
                         const count = album.photos?.length || 0;
-                        const url = album.image_url?.startsWith('http') ? album.image_url : album.image_url;
+                        const url = album.image_url;
                         return (
                             <Link href={`/gallery/${album.title?.toLowerCase().replace(/\s+/g, '-')}`} key={album.id} className="group relative rounded-2xl overflow-hidden h-[400px] shadow-sm hover:shadow-xl border border-border-subtle/50 dark:border-primary-container/50 transition-shadow">
                                 <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url('${url}')` }}></div>
