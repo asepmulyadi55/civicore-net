@@ -121,7 +121,7 @@ export default function Header({ isDark = false, toggleDark }: HeaderProps) {
                   paddingBottom: '4px',
                   transition: 'color 0.35s ease',
                 }}
-                onClick={(e) => {
+                 tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={(e) => {
                   if (link.href.startsWith('#')) {
                     e.preventDefault();
                     const id = link.href.slice(1);
@@ -164,7 +164,7 @@ export default function Header({ isDark = false, toggleDark }: HeaderProps) {
                 href={link.href}
                 className="block font-medium text-sm transition-colors"
                 style={{ color: C.onSurfaceVar, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                onClick={(e) => {
+                 tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={(e) => {
                   setMenuOpen(false);
                   if (link.href.startsWith('#')) {
                     e.preventDefault();

@@ -34,3 +34,6 @@ CiviCore.Api/appsettings.json
 CiviCore.Api/App_Data/
 /CiviCore.Frontend/doc/
 DataProtection-Keys/
+.sonarqube/
+CiviCore.Frontend/.scannerwork/
+CiviCore.Web/.scannerwork/

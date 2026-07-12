@@ -12,13 +12,13 @@ namespace CiviCore.Api.Controllers;
 
 public class MeetingDto
 {
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string Meeting_date { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public string Status { get; set; } = "scheduled";
-    public DateTime Created_at { get; set; }
+    public required DateTime Created_at { get; set; }
     public List<MeetingAttendeeDto> Attendees { get; set; } = new();
 }
 
@@ -59,6 +59,7 @@ public class AttendanceRecordDto
 [Authorize]
 public class MeetingController : ControllerBase
 {
+    private const string HouseholderRole = "householder";
     private readonly AppDbContext _context;
     private readonly ILocalStorageService _storageService;
     private readonly IConfiguration _configuration;
@@ -110,7 +111,7 @@ public class MeetingController : ControllerBase
             {
                 Id = a.ResidentId ?? a.HouseholderId ?? Guid.Empty,
                 Name = a.Resident?.Fullname ?? a.Householder?.Fullname ?? "Unknown",
-                Type = a.ResidentId.HasValue ? "resident" : "householder",
+                Type = a.ResidentId.HasValue ? "resident" : HouseholderRole,
                 PhotoPath = a.Resident?.PhotoPath ?? a.Householder?.PhotoPath
             }).ToList()
         });
@@ -154,7 +155,7 @@ public class MeetingController : ControllerBase
             {
                 Id = a.ResidentId ?? a.HouseholderId ?? Guid.Empty,
                 Name = a.Resident?.Fullname ?? a.Householder?.Fullname ?? "Unknown",
-                Type = a.ResidentId.HasValue ? "resident" : "householder",
+                Type = a.ResidentId.HasValue ? "resident" : HouseholderRole,
                 PhotoPath = a.Resident?.PhotoPath ?? a.Householder?.PhotoPath
             }).ToList()
         });
@@ -170,7 +171,7 @@ public class MeetingController : ControllerBase
         {
             Title = dto.Title,
             Description = dto.Description,
-            Date = DateTime.Parse(dto.Meeting_date).ToUniversalTime(),
+            Date = DateTime.Parse(dto.Meeting_date, System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime(),
             Location = dto.Location ?? string.Empty,
             Status = dto.Status ?? "scheduled",
             CreatedById = Guid.Parse(userId)
@@ -192,7 +193,7 @@ public class MeetingController : ControllerBase
 
         meeting.Title = dto.Title;
         meeting.Description = dto.Description;
-        meeting.Date = DateTime.Parse(dto.Meeting_date).ToUniversalTime();
+        meeting.Date = DateTime.Parse(dto.Meeting_date, System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
         meeting.Location = dto.Location ?? string.Empty;
         meeting.Status = dto.Status ?? "scheduled";
         meeting.UpdatedAt = DateTime.UtcNow;
@@ -309,7 +310,7 @@ public class MeetingController : ControllerBase
                 Id = h.Id,
                 Name = h.Fullname,
                 Email = h.Email,
-                Type = "householder",
+                Type = HouseholderRole,
                 IsPresent = a?.IsPresent ?? false,
                 Notes = a?.Notes
             });
@@ -344,7 +345,7 @@ public class MeetingController : ControllerBase
         
         foreach (var record in dto.Records)
         {
-            var isHouseholder = record.Type == "householder";
+            var isHouseholder = record.Type == HouseholderRole;
             var existing = existingAttendances.FirstOrDefault(a => 
                 (isHouseholder && a.HouseholderId == record.Id) || 
                 (!isHouseholder && a.ResidentId == record.Id)

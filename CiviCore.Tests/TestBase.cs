@@ -27,14 +27,14 @@ public abstract class TestBase : IDisposable
 
         // Setup Mock UserManager
         var userStore = new Mock<IUserStore<ApplicationUser>>();
-        MockUserManager = new Mock<UserManager<ApplicationUser>>(userStore.Object, null, null, null, null, null, null, null, null);
+        MockUserManager = new Mock<UserManager<ApplicationUser>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         var roleStore = new Mock<IRoleStore<ApplicationRole>>();
-        MockRoleManager = new Mock<RoleManager<ApplicationRole>>(roleStore.Object, null, null, null, null);
+        MockRoleManager = new Mock<RoleManager<ApplicationRole>>(roleStore.Object, null!, null!, null!, null!);
 
         var contextAccessor = new Mock<IHttpContextAccessor>();
         var claimsFactory = new Mock<IUserClaimsPrincipalFactory<ApplicationUser>>();
-        MockSignInManager = new Mock<SignInManager<ApplicationUser>>(MockUserManager.Object, contextAccessor.Object, claimsFactory.Object, null, null, null, null);
+        MockSignInManager = new Mock<SignInManager<ApplicationUser>>(MockUserManager.Object, contextAccessor.Object, claimsFactory.Object, null!, null!, null!, null!);
 
         MockLogger = new Mock<ILogger<TestBase>>();
     }

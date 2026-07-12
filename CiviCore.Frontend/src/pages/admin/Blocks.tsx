@@ -345,7 +345,7 @@ export default function Blocks() {
       {!importing && importJob && (importJob.status === 'Pending' || importJob.status === 'Processing') && (
         <div 
           className="fixed bottom-6 right-6 z-[90] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl shadow-primary/10 rounded-2xl p-4 w-80 cursor-pointer transition-all hover:-translate-y-1" 
-          onClick={() => setImporting(true)}
+           tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setImporting(true)}
           title="Click to view details"
         >
           <div className="flex items-center gap-3 mb-3">

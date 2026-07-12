@@ -12,7 +12,7 @@ public class PropertyCreateDto
 {
     public string Title { get; set; } = string.Empty;
     public string Type { get; set; } = "sell";
-    public decimal Price { get; set; }
+    required public decimal Price { get; set; }
     public string Status { get; set; } = "available";
     public string? Description { get; set; }
     public string? Location { get; set; }

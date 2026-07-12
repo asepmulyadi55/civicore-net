@@ -140,9 +140,9 @@ export default function PropertyDetailPage() {
                         .md\\:hidden::-webkit-scrollbar { display: none; }
                     `}</style>
                     {propertyImages.map((img: string, i: number) => {
-                        const url = img?.startsWith('http') ? img : img;
+                        const url = img;
                         return (
-                            <div key={i} className="min-w-full h-full snap-center relative cursor-pointer" onClick={() => openGallery(i)}>
+                            <div key={i} className="min-w-full h-full snap-center relative cursor-pointer"  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => openGallery(i)}>
                                 <img src={url} className="w-full h-full object-cover" alt={`${property.title} - ${i + 1}`} />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none"></div>
                                 <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white font-label-sm text-xs pointer-events-none flex items-center gap-1">
@@ -158,18 +158,18 @@ export default function PropertyDetailPage() {
                 <div className="hidden md:grid md:grid-cols-4 gap-4 mb-16 h-[50vh] lg:h-[70vh]">
                     {/* Main Featured Image */}
                     <div className="md:col-span-3 md:row-span-2 relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
-                        <img alt={property.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[0]?.startsWith('http') ? propertyImages[0] : propertyImages[0]} />
+                        <img alt={property.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[0]} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60"></div>
                     </div>
                     {/* Side Images */}
                     {propertyImages[1] && (
                         <div className="hidden md:block relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50">
-                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[1]?.startsWith('http') ? propertyImages[1] : propertyImages[1]} />
+                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[1]} />
                         </div>
                     )}
                     {propertyImages[2] && (
-                        <div onClick={() => openGallery(0)} className="hidden md:block relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50 cursor-pointer">
-                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[2]?.startsWith('http') ? propertyImages[2] : propertyImages[2]} />
+                        <div  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => openGallery(0)} className="hidden md:block relative rounded-2xl overflow-hidden group shadow-sm border border-border-subtle/50 dark:border-primary-container/50 cursor-pointer">
+                            <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={propertyImages[2]} />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 <span className="bg-black/60 dark:bg-black/80 backdrop-blur-md px-4 py-2 rounded-lg text-white font-label-md">Explore Gallery</span>
                             </div>
@@ -311,7 +311,7 @@ export default function PropertyDetailPage() {
                     </div>
                 </div>
                 {isGalleryOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" onClick={() => setIsGalleryOpen(false)}>
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm"  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setIsGalleryOpen(false)}>
                         <button onClick={(e) => { e.stopPropagation(); setIsGalleryOpen(false); }} className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full w-12 h-12 flex items-center justify-center z-50">
                             <span className="material-symbols-outlined text-[28px]">close</span>
                         </button>
@@ -321,7 +321,7 @@ export default function PropertyDetailPage() {
                                 <span className="material-symbols-outlined text-[32px]">chevron_left</span>
                             </button>
 
-                            <img src={propertyImages[currentImageIndex]?.startsWith('http') ? propertyImages[currentImageIndex] : propertyImages[currentImageIndex]} alt={property.title} className="max-w-full max-h-[85vh] object-contain" />
+                            <img src={propertyImages[currentImageIndex]} alt={property.title} className="max-w-full max-h-[85vh] object-contain" />
 
                             <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition-colors absolute right-4 md:right-12">
                                 <span className="material-symbols-outlined text-[32px]">chevron_right</span>

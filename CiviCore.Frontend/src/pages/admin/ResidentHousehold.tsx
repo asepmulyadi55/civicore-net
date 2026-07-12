@@ -446,7 +446,7 @@ export default function ResidentHousehold() {
           {data.residents?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {data.residents.map(r => (
-                <div key={r.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center gap-4 hover:border-primary/30 transition-all cursor-pointer group" onClick={() => setResidentModal({ open: true, data: r })}>
+                <div key={r.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center gap-4 hover:border-primary/30 transition-all cursor-pointer group"  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setResidentModal({ open: true, data: r })}>
                   <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-slate-700">
                     {r.photoPath ? (
                       <SecureImage src={`/api/media/path/${r.photoPath}`} className="w-full h-full object-cover" alt={r.fullname} />

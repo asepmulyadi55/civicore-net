@@ -96,7 +96,7 @@ function HouseholderSelect({ label, value, onChange, options, error }: { label: 
               className={`block w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all`}
             />
         ) : (
-            <div onClick={() => setOpen(true)} className={`block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg text-sm text-slate-900 dark:text-white cursor-pointer select-none flex justify-between items-center`}>
+            <div  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setOpen(true)} className={`block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border ${error ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg text-sm text-slate-900 dark:text-white cursor-pointer select-none flex justify-between items-center`}>
               <span className="truncate">{selected ? selected.label : t('users.hh_none')}</span>
               <span className="material-icons text-slate-400 text-sm">expand_more</span>
             </div>
@@ -107,7 +107,7 @@ function HouseholderSelect({ label, value, onChange, options, error }: { label: 
           <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#1B2236] border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto">
             {filtered.length === 0 ? <div className="p-3 text-sm text-slate-500 text-center">{t('users.hh_no_results')}</div> : 
              filtered.map(o => (
-              <div key={o.value} onClick={() => { onChange(o.value); setOpen(false); setSearch(''); }}
+              <div key={o.value}  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { onChange(o.value); setOpen(false); setSearch(''); }}
                 className={`px-4 py-2.5 cursor-pointer text-sm border-b border-slate-100 dark:border-slate-700/50 last:border-0 transition-colors ${value === o.value ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
                 {o.label}
               </div>

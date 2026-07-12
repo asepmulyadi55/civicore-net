@@ -15,9 +15,9 @@ namespace CiviCore.Api.Controllers;
 
 public class PaymentCreateDto
 {
-    public Guid HouseholderId { get; set; }
-    public Guid BlockId { get; set; }
-    public decimal AmountPerMonth { get; set; }
+    required public Guid HouseholderId { get; set; }
+    required public Guid BlockId { get; set; }
+    required public decimal AmountPerMonth { get; set; }
     public List<string> Months { get; set; } = new();
     public string? Notes { get; set; }
     public Guid? PaymentMethodId { get; set; }
@@ -33,6 +33,7 @@ public class PaymentRejectDto
 [Authorize]
 public class PaymentController : ControllerBase
 {
+    private const string IsoDateFormat = "yyyy-MM-ddTHH:mm:ssZ";
     private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILocalStorageService _storageService;
@@ -91,21 +92,15 @@ public class PaymentController : ControllerBase
         }
 
         // Status filter
-        if (!string.IsNullOrEmpty(status))
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<PaymentStatus>(status, true, out var statusEnum))
         {
-            if (Enum.TryParse<PaymentStatus>(status, true, out var statusEnum))
-            {
-                query = query.Where(p => p.Status == statusEnum);
-            }
+            query = query.Where(p => p.Status == statusEnum);
         }
 
         // Payment month filter (format: "YYYY-MM")
-        if (!string.IsNullOrEmpty(month))
+        if (!string.IsNullOrEmpty(month) && DateTime.TryParse(month + "-01", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var monthDate))
         {
-            if (DateTime.TryParse(month + "-01", out var monthDate))
-            {
-                query = query.Where(p => p.PaymentMonth.Year == monthDate.Year && p.PaymentMonth.Month == monthDate.Month);
-            }
+            query = query.Where(p => p.PaymentMonth.Year == monthDate.Year && p.PaymentMonth.Month == monthDate.Month);
         }
 
         // Recorded date filters (created_at month/year)
@@ -136,12 +131,12 @@ public class PaymentController : ControllerBase
                     blockName = lead.Block?.Name ?? lead.Householder?.Block?.Name,
                     unit = lead.Householder?.Unit?.UnitNumber ?? lead.UnitNumber,
                     amount = g.Sum(p => p.Amount),
-                    allMonths = g.Select(p => p.PaymentMonth.ToString("yyyy-MM-ddTHH:mm:ssZ")).OrderBy(m => m).ToList(),
+                    allMonths = g.Select(p => p.PaymentMonth.ToString(IsoDateFormat)).OrderBy(m => m).ToList(),
                     monthCount = g.Count(),
-                    paymentMonth = lead.PaymentMonth.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    paymentMonth = lead.PaymentMonth.ToString(IsoDateFormat),
                     status = lead.Status.ToString().ToLower(),
-                    createdAt = lead.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                    approvedAt = lead.ApprovedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    createdAt = lead.CreatedAt.ToString(IsoDateFormat),
+                    approvedAt = lead.ApprovedAt?.ToString(IsoDateFormat),
                     rejectionReason = lead.RejectionReason,
                     notes = lead.Notes,
                     proofPath = lead.ProofPath,
@@ -228,7 +223,7 @@ public class PaymentController : ControllerBase
 
         foreach (var monthStr in dto.Months)
         {
-            if (!DateTime.TryParse(monthStr, out var parsedMonth)) continue;
+            if (!DateTime.TryParse(monthStr + "-01", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsedMonth)) continue;
 
             // Check for duplicate — skip if payment already exists for this householder+month
             var paymentMonth = parsedMonth.ToUniversalTime();
@@ -278,11 +273,11 @@ public class PaymentController : ControllerBase
             
         if (!records.Any()) return NotFound("Batch not found");
 
-        var oldProofPath = records.First().ProofPath;
+        var oldProofPath = records[0].ProofPath;
         if (!string.IsNullOrEmpty(oldProofPath) && oldProofPath.StartsWith("/api/media/path/"))
         {
             var internalPath = oldProofPath.Replace("/api/media/path/", "");
-            try { await _storageService.RemoveFileAsync(true, internalPath); } catch {}
+            try { await _storageService.RemoveFileAsync(true, internalPath); } catch { /* Ignored by design */ }
         }
 
         var ext = Path.GetExtension(file.FileName);
@@ -401,7 +396,7 @@ public class PaymentController : ControllerBase
 
         // Parse new months
         var newMonths = dto.Months
-            .Select(mStr => DateTime.TryParse(mStr, out var d) ? d.ToUniversalTime() : DateTime.MinValue)
+            .Select(mStr => DateTime.TryParse(mStr + "-01", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d) ? d.ToUniversalTime() : DateTime.MinValue)
             .Where(d => d != DateTime.MinValue)
             .ToList();
 
@@ -447,7 +442,7 @@ public class PaymentController : ControllerBase
         var records = new List<PaymentRecord>();
         foreach (var monthStr in dto.Months)
         {
-            if (!DateTime.TryParse(monthStr, out var parsedMonth)) continue;
+            if (!DateTime.TryParse(monthStr + "-01", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsedMonth)) continue;
             var paymentMonth = parsedMonth.ToUniversalTime();
 
             var newPayment = new PaymentRecord
@@ -558,7 +553,7 @@ public class PaymentController : ControllerBase
         if (tracker == null || scopeFactory == null)
             return BadRequest(new { message = "Services not configured for background import." });
 
-        var tempFile = Path.GetTempFileName();
+        var tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         using (var stream = new FileStream(tempFile, FileMode.Create))
         {
             await excel_file.CopyToAsync(stream);
@@ -611,7 +606,7 @@ public class PaymentController : ControllerBase
                     var name = worksheet.Cell(row, 3).GetString().Trim();
                     var rawStatus = System.Text.RegularExpressions.Regex.Replace(
                         worksheet.Cell(row, 4).GetString().Trim().ToLower(), 
-                        @"\s+", " ");
+                        @"\s+", " ", System.Text.RegularExpressions.RegexOptions.None, System.TimeSpan.FromMilliseconds(500));
 
                     if (string.IsNullOrEmpty(blockLetter) || string.IsNullOrEmpty(unitNum) || string.IsNullOrEmpty(name)) continue;
                     
@@ -690,7 +685,7 @@ public class PaymentController : ControllerBase
             {
                 if (System.IO.File.Exists(tempFile))
                 {
-                    try { System.IO.File.Delete(tempFile); } catch { }
+                    try { System.IO.File.Delete(tempFile); } catch { /* Ignored by design */ }
                 }
             }
         });

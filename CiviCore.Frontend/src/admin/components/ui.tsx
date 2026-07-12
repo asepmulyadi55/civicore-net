@@ -87,7 +87,7 @@ export function Modal({ open, onClose, title, subtitle, children, size = 'md' }:
   const sizes = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+       tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className={`w-full ${sizes[size]} bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}>
         <div className="flex items-start justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <div>
@@ -109,7 +109,7 @@ export function ConfirmModal({ open, onClose, onConfirm, title, message, confirm
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+       tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex flex-col items-center pt-8 pb-5 px-6 text-center">
           <div className="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4">
@@ -296,7 +296,7 @@ export function FormSelect({ label, id, value, onChange, options, error, require
         {open && (
           <ul className="absolute z-50 w-full mt-1 max-h-60 overflow-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1">
             <li
-              onClick={() => { onChange({ target: { value: '' } } as any); setOpen(false); }}
+               tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { onChange({ target: { value: '' } } as any); setOpen(false); }}
               className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${value === '' ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300'}`}
             >
               {placeholder}
@@ -304,7 +304,7 @@ export function FormSelect({ label, id, value, onChange, options, error, require
             {options.map(o => (
               <li
                 key={o.value}
-                onClick={() => { 
+                 tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { 
                   if (o.disabled) return;
                   if (typeof onChange === 'function') {
                     onChange({ target: { value: o.value } } as any);

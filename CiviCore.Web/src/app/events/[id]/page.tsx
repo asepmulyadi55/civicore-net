@@ -114,7 +114,7 @@ export default function EventDetailPage() {
                     <img
                         alt={event.title}
                         className="w-full h-full object-cover object-center absolute inset-0 z-0"
-                        src={event.image_url ? (event.image_url.startsWith('http') ? event.image_url : event.image_url) : '/placeholder-event.png'}
+                        src={event.image_url ? (event.image_url) : '/placeholder-event.png'}
                     />
                     <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-surface-container-lowest dark:from-primary to-transparent h-48 z-10"></div>
                 </section>
@@ -231,7 +231,7 @@ export default function EventDetailPage() {
                                                 {isGuestsOpen && (
                                                     <ul className="absolute z-50 w-full bottom-full mb-1 bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
                                                         {['1 (Hanya saya)', '2', '3', '4'].map((option) => (
-                                                            <li key={option} onClick={() => { setGuests(option); setIsGuestsOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">{option}</li>
+                                                            <li key={option}  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setGuests(option); setIsGuestsOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">{option}</li>
                                                         ))}
                                                     </ul>
                                                 )}

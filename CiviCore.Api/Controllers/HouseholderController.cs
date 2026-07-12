@@ -215,6 +215,7 @@ public class HouseholderController : ControllerBase
     }
 
     [HttpPost("import")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> ImportExcel(
         IFormFile excel_file, 
         [FromForm] int year = 2026,
@@ -230,7 +231,7 @@ public class HouseholderController : ControllerBase
         if (tracker == null || scopeFactory == null)
             return BadRequest(new { message = "Services not configured for background import." });
 
-        var tempFile = Path.GetTempFileName();
+        var tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         using (var stream = new FileStream(tempFile, FileMode.Create))
         {
             await excel_file.CopyToAsync(stream);
@@ -328,9 +329,7 @@ public class HouseholderController : ControllerBase
                         decimal.TryParse(worksheet.Cell(row, 5).GetString().Trim(), out feeAmount);
                     }
                     
-                    if (feeAmount > 0)
-                    {
-                        if (!feeCache.ContainsKey(householder.Id))
+                    if (feeAmount > 0 && !feeCache.ContainsKey(householder.Id))
                         {
                             var fee = new FeeHistory
                             {
@@ -344,7 +343,6 @@ public class HouseholderController : ControllerBase
                             feesCreated++;
                         }
                     }
-                }
 
                 if (newHouseholders.Any()) dbContext.Set<Householder>().AddRange(newHouseholders);
                 if (newFees.Any()) dbContext.Set<FeeHistory>().AddRange(newFees);
@@ -363,7 +361,7 @@ public class HouseholderController : ControllerBase
             {
                 if (System.IO.File.Exists(tempFile))
                 {
-                    try { System.IO.File.Delete(tempFile); } catch { }
+                    try { System.IO.File.Delete(tempFile); } catch { /* Ignored by design */ }
                 }
             }
         });

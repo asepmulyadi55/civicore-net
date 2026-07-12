@@ -113,7 +113,7 @@ function CustomSelect({ label, value, onChange, options, disabled, icon }) {
       <div className="relative">
         {icon && <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px] z-10 pointer-events-none">{icon}</span>}
         
-        <div onClick={() => !disabled && setOpen(!open)} 
+        <div  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => !disabled && setOpen(!open)} 
              className={`w-full ${icon ? 'pl-10' : 'pl-4'} pr-10 py-3 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-semibold text-slate-700 dark:text-white flex justify-between items-center transition-all ${disabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:border-primary/50'}`}>
           <span className="truncate select-none">{selected ? selected.label : (options.length && options[0].label === '— None —' ? options[0].label : '— None —')}</span>
           <span className={`material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none transition-transform ${open ? 'rotate-180' : ''}`}>expand_more</span>
@@ -122,7 +122,7 @@ function CustomSelect({ label, value, onChange, options, disabled, icon }) {
         {open && !disabled && (
           <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl max-h-48 overflow-y-auto py-1">
              {options.map(o => (
-              <div key={o.value} onClick={() => { onChange(o.value); setOpen(false); }}
+              <div key={o.value}  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { onChange(o.value); setOpen(false); }}
                 className={`px-4 py-2.5 cursor-pointer text-sm border-b border-slate-100 dark:border-white/5 last:border-0 transition-colors flex items-center ${String(value) === String(o.value) ? 'bg-primary/10 text-primary font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'}`}>
                 {o.label}
               </div>
@@ -338,7 +338,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
                    ) : (
                      filteredHouseholders.map(h => (
                        <div key={h.id} 
-                         onClick={() => {
+                          tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => {
                            const amount = h.monthlyFee || 0;
                            setForm(f => ({ ...f, householderId: h.id, amount }));
                            setDropdownOpen(false);
@@ -435,7 +435,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
           <div>
             <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{t('payments.field_proof')} <span className="text-slate-400 dark:text-slate-500 normal-case lowercase tracking-normal font-medium">{t('payments.optional')}</span></label>
             <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setProofFile(e.target.files?.[0] || null)} />
-            <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors h-[104px] overflow-hidden relative group">
+            <div  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors h-[104px] overflow-hidden relative group">
               {proofFile ? (
                 <>
                   <span className="material-icons text-emerald-500 mb-1.5 text-[24px]">check_circle</span>
@@ -723,7 +723,7 @@ export default function Payments() {
       {!importing && importJob && (importJob.status === 'Pending' || importJob.status === 'Processing') && (
         <div 
           className="fixed bottom-6 right-6 z-[90] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl shadow-primary/10 rounded-2xl p-4 w-80 cursor-pointer transition-all hover:-translate-y-1" 
-          onClick={() => setImporting(true)}
+           tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setImporting(true)}
           title="Click to view details"
         >
           <div className="flex items-center gap-3 mb-3">

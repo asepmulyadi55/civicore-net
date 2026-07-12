@@ -13,6 +13,7 @@ namespace CiviCore.Api.Controllers;
 [Authorize]
 public class SettingsController : ControllerBase
 {
+    private const string AdminRole = "Admin";
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
@@ -77,7 +78,7 @@ public class SettingsController : ControllerBase
             if (!string.IsNullOrEmpty(oldAvatarPath) && oldAvatarPath.StartsWith("/api/media/path/"))
             {
                 var internalPath = oldAvatarPath.Replace("/api/media/path/", "");
-                try { await _storage.RemoveFileAsync(true, internalPath); } catch {}
+                try { await _storage.RemoveFileAsync(true, internalPath); } catch { /* Ignored by design */ }
             }
 
             var ext = System.IO.Path.GetExtension(dto.Avatar.FileName);
@@ -157,7 +158,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+        if (!roles.Any(r => r.Equals(AdminRole, StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         if (dto.SessionTimeoutMinutes < 5 || dto.SessionTimeoutMinutes > 120)
@@ -178,7 +179,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+        if (!roles.Any(r => r.Equals(AdminRole, StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         var memo = await GetSettingValue("admin_memo", "");
@@ -192,7 +193,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+        if (!roles.Any(r => r.Equals(AdminRole, StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         await SetSettingValue("admin_memo", dto.AdminMemo ?? "");
@@ -208,7 +209,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+        if (!roles.Any(r => r.Equals(AdminRole, StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         return Ok(new
@@ -228,7 +229,7 @@ public class SettingsController : ControllerBase
         if (user == null) return Unauthorized();
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+        if (!roles.Any(r => r.Equals(AdminRole, StringComparison.OrdinalIgnoreCase)))
             return Forbid();
 
         await SetSettingValue("posyandu_baby_max_months", dto.PosyanduBabyMaxMonths.ToString());

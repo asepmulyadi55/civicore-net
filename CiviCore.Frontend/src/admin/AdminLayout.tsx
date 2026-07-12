@@ -251,7 +251,7 @@ export default function AdminLayout({ children, title, subtitle }: { children: R
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+           tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setSidebarOpen(false)}
         />
       )}
 
