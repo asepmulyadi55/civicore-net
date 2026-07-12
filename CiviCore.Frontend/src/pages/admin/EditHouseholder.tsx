@@ -38,14 +38,14 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
   const handleSave = async () => {
     const errs: Record<string, string> = {};
     if (!form.fullname.trim()) errs.fullname = t('edit_householder.error_fullname_required', 'Full name is required.');
-    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    if (Object.keys(errs).length > 0) {setErrors(errs);return;}
 
-    setLoading(true); setErrors({});
+    setLoading(true);setErrors({});
     try {
       const payload = { ...form, householderId };
       if (!payload.birthDate) payload.birthDate = null;
-      if (isEdit) await axios.put(`/api/residents/${data.id}`, payload);
-      else await axios.post('/api/residents', payload);
+      if (isEdit) await axios.put(`/api/residents/${data.id}`, payload);else
+      await axios.post('/api/residents', payload);
       onSaved();
       onClose();
     } catch (err: any) {
@@ -60,7 +60,7 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
       <div className="space-y-5">
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.full_name')} <span className="text-rose-500">*</span></label>
-          <input type="text" value={form.fullname} onChange={e => setForm(p => ({ ...p, fullname: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all" placeholder={t('edit_householder.full_name')} />
+          <input type="text" value={form.fullname} onChange={(e) => setForm((p) => ({ ...p, fullname: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all" placeholder={t('edit_householder.full_name')} />
           {errors.fullname && <p className="mt-1.5 text-xs text-rose-500">{errors.fullname}</p>}
         </div>
 
@@ -68,14 +68,14 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.photo')}</label>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center text-slate-400">
-              {form.photoPath ? (
-                <SecureImage src={`/api/media/path/${form.photoPath}`} className="w-full h-full object-cover" alt="Resident" />
-              ) : (
-                <span className="material-icons text-xl">person</span>
-              )}
+              {form.photoPath ?
+              <SecureImage src={`/api/media/path/${form.photoPath}`} className="w-full h-full object-cover" alt="Resident" /> :
+
+              <span className="material-icons text-xl">person</span>
+              }
             </div>
             <div>
-              <input type="file" id={`residentPhoto-${data?.id || 'new'}`} className="hidden" accept="image/*" onChange={async e => {
+              <input type="file" id={`residentPhoto-${data?.id || 'new'}`} className="hidden" accept="image/*" onChange={async (e) => {
                 if (!e.target.files?.length) return;
                 setUploadingPhoto(true);
                 try {
@@ -85,9 +85,9 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
                   if (form.photoPath) formData.append('replacePath', form.photoPath);
                   formData.append('module', 'residents');
                   const res = await axios.post('/api/media/upload', formData);
-                  setForm(p => ({ ...p, photoPath: res.data.filePath }));
-                } catch (err) { console.error(err); }
-                finally {
+                  setForm((p) => ({ ...p, photoPath: res.data.filePath }));
+                } catch (err) {console.error(err);} finally
+                {
                   setUploadingPhoto(false);
                   e.target.value = '';
                 }
@@ -101,62 +101,62 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
         </div>
 
         <div>
-          <FormSelect 
-            label={t('edit_householder.relationship')} 
-            id="r-rel" 
-            value={form.relationship} 
-            onChange={e => setForm(p => ({ ...p, relationship: e.target.value }))} 
+          <FormSelect
+            label={t('edit_householder.relationship')}
+            id="r-rel"
+            value={form.relationship}
+            onChange={(e) => setForm((p) => ({ ...p, relationship: e.target.value }))}
             options={[
-              { value: 'Head of Family', label: t('edit_householder.rel_head') },
-              { value: 'Spouse', label: t('edit_householder.rel_spouse') },
-              { value: 'Child', label: t('edit_householder.rel_child') },
-              { value: 'Parent', label: t('edit_householder.rel_parent') },
-              { value: 'Sibling', label: t('edit_householder.rel_sibling') },
-              { value: 'Other', label: t('edit_householder.rel_other') }
-            ]} 
-            required 
-          />
+            { value: 'Head of Family', label: t('edit_householder.rel_head') },
+            { value: 'Spouse', label: t('edit_householder.rel_spouse') },
+            { value: 'Child', label: t('edit_householder.rel_child') },
+            { value: 'Parent', label: t('edit_householder.rel_parent') },
+            { value: 'Sibling', label: t('edit_householder.rel_sibling') },
+            { value: 'Other', label: t('edit_householder.rel_other') }]
+            }
+            required />
+          
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.birth_date')}</label>
-            <input type="date" value={form.birthDate} onChange={e => setForm(p => ({ ...p, birthDate: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all cursor-pointer dark:[color-scheme:dark]" />
+            <input type="date" value={form.birthDate} onChange={(e) => setForm((p) => ({ ...p, birthDate: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all cursor-pointer dark:[color-scheme:dark]" />
           </div>
           <div>
-            <FormSelect 
-              label={t('edit_householder.gender')} 
-              id="r-gen" 
-              value={form.gender} 
-              onChange={e => setForm(p => ({ ...p, gender: e.target.value }))} 
-              options={[{value: 'Male', label: t('edit_householder.gen_male')}, {value: 'Female', label: t('edit_householder.gen_female')}]} 
-              placeholder={t('edit_householder.select_gender')} 
-            />
+            <FormSelect
+              label={t('edit_householder.gender')}
+              id="r-gen"
+              value={form.gender}
+              onChange={(e) => setForm((p) => ({ ...p, gender: e.target.value }))}
+              options={[{ value: 'Male', label: t('edit_householder.gen_male') }, { value: 'Female', label: t('edit_householder.gen_female') }]}
+              placeholder={t('edit_householder.select_gender')} />
+            
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
-            <FormSelect 
-              label={t('edit_householder.education')} 
-              id="r-edu" 
-              value={form.education} 
-              onChange={e => setForm(p => ({ ...p, education: e.target.value }))} 
+            <FormSelect
+              label={t('edit_householder.education')}
+              id="r-edu"
+              value={form.education}
+              onChange={(e) => setForm((p) => ({ ...p, education: e.target.value }))}
               options={[
-                { value: 'Elementary', label: t('edit_householder.edu_elem') },
-                { value: 'Junior High', label: t('edit_householder.edu_junior') },
-                { value: 'Senior High', label: t('edit_householder.edu_senior') },
-                { value: 'Diploma', label: t('edit_householder.edu_diploma') },
-                { value: 'Bachelor', label: t('edit_householder.edu_bachelor') },
-                { value: 'Master', label: t('edit_householder.edu_master') },
-                { value: 'Doctorate', label: t('edit_householder.edu_doctorate') }
-              ]} 
-              placeholder={t('edit_householder.select_education')} 
-            />
+              { value: 'Elementary', label: t('edit_householder.edu_elem') },
+              { value: 'Junior High', label: t('edit_householder.edu_junior') },
+              { value: 'Senior High', label: t('edit_householder.edu_senior') },
+              { value: 'Diploma', label: t('edit_householder.edu_diploma') },
+              { value: 'Bachelor', label: t('edit_householder.edu_bachelor') },
+              { value: 'Master', label: t('edit_householder.edu_master') },
+              { value: 'Doctorate', label: t('edit_householder.edu_doctorate') }]
+              }
+              placeholder={t('edit_householder.select_education')} />
+            
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.occupation')}</label>
-            <input type="text" value={form.occupation} onChange={e => setForm(p => ({ ...p, occupation: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all" placeholder={t('edit_householder.occupation_placeholder')} />
+            <input type="text" value={form.occupation} onChange={(e) => setForm((p) => ({ ...p, occupation: e.target.value }))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-primary outline-none transition-all" placeholder={t('edit_householder.occupation_placeholder')} />
           </div>
         </div>
 
@@ -167,8 +167,8 @@ function ResidentModal({ open, onClose, onSaved, data, householderId }) {
           </button>
         </div>
       </div>
-    </Modal>
-  );
+    </Modal>);
+
 }
 
 export default function EditHouseholder() {
@@ -181,18 +181,18 @@ export default function EditHouseholder() {
   const [blocks, setBlocks] = useState<any[]>([]);
   const [errorModal, setErrorModal] = useState('');
   const [residentModal, setResidentModal] = useState({ open: false, data: null });
-  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean, item: any, loading: boolean }>({ open: false, item: null, loading: false });
+  const [confirmDelete, setConfirmDelete] = useState<{open: boolean;item: any;loading: boolean;}>({ open: false, item: null, loading: false });
   const [uploadingHouseholdPhoto, setUploadingHouseholdPhoto] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const fetchData = async () => {
     try {
       const [hRes, bRes] = await Promise.all([
-        axios.get(`/api/householders/${id}`),
-        axios.get('/api/blocks?per_page=100'),
-      ]);
+      axios.get(`/api/householders/${id}`),
+      axios.get('/api/blocks?per_page=100')]
+      );
       setData(hRes.data);
-      setBlocks(Array.isArray(bRes.data) ? bRes.data : (bRes.data?.data || []));
+      setBlocks(Array.isArray(bRes.data) ? bRes.data : bRes.data?.data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -206,14 +206,14 @@ export default function EditHouseholder() {
 
   const doConfirmDeleteResident = async () => {
     if (!confirmDelete.item) return;
-    setConfirmDelete(prev => ({ ...prev, loading: true }));
+    setConfirmDelete((prev) => ({ ...prev, loading: true }));
     try {
       await axios.delete(`/api/residents/${confirmDelete.item.id}`);
       fetchData();
       setConfirmDelete({ open: false, item: null, loading: false });
     } catch (err) {
       console.error(err);
-      setConfirmDelete(prev => ({ ...prev, loading: false }));
+      setConfirmDelete((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -222,7 +222,7 @@ export default function EditHouseholder() {
     if (!data?.fullname?.trim()) errs.fullname = t('edit_householder.error_fullname_required', 'Owner name is required.');
     if (!data?.blockId) errs.blockId = t('edit_householder.error_block_required', 'Block is required.');
     if (!data?.unitId) errs.unitId = t('edit_householder.error_unit_required', 'Unit is required.');
-    
+
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       setErrorModal(t('edit_householder.error_fill_required', 'Please fill in all required fields.'));
@@ -281,14 +281,14 @@ export default function EditHouseholder() {
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">{t('edit_householder.household_photo')}</h3>
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center text-slate-400 dark:text-slate-500">
-                  {data.photoPath ? (
-                    <SecureImage src={`/api/media/path/${data.photoPath}`} className="w-full h-full object-cover" alt="Household" />
-                  ) : (
-                    <span className="material-icons text-2xl">home</span>
-                  )}
+                  {data.photoPath ?
+                  <SecureImage src={`/api/media/path/${data.photoPath}`} className="w-full h-full object-cover" alt="Household" /> :
+
+                  <span className="material-icons text-2xl">home</span>
+                  }
                 </div>
                 <div>
-                  <input type="file" id="householdPhoto" className="hidden" accept="image/*" onChange={async e => {
+                  <input type="file" id="householdPhoto" className="hidden" accept="image/*" onChange={async (e) => {
                     if (!e.target.files?.length) return;
                     setUploadingHouseholdPhoto(true);
                     try {
@@ -299,8 +299,8 @@ export default function EditHouseholder() {
                       formData.append('module', 'householders');
                       const res = await axios.post('/api/media/upload', formData);
                       setData((p: any) => ({ ...p, photoPath: res.data.filePath }));
-                    } catch (err) { console.error(err); }
-                    finally {
+                    } catch (err) {console.error(err);} finally
+                    {
                       setUploadingHouseholdPhoto(false);
                       e.target.value = '';
                     }
@@ -318,43 +318,43 @@ export default function EditHouseholder() {
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">{t('edit_householder.unit_details')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <FormSelect 
-                    label={t('edit_householder.block')} 
-                    id="h-blk" 
-                    value={data.blockId || ''} 
-                    onChange={e => setData({ ...data, blockId: e.target.value, unitId: '' })} 
-                    options={blocks.map(b => ({ value: b.id, label: b.name }))} 
-                    placeholder={t('edit_householder.select_block')} 
+                  <FormSelect
+                    label={t('edit_householder.block')}
+                    id="h-blk"
+                    value={data.blockId || ''}
+                    onChange={(e) => setData({ ...data, blockId: e.target.value, unitId: '' })}
+                    options={blocks.map((b) => ({ value: b.id, label: b.name }))}
+                    placeholder={t('edit_householder.select_block')}
                     error={errors.blockId}
-                    required 
-                  />
+                    required />
+                  
                 </div>
                 <div>
-                  <FormSelect 
-                    label={t('edit_householder.unit_no')} 
-                    id="h-unt" 
-                    value={data.unitId || ''} 
-                    onChange={e => setData({ ...data, unitId: e.target.value })} 
-                    options={(blocks.find(b => String(b.id) === String(data.blockId))?.units || []).map((u: any) => {
+                  <FormSelect
+                    label={t('edit_householder.unit_no')}
+                    id="h-unt"
+                    value={data.unitId || ''}
+                    onChange={(e) => setData({ ...data, unitId: e.target.value })}
+                    options={(blocks.find((b) => String(b.id) === String(data.blockId))?.units || []).map((u: any) => {
                       const isCurrent = String(u.id) === String(data.unitId);
                       const isOccupied = u.isAssigned && !isCurrent;
-                      const label = isOccupied ? `${u.unitNumber || u.unit_number} (${t('edit_householder.occupied')})` : (u.unitNumber || u.unit_number);
+                      const label = isOccupied ? `${u.unitNumber || u.unit_number} (${t('edit_householder.occupied')})` : u.unitNumber || u.unit_number;
                       return { value: u.id, label, disabled: isOccupied };
-                    })} 
-                    placeholder={t('edit_householder.select_unit')} 
+                    })}
+                    placeholder={t('edit_householder.select_unit')}
                     error={errors.unitId}
-                    required 
-                  />
+                    required />
+                  
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.owner_name')} <span className="text-rose-500">*</span></label>
-                  <input type="text" className={`w-full bg-slate-50 dark:bg-slate-800 border ${errors.fullname ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none`} value={data.fullname || ''} onChange={e => setData({ ...data, fullname: e.target.value })} />
+                  <input type="text" className={`w-full bg-slate-50 dark:bg-slate-800 border ${errors.fullname ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none`} value={data.fullname || ''} onChange={(e) => setData({ ...data, fullname: e.target.value })} />
                   {errors.fullname && <p className="mt-1.5 text-xs text-rose-500">{errors.fullname}</p>}
                   <p className="text-xs text-slate-500 mt-1.5">{t('edit_householder.owner_name_hint')}</p>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.email')} <span className="text-slate-400 font-normal">{t('edit_householder.email_hint')}</span></label>
-                  <input type="email" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none" placeholder={t('edit_householder.email_placeholder')} value={data.email || ''} onChange={e => setData({ ...data, email: e.target.value })} />
+                  <input type="email" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none" placeholder={t('edit_householder.email_placeholder')} value={data.email || ''} onChange={(e) => setData({ ...data, email: e.target.value })} />
                 </div>
               </div>
             </div>
@@ -379,7 +379,7 @@ export default function EditHouseholder() {
                 </div>
                 <div className="flex items-center">
                   <div className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 flex items-start gap-3">
-                    <input type="checkbox" checked={data.is_active ?? true} onChange={e => setData({ ...data, is_active: e.target.checked })} className="mt-1 w-4 h-4 rounded bg-transparent border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
+                    <input type="checkbox" checked={data.is_active ?? true} onChange={(e) => setData({ ...data, is_active: e.target.checked })} className="mt-1 w-4 h-4 rounded bg-transparent border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/30 cursor-pointer" />
                     <div>
                       <div className="text-sm font-bold text-slate-900 dark:text-white">{t('edit_householder.active_household')}</div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">{t('edit_householder.active_hint')}</div>
@@ -390,7 +390,7 @@ export default function EditHouseholder() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.notes')} <span className="text-slate-400 font-normal">{t('edit_householder.optional')}</span></label>
-                <textarea className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none min-h-[80px]" placeholder={t('edit_householder.notes_placeholder')} value={data.notes || ''} onChange={e => setData({ ...data, notes: e.target.value })} />
+                <textarea className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none min-h-[80px]" placeholder={t('edit_householder.notes_placeholder')} value={data.notes || ''} onChange={(e) => setData({ ...data, notes: e.target.value })} />
               </div>
             </div>
           </div>
@@ -416,11 +416,11 @@ export default function EditHouseholder() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.new_fee')}</label>
-                  <input type="number" value={data.newMonthlyFee || ''} onChange={e => setData({ ...data, newMonthlyFee: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500" placeholder={t('edit_householder.new_fee_placeholder')} />
+                  <input type="number" value={data.newMonthlyFee || ''} onChange={(e) => setData({ ...data, newMonthlyFee: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500" placeholder={t('edit_householder.new_fee_placeholder')} />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t('edit_householder.effective_from')}</label>
-                  <input type="month" value={data.effectiveFrom || ''} onChange={e => setData({ ...data, effectiveFrom: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none cursor-pointer [color-scheme:light_dark]" />
+                  <input type="month" value={data.effectiveFrom || ''} onChange={(e) => setData({ ...data, effectiveFrom: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-primary outline-none cursor-pointer [color-scheme:light_dark]" />
                 </div>
               </div>
             </div>
@@ -428,13 +428,13 @@ export default function EditHouseholder() {
         </div>
 
         {/* Save Button */}
-        {can('householders.edit') && (
-          <div className="flex justify-end mb-12">
+        {can('householders.edit') &&
+        <div className="flex justify-end mb-12">
             <button onClick={handleSave} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-900/80 dark:hover:bg-emerald-800 border border-emerald-700 dark:border-emerald-800/50 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer shadow-md shadow-emerald-600/20">
               <span className="material-icons text-[18px]">save</span> {t('edit_householder.btn_save_household')}
             </button>
           </div>
-        )}
+        }
 
         {/* Section 3: Residents */}
         <div className="mb-12">
@@ -448,45 +448,45 @@ export default function EditHouseholder() {
                 <p className="text-xs text-slate-500 dark:text-slate-400">{t('edit_householder.residents_desc')}</p>
               </div>
             </div>
-            {can('householders.edit') && (
-              <button onClick={() => setResidentModal({ open: true, data: null })} className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer shadow-lg shadow-indigo-600/20 shrink-0 whitespace-nowrap">
+            {can('householders.edit') &&
+            <button onClick={() => setResidentModal({ open: true, data: null })} className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition-colors cursor-pointer shadow-lg shadow-indigo-600/20 shrink-0 whitespace-nowrap">
                 <span className="material-icons text-[16px]">person_add</span> {t('edit_householder.btn_add_resident')}
               </button>
-            )}
+            }
           </div>
 
-          {data.residents?.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.residents.map(r => (
-                <div key={r.id} className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center gap-4 ${can('householders.edit') ? 'hover:border-primary/30 cursor-pointer group' : ''} transition-all`}  tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => can('householders.edit') && setResidentModal({ open: true, data: r })}>
+          {data.residents?.length > 0 ?
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.residents.map((r) =>
+            <div key={r.id} className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center gap-4 ${can('householders.edit') ? 'hover:border-primary/30 cursor-pointer group' : ''} transition-all`} tabIndex={0} role="button" onClick={() => can('householders.edit') && setResidentModal({ open: true, data: r })} onKeyDown={(e) => {if (["Enter", " "].includes(e.key)) {e.preventDefault();e.currentTarget.click();}}}>
                   <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-slate-700">
-                    {r.photoPath ? (
-                      <SecureImage src={`/api/media/path/${r.photoPath}`} className="w-full h-full object-cover" alt={r.fullname} />
-                    ) : (
-                      <span className="material-icons text-slate-400 dark:text-slate-500 text-xl">person</span>
-                    )}
+                    {r.photoPath ?
+                <SecureImage src={`/api/media/path/${r.photoPath}`} className="w-full h-full object-cover" alt={r.fullname} /> :
+
+                <span className="material-icons text-slate-400 dark:text-slate-500 text-xl">person</span>
+                }
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{r.fullname}</div>
-                    <div className="text-xs text-slate-500 truncate">{r.relationship ? (r.relationship === 'Head of Family' ? t('edit_householder.rel_head') : r.relationship) : t('edit_householder.unspecified')} {r.isHead && <span className="ml-1 text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">{t('edit_householder.tag_head')}</span>}</div>
+                    <div className="text-xs text-slate-500 truncate">{r.relationship ? r.relationship === 'Head of Family' ? t('edit_householder.rel_head') : r.relationship : t('edit_householder.unspecified')} {r.isHead && <span className="ml-1 text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">{t('edit_householder.tag_head')}</span>}</div>
                   </div>
-                  {can('householders.edit') && (
-                    <button onClick={e => { e.stopPropagation(); setConfirmDelete({ open: true, item: r, loading: false }); }} className="text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 p-2 transition-colors shrink-0 opacity-0 group-hover:opacity-100 cursor-pointer">
+                  {can('householders.edit') &&
+              <button onClick={(e) => {e.stopPropagation();setConfirmDelete({ open: true, item: r, loading: false });}} className="text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 p-2 transition-colors shrink-0 opacity-0 group-hover:opacity-100 cursor-pointer">
                       <span className="material-icons text-[18px]">delete_outline</span>
                     </button>
-                  )}
+              }
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
+            )}
+            </div> :
+
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
               <span className="material-icons text-5xl text-slate-300 dark:text-slate-600 mb-3">person_off</span>
               <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">{t('edit_householder.no_residents')}</h3>
-              {can('householders.edit') && (
-                <button onClick={() => setResidentModal({ open: true, data: null })} className="text-xs font-bold text-primary hover:underline cursor-pointer">{t('edit_householder.btn_add_first_resident')}</button>
-              )}
+              {can('householders.edit') &&
+            <button onClick={() => setResidentModal({ open: true, data: null })} className="text-xs font-bold text-primary hover:underline cursor-pointer">{t('edit_householder.btn_add_first_resident')}</button>
+            }
             </div>
-          )}
+          }
         </div>
 
       </div>
@@ -506,8 +506,8 @@ export default function EditHouseholder() {
         loading={confirmDelete.loading}
         title={t('edit_householder.confirm_delete_title')}
         message={t('edit_householder.confirm_delete_msg', { name: confirmDelete.item?.fullname })}
-        confirmLabel={t('edit_householder.btn_delete_resident')}
-      />
-    </AdminLayout>
-  );
+        confirmLabel={t('edit_householder.btn_delete_resident')} />
+      
+    </AdminLayout>);
+
 }

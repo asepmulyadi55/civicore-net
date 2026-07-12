@@ -7,8 +7,8 @@ import {
   StatusBadge, EmptyState, Modal, ConfirmModal,
   PageHeader, FilterBar, SearchInput,
   TableWrapper, Th, FormInput, FormSelect, SearchableSelect, CustomSelect,
-  BulkActionBar
-} from '../../admin/components/ui';
+  BulkActionBar } from
+'../../admin/components/ui';
 import { usePermissions } from '../../admin/PermissionsContext';
 import { formatApiErrors } from '../../utils/formatErrors';
 
@@ -23,41 +23,41 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
   const [personId, setPersonId] = useState('');
 
   useEffect(() => {
-    if (data) setForm({ name: data.name || '', description: data.description || '', is_active: data.is_active !== false, coordinators: data.coordinators || [] });
-    else setForm({ name: '', description: '', is_active: true, coordinators: [] });
+    if (data) setForm({ name: data.name || '', description: data.description || '', is_active: data.is_active !== false, coordinators: data.coordinators || [] });else
+    setForm({ name: '', description: '', is_active: true, coordinators: [] });
     setErrors({});
     setPersonType('resident');
     setPersonId('');
   }, [data, open]);
 
-  const set = f => e => setForm(p => ({ ...p, [f]: e.target.value }));
+  const set = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }));
 
   const handleAddCoord = () => {
     if (!personId) return;
-    const exists = form.coordinators.find(c => c.id === personId);
+    const exists = form.coordinators.find((c) => c.id === personId);
     if (!exists) {
-      const personObj = personType === 'resident' ? residents.find(r => String(r.id) === personId) : householders.find(h => String(h.id) === personId);
-      const name = personObj ? (personObj.fullname || personObj.name) : 'Unknown';
-      setForm(p => ({ ...p, coordinators: [...p.coordinators, { type: personType, id: personId, name }] }));
+      const personObj = personType === 'resident' ? residents.find((r) => String(r.id) === personId) : householders.find((h) => String(h.id) === personId);
+      const name = personObj ? personObj.fullname || personObj.name : 'Unknown';
+      setForm((p) => ({ ...p, coordinators: [...p.coordinators, { type: personType, id: personId, name }] }));
     }
     setPersonId('');
   };
 
   const handleRemoveCoord = (id) => {
-    setForm(p => ({ ...p, coordinators: p.coordinators.filter(c => c.id !== id) }));
+    setForm((p) => ({ ...p, coordinators: p.coordinators.filter((c) => c.id !== id) }));
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) { setErrors({ name: t('blocks.error_name_required', 'Block name is required.') }); return; }
-    
-    setLoading(true); setErrors({});
+    if (!form.name.trim()) {setErrors({ name: t('blocks.error_name_required', 'Block name is required.') });return;}
+
+    setLoading(true);setErrors({});
     try {
-      if (isEdit) await axios.put(`/api/blocks/${data.id}`, form);
-      else await axios.post('/api/blocks', form);
-      onSaved(); onClose();
+      if (isEdit) await axios.put(`/api/blocks/${data.id}`, form);else
+      await axios.post('/api/blocks', form);
+      onSaved();onClose();
     } catch (err: any) {
       setErrors(formatApiErrors(err));
-    } finally { setLoading(false); }
+    } finally {setLoading(false);}
   };
 
   return (
@@ -68,24 +68,24 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('blocks.description')}</label>
           <textarea value={form.description} onChange={set('description')} rows={3} placeholder={t('blocks.description_placeholder')}
-            className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none text-sm" />
+          className="block w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none text-sm" />
         </div>
         
         <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 bg-slate-50/50 dark:bg-slate-800/50">
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">{t('blocks.assign_coordinators')}</p>
           <div className="flex flex-col sm:flex-row gap-2 mb-3">
             <div className="w-full sm:w-1/3">
-                <CustomSelect value={personType} onChange={v => { setPersonType(v); setPersonId(''); }} options={[
-                { value: 'resident', label: t('blocks.type_resident') },
-                { value: 'householder', label: t('blocks.type_householder') }
-                ]} />
+                <CustomSelect value={personType} onChange={(v) => {setPersonType(v);setPersonId('');}} options={[
+              { value: 'resident', label: t('blocks.type_resident') },
+              { value: 'householder', label: t('blocks.type_householder') }]
+              } />
             </div>
             <div className="w-full sm:flex-1">
-              {personType === 'resident' ? (
-                <SearchableSelect value={personId} onChange={setPersonId} options={residents.map(r => ({ value: String(r.id), label: r.fullname }))} placeholder={t('blocks.search_resident')} />
-              ) : (
-                <SearchableSelect value={personId} onChange={setPersonId} options={householders.map(h => ({ value: String(h.id), label: h.fullname }))} placeholder={t('blocks.search_householder')} />
-              )}
+              {personType === 'resident' ?
+              <SearchableSelect value={personId} onChange={setPersonId} options={residents.map((r) => ({ value: String(r.id), label: r.fullname }))} placeholder={t('blocks.search_resident')} /> :
+
+              <SearchableSelect value={personId} onChange={setPersonId} options={householders.map((h) => ({ value: String(h.id), label: h.fullname }))} placeholder={t('blocks.search_householder')} />
+              }
             </div>
             <button type="button" onClick={handleAddCoord} disabled={!personId} className="w-full sm:w-auto px-4 py-2.5 sm:py-0 bg-primary text-white rounded-lg disabled:opacity-50 cursor-pointer flex items-center justify-center transition-all hover:opacity-90">
                 <span className="material-icons">add</span>
@@ -93,24 +93,24 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
             </button>
           </div>
           
-          {form.coordinators.length > 0 ? (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {form.coordinators.map(c => (
-                <div key={c.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+          {form.coordinators.length > 0 ?
+          <div className="flex flex-wrap gap-2 mt-2">
+              {form.coordinators.map((c) =>
+            <div key={c.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
                   <span className="text-primary font-bold">{c.type === 'resident' ? 'R' : 'H'}</span>
                   <span className="text-slate-800 dark:text-slate-200">{c.name}</span>
                   <button type="button" onClick={() => handleRemoveCoord(c.id)} className="material-icons text-[14px] text-slate-400 hover:text-rose-500 cursor-pointer ml-1">close</button>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-slate-400 italic mt-2">{t('blocks.no_coordinators')}</p>
-          )}
+            )}
+            </div> :
+
+          <p className="text-xs text-slate-400 italic mt-2">{t('blocks.no_coordinators')}</p>
+          }
         </div>
 
         <div className="flex items-center gap-3">
-          <input type="checkbox" id="b-active" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))}
-            className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30" />
+          <input type="checkbox" id="b-active" checked={form.is_active} onChange={(e) => setForm((p) => ({ ...p, is_active: e.target.checked }))}
+          className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30" />
           <label htmlFor="b-active" className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('blocks.active_block')}</label>
         </div>
         <div className="flex justify-end gap-3 pt-2">
@@ -120,33 +120,33 @@ function BlockModal({ open, onClose, onSaved, data, residents, householders }) {
           </button>
         </div>
       </div>
-    </Modal>
-  );
+    </Modal>);
+
 }
 
 function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggleSelect }) {
   const { t } = useTranslation();
   const { can } = usePermissions();
   const stats = [
-    { label: t('blocks.stat_units'), value: block.units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
-    { label: t('blocks.stat_occupied'), value: block.owner_occupied_units_count ?? 0, cls: 'bg-emerald-50 dark:bg-emerald-900/10', valCls: 'text-emerald-500' },
-    { label: t('blocks.stat_rented'), value: block.rented_units_count ?? 0, cls: 'bg-amber-50 dark:bg-amber-900/10', valCls: 'text-amber-500' },
-    { label: t('blocks.stat_vacant'), value: block.vacant_units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
-    { label: t('blocks.stat_public'), value: block.public_facility_units_count ?? 0, cls: 'bg-teal-50 dark:bg-teal-900/10', valCls: 'text-teal-500' },
-    { label: t('blocks.stat_developer'), value: block.developer_units_count ?? 0, cls: 'bg-indigo-50 dark:bg-indigo-900/10', valCls: 'text-indigo-500' },
-  ];
+  { label: t('blocks.stat_units'), value: block.units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
+  { label: t('blocks.stat_occupied'), value: block.owner_occupied_units_count ?? 0, cls: 'bg-emerald-50 dark:bg-emerald-900/10', valCls: 'text-emerald-500' },
+  { label: t('blocks.stat_rented'), value: block.rented_units_count ?? 0, cls: 'bg-amber-50 dark:bg-amber-900/10', valCls: 'text-amber-500' },
+  { label: t('blocks.stat_vacant'), value: block.vacant_units_count ?? 0, cls: 'bg-slate-50 dark:bg-slate-800', valCls: 'text-slate-900 dark:text-white' },
+  { label: t('blocks.stat_public'), value: block.public_facility_units_count ?? 0, cls: 'bg-teal-50 dark:bg-teal-900/10', valCls: 'text-teal-500' },
+  { label: t('blocks.stat_developer'), value: block.developer_units_count ?? 0, cls: 'bg-indigo-50 dark:bg-indigo-900/10', valCls: 'text-indigo-500' }];
+
   return (
     <div className={`relative bg-white dark:bg-slate-900 rounded-xl border ${isSelected ? 'border-primary ring-1 ring-primary/30' : 'border-slate-200 dark:border-slate-800'} shadow-sm p-6 flex flex-col gap-4 hover:shadow-md hover:border-primary/30 transition-all`}>
-      {can('blocks.delete') && (
-        <div className="absolute top-4 right-4 z-10">
-          <input 
-            type="checkbox" 
-            checked={isSelected}
-            onChange={(e) => onToggleSelect(block.id, e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer"
-          />
+      {can('blocks.delete') &&
+      <div className="absolute top-4 right-4 z-10">
+          <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={(e) => onToggleSelect(block.id, e.target.checked)}
+          className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30 cursor-pointer" />
+        
         </div>
-      )}
+      }
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center flex-shrink-0">
           <span className="material-icons text-2xl">apartment</span>
@@ -157,50 +157,50 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggl
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2">
-        {stats.map(s => (
-          <div key={s.label} className={`${s.cls} rounded-lg p-2 text-center`}>
+        {stats.map((s) =>
+        <div key={s.label} className={`${s.cls} rounded-lg p-2 text-center`}>
             <p className={`text-xl font-bold ${s.valCls}`}>{s.value}</p>
             <p className="text-[9px] text-slate-500 font-medium uppercase mt-0.5 leading-tight">{s.label}</p>
           </div>
-        ))}
+        )}
       </div>
       <div className="py-2 border-t border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="material-icons text-sm text-slate-400 flex-shrink-0">manage_accounts</span>
-          {(block.coordinators || []).length === 0 ? (
-            <span className="text-xs text-slate-400 italic">{t('blocks.no_coordinator_assigned')}</span>
-          ) : block.coordinators.map(c => (
-            <div key={c.id} className="flex items-center gap-1 bg-primary/5 rounded-full px-2 py-0.5" title={c.type === 'resident' ? t('blocks.type_resident') : t('blocks.type_householder')}>
+          {(block.coordinators || []).length === 0 ?
+          <span className="text-xs text-slate-400 italic">{t('blocks.no_coordinator_assigned')}</span> :
+          block.coordinators.map((c) =>
+          <div key={c.id} className="flex items-center gap-1 bg-primary/5 rounded-full px-2 py-0.5" title={c.type === 'resident' ? t('blocks.type_resident') : t('blocks.type_householder')}>
               <div className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[8px] font-bold">
                 {c.type === 'resident' ? 'R' : 'H'}
               </div>
               <span className="text-[10px] font-medium text-primary truncate max-w-[80px]">{c.name}</span>
             </div>
-          ))}
+          )}
         </div>
       </div>
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
         <StatusBadge status={block.is_active ? 'active' : 'inactive'} />
         <div className="flex gap-1">
-          {can('blocks.edit') && (
-            <button onClick={() => onManageUnits(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_manage_units')}>
+          {can('blocks.edit') &&
+          <button onClick={() => onManageUnits(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_manage_units')}>
               <span className="material-icons text-sm">home_work</span>
             </button>
-          )}
-          {can('blocks.edit') && (
-            <button onClick={() => onEdit(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_edit')}>
+          }
+          {can('blocks.edit') &&
+          <button onClick={() => onEdit(block)} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_edit')}>
               <span className="material-icons text-sm">edit</span>
             </button>
-          )}
-          {can('blocks.delete') && (
-            <button onClick={() => onDelete(block)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_delete')}>
+          }
+          {can('blocks.delete') &&
+          <button onClick={() => onDelete(block)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer" title={t('blocks.tooltip_delete')}>
               <span className="material-icons text-sm">delete_outline</span>
             </button>
-          )}
+          }
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 export default function Blocks() {
@@ -225,18 +225,18 @@ export default function Blocks() {
     setLoading(true);
     try {
       const [bRes, resRes, hhRes] = await Promise.all([
-        axios.get('/api/blocks', { params: { search } }),
-        axios.get('/api/residents?per_page=1000').catch(() => ({ data: [] })),
-        axios.get('/api/householders?per_page=1000').catch(() => ({ data: [] })),
-      ]);
-      setBlocks(Array.isArray(bRes.data) ? bRes.data : (bRes.data?.data || []));
-      setResidents(Array.isArray(resRes.data) ? resRes.data : (resRes.data?.data || []));
-      setHouseholders(Array.isArray(hhRes.data) ? hhRes.data : (hhRes.data?.data || []));
-    } catch { setBlocks([]); }
-    finally { setLoading(false); }
+      axios.get('/api/blocks', { params: { search } }),
+      axios.get('/api/residents?per_page=1000').catch(() => ({ data: [] })),
+      axios.get('/api/householders?per_page=1000').catch(() => ({ data: [] }))]
+      );
+      setBlocks(Array.isArray(bRes.data) ? bRes.data : bRes.data?.data || []);
+      setResidents(Array.isArray(resRes.data) ? resRes.data : resRes.data?.data || []);
+      setHouseholders(Array.isArray(hhRes.data) ? hhRes.data : hhRes.data?.data || []);
+    } catch {setBlocks([]);} finally
+    {setLoading(false);}
   }, [search]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {fetchData();}, [fetchData]);
 
   useEffect(() => {
     let interval: any;
@@ -253,14 +253,14 @@ export default function Blocks() {
             setImporting(false);
             setImportResult({ open: true, success: false, title: 'Import Failed', message: res.data.message || 'Import failed.' });
           }
-        } catch (err) { }
+        } catch (err) {}
       }, 1000);
     }
     return () => clearInterval(interval);
   }, [importJob, fetchData]);
 
   const doDelete = async () => {
-    setConfirm(c => ({ ...c, loading: true }));
+    setConfirm((c) => ({ ...c, loading: true }));
     try {
       if (confirm.type === 'bulk') {
         await axios.delete('/api/blocks/bulk', { data: { ids: selected } });
@@ -268,11 +268,11 @@ export default function Blocks() {
       } else {
         await axios.delete(`/api/blocks/${confirm.item.id}`);
       }
-      fetchData(); 
-      setConfirm({ open: false, type: 'delete', item: null, loading: false }); 
+      fetchData();
+      setConfirm({ open: false, type: 'delete', item: null, loading: false });
     }
-    catch (err: any) { 
-      setConfirm(c => ({ ...c, loading: false, open: false })); 
+    catch (err: any) {
+      setConfirm((c) => ({ ...c, loading: false, open: false }));
       setImportResult({ open: true, success: false, title: 'Delete Failed', message: err.response?.data?.message || 'Delete failed.' });
       fetchData();
     }
@@ -305,101 +305,101 @@ export default function Blocks() {
     }
   };
 
-  const filtered = blocks.filter(b => !search || b.name?.toLowerCase().includes(search.toLowerCase()));
+  const filtered = blocks.filter((b) => !search || b.name?.toLowerCase().includes(search.toLowerCase()));
 
   const allChecked = filtered.length > 0 && selected.length === filtered.length;
   const toggleAll = (e) => {
-    if (e.target.checked) setSelected(filtered.map(b => b.id));
-    else setSelected([]);
+    if (e.target.checked) setSelected(filtered.map((b) => b.id));else
+    setSelected([]);
   };
 
   return (
     <AdminLayout title={t('blocks.title')}>
-      {importing && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      {importing &&
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
             <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t('blocks.importing_data')}</h3>
             
-            {importJob ? (
-              <div className="w-full">
+            {importJob ?
+          <div className="w-full">
                 <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
                   <span>{t('blocks.progress')}</span>
                   <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 overflow-hidden border border-slate-200 dark:border-slate-700">
-                  <div className="bg-primary h-3 rounded-full transition-all duration-300" 
-                       style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
+                  <div className="bg-primary h-3 rounded-full transition-all duration-300"
+              style={{ width: `${importJob.totalRows ? Math.min(100, importJob.processedRows / importJob.totalRows * 100) : 0}%` }}></div>
                 </div>
                 <p className="text-xs text-slate-400 text-center">{importJob.status}...</p>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{t('blocks.uploading_file')}</p>
-            )}
+              </div> :
+
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{t('blocks.uploading_file')}</p>
+          }
             
             <button onClick={() => setImporting(false)} className="mt-6 px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer">{t('blocks.run_in_background')}</button>
           </div>
         </div>
-      )}
+      }
 
-      {!importing && importJob && (importJob.status === 'Pending' || importJob.status === 'Processing') && (
-        <div 
-          className="fixed bottom-6 right-6 z-[90] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl shadow-primary/10 rounded-2xl p-4 w-80 cursor-pointer transition-all hover:-translate-y-1" 
-           tabIndex={0} role="button" onKeyDown={(e) => { if(e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setImporting(true)}
-          title="Click to view details"
-        >
+      {!importing && importJob && (importJob.status === 'Pending' || importJob.status === 'Processing') &&
+      <div
+        className="fixed bottom-6 right-6 z-[90] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl shadow-primary/10 rounded-2xl p-4 w-80 cursor-pointer transition-all hover:-translate-y-1"
+        tabIndex={0} role="button" onClick={() => setImporting(true)}
+        title="Click to view details" onKeyDown={(e) => {if (["Enter", " "].includes(e.key)) {e.preventDefault();e.currentTarget.click();}}}>
+        
           <div className="flex items-center gap-3 mb-3">
              <span className="material-icons text-primary animate-spin text-xl">autorenew</span>
              <h4 className="text-sm font-bold text-slate-800 dark:text-white">{t('blocks.importing_blocks')}</h4>
           </div>
           <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-1.5 overflow-hidden">
-            <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{ width: `${importJob.totalRows ? Math.min(100, (importJob.processedRows / importJob.totalRows) * 100) : 0}%` }}></div>
+            <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{ width: `${importJob.totalRows ? Math.min(100, importJob.processedRows / importJob.totalRows * 100) : 0}%` }}></div>
           </div>
           <div className="flex justify-between text-[10px] font-bold text-slate-400">
-            <span>{Math.round(importJob.totalRows ? (importJob.processedRows / importJob.totalRows) * 100 : 0)}%</span>
+            <span>{Math.round(importJob.totalRows ? importJob.processedRows / importJob.totalRows * 100 : 0)}%</span>
             <span>{importJob.processedRows} / {importJob.totalRows || '?'} rows</span>
           </div>
         </div>
-      )}
+      }
       
-      <Modal open={importResult.open} onClose={() => setImportResult(prev => ({ ...prev, open: false }))} title={importResult.title} size="sm">
+      <Modal open={importResult.open} onClose={() => setImportResult((prev) => ({ ...prev, open: false }))} title={importResult.title} size="sm">
         <div className="flex flex-col items-center pt-2 pb-4 text-center">
           <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${importResult.success ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600'}`}>
             <span className="material-icons text-3xl">{importResult.success ? 'check_circle' : 'error'}</span>
           </div>
           <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line text-center">{importResult.message}</p>
-          <button onClick={() => setImportResult(prev => ({ ...prev, open: false }))} className="mt-6 px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold w-full transition-all cursor-pointer">Close</button>
+          <button onClick={() => setImportResult((prev) => ({ ...prev, open: false }))} className="mt-6 px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold w-full transition-all cursor-pointer">Close</button>
         </div>
       </Modal>
 
       <BlockModal open={modal.open} onClose={() => setModal({ open: false, data: null })} onSaved={fetchData} data={modal.data} residents={residents} householders={householders} />
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, type: 'delete', item: null, loading: false })}
-        onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
-        title={confirm.type === 'bulk' ? t('blocks.delete_bulk_title') : t('blocks.delete_title')} 
-        message={confirm.type === 'bulk' ? <Trans i18nKey="blocks.delete_bulk_message" values={{ count: selected.length }}>Delete <strong>{selected.length}</strong> selected blocks permanently?</Trans> : <Trans i18nKey="blocks.delete_message" values={{ name: confirm.item?.name }}>Permanently delete block <strong>{confirm.item?.name}</strong>? This cannot be undone.</Trans>}
-        confirmLabel={t('blocks.btn_delete')} />
+      onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
+      title={confirm.type === 'bulk' ? t('blocks.delete_bulk_title') : t('blocks.delete_title')}
+      message={confirm.type === 'bulk' ? <Trans i18nKey="blocks.delete_bulk_message" values={{ count: selected.length }}>Delete <strong>{selected.length}</strong> selected blocks permanently?</Trans> : <Trans i18nKey="blocks.delete_message" values={{ name: confirm.item?.name }}>Permanently delete block <strong>{confirm.item?.name}</strong>? This cannot be undone.</Trans>}
+      confirmLabel={t('blocks.btn_delete')} />
 
       <PageHeader
         title={t('blocks.title')}
         subtitle={t('blocks.subtitle')}
         actions={
-          <div className="flex items-center gap-2">
-            {can('blocks.create') && (
-              <>
+        <div className="flex items-center gap-2">
+            {can('blocks.create') &&
+          <>
                 <input type="file" accept=".xlsx, .xls" ref={fileInputRef} className="hidden" onChange={handleImportExcel} />
                 <button onClick={() => fileInputRef.current?.click()} disabled={importing}
-                  className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
+            className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
                   <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('blocks.importing_data') : t('common.import')}
                 </button>
                 <button onClick={() => setModal({ open: true, data: null })}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
                   <span className="material-icons text-sm">add</span> {t('blocks.add_block')}
                 </button>
               </>
-            )}
+          }
           </div>
-        }
-      />
+        } />
+      
 
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder={t('common.search')} />
@@ -407,40 +407,40 @@ export default function Blocks() {
 
       <div className="mb-6 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3 pl-2">
-          {can('blocks.delete') && (
-            <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
-          )}
+          {can('blocks.delete') &&
+          <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+          }
            <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3">{t('blocks.select_all')}</span>
            <span className={`text-sm font-semibold transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
              {t('blocks.selected_count', { count: selected.length })}
            </span>
         </div>
-        {can('blocks.delete') && selected.length > 0 && (
-          <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
+        {can('blocks.delete') && selected.length > 0 &&
+        <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
             <span className="material-icons text-sm">delete</span> {t('blocks.btn_delete_selected')}
           </button>
-        )}
+        }
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>
-      ) : filtered.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8">
+      {loading ?
+      <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div> :
+      filtered.length === 0 ?
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8">
           <EmptyState icon="apartment" title={t('blocks.empty_title')} subtitle={t('blocks.empty_subtitle')} />
+        </div> :
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filtered.map((block) =>
+        <BlockCard key={block.id} block={block}
+        isSelected={selected.includes(block.id)}
+        onToggleSelect={(id, checked) => setSelected((prev) => checked ? [...prev, id] : prev.filter((s) => s !== id))}
+        onEdit={(b) => setModal({ open: true, data: b })}
+        onDelete={(b) => setConfirm({ open: true, type: 'delete', item: b, loading: false })}
+        onManageUnits={(b) => window.location.href = `/admin/blocks/${b.id}/units`} />
+
+        )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filtered.map(block => (
-            <BlockCard key={block.id} block={block}
-              isSelected={selected.includes(block.id)}
-              onToggleSelect={(id, checked) => setSelected(prev => checked ? [...prev, id] : prev.filter(s => s !== id))}
-              onEdit={b => setModal({ open: true, data: b })}
-              onDelete={b => setConfirm({ open: true, type: 'delete', item: b, loading: false })}
-              onManageUnits={b => window.location.href = `/admin/blocks/${b.id}/units`}
-            />
-          ))}
-        </div>
-      )}
-    </AdminLayout>
-  );
+      }
+    </AdminLayout>);
+
 }
