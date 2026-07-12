@@ -123,7 +123,12 @@ RUN dotnet publish "CiviCore.Api.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-USER root
+
+# BEST PRACTICE: Create required directories and give the non-root 'app' user ownership
+RUN mkdir -p /app/DataProtection-Keys /app/wwwroot/public-media /app/App_Data/PrivateMedia \
+    && chown -R app:app /app/DataProtection-Keys /app/wwwroot /app/App_Data
+
+USER app
 ENTRYPOINT ["dotnet", "CiviCore.Api.dll"]
 ```
 
@@ -322,7 +327,12 @@ RUN dotnet publish "CiviCore.Api.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-USER root
+
+# BEST PRACTICE: Create required directories and give the non-root 'app' user ownership
+RUN mkdir -p /app/DataProtection-Keys /app/wwwroot/public-media /app/App_Data/PrivateMedia \
+    && chown -R app:app /app/DataProtection-Keys /app/wwwroot /app/App_Data
+
+USER app
 ENTRYPOINT ["dotnet", "CiviCore.Api.dll"]
 ```
 

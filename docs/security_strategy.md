@@ -26,7 +26,7 @@ dotnet tool install --global dotnet-sonarscanner
 ```
 Then run the scan sequence in the root folder:
 ```powershell
-dotnet sonarscanner begin /k:"civicore-backend" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="YOUR_TOKEN"
+dotnet sonarscanner begin /k:"civicore-backend" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="YOUR_TOKEN" /d:sonar.exclusions="**/stitch/**"
 dotnet build CiviCore.sln
 dotnet sonarscanner end /d:sonar.token="YOUR_TOKEN"
 ```

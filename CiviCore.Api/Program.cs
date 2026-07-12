@@ -148,12 +148,13 @@ app.UseMiddleware<SetLocaleMiddleware>();
 
 // Enable Rate Limiting (Placed after StaticFiles so it doesn't limit images/css/js)
 // We skip this in Development so it doesn't block you while testing
+app.UseRouting();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseRateLimiter();
 }
 
-app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
