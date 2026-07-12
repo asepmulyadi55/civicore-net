@@ -290,7 +290,7 @@ public class HouseholderController : ControllerBase
                     var name = worksheet.Cell(row, 3).GetString().Trim();
                     var rawStatus = System.Text.RegularExpressions.Regex.Replace(
                         worksheet.Cell(row, 4).GetString().Trim().ToLower(),
-                        @"\s+", " ");
+                        @"\s+", " ", System.Text.RegularExpressions.RegexOptions.None, System.TimeSpan.FromMilliseconds(500));
 
                     if (string.IsNullOrEmpty(blockLetter) || string.IsNullOrEmpty(unitNum) || string.IsNullOrEmpty(name)) continue;
                     

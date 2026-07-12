@@ -865,8 +865,7 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
 
       <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
         onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
-        title={t('homepage.title_delete_property', 'Delete Property?')} message={<>{t('homepage.text_delete_before', 'Delete')} <strong>{confirm.item?.title}</strong>? {t('homepage.text_delete_after', 'This cannot be undone.')}</>} confirmLabel={t('homepage.btn_yes_delete', 'Yes, Delete')}
-        confirmLabel="Yes, Delete" />
+        title={t('homepage.title_delete_property', 'Delete Property?')} message={<>{t('homepage.text_delete_before', 'Delete')} <strong>{confirm.item?.title}</strong>? {t('homepage.text_delete_after', 'This cannot be undone.')}</>} confirmLabel={t('homepage.btn_yes_delete', 'Yes, Delete')} />
 
       {imageModal.open && imageModal.property && (
         <Modal open={imageModal.open} onClose={() => setImageModal({ open: false, property: null })} title={t('homepage.title_manage_property_images', 'Manage Property Images')} icon="image" size="lg">
