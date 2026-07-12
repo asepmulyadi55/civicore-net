@@ -2,7 +2,7 @@ namespace CiviCore.Api.Services;
 
 public interface IRecaptchaService
 {
-    Task<bool> ValidateAsync(string token, float minimumScore = 0.5f);
+    Task<bool> ValidateAsync(string token, float minimumScore = 0.5f, string expectedAction = "login");
 }
 
 public class RecaptchaService : IRecaptchaService
@@ -20,7 +20,7 @@ public class RecaptchaService : IRecaptchaService
         _secretKey = config["Recaptcha:SecretKey"] ?? throw new InvalidOperationException("Recaptcha:SecretKey is not configured.");
     }
 
-    public async Task<bool> ValidateAsync(string token, float minimumScore = 0.5f)
+    public async Task<bool> ValidateAsync(string token, float minimumScore = 0.5f, string expectedAction = "login")
     {
         if (string.IsNullOrWhiteSpace(token)) return false;
 
@@ -53,7 +53,7 @@ public class RecaptchaService : IRecaptchaService
         else if (json.Score < minimumScore)
             _logger.LogWarning("CAPTCHA score {Score} is below minimum {MinimumScore} for action {Action}", json.Score, minimumScore, json.Action);
             
-        return json.Success == true && json.Score >= minimumScore && json.Action == "login";
+        return json.Success == true && json.Score >= minimumScore && (string.IsNullOrEmpty(expectedAction) || json.Action == expectedAction);
     }
 }
 

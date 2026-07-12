@@ -963,7 +963,7 @@ public class HomepageController : ControllerBase
         [FromForm] string? property, [FromForm] string? date, [FromForm] string? time, [FromForm] string? notes,
         [FromForm] string? captchaToken)
     {
-        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
+        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f, "submit"))
             return BadRequest(new { message = MsgCaptchaFailed });
 
         var submission = new CiviCore.Domain.Entities.FormSubmission
@@ -996,7 +996,7 @@ public class HomepageController : ControllerBase
         [FromForm] string subject, [FromForm] string description, [FromForm] string? reporter_name, [FromForm] string? reporter_phone,
         IFormFile? photo, [FromForm] string? captchaToken)
     {
-        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
+        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f, "submit"))
             return BadRequest(new { message = MsgCaptchaFailed });
 
         // File validation
@@ -1053,7 +1053,7 @@ public class HomepageController : ControllerBase
         [FromForm] string? guests, [FromForm] string? event_id, [FromForm] string? event_title,
         [FromForm] string? captchaToken)
     {
-        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
+        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f, "submit"))
             return BadRequest(new { message = MsgCaptchaFailed });
         var submission = new CiviCore.Domain.Entities.FormSubmission
         {
@@ -1083,7 +1083,7 @@ public class HomepageController : ControllerBase
     public async Task<IActionResult> SubmitMessage([FromForm] string name, [FromForm] string? email, [FromForm] string? phone,
         [FromForm] string message, [FromForm] string? related_to, [FromForm] string? captchaToken)
     {
-        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f))
+        if (!string.IsNullOrWhiteSpace(captchaToken) && !await _recaptcha.ValidateAsync(captchaToken, 0.3f, "submit"))
             return BadRequest(new { message = MsgCaptchaFailed });
         var submission = new CiviCore.Domain.Entities.FormSubmission
         {
