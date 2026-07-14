@@ -117,7 +117,7 @@ export default function Register() {
         password: form.password,
         confirmPassword: form.password_confirmation,
       });
-      navigate('/admin/login', { state: { message: 'Registration successful! Your account is pending admin approval.' } });
+      navigate('/login', { state: { message: 'Registration successful! Your account is pending admin approval.' } });
     } catch (err) {
       const data = err.response?.data;
       if (data?.errors) setErrors(data.errors);
@@ -210,7 +210,7 @@ export default function Register() {
 
           <div className="p-6 bg-surface-var border-t border-surface-var text-center">
             <p className="text-sm text-on-surface-var">
-              Already have an account? <Link to="/admin/login" className="text-primary font-bold hover:underline">Back to Login</Link>
+              Already have an account? <Link to="/login" className="text-primary font-bold hover:underline">Back to Login</Link>
             </p>
           </div>
         </div>

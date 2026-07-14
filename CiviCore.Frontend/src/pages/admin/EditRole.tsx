@@ -186,7 +186,7 @@ export default function EditRole() {
           setSelectedPerms(set);
         }
       } catch {
-        navigate('/admin/roles');
+        navigate('/roles');
       } finally {
         setLoading(false);
       }
@@ -222,7 +222,7 @@ export default function EditRole() {
       };
       if (isNew) await axios.post('/api/roles', payload);
       else await axios.put(`/api/roles/${id}`, payload);
-      navigate('/admin/roles');
+      navigate('/roles');
     } catch (err: any) {
       setErrors(err.response?.data?.errors || { general: err.response?.data?.message || 'Save failed.' });
     } finally { setSaving(false); }
@@ -258,7 +258,7 @@ export default function EditRole() {
             actions={
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => navigate('/admin/roles')}
+                  onClick={() => navigate('/roles')}
                   className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all cursor-pointer"
                 >
                   <span className="material-icons text-sm">arrow_back</span> {t('edit_role.back')}
@@ -373,7 +373,7 @@ export default function EditRole() {
           {!isSystem && (can('roles.edit') || can('roles.create')) && (
             <div className="mt-6 flex justify-end gap-3">
               <button
-                onClick={() => navigate('/admin/roles')}
+                onClick={() => navigate('/roles')}
                 className="px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold transition-all cursor-pointer"
               >
                 {t('edit_role.cancel')}

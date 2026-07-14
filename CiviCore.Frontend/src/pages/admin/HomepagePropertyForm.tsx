@@ -85,7 +85,7 @@ export default function HomepagePropertyForm() {
             } else {
                 await axios.post('/api/property', payload);
             }
-            navigate('/admin/homepage/properties');
+            navigate('/homepage/properties');
         } catch (err: any) {
             setErrors(formatApiErrors(err));
         } finally {
@@ -105,7 +105,7 @@ export default function HomepagePropertyForm() {
         <AdminLayout title={isEdit ? t('homepage.edit_property', 'Edit Property') : t('homepage.add_property', 'Add Property')} subtitle={t('homepage.manage_property_subtitle', 'Manage property listing details')}>
             <div className="w-[80%] max-w-7xl mx-auto pb-12">
                 <div className="flex items-center gap-4 mb-8">
-                    <Link to="/admin/homepage/properties" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                    <Link to="/homepage/properties" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
                         <span className="material-icons">arrow_back</span>
                     </Link>
                     <div>
@@ -150,7 +150,7 @@ export default function HomepagePropertyForm() {
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8">
-                    <Link to="/admin/homepage/properties" className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">
+                    <Link to="/homepage/properties" className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">
                         {t('homepage.btn_cancel', 'Cancel')}
                     </Link>
                     <button onClick={saveProperty} disabled={saving} className="px-6 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">

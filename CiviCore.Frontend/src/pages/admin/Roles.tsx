@@ -78,7 +78,7 @@ export default function Roles() {
         actions={
           can('roles.create') && (
             <button
-              onClick={() => navigate('/admin/roles/new/edit')}
+              onClick={() => navigate('/roles/new/edit')}
               className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
             >
               <span className="material-icons text-sm">add</span> {t('roles.btn_create_role')}

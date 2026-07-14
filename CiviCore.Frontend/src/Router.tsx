@@ -59,62 +59,59 @@ function ComingSoon({ page }: { page: string }) {
 }
 
 export default function Router() {
-  const basePath = (import.meta as any).env.VITE_APP_BASE ?? '';
-
   return (
-    <BrowserRouter basename={basePath}>
+    <BrowserRouter>
       <GaTracker />
       <Routes>
         {/* Base Redirect */}
-        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-        
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
         {/* Admin Layout */}
-        <Route path="/admin/*" element={<AdminLayout />} />
+        <Route path="/*" element={<AdminLayout />} />
 
         {/* Auth pages */}
-        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="/admin/login" element={<Login />} />
-        <Route path="/admin/register" element={<Register />} />
-        <Route path="/admin/forgot-password" element={<ForgotPassword />} />
-        <Route path="/admin/reset-password" element={<ResetPassword />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Dashboard */}
-        <Route path="/admin/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+        <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
 
         {/* Wave 1 — Community & Payments */}
-        <Route path="/admin/householders" element={<RequireAuth><RequirePermission perm="householders.view"><Householders /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/householders/:id/edit" element={<RequireAuth><RequirePermission perm="householders.edit"><EditHouseholder /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/blocks" element={<RequireAuth><RequirePermission perm="blocks.view"><Blocks /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/blocks/:id/units" element={<RequireAuth><RequirePermission perm="blocks.edit"><Units /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/payments" element={<RequireAuth><RequirePermission perm="payments.view"><Payments /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/users" element={<RequireAuth><RequirePermission perm="users.view"><Users /></RequirePermission></RequireAuth>} />
+        <Route path="/householders" element={<RequireAuth><RequirePermission perm="householders.view"><Householders /></RequirePermission></RequireAuth>} />
+        <Route path="/householders/:id/edit" element={<RequireAuth><RequirePermission perm="householders.edit"><EditHouseholder /></RequirePermission></RequireAuth>} />
+        <Route path="/blocks" element={<RequireAuth><RequirePermission perm="blocks.view"><Blocks /></RequirePermission></RequireAuth>} />
+        <Route path="/blocks/:id/units" element={<RequireAuth><RequirePermission perm="blocks.edit"><Units /></RequirePermission></RequireAuth>} />
+        <Route path="/payments" element={<RequireAuth><RequirePermission perm="payments.view"><Payments /></RequirePermission></RequireAuth>} />
+        <Route path="/users" element={<RequireAuth><RequirePermission perm="users.view"><Users /></RequirePermission></RequireAuth>} />
 
         {/* Wave 2 — Finance, Meetings, Org, Reports */}
-        <Route path="/admin/finance" element={<RequireAuth><RequirePermission perm="finance.view"><Finance /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/meetings" element={<RequireAuth><RequirePermission perm="meetings.view"><Meetings /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/organization" element={<RequireAuth><RequirePermission perm="organization.view"><Organization /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/reports" element={<RequireAuth><RequirePermission perm="reports.view"><Reports /></RequirePermission></RequireAuth>} />
+        <Route path="/finance" element={<RequireAuth><RequirePermission perm="finance.view"><Finance /></RequirePermission></RequireAuth>} />
+        <Route path="/meetings" element={<RequireAuth><RequirePermission perm="meetings.view"><Meetings /></RequirePermission></RequireAuth>} />
+        <Route path="/organization" element={<RequireAuth><RequirePermission perm="organization.view"><Organization /></RequirePermission></RequireAuth>} />
+        <Route path="/reports" element={<RequireAuth><RequirePermission perm="reports.view"><Reports /></RequirePermission></RequireAuth>} />
 
         {/* Wave 3 — Admin & Config */}
-        <Route path="/admin/roles" element={<RequireAuth><RequirePermission perm="roles.view"><Roles /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/roles/new/edit" element={<RequireAuth><RequirePermission perm="roles.create"><EditRole /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/roles/:id/edit" element={<RequireAuth><RequirePermission perm="roles.edit"><EditRole /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
-        <Route path="/admin/settings/:tab" element={<RequireAuth><Settings /></RequireAuth>} />
-        <Route path="/admin/homepage" element={<Navigate to="/admin/homepage/featured" replace />} />
-        <Route path="/admin/homepage/events/new" element={<RequireAuth><RequirePermission perm="homepage_events.create"><HomepageEventForm /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/homepage/events/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_events.edit"><HomepageEventForm /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/homepage/bulletin/new" element={<RequireAuth><RequirePermission perm="homepage_bulletin.create"><HomepageBulletinForm /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/homepage/bulletin/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_bulletin.edit"><HomepageBulletinForm /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/homepage/properties/new" element={<RequireAuth><RequirePermission perm="homepage_property.create"><HomepagePropertyForm /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/homepage/properties/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_property.edit"><HomepagePropertyForm /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/homepage/:tab" element={<RequireAuth><RequirePermission perm="homepage_hero.view"><AdminHomepage /></RequirePermission></RequireAuth>} />
-        <Route path="/admin/media" element={<RequireAuth><RequirePermission perm="media.view"><Media /></RequirePermission></RequireAuth>} />
+        <Route path="/roles" element={<RequireAuth><RequirePermission perm="roles.view"><Roles /></RequirePermission></RequireAuth>} />
+        <Route path="/roles/new/edit" element={<RequireAuth><RequirePermission perm="roles.create"><EditRole /></RequirePermission></RequireAuth>} />
+        <Route path="/roles/:id/edit" element={<RequireAuth><RequirePermission perm="roles.edit"><EditRole /></RequirePermission></RequireAuth>} />
+        <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />
+        <Route path="/settings/:tab" element={<RequireAuth><Settings /></RequireAuth>} />
+        <Route path="/homepage" element={<Navigate to="/homepage/featured" replace />} />
+        <Route path="/homepage/events/new" element={<RequireAuth><RequirePermission perm="homepage_events.create"><HomepageEventForm /></RequirePermission></RequireAuth>} />
+        <Route path="/homepage/events/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_events.edit"><HomepageEventForm /></RequirePermission></RequireAuth>} />
+        <Route path="/homepage/bulletin/new" element={<RequireAuth><RequirePermission perm="homepage_bulletin.create"><HomepageBulletinForm /></RequirePermission></RequireAuth>} />
+        <Route path="/homepage/bulletin/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_bulletin.edit"><HomepageBulletinForm /></RequirePermission></RequireAuth>} />
+        <Route path="/homepage/properties/new" element={<RequireAuth><RequirePermission perm="homepage_property.create"><HomepagePropertyForm /></RequirePermission></RequireAuth>} />
+        <Route path="/homepage/properties/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_property.edit"><HomepagePropertyForm /></RequirePermission></RequireAuth>} />
+        <Route path="/homepage/:tab" element={<RequireAuth><RequirePermission perm="homepage_hero.view"><AdminHomepage /></RequirePermission></RequireAuth>} />
+        <Route path="/media" element={<RequireAuth><RequirePermission perm="media.view"><Media /></RequirePermission></RequireAuth>} />
 
         {/* Resident Portal */}
-        <Route path="/admin/overview" element={<RequireAuth><Overview /></RequireAuth>} />
-        <Route path="/admin/residents" element={<RequireAuth><ResidentHousehold /></RequireAuth>} />
-        <Route path="/admin/posyandu" element={<RequireAuth><RequirePermission perm="posyandu.view"><Posyandu /></RequirePermission></RequireAuth>} />
+        <Route path="/overview" element={<RequireAuth><Overview /></RequireAuth>} />
+        <Route path="/residents" element={<RequireAuth><ResidentHousehold /></RequireAuth>} />
+        <Route path="/posyandu" element={<RequireAuth><RequirePermission perm="posyandu.view"><Posyandu /></RequirePermission></RequireAuth>} />
 
         {/* Catch-all: show 404 page for any unknown route */}
         <Route path="*" element={<NotFound />} />
@@ -122,4 +119,3 @@ export default function Router() {
     </BrowserRouter>
   );
 }
-

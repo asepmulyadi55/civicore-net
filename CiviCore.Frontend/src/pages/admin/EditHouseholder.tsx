@@ -232,7 +232,7 @@ export default function EditHouseholder() {
     setErrors({});
     try {
       await axios.put(`/api/householders/${id}`, data);
-      navigate('/admin/householders');
+      navigate('/householders');
     } catch (err: any) {
       const apiErrs = formatApiErrors(err);
       if (Object.keys(apiErrs).length > 0) {
@@ -254,7 +254,7 @@ export default function EditHouseholder() {
 
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Link to="/admin/householders" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+          <Link to="/householders" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
             <span className="material-icons">arrow_back</span>
           </Link>
           <div>

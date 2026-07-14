@@ -97,7 +97,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2 bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm overflow-hidden">
               <div className="p-6 border-b border-slate-700/50 flex justify-between items-center">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('dashboard.recent_activity')}</h2>
-                <a href="/admin/payments" className="text-sm font-semibold text-amber-500 hover:underline">{t('dashboard.view_all')}</a>
+                <a href="/payments" className="text-sm font-semibold text-amber-500 hover:underline">{t('dashboard.view_all')}</a>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
@@ -161,25 +161,25 @@ export default function Dashboard() {
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t('dashboard.quick_actions')}</h2>
                 <div className="grid grid-cols-2 gap-4">
                   {can('householders.create') && (
-                    <a href="/admin/householders" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                    <a href="/householders" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
                       <span className="material-icons text-emerald-500 mb-2 group-hover:scale-110 transition-transform">person_add</span>
                       <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_add_householder')}</span>
                     </a>
                   )}
                   {can('payments.view') && (
-                    <a href="/admin/payments" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                    <a href="/payments" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
                       <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">receipt_long</span>
                       <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_payments')}</span>
                     </a>
                   )}
                   {can('reports.view') && (
-                    <a href="/admin/reports" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                    <a href="/reports" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
                       <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">post_add</span>
                       <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_generate_report')}</span>
                     </a>
                   )}
                   {can('blocks.view') && (
-                    <a href="/admin/blocks" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
+                    <a href="/blocks" className="bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all group hover:scale-105 hover:shadow-md">
                       <span className="material-icons text-amber-500 mb-2 group-hover:scale-110 transition-transform">domain</span>
                       <span className="text-xs font-bold text-slate-700 dark:text-white">{t('dashboard.action_manage_blocks')}</span>
                     </a>

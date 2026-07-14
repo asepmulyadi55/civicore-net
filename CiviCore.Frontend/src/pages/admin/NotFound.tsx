@@ -27,7 +27,7 @@ export default function NotFound() {
 
         <div className="flex items-center gap-3">
           <Link
-            to="/admin/dashboard"
+            to="/dashboard"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 hover:scale-[1.02] transition-all duration-200"
           >
             <span className="material-icons text-sm">home</span>

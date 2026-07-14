@@ -92,7 +92,7 @@ export default function ResetPassword() {
         newPassword: password 
       });
       setSuccess(t('reset_password.success_msg'));
-      setTimeout(() => navigate('/admin/login'), 3000);
+      setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
       setError(err.response?.data?.message || t('reset_password.err_default'));
     } finally {
@@ -166,7 +166,7 @@ export default function ResetPassword() {
           </div>
 
           <div className="p-6 bg-surface-var border-t border-surface-var text-center">
-            <Link to="/admin/login" className="group flex items-center justify-center gap-2 text-sm font-bold text-primary transition-colors hover:opacity-80">
+            <Link to="/login" className="group flex items-center justify-center gap-2 text-sm font-bold text-primary transition-colors hover:opacity-80">
               <span className="material-icons text-base">arrow_back</span>
               <span className="group-hover:underline">{t('reset_password.back_login')}</span>
             </Link>

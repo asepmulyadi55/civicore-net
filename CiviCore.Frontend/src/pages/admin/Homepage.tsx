@@ -242,7 +242,7 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder={t('homepage.placeholder_search_events', 'Search events...')} />
             <SelectFilter value={catFilter} onChange={v => { setCatFilter(v); setPage(1); }} options={CATEGORY_OPTIONS} placeholder={t('homepage.placeholder_all_categories', 'All Categories')} />
             <div className="flex-grow"></div>
-            {canEdit && <Link to="/admin/homepage/events/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <Link to="/homepage/events/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> {t('homepage.btn_add_event', 'Add Event')}
             </Link>}
           </FilterBar>
@@ -728,7 +728,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
           <FilterBar>
             <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder={t('homepage.placeholder_search_bulletins', 'Search bulletins...')} />
             <div className="flex-grow"></div>
-            {canEdit && <Link to="/admin/homepage/bulletin/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <Link to="/homepage/bulletin/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> {t('homepage.text_add_bulletin', 'Add Bulletin')}
             </Link>}
           </FilterBar>
@@ -935,7 +935,7 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
               <span className="material-icons text-sm">close</span> Clear
             </button>
             <div className="flex-grow"></div>
-            {canEdit && <Link to="/admin/homepage/properties/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+            {canEdit && <Link to="/homepage/properties/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
               <span className="material-icons text-[18px]">add</span> {t('homepage.text_add_property', 'Add Property')}
             </Link>}
           </FilterBar>

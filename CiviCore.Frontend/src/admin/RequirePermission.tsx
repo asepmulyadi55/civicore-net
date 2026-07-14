@@ -20,7 +20,7 @@ export default function RequirePermission({ perm, children }: { perm: string; ch
   if (loading) return null; // wait — avoids premature redirect on cold load
 
   if (!can(perm)) {
-    return <Navigate to="/admin/dashboard" replace state={{ denied: true }} />;
+    return <Navigate to="/dashboard" replace state={{ denied: true }} />;
   }
 
   return <>{children}</>;

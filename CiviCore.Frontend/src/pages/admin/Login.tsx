@@ -37,7 +37,7 @@ export default function Login() {
 
   React.useEffect(() => {
     if (localStorage.getItem('admin_token')) {
-      navigate('/admin/dashboard');
+      navigate('/dashboard');
     }
   }, [navigate]);
 
@@ -58,7 +58,7 @@ export default function Login() {
     if (req2fa === 'true') {
       setRequires2FA(true);
       if (email) setUsername(email);
-      window.history.replaceState({}, document.title, '/admin/login');
+      window.history.replaceState({}, document.title, '/login');
       return;
     }
 
@@ -68,7 +68,7 @@ export default function Login() {
       if (email) setUsername(email);
       setIsSettingUp2FA(true);
       fetch2FASetup(email, '', token);
-      window.history.replaceState({}, document.title, '/admin/login');
+      window.history.replaceState({}, document.title, '/login');
       return;
     }
 
@@ -76,7 +76,7 @@ export default function Login() {
       localStorage.setItem('admin_token', token);
       localStorage.setItem('admin_user', userStr);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      navigate('/admin/dashboard');
+      navigate('/dashboard');
     }
   }, [searchParams, navigate]);
 
@@ -99,7 +99,7 @@ export default function Login() {
       localStorage.setItem('admin_token', token);
       localStorage.setItem('admin_user', JSON.stringify(user));
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      navigate('/admin/dashboard');
+      navigate('/dashboard');
     } catch (err) {
       if (err.response?.data?.requires_2fa) {
         setRequires2FA(true);
@@ -155,7 +155,7 @@ export default function Login() {
       localStorage.setItem('admin_token', sessionToken);
       localStorage.setItem('admin_user', JSON.stringify(user));
       axios.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
-      navigate('/admin/dashboard');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'CAPTCHA login failed. Please try again.');
     } finally {
@@ -200,7 +200,7 @@ export default function Login() {
           localStorage.setItem('admin_token', tempToken);
           localStorage.setItem('admin_user', tempUserStr);
           axios.defaults.headers.common['Authorization'] = `Bearer ${tempToken}`;
-          navigate('/admin/dashboard');
+          navigate('/dashboard');
           return;
         } else {
           // Normal flow fallback
@@ -225,7 +225,7 @@ export default function Login() {
         localStorage.setItem('admin_token', token);
         localStorage.setItem('admin_user', JSON.stringify(user));
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        navigate('/admin/dashboard');
+        navigate('/dashboard');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid 2FA code.');
@@ -425,7 +425,7 @@ export default function Login() {
                       <label className="block text-sm font-semibold text-on-surface" htmlFor="password">
                         Password
                       </label>
-                      <Link to="/admin/forgot-password" className="text-xs font-bold text-primary hover:opacity-80 transition-opacity">
+                      <Link to="/forgot-password" className="text-xs font-bold text-primary hover:opacity-80 transition-opacity">
                         Forgot Password?
                       </Link>
                     </div>
@@ -505,7 +505,7 @@ export default function Login() {
             <div className="p-6 bg-surface-var border-t border-surface-var text-center">
               <p className="text-sm text-on-surface-var">
                 Don't have an account?{' '}
-                <Link to="/admin/register" className="text-primary font-bold hover:opacity-80 transition-opacity">
+                <Link to="/register" className="text-primary font-bold hover:opacity-80 transition-opacity">
                   Register a new account
                 </Link>
               </p>

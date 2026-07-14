@@ -102,7 +102,7 @@ export default function Units() {
       setBlock(res.data);
       setUnits(res.data.units || []);
     } catch {
-      navigate('/admin/blocks');
+      navigate('/blocks');
     } finally {
       setLoading(false);
     }
@@ -165,7 +165,7 @@ export default function Units() {
       <PageHeader
         title={t('units.page_title', { block: block?.name || '...' })}
         subtitle={t('units.page_subtitle')}
-        onBack={() => navigate('/admin/blocks')}
+        onBack={() => navigate('/blocks')}
         actions={
           can('blocks.create') && (
             <button onClick={() => setModal({ open: true, data: null })}

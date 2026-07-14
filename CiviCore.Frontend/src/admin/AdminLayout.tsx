@@ -10,69 +10,69 @@ const NAV_GROUPS = [
 {
   label: null,
   items: [
-  { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard', permission: 'dashboard.view' }]
+  { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/dashboard', permission: 'dashboard.view' }]
 
 },
 {
   label: 'Community',
   icon: 'groups',
   items: [
-  { key: 'householders', label: 'Householders', icon: 'people', path: '/admin/householders', permission: 'householders.view' },
-  { key: 'blocks', label: 'Blocks', icon: 'domain', path: '/admin/blocks', permission: 'blocks.view' },
-  { key: 'organization', label: 'Organization', icon: 'account_tree', path: '/admin/organization', permission: 'organization.view' },
-  { key: 'meetings', label: 'Meetings', icon: 'event_note', path: '/admin/meetings', permission: 'meetings.view' },
-  { key: 'posyandu', label: 'Posyandu', icon: 'health_and_safety', path: '/admin/posyandu', permission: 'posyandu.view' }]
+  { key: 'householders', label: 'Householders', icon: 'people', path: '/householders', permission: 'householders.view' },
+  { key: 'blocks', label: 'Blocks', icon: 'domain', path: '/blocks', permission: 'blocks.view' },
+  { key: 'organization', label: 'Organization', icon: 'account_tree', path: '/organization', permission: 'organization.view' },
+  { key: 'meetings', label: 'Meetings', icon: 'event_note', path: '/meetings', permission: 'meetings.view' },
+  { key: 'posyandu', label: 'Posyandu', icon: 'health_and_safety', path: '/posyandu', permission: 'posyandu.view' }]
 
 },
 {
   label: 'Finance',
   icon: 'attach_money',
   items: [
-  { key: 'finance', label: 'Finance', icon: 'account_balance', path: '/admin/finance', permission: 'finance.view' },
-  { key: 'payments', label: 'Payments', icon: 'payments', path: '/admin/payments', permission: 'payments.view' },
-  { key: 'reports', label: 'Reports', icon: 'bar_chart', path: '/admin/reports', permission: 'reports.view' }]
+  { key: 'finance', label: 'Finance', icon: 'account_balance', path: '/finance', permission: 'finance.view' },
+  { key: 'payments', label: 'Payments', icon: 'payments', path: '/payments', permission: 'payments.view' },
+  { key: 'reports', label: 'Reports', icon: 'bar_chart', path: '/reports', permission: 'reports.view' }]
 
 },
 {
   label: 'Administration',
   icon: 'admin_panel_settings',
   items: [
-  { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/admin/users', permission: 'users.view' },
-  { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/admin/roles', permission: 'roles.view' },
-  { key: 'media', label: 'Media', icon: 'perm_media', path: '/admin/media', permission: 'media.view' }]
+  { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/users', permission: 'users.view' },
+  { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/roles', permission: 'roles.view' },
+  { key: 'media', label: 'Media', icon: 'perm_media', path: '/media', permission: 'media.view' }]
 
 },
 {
   label: 'Homepage',
   icon: 'public',
   items: [
-  { key: 'hero', label: 'Hero Section', icon: 'star', path: '/admin/homepage/hero', permission: 'homepage_hero.view' },
-  { key: 'events', label: 'Events', icon: 'event', path: '/admin/homepage/events', permission: 'homepage_events.view' },
-  { key: 'gallery', label: 'Gallery', icon: 'photo_library', path: '/admin/homepage/gallery', permission: 'homepage_gallery.view' },
-  { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/admin/homepage/bulletin', permission: 'homepage_bulletin.view' },
-  { key: 'hp-property', label: 'Properties', icon: 'home_work', path: '/admin/homepage/properties', permission: 'homepage_property.view' },
-  { key: 'navigation', label: 'Navigation', icon: 'menu', path: '/admin/homepage/navigation', permission: 'homepage_navigation.view' },
-  { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/admin/homepage/footer', permission: 'homepage_footer.view' },
-  { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/admin/homepage/metadata', permission: 'homepage_metadata.view' }]
+  { key: 'hero', label: 'Hero Section', icon: 'star', path: '/homepage/hero', permission: 'homepage_hero.view' },
+  { key: 'events', label: 'Events', icon: 'event', path: '/homepage/events', permission: 'homepage_events.view' },
+  { key: 'gallery', label: 'Gallery', icon: 'photo_library', path: '/homepage/gallery', permission: 'homepage_gallery.view' },
+  { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/homepage/bulletin', permission: 'homepage_bulletin.view' },
+  { key: 'hp-property', label: 'Properties', icon: 'home_work', path: '/homepage/properties', permission: 'homepage_property.view' },
+  { key: 'navigation', label: 'Navigation', icon: 'menu', path: '/homepage/navigation', permission: 'homepage_navigation.view' },
+  { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/homepage/footer', permission: 'homepage_footer.view' },
+  { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/homepage/metadata', permission: 'homepage_metadata.view' }]
 
 },
 {
   label: 'My Resident Profile',
   icon: 'house',
   items: [
-  { key: 'overview', label: 'Overview', icon: 'home', path: '/admin/overview', permission: 'overview.view' },
-  { key: 'my-household', label: 'My Household', icon: 'family_restroom', path: '/admin/residents', permission: 'my_household.view' }]
+  { key: 'overview', label: 'Overview', icon: 'home', path: '/overview', permission: 'overview.view' },
+  { key: 'my-household', label: 'My Household', icon: 'family_restroom', path: '/residents', permission: 'my_household.view' }]
 
 },
 {
   label: 'Settings',
   icon: 'settings',
   items: [
-  { key: 'profile', label: 'Profile', icon: 'person', path: '/admin/settings/profile', permission: 'settings_profile.view' },
-  { key: 'password', label: 'Password', icon: 'lock', path: '/admin/settings/password', permission: 'settings_password.view' },
-  { key: 'security', label: 'Security', icon: 'security', path: '/admin/settings/security', permission: 'settings_security.view' },
-  { key: 'memo', label: 'Admin Memo', icon: 'sticky_note_2', path: '/admin/settings/memo', permission: 'settings_memo.view' },
-  { key: 'posyandu', label: 'Posyandu', icon: 'child_care', path: '/admin/settings/posyandu', permission: 'settings_posyandu.view' }]
+  { key: 'profile', label: 'Profile', icon: 'person', path: '/settings/profile', permission: 'settings_profile.view' },
+  { key: 'password', label: 'Password', icon: 'lock', path: '/settings/password', permission: 'settings_password.view' },
+  { key: 'security', label: 'Security', icon: 'security', path: '/settings/security', permission: 'settings_security.view' },
+  { key: 'memo', label: 'Admin Memo', icon: 'sticky_note_2', path: '/settings/memo', permission: 'settings_memo.view' },
+  { key: 'posyandu', label: 'Posyandu', icon: 'child_care', path: '/settings/posyandu', permission: 'settings_posyandu.view' }]
 
 }];
 
@@ -181,10 +181,10 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
   }, [currentNavItem, permissions]);
 
   React.useEffect(() => {
-    if (!loadingPerms && !hasAccess && location.pathname === '/admin/dashboard') {
+    if (!loadingPerms && !hasAccess && location.pathname === '/dashboard') {
       let redirectPath = null;
       if (permissions.includes('*')) {
-        redirectPath = '/admin/dashboard';
+        redirectPath = '/dashboard';
       } else {
         for (const group of NAV_GROUPS) {
           for (const item of group.items) {
@@ -197,7 +197,7 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
         }
       }
 
-      if (redirectPath && redirectPath !== '/admin/dashboard') {
+      if (redirectPath && redirectPath !== '/dashboard') {
         navigate(redirectPath, { replace: true });
       }
     }
@@ -207,7 +207,7 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
     try {await axios.post('/api/auth/logout');} catch {}
     localStorage.removeItem('admin_user');
     localStorage.removeItem('admin_token');
-    navigate('/admin/login');
+    navigate('/login');
   };
 
   React.useEffect(() => {

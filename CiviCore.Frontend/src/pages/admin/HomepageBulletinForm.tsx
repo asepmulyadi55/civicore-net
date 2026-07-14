@@ -66,7 +66,7 @@ export default function HomepageBulletinForm() {
             } else {
                 await axios.post('/api/homepage/bulletin', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
             }
-            navigate('/admin/homepage/bulletin');
+            navigate('/homepage/bulletin');
         } catch (e: any) {
             setErrors(formatApiErrors(e));
         } finally {
@@ -86,7 +86,7 @@ export default function HomepageBulletinForm() {
         <AdminLayout title={isEdit ? t('homepage.edit_bulletin', 'Edit Bulletin') : t('homepage.add_bulletin', 'Add Bulletin')} subtitle={t('homepage.manage_bulletin_subtitle', 'Manage bulletin details for the homepage')}>
             <div className="w-[80%] max-w-7xl mx-auto pb-12">
                 <div className="flex items-center gap-4 mb-8">
-                    <Link to="/admin/homepage/bulletin" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                    <Link to="/homepage/bulletin" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
                         <span className="material-icons">arrow_back</span>
                     </Link>
                     <div>
@@ -123,7 +123,7 @@ export default function HomepageBulletinForm() {
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8">
-                    <Link to="/admin/homepage/bulletin" className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">
+                    <Link to="/homepage/bulletin" className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">
                         {t('homepage.btn_cancel', 'Cancel')}
                     </Link>
                     <button onClick={saveBulletin} disabled={saving} className="px-6 py-2.5 rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed">

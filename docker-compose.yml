@@ -26,12 +26,11 @@ services:
     build:
       context: ./CiviCore.Web
       dockerfile: Dockerfile
-      args:
-        - API_URL=http://api:8080
     ports:
       - "3000:3000"
     environment:
-      - API_URL=http://api:8080
+      - API_INTERNAL_URL=http://api:8080
+      - NEXT_PUBLIC_SITE_URL=https://dwipapuri.amsite.click
 
   frontend:
     build:

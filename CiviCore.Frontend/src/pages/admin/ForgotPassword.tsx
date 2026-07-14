@@ -89,7 +89,7 @@ export default function ForgotPassword() {
           </div>
 
           <div className="p-6 bg-surface-var border-t border-surface-var text-center">
-            <Link to="/admin/login" className="group flex items-center justify-center gap-2 text-sm font-bold text-primary transition-colors hover:opacity-80">
+            <Link to="/login" className="group flex items-center justify-center gap-2 text-sm font-bold text-primary transition-colors hover:opacity-80">
               <span className="material-icons text-base">arrow_back</span>
               <span className="group-hover:underline">{t('forgot_password.back_login')}</span>
             </Link>
