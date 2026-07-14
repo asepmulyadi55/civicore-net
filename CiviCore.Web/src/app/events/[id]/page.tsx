@@ -190,62 +190,103 @@ export default function EventDetailPage() {
                         </div>
 
                         {/* Registration / Sidebar Column */}
-                        <div className="bg-surface-bright dark:bg-[#002117] p-8 md:p-12 lg:w-1/3 border-l border-border-subtle dark:border-primary-container flex flex-col justify-center relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 pointer-events-none text-primary dark:text-primary-fixed-dim">
-                                <span className="material-symbols-outlined text-[120px]">local_florist</span>
-                            </div>
+                        {(!event.action_type || event.action_type === 'rsvp') && (
+                            <div className="bg-surface-bright dark:bg-[#002117] p-8 md:p-12 lg:w-1/3 border-l border-border-subtle dark:border-primary-container flex flex-col justify-center relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 pointer-events-none text-primary dark:text-primary-fixed-dim">
+                                    <span className="material-symbols-outlined text-[120px]">local_florist</span>
+                                </div>
 
-                            <h2 className="font-headline-sm text-headline-sm text-on-background dark:text-on-primary mb-6 relative z-10">
-                                {isPast ? 'Acara Telah Selesai' : 'Daftarkan Diri Anda'}
-                            </h2>
-                            <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/70 mb-6 relative z-10">
-                                {isPast
-                                    ? "Acara ini telah berakhir. Pantau galeri kami untuk melihat foto-fotonya!"
-                                    : "Tempat terbatas untuk acara warga eksklusif ini. Daftar RSVP untuk memastikan kehadiran Anda."}
-                            </p>
+                                <h2 className="font-headline-sm text-headline-sm text-on-background dark:text-on-primary mb-6 relative z-10">
+                                    {isPast ? 'Acara Telah Selesai' : 'Daftarkan Diri Anda'}
+                                </h2>
+                                <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/70 mb-6 relative z-10">
+                                    {isPast
+                                        ? "Acara ini telah berakhir. Pantau galeri kami untuk melihat foto-fotonya!"
+                                        : "Tempat terbatas untuk acara warga eksklusif ini. Daftar RSVP untuk memastikan kehadiran Anda."}
+                                </p>
 
-                            {!isPast && (
-                                rsvpStatus === 'success' ? (
-                                    <div className="text-center py-8 relative z-10">
-                                        <span className="material-symbols-outlined text-5xl text-green-600 mb-4 block">check_circle</span>
-                                        <p className="font-headline-sm text-primary dark:text-primary-fixed-dim">RSVP Terkonfirmasi!</p>
-                                        <p className="text-body-md text-text-muted dark:text-on-primary/70 mt-2">{rsvpMsg}</p>
-                                    </div>
-                                ) : (
-                                    <form className="space-y-4 relative z-10" onSubmit={handleRsvp}>
-                                        <div>
-                                            <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/80 mb-1" htmlFor="rsvp-name">Nama Lengkap</label>
-                                            <input required className="w-full rounded-lg border border-border-subtle dark:border-primary-container bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary placeholder:text-on-surface-variant/50 focus:border-primary dark:focus:border-primary-fixed-dim shadow-sm py-2 px-3 outline-none" id="rsvp-name" placeholder="Nama Anda" type="text" value={rsvpName} onChange={e => setRsvpName(e.target.value)} />
+                                {!isPast && (
+                                    rsvpStatus === 'success' ? (
+                                        <div className="text-center py-8 relative z-10">
+                                            <span className="material-symbols-outlined text-5xl text-green-600 mb-4 block">check_circle</span>
+                                            <p className="font-headline-sm text-primary dark:text-primary-fixed-dim">RSVP Terkonfirmasi!</p>
+                                            <p className="text-body-md text-text-muted dark:text-on-primary/70 mt-2">{rsvpMsg}</p>
                                         </div>
-                                        <div>
-                                            <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/80 mb-1" htmlFor="rsvp-unit">Nomor Unit</label>
-                                            <input required className="w-full rounded-lg border border-border-subtle dark:border-primary-container bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary placeholder:text-on-surface-variant/50 focus:border-primary dark:focus:border-primary-fixed-dim shadow-sm py-2 px-3 outline-none" id="rsvp-unit" placeholder="Contoh: 4B" type="text" value={rsvpUnit} onChange={e => setRsvpUnit(e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/80 mb-1">Jumlah Tamu</label>
-                                            <div className="relative">
-                                                <button type="button" onClick={() => setIsGuestsOpen(!isGuestsOpen)} className="w-full flex items-center justify-between rounded-lg border border-border-subtle dark:border-primary-container bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary focus:border-primary dark:focus:border-primary-fixed-dim shadow-sm py-2 px-3 outline-none text-left">
-                                                    <span>{guests}</span>
-                                                    <span className="material-symbols-outlined text-[20px] text-text-muted pointer-events-none transition-transform duration-200" style={{ transform: isGuestsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
-                                                </button>
-                                                {isGuestsOpen && (
-                                                    <ul className="absolute z-50 w-full bottom-full mb-1 bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
-                                                        {['1 (Hanya saya)', '2', '3', '4'].map((option) => (
-                                                            <li key={option}  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setGuests(option); setIsGuestsOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">{option}</li>
-                                                        ))}
-                                                    </ul>
-                                                )}
+                                    ) : (
+                                        <form className="space-y-4 relative z-10" onSubmit={handleRsvp}>
+                                            <div>
+                                                <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/80 mb-1" htmlFor="rsvp-name">Nama Lengkap</label>
+                                                <input required className="w-full rounded-lg border border-border-subtle dark:border-primary-container bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary placeholder:text-on-surface-variant/50 focus:border-primary dark:focus:border-primary-fixed-dim shadow-sm py-2 px-3 outline-none" id="rsvp-name" placeholder="Nama Anda" type="text" value={rsvpName} onChange={e => setRsvpName(e.target.value)} />
                                             </div>
-                                        </div>
-                                        {rsvpStatus === 'error' && <p className="text-red-600 text-sm">{rsvpMsg}</p>}
-                                        <button disabled={rsvpStatus === 'loading'} className="w-full bg-[#064e3b] dark:bg-primary-fixed-dim text-white dark:text-primary hover:bg-primary-container/90 dark:hover:bg-primary-fixed transition-colors py-3 px-6 rounded-lg font-label-md text-label-md shadow-md hover:shadow-lg mt-4 flex items-center justify-center gap-2 disabled:opacity-60" type="submit">
-                                            {rsvpStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span> : null}
-                                            {rsvpStatus === 'loading' ? 'Mengirim...' : 'Kirim RSVP'}
-                                        </button>
-                                    </form>
-                                )
-                            )}
-                        </div>
+                                            <div>
+                                                <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/80 mb-1" htmlFor="rsvp-unit">Nomor Unit</label>
+                                                <input required className="w-full rounded-lg border border-border-subtle dark:border-primary-container bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary placeholder:text-on-surface-variant/50 focus:border-primary dark:focus:border-primary-fixed-dim shadow-sm py-2 px-3 outline-none" id="rsvp-unit" placeholder="Contoh: 4B" type="text" value={rsvpUnit} onChange={e => setRsvpUnit(e.target.value)} />
+                                            </div>
+                                            <div>
+                                                <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/80 mb-1">Jumlah Tamu</label>
+                                                <div className="relative">
+                                                    <button type="button" onClick={() => setIsGuestsOpen(!isGuestsOpen)} className="w-full flex items-center justify-between rounded-lg border border-border-subtle dark:border-primary-container bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary focus:border-primary dark:focus:border-primary-fixed-dim shadow-sm py-2 px-3 outline-none text-left">
+                                                        <span>{guests}</span>
+                                                        <span className="material-symbols-outlined text-[20px] text-text-muted pointer-events-none transition-transform duration-200" style={{ transform: isGuestsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
+                                                    </button>
+                                                    {isGuestsOpen && (
+                                                        <ul className="absolute z-50 w-full bottom-full mb-1 bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
+                                                            {['1 (Hanya saya)', '2', '3', '4'].map((option) => (
+                                                                <li key={option}  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setGuests(option); setIsGuestsOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">{option}</li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {rsvpStatus === 'error' && <p className="text-red-600 text-sm">{rsvpMsg}</p>}
+                                            <button disabled={rsvpStatus === 'loading'} className="w-full bg-[#064e3b] dark:bg-primary-fixed-dim text-white dark:text-primary hover:bg-primary-container/90 dark:hover:bg-primary-fixed transition-colors py-3 px-6 rounded-lg font-label-md text-label-md shadow-md hover:shadow-lg mt-4 flex items-center justify-center gap-2 disabled:opacity-60" type="submit">
+                                                {rsvpStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span> : null}
+                                                {rsvpStatus === 'loading' ? 'Mengirim...' : 'Kirim RSVP'}
+                                            </button>
+                                        </form>
+                                    )
+                                )}
+                            </div>
+                        )}
+                        {event.action_type === 'youtube' && (
+                            <div className="bg-surface-bright dark:bg-[#002117] p-8 md:p-12 lg:w-1/3 border-l border-border-subtle dark:border-primary-container flex flex-col justify-center relative overflow-hidden text-center">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 pointer-events-none text-red-600 dark:text-red-500">
+                                    <span className="material-symbols-outlined text-[120px]">smart_display</span>
+                                </div>
+                                <span className="material-symbols-outlined text-6xl text-red-600 dark:text-red-500 mb-4 block relative z-10">smart_display</span>
+                                <h2 className="font-headline-sm text-headline-sm text-on-background dark:text-on-primary mb-4 relative z-10">Tonton Video</h2>
+                                <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/70 mb-8 relative z-10">
+                                    Saksikan siaran atau dokumentasi acara ini langsung di YouTube.
+                                </p>
+                                <a href={`https://www.youtube.com/watch?v=${event.action_value}`} target="_blank" rel="noopener noreferrer" className="w-full bg-red-600 dark:bg-red-700 text-white hover:bg-red-700 dark:hover:bg-red-600 transition-colors py-3 px-6 rounded-lg font-label-md text-label-md shadow-md hover:shadow-lg flex items-center justify-center gap-2 relative z-10">
+                                    Buka di YouTube <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+                                </a>
+                            </div>
+                        )}
+                        {event.action_type === 'link' && (
+                            <div className="bg-surface-bright dark:bg-[#002117] p-8 md:p-12 lg:w-1/3 border-l border-border-subtle dark:border-primary-container flex flex-col justify-center relative overflow-hidden text-center">
+                                <span className="material-symbols-outlined text-6xl text-primary dark:text-primary-fixed-dim mb-4 block">open_in_new</span>
+                                <h2 className="font-headline-sm text-headline-sm text-on-background dark:text-on-primary mb-4">Informasi Tambahan</h2>
+                                <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/70 mb-8">
+                                    Informasi lebih lanjut atau pendaftaran untuk acara ini tersedia di situs eksternal.
+                                </p>
+                                <a href={event.action_value} target="_blank" rel="noopener noreferrer" className="w-full bg-[#064e3b] dark:bg-primary-fixed-dim text-white dark:text-primary hover:bg-primary-container/90 dark:hover:bg-primary-fixed transition-colors py-3 px-6 rounded-lg font-label-md text-label-md shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                                    Buka Tautan <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                                </a>
+                            </div>
+                        )}
+                        {event.action_type === 'informational' && (
+                            <div className="bg-surface-bright dark:bg-[#002117] p-8 md:p-12 lg:w-1/3 border-l border-border-subtle dark:border-primary-container flex flex-col justify-center items-center relative overflow-hidden text-center">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 pointer-events-none text-primary dark:text-primary-fixed-dim">
+                                    <span className="material-symbols-outlined text-[120px]">info</span>
+                                </div>
+                                <span className="material-symbols-outlined text-5xl text-primary dark:text-primary-fixed-dim mb-4 block relative z-10">info</span>
+                                <h2 className="font-headline-sm text-headline-sm text-on-background dark:text-on-primary mb-4 relative z-10">Informasi Saja</h2>
+                                <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/70 relative z-10">
+                                    Acara ini bersifat informasional dan tidak memerlukan RSVP.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </section>
             </main>

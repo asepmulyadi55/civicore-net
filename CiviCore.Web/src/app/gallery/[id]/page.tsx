@@ -101,18 +101,27 @@ export default function GalleryDetailPage() {
 
                 {/* Bento Grid Gallery */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter md:auto-rows-[300px]">
-                    {(album.photos || []).map((img: any, idx: number) => {
+                    {(album.photos || []).slice(0, 4).map((img: any, idx: number) => {
                         const url = img.image_url;
-                        // Alternating spans for a dynamic masonry-like look if no colSpan is provided
+                        // Alternating spans for a dynamic masonry-like look
                         const span = img.colSpan || (idx % 4 === 0 || idx % 4 === 3 ? 'col-span-1 md:col-span-12 lg:col-span-8' : 'col-span-1 md:col-span-6 lg:col-span-4');
+                        const isLastAndMore = idx === 3 && album.photos.length > 4;
+
                         return (
                             <div key={idx}  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setSelectedIndex(idx)} className={`cursor-pointer group relative rounded-2xl overflow-hidden ${span} h-[300px] md:h-full shadow-sm hover:shadow-lg border border-border-subtle/50 dark:border-primary-container/50 bg-surface-container-lowest dark:bg-primary-container`}>
-                                <img alt={img.title || 'Gallery image'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={url} />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
-                                <div className="absolute bottom-0 left-0 w-full p-6 bg-surface-glass dark:bg-black/60 backdrop-blur-md border-t border-border-subtle/20 dark:border-white/10 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                    <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary mb-1">{img.title}</h3>
-                                    <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/80">{img.description}</p>
-                                </div>
+                                <img alt={img.title || 'Gallery image'} className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 ${isLastAndMore ? 'scale-100' : 'group-hover:scale-105'}`} src={url} />
+                                {!isLastAndMore && <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>}
+                                
+                                {isLastAndMore ? (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 group-hover:bg-black/60 transition-colors backdrop-blur-[2px]">
+                                        <span className="text-white font-headline-md text-headline-md">+{album.photos.length - 4} Lagi</span>
+                                    </div>
+                                ) : (
+                                    <div className="absolute bottom-0 left-0 w-full p-6 bg-surface-glass dark:bg-black/60 backdrop-blur-md border-t border-border-subtle/20 dark:border-white/10 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                        <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary mb-1">{img.title}</h3>
+                                        <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/80">{img.description}</p>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

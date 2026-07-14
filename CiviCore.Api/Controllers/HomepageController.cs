@@ -191,7 +191,7 @@ public class HomepageController : ControllerBase
 
     [HttpPost("events")]
     public async Task<IActionResult> StoreEvent([FromForm] string title, [FromForm] string? description,
-        [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
+        [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, [FromForm] string? action_type, [FromForm] string? action_value, IFormFile? image_file)
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
             await GetSettingValue(KeyHomepageEvents) ?? "[]") ?? new();
@@ -216,6 +216,8 @@ public class HomepageController : ControllerBase
             ["url"] = url,
             [PropImageUrl] = imageUrl,
             ["status"] = eventStatus,
+            ["action_type"] = action_type,
+            ["action_value"] = action_value,
         });
 
         await SaveSetting(KeyHomepageEvents, JsonSerializer.Serialize(events));
@@ -224,7 +226,7 @@ public class HomepageController : ControllerBase
 
     [HttpPut("events/{id}")]
     public async Task<IActionResult> UpdateEvent(string id, [FromForm] string title, [FromForm] string? description,
-        [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, IFormFile? image_file)
+        [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, [FromForm] string? action_type, [FromForm] string? action_value, IFormFile? image_file)
     {
         var events = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
             await GetSettingValue(KeyHomepageEvents) ?? "[]") ?? new();
@@ -250,6 +252,8 @@ public class HomepageController : ControllerBase
                     ["category"] = category,
                     ["url"] = url,
                     ["status"] = eventStatus,
+                    ["action_type"] = action_type,
+                    ["action_value"] = action_value,
                 };
 
                 if (image_file != null)

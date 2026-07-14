@@ -27,7 +27,7 @@ export default function HomepageEventForm() {
     const [loading, setLoading] = useState(isEdit);
     const [saving, setSaving] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [form, setForm] = useState({ title: '', description: '', date: '', location: '', category: '', status: '', url: '' });
+    const [form, setForm] = useState({ title: '', description: '', date: '', location: '', category: '', status: '', url: '', action_type: 'informational', action_value: '' });
     const [image, setImage] = useState<any>(null);
     const [currentImageUrl, setCurrentImageUrl] = useState('');
 
@@ -46,7 +46,9 @@ export default function HomepageEventForm() {
                     location: ev.location || '',
                     category: ev.category || '',
                     status: ev.status || '',
-                    url: ev.url || ''
+                    url: ev.url || '',
+                    action_type: ev.action_type || 'informational',
+                    action_value: ev.action_value || ''
                 });
                 setCurrentImageUrl(ev.image_url || '');
             }
@@ -126,6 +128,22 @@ export default function HomepageEventForm() {
                             { value: 'social', label: t('homepage.cat_social', 'Social') },
                             { value: 'other', label: t('homepage.cat_other', 'Other') }
                         ]} placeholder={t('homepage.placeholder_none', 'None')} />
+                        <FormSelect label={t('homepage.field_action_type', 'Event Action / Content')} id="ev-action-type" value={form.action_type} onChange={e => setForm(f => ({ ...f, action_type: e.target.value, action_value: '' }))} options={[
+                            { value: 'informational', label: t('homepage.action_informational', 'Informational Only') },
+                            { value: 'rsvp', label: t('homepage.action_rsvp', 'Requires RSVP') },
+                            { value: 'youtube', label: t('homepage.action_youtube', 'Embed YouTube Video') },
+                            { value: 'link', label: t('homepage.action_link', 'External Link') }
+                        ]} />
+                        {(form.action_type === 'youtube' || form.action_type === 'link') && (
+                            <FormInput 
+                                label={form.action_type === 'youtube' ? t('homepage.field_youtube_id', 'YouTube Video ID') : t('homepage.field_external_link', 'External Link URL')} 
+                                id="ev-action-value" 
+                                value={form.action_value} 
+                                onChange={e => setForm(f => ({ ...f, action_value: e.target.value }))} 
+                                placeholder={form.action_type === 'youtube' ? 'e.g. dQw4w9WgXcQ' : 'e.g. https://google.com'} 
+                                required 
+                            />
+                        )}
                     </div>
 
                     <div>

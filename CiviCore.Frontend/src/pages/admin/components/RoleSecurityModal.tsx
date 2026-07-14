@@ -85,9 +85,7 @@ export default function RoleSecurityModal({ role, open, onClose, onSaved }: Role
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-      tabIndex={0} role="button" onClick={(e) => {if (e.target === e.currentTarget) onClose();}} onKeyDown={(e) => {if (["Enter", " "].includes(e.key)) {e.preventDefault();e.currentTarget.click();}}}>
-      
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800">

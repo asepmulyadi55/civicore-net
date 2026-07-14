@@ -26,9 +26,9 @@ const TABS = [
 ];
 
 const CATEGORY_OPTIONS = [
-  { value: 'wellness', label: 'Wellness' }, { value: 'meetings', label: 'Meetings' },
-  { value: 'education', label: 'Education' }, { value: 'cultural', label: 'Cultural' },
-  { value: 'sports', label: 'Sports' }, { value: 'other', label: 'Other' },
+  { value: 'media', label: 'Media' }, { value: 'religious', label: 'Religious' },
+  { value: 'national', label: 'National' }, { value: 'social', label: 'Social' },
+  { value: 'other', label: 'Other' },
 ];
 
 const PROPERTY_TYPE_OPTIONS = [
@@ -305,7 +305,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  const [file, setFile] = useState<any>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
@@ -321,7 +321,7 @@ function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
 
   useEffect(() => {
     if (open) {
-      setFile(null);
+      setFiles([]);
       setTitle('');
       setDescription('');
       fetchPhotos();
@@ -329,16 +329,18 @@ function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
   }, [open, fetchPhotos]);
 
   const uploadPhoto = async () => {
-    if (!file || !album?.id) return;
+    if (files.length === 0 || !album?.id) return;
     setUploading(true);
-    const fd = new FormData();
-    fd.append('image_file', await compressImage(file));
-    if (title) fd.append('title', title);
-    if (description) fd.append('description', description);
-
+    
     try {
-      await axios.post(`/api/homepage/gallery/${album.id}/photos`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setFile(null);
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append('image_file', await compressImage(file));
+        if (title) fd.append('title', title);
+        if (description) fd.append('description', description);
+        await axios.post(`/api/homepage/gallery/${album.id}/photos`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      setFiles([]);
       setTitle('');
       setDescription('');
       await fetchPhotos();
@@ -371,9 +373,19 @@ function ManagePhotosModal({ open, album, onClose, onRefresh, canEdit }: any) {
             </div>
             <div className="flex items-end gap-4">
               <div className="flex-1">
-                <ImageUploadBox label="" currentUrl="" file={file} onFileChange={setFile} recommendedSize="Any" />
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center bg-white dark:bg-slate-900 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors relative h-[100px]" onClick={() => document.getElementById('multiple-file-upload')?.click()}>
+                  <input id="multiple-file-upload" type="file" multiple accept="image/*" className="hidden" onChange={e => {
+                    if (e.target.files) {
+                      setFiles(Array.from(e.target.files));
+                    }
+                  }} />
+                  <span className="material-icons text-slate-400 mb-1">cloud_upload</span>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    {files.length > 0 ? `${files.length} file(s) selected` : 'Click to select multiple images'}
+                  </p>
+                </div>
               </div>
-              <button onClick={uploadPhoto} disabled={!file || uploading} className="px-5 h-[100px] rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed mb-1.5 flex flex-col items-center justify-center gap-1">
+              <button onClick={uploadPhoto} disabled={files.length === 0 || uploading} className="px-5 h-[100px] rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1">
                 {uploading ? <span className="material-icons animate-spin">autorenew</span> : <span className="material-icons">cloud_upload</span>}
                 {uploading ? t('homepage.text_uploading', 'Uploading...') : t('homepage.text_upload', 'Upload')}
               </button>
