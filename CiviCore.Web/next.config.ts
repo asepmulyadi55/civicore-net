@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   async rewrites() {
-    const apiUrl = process.env.API_URL || 'http://localhost:5075';
+    const apiUrl = process.env.API_INTERNAL_URL || process.env.API_URL || 'http://localhost:5075';
     return [
       {
         source: '/api/:path*',

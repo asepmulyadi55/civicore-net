@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const revalidate = 60; // ISR every 60 seconds
 
-const API_URL = process.env.API_URL || 'http://localhost:5075';
+const API_URL = process.env.API_INTERNAL_URL || process.env.API_URL || 'http://localhost:5075';
 
 async function getData(endpoint: string) {
     try {
