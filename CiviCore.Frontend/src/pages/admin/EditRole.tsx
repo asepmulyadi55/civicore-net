@@ -111,9 +111,9 @@ function PermissionCard({ group, selectedPerms, onToggle, onBatchToggle, isSyste
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 md:p-5 hover:border-primary/30 hover:shadow-sm transition-all min-w-0">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <h4 className="font-semibold text-slate-800 dark:text-white text-sm">{t(group.labelKey)}</h4>
         {!isSystem && (
           <button
@@ -251,7 +251,7 @@ export default function EditRole() {
           <span className="material-icons text-primary text-4xl animate-spin">autorenew</span>
         </div>
       ) : (
-        <div className="max-w-6xl mx-auto pb-12">
+        <div className="w-full max-w-6xl mx-auto pb-12">
           <PageHeader
             title={isNew ? t('edit_role.page_title_create') : t('edit_role.page_title_edit', { name })}
             subtitle={isNew ? t('edit_role.subtitle_create') : t('edit_role.subtitle_edit')}
@@ -320,9 +320,9 @@ export default function EditRole() {
               )}
             </div>
 
-            <div className="flex divide-x divide-slate-200 dark:divide-slate-800">
+            <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800">
               {/* Sidebar tabs */}
-              <div className="w-52 flex-shrink-0 py-2">
+              <div className="w-full md:w-52 flex-shrink-0 py-2 flex flex-row md:flex-col overflow-x-auto hide-scrollbar">
                 {PERMISSION_TABS.map(tab => {
                   const counts = getTabPermCount(tab);
                   const isActive = activeTab === tab.key;
@@ -330,16 +330,16 @@ export default function EditRole() {
                     <button
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all group cursor-pointer ${
+                      className={`w-auto md:w-full whitespace-nowrap flex-shrink-0 flex items-center gap-3 px-4 py-3 text-left transition-all group cursor-pointer ${
                         isActive
-                          ? 'bg-primary/5 border-r-2 border-primary text-primary'
+                          ? 'bg-primary/5 border-b-2 md:border-b-0 md:border-r-2 border-primary text-primary'
                           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <span className={`material-icons text-sm flex-shrink-0 ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
                         {tab.icon}
                       </span>
-                      <span className="text-sm font-medium flex-1 truncate">{t(tab.labelKey)}</span>
+                      <span className="text-sm font-medium flex-1 whitespace-nowrap md:truncate">{t(tab.labelKey)}</span>
                       {counts && counts.active > 0 && (
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${isActive ? 'bg-primary text-white dark:text-surface' : 'bg-primary/10 text-primary'}`}>
                           {counts.active}
@@ -351,7 +351,7 @@ export default function EditRole() {
               </div>
 
               {/* Permission cards */}
-              <div className="flex-1 p-6 min-h-[400px]">
+              <div className="flex-1 min-w-0 p-4 md:p-6 min-h-[400px]">
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {currentTab.groups.map(group => (
                     <PermissionCard

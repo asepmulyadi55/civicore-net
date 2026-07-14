@@ -294,7 +294,7 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
       </aside>
 
       {/* Main content */}
-      <div className="lg:ml-64 flex flex-col min-h-screen">
+      <div className="lg:ml-64 flex flex-col min-w-0 min-h-screen">
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -319,7 +319,7 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8 flex flex-col">
+        <main className="flex-1 min-w-0 p-4 lg:p-8 flex flex-col">
           {loadingPerms ?
           <div className="flex-1 flex items-center justify-center">
               <span className="material-icons animate-spin text-primary text-4xl">autorenew</span>
