@@ -41,7 +41,10 @@ public static class ReEncryptCommand
         }
 
         // Defaults to the old built-in constant, which is what existing rows are under.
-        var oldKey = config["Encryption:OldKey"] ?? EncryptionService.InsecureFallbackKey;
+        // Checked for whitespace, not just null: an env var mapped through compose arrives
+        // as "" when unset, which `??` would happily accept as a real key.
+        var oldKey = config["Encryption:OldKey"];
+        if (string.IsNullOrWhiteSpace(oldKey)) oldKey = EncryptionService.InsecureFallbackKey;
 
         if (oldKey == newKey)
         {

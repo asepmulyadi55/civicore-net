@@ -10,6 +10,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - FrontendUrl=https://dwipapuri.amsite.click
       - ConnectionStrings__Redis=redis:6379
+      # Encrypts Nomor KK at rest. `:?` makes compose REFUSE TO START when it is unset,
+      # rather than letting the app fall back to the public key compiled into the source.
+      # Set ENCRYPTION_KEY in .env — see docs/encryption-key-migration.md
+      - Encryption__Key=${ENCRYPTION_KEY:?ENCRYPTION_KEY is not set. See docs/encryption-key-migration.md}
+      # Only used when rotating keys later; blank means "the old built-in fallback".
+      - Encryption__OldKey=${ENCRYPTION_OLD_KEY:-}
     volumes:
       - ./CiviCore.Api/wwwroot/public-media:/app/wwwroot/public-media
       - ./CiviCore.Api/App_Data/PrivateMedia:/app/App_Data/PrivateMedia
