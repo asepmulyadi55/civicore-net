@@ -32,7 +32,11 @@ public class HouseholderController : ControllerBase
     {
         var userBlockId = await User.GetBlockIdAsync(_context);
 
+        // AsNoTracking is load-bearing, not an optimisation: this action mutates the
+        // returned entities (fee fields below), and on tracked entities any later
+        // SaveChanges in the same request would persist those edits.
         var query = _context.Set<Householder>()
+            .AsNoTracking()
             .Include(h => h.Block)
             .Include(h => h.Unit)
             .Include(h => h.FeeHistories)
@@ -70,13 +74,14 @@ public class HouseholderController : ControllerBase
             .Take(per_page)
             .ToListAsync();
         
-        // Decrypt family card numbers on read and set MonthlyFee
         foreach(var h in householders)
         {
-            if (!string.IsNullOrEmpty(h.FamilyCardNumber))
-            {
-                h.FamilyCardNumber = _encryption.Decrypt(h.FamilyCardNumber);
-            }
+            // Nomor KK is deliberately not returned in the list. Nothing in the UI reads
+            // it, and a page of 187 households should not ship 187 KK numbers to the
+            // browser where any devtools tab can read them. Update() only writes this
+            // field when the caller supplies it, so omitting it here cannot wipe it.
+            h.FamilyCardNumber = null;
+
             var latestFee = h.FeeHistories.OrderByDescending(f => f.EffectiveFrom).FirstOrDefault();
             h.MonthlyFee = latestFee?.Amount ?? 0;
             h.EffectiveFrom = latestFee?.EffectiveFrom.ToString("MMMM yyyy");
@@ -97,7 +102,9 @@ public class HouseholderController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        // See GetAll: no tracking, because the fee fields below are mutated on the result.
         var householder = await _context.Set<Householder>()
+            .AsNoTracking()
             .Include(h => h.Block)
             .Include(h => h.Unit)
             .Include(h => h.FeeHistories)
@@ -109,10 +116,11 @@ public class HouseholderController : ControllerBase
         householder.MonthlyFee = latestFee?.Amount ?? 0;
         householder.EffectiveFrom = latestFee?.EffectiveFrom.ToString("yyyy-MM");
 
-        if (!string.IsNullOrEmpty(householder.FamilyCardNumber))
-        {
-            householder.FamilyCardNumber = _encryption.Decrypt(householder.FamilyCardNumber);
-        }
+        // Not returned. No caller reads it today, so decrypting it here would hand the
+        // Nomor KK to anyone holding householders.view for no benefit. If a screen ever
+        // needs it, expose it on a dedicated, separately-permissioned endpoint rather
+        // than on the general read.
+        householder.FamilyCardNumber = null;
 
         return Ok(householder);
     }

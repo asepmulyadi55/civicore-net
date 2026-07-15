@@ -253,6 +253,15 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// One-off maintenance command. Deliberately invoked, never part of normal startup:
+//   dotnet CiviCore.Api.dll --reencrypt-kk --dry-run
+if (CiviCore.Api.Services.ReEncryptCommand.ShouldRun(args))
+{
+    var exitCode = await CiviCore.Api.Services.ReEncryptCommand.RunAsync(app.Services, args, Console.Out);
+    Log.CloseAndFlush();
+    return exitCode;
+}
+
 try
 {
     app.Run();
@@ -262,3 +271,5 @@ finally
     // Serilog buffers; without this the last writes are lost when the container stops.
     Log.CloseAndFlush();
 }
+
+return 0;

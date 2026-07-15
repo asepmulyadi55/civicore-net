@@ -138,7 +138,9 @@ public class ResidentPortalController : ControllerBase
             fullname = resident.Fullname,
             phone = resident.Phone,
             email = resident.Email,
-            familyCardNumber = resident.FamilyCardNumber, // Need encryption logic if required
+            // Nomor KK intentionally omitted. This previously returned the stored value
+            // raw — i.e. ciphertext — so the portal was showing scrambled text. Nothing
+            // reads it, so it is dropped rather than decrypted and exposed.
             notes = resident.Notes,
             photoPath = resident.PhotoPath,
             blockName = resident.Block.Name,

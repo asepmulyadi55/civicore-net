@@ -8,23 +8,46 @@ namespace CiviCore.Api.Services;
 public interface IEncryptionService
 {
     string Encrypt(string plainText);
+
+    /// <summary>
+    /// Returns the input unchanged when it cannot be decrypted, so legacy plaintext keeps
+    /// working. That also hides genuine failures — use <see cref="TryDecrypt"/> when you
+    /// need to know.
+    /// </summary>
     string Decrypt(string cipherText);
+
+    /// <summary>
+    /// Decrypts, reporting success rather than swallowing it. Required by the key
+    /// migration: re-encrypting a value we failed to decrypt would destroy it.
+    /// </summary>
+    bool TryDecrypt(string cipherText, out string plainText);
 }
 
 public class EncryptionService : IEncryptionService
 {
+    /// <summary>
+    /// Used when Encryption:Key is unset. It is compiled into the source and therefore
+    /// public — anything protected by it is protected in name only.
+    /// </summary>
+    internal const string InsecureFallbackKey = "default_dev_key_32_bytes_long_123";
+
     private readonly byte[] _key;
 
     public EncryptionService(IConfiguration config)
+        : this(DeriveKey(config["Encryption:Key"])) { }
+
+    private EncryptionService(byte[] key) => _key = key;
+
+    /// <summary>Builds a service around an explicit key. Only the key migration needs this.</summary>
+    public static EncryptionService WithRawKey(string key) => new(DeriveKey(key));
+
+    private static byte[] DeriveKey(string? keyString)
     {
-        var keyString = config["Encryption:Key"];
-        if (string.IsNullOrEmpty(keyString))
-        {
-            // Fallback for dev if not set
-            keyString = "default_dev_key_32_bytes_long_123"; 
-        }
-        
-        _key = Encoding.UTF8.GetBytes(keyString.PadRight(32).Substring(0, 32));
+        if (string.IsNullOrEmpty(keyString)) keyString = InsecureFallbackKey;
+
+        // NOTE: a short key is padded rather than rejected, so it is silently accepted at
+        // far lower entropy than its length suggests.
+        return Encoding.UTF8.GetBytes(keyString.PadRight(32).Substring(0, 32));
     }
 
     public string Encrypt(string plainText)
@@ -51,9 +74,13 @@ public class EncryptionService : IEncryptionService
         return Convert.ToBase64String(result);
     }
 
-    public string Decrypt(string cipherText)
+    public string Decrypt(string cipherText) =>
+        TryDecrypt(cipherText, out var plainText) ? plainText : cipherText;
+
+    public bool TryDecrypt(string cipherText, out string plainText)
     {
-        if (string.IsNullOrEmpty(cipherText)) return cipherText;
+        plainText = cipherText;
+        if (string.IsNullOrEmpty(cipherText)) return false;
 
         try
         {
@@ -61,6 +88,10 @@ public class EncryptionService : IEncryptionService
 
             byte[] nonce = new byte[12];
             byte[] tag = new byte[16];
+
+            // Anything shorter cannot hold a nonce + tag, so it was never our ciphertext.
+            if (encryptedData.Length <= nonce.Length + tag.Length) return false;
+
             byte[] cipherBytes = new byte[encryptedData.Length - nonce.Length - tag.Length];
 
             Buffer.BlockCopy(encryptedData, 0, nonce, 0, nonce.Length);
@@ -71,14 +102,17 @@ public class EncryptionService : IEncryptionService
 
             using (var aes = new AesGcm(_key, tag.Length))
             {
+                // Throws if the tag check fails — i.e. wrong key, or tampered data.
                 aes.Decrypt(nonce, cipherBytes, tag, plainBytes);
             }
 
-            return Encoding.UTF8.GetString(plainBytes);
+            plainText = Encoding.UTF8.GetString(plainBytes);
+            return true;
         }
         catch
         {
-            return cipherText; // return original if decryption fails (e.g. old format)
+            plainText = cipherText;
+            return false;
         }
     }
 }
