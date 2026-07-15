@@ -30,7 +30,10 @@
     "profile": "Profile",
     "password": "Password",
     "security": "Security",
-    "memo": "Admin Memo"
+    "memo": "Admin Memo",
+    "emergency": "Emergency Contacts",
+    "hp-property": "Properties",
+    "audit": "Audit Trail"
   },
   "settings": {
     "title": "Settings",
@@ -657,7 +660,9 @@
     "module_settings_password": "Password",
     "module_settings_security": "Security (2FA)",
     "module_settings_memo": "Memo",
-    "error_name_required": "Role name is required."
+    "error_name_required": "Role name is required.",
+    "module_homepage_emergency": "Emergency Contacts",
+    "module_audit": "Audit Trail"
   },
   "posyandu": {
     "title": "Posyandu",
@@ -1593,7 +1598,16 @@
     "btn_yes_delete": "Yes, Delete",
     "table_date": "DATE",
     "label_eyebrow": "Eyebrow Label",
-    "error_url_required": "URL / Path is required."
+    "error_url_required": "URL / Path is required.",
+    "tab_hero": "Hero Section",
+    "tab_events": "Events",
+    "tab_gallery": "Gallery",
+    "tab_bulletin": "Bulletin",
+    "tab_properties": "Properties",
+    "tab_navigation": "Navigation",
+    "tab_footer": "Footer",
+    "tab_emergency": "Emergency Contacts",
+    "tab_metadata": "SEO & Metadata"
   },
   "homepage.tab_hero": "Hero Section",
   "homepage.tab_events": "Events",
@@ -1739,5 +1753,27 @@
   "admin": {
     "access_denied": "Access Denied",
     "permission_denied_msg": "You do not have permission to view this page. If you believe this is an error, please contact your administrator."
+  },
+  "audit": {
+    "title": "Audit Trail",
+    "subtitle": "Sign-in and session activity across the site",
+    "search_placeholder": "Search email or IP...",
+    "all_events": "All Events",
+    "label_from": "From",
+    "label_to": "To",
+    "btn_clear": "Clear",
+    "th_when": "When",
+    "th_event": "Event",
+    "th_actor": "Account",
+    "th_ip": "IP Address",
+    "th_detail": "Detail",
+    "empty_title": "No activity found",
+    "empty_subtitle": "Nothing matches these filters yet.",
+    "unknown_account": "unknown",
+    "event_login_success": "Signed in",
+    "event_login_failed": "Sign-in failed",
+    "event_login_locked_out": "Account locked",
+    "event_logout": "Signed out",
+    "event_session_kicked": "Signed out (another device)"
   }
 }

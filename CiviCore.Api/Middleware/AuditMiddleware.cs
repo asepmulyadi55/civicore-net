@@ -17,13 +17,21 @@ public class AuditMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (context.Request.Method != "GET")
+        if (context.Request.Method == "GET")
         {
-            _logger.LogInformation("Audit Log: User {User} executed {Method} on {Path}",
-                context.User.Identity?.Name ?? "Anonymous",
-                context.Request.Method,
-                context.Request.Path);
+            await _next(context);
+            return;
         }
+
         await _next(context);
+
+        // Logged after the request rather than before: beforehand we only know what was
+        // attempted, so a call rejected with 403 read identically to one that succeeded —
+        // actively misleading in something labelled "audit".
+        _logger.LogInformation("Audit: User {User} {Method} {Path} -> {StatusCode}",
+            context.User.Identity?.Name ?? "Anonymous",
+            context.Request.Method,
+            context.Request.Path,
+            context.Response.StatusCode);
     }
 }

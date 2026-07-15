@@ -49,6 +49,8 @@ const PERMISSION_TABS = [
       { module: 'users', labelKey: 'edit_role.module_users', actions: ['view', 'create', 'edit', 'delete', 'approve'] },
       { module: 'roles', labelKey: 'edit_role.module_roles', actions: ['view', 'create', 'edit', 'delete'] },
       { module: 'media', labelKey: 'edit_role.module_media', actions: ['view', 'delete'] },
+      // Read-only by design: an audit trail nobody can edit is the point.
+      { module: 'audit', labelKey: 'edit_role.module_audit', actions: ['view'] },
     ],
   },
   {
@@ -63,6 +65,7 @@ const PERMISSION_TABS = [
       { module: 'homepage_property', labelKey: 'edit_role.module_homepage_property', actions: ['view', 'create', 'edit', 'delete'] },
       { module: 'homepage_navigation', labelKey: 'edit_role.module_homepage_navigation', actions: ['view', 'create', 'edit', 'delete'] },
       { module: 'homepage_footer', labelKey: 'edit_role.module_homepage_footer', actions: ['view', 'edit'] },
+      { module: 'homepage_emergency', labelKey: 'edit_role.module_homepage_emergency', actions: ['view', 'edit'] },
       { module: 'homepage_metadata', labelKey: 'edit_role.module_homepage_metadata', actions: ['view', 'edit'] },
     ],
   },

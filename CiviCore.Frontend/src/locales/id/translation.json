@@ -30,7 +30,10 @@
     "profile": "Profil",
     "password": "Kata Sandi",
     "security": "Keamanan",
-    "memo": "Memo Admin"
+    "memo": "Memo Admin",
+    "emergency": "Kontak Darurat",
+    "hp-property": "Properti",
+    "audit": "Jejak Audit"
   },
   "settings": {
     "title": "Pengaturan",
@@ -657,7 +660,9 @@
     "module_settings_password": "Kata Sandi",
     "module_settings_security": "Keamanan (2FA)",
     "module_settings_memo": "Memo Admin",
-    "error_name_required": "Nama peran wajib diisi."
+    "error_name_required": "Nama peran wajib diisi.",
+    "module_homepage_emergency": "Kontak Darurat",
+    "module_audit": "Jejak Audit"
   },
   "posyandu": {
     "title": "Posyandu",
@@ -1593,7 +1598,16 @@
     "btn_yes_delete": "Ya, Hapus",
     "table_date": "TANGGAL",
     "label_eyebrow": "Label Atas",
-    "error_url_required": "URL / Jalur wajib diisi."
+    "error_url_required": "URL / Jalur wajib diisi.",
+    "tab_hero": "Bagian Utama",
+    "tab_events": "Acara",
+    "tab_gallery": "Galeri",
+    "tab_bulletin": "Buletin",
+    "tab_properties": "Properti",
+    "tab_navigation": "Navigasi",
+    "tab_footer": "Bawah Halaman",
+    "tab_emergency": "Kontak Darurat",
+    "tab_metadata": "SEO & Metadata"
   },
   "homepage.text_add_album": "Tambah Album",
   "homepage.text_edit_album": "Edit Album",
@@ -1768,5 +1782,27 @@
   "admin": {
     "access_denied": "Akses Ditolak",
     "permission_denied_msg": "Anda tidak memiliki izin untuk melihat halaman ini. Jika Anda yakin ini adalah sebuah kesalahan, silakan hubungi administrator Anda."
+  },
+  "audit": {
+    "title": "Jejak Audit",
+    "subtitle": "Aktivitas masuk dan sesi di seluruh situs",
+    "search_placeholder": "Cari email atau IP...",
+    "all_events": "Semua Aktivitas",
+    "label_from": "Dari",
+    "label_to": "Sampai",
+    "btn_clear": "Bersihkan",
+    "th_when": "Waktu",
+    "th_event": "Aktivitas",
+    "th_actor": "Akun",
+    "th_ip": "Alamat IP",
+    "th_detail": "Detail",
+    "empty_title": "Tidak ada aktivitas",
+    "empty_subtitle": "Belum ada yang cocok dengan filter ini.",
+    "unknown_account": "tidak dikenal",
+    "event_login_success": "Berhasil masuk",
+    "event_login_failed": "Gagal masuk",
+    "event_login_locked_out": "Akun terkunci",
+    "event_logout": "Keluar",
+    "event_session_kicked": "Keluar (perangkat lain)"
   }
 }

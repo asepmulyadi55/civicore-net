@@ -31,6 +31,7 @@ import HomepageEventForm from './pages/admin/HomepageEventForm';
 import HomepageBulletinForm from './pages/admin/HomepageBulletinForm';
 import HomepagePropertyForm from './pages/admin/HomepagePropertyForm';
 import Media from './pages/admin/Media';
+import Audit from './pages/admin/Audit';
 // Resident Portal
 import Overview from './pages/admin/Overview';
 import ResidentHousehold from './pages/admin/ResidentHousehold';
@@ -101,8 +102,11 @@ export default function Router() {
         <Route path="/homepage/bulletin/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_bulletin.edit"><HomepageBulletinForm /></RequirePermission></RequireAuth>} />
         <Route path="/homepage/properties/new" element={<RequireAuth><RequirePermission perm="homepage_property.create"><HomepagePropertyForm /></RequirePermission></RequireAuth>} />
         <Route path="/homepage/properties/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_property.edit"><HomepagePropertyForm /></RequirePermission></RequireAuth>} />
-        <Route path="/homepage/:tab" element={<RequireAuth><RequirePermission perm="homepage_hero.view"><AdminHomepage /></RequirePermission></RequireAuth>} />
+        {/* Gated per-tab by AdminLayout, which maps the path to its own nav permission.
+            A fixed perm here would gate every tab on Hero's permission. */}
+        <Route path="/homepage/:tab" element={<RequireAuth><AdminHomepage /></RequireAuth>} />
         <Route path="/media" element={<RequireAuth><RequirePermission perm="media.view"><Media /></RequirePermission></RequireAuth>} />
+        <Route path="/audit" element={<RequireAuth><RequirePermission perm="audit.view"><Audit /></RequirePermission></RequireAuth>} />
 
         {/* Resident Portal */}
         <Route path="/overview" element={<RequireAuth><Overview /></RequireAuth>} />

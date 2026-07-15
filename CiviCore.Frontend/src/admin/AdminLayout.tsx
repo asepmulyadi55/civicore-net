@@ -39,7 +39,8 @@ const NAV_GROUPS = [
   items: [
   { key: 'users', label: 'Users', icon: 'manage_accounts', path: '/users', permission: 'users.view' },
   { key: 'roles', label: 'Roles', icon: 'admin_panel_settings', path: '/roles', permission: 'roles.view' },
-  { key: 'media', label: 'Media', icon: 'perm_media', path: '/media', permission: 'media.view' }]
+  { key: 'media', label: 'Media', icon: 'perm_media', path: '/media', permission: 'media.view' },
+  { key: 'audit', label: 'Audit Trail', icon: 'history', path: '/audit', permission: 'audit.view' }]
 
 },
 {
@@ -53,7 +54,7 @@ const NAV_GROUPS = [
   { key: 'hp-property', label: 'Properties', icon: 'home_work', path: '/homepage/properties', permission: 'homepage_property.view' },
   { key: 'navigation', label: 'Navigation', icon: 'menu', path: '/homepage/navigation', permission: 'homepage_navigation.view' },
   { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/homepage/footer', permission: 'homepage_footer.view' },
-  { key: 'emergency', label: 'Kontak Darurat', icon: 'emergency', path: '/homepage/emergency', permission: 'homepage_footer.view' },
+  { key: 'emergency', label: 'Kontak Darurat', icon: 'emergency', path: '/homepage/emergency', permission: 'homepage_emergency.view' },
   { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/homepage/metadata', permission: 'homepage_metadata.view' }]
 
 },

@@ -31,10 +31,20 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<PropertyListing> PropertyListings { get; set; } = null!;
     public DbSet<NavigationLink> NavigationLinks { get; set; } = null!;
     public DbSet<FormSubmission> FormSubmissions { get; set; } = null!;
+    public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        // Audit rows are queried by "recent activity" and "activity for this user",
+        // and the table only grows — index for both up front.
+        builder.Entity<AuditLog>(e =>
+        {
+            e.HasIndex(a => a.CreatedAt);
+            e.HasIndex(a => new { a.UserId, a.CreatedAt });
+            e.HasIndex(a => a.Event);
+        });
 
         // Define Postgres Enums
         builder.HasPostgresEnum<CiviCore.Domain.Enums.HouseStatus>();

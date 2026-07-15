@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using CiviCore.Infrastructure.Data;
 using CiviCore.Infrastructure.Services;
 using CiviCore.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace CiviCore.Infrastructure;
 
@@ -45,6 +46,10 @@ public static class DependencyInjection
 
         services.AddScoped<ISessionSettingsService, SessionSettingsService>();
         services.AddScoped<ISessionTokenService, SessionTokenService>();
+
+        // AuditService reads the caller's IP/user-agent off the ambient request.
+        services.AddHttpContextAccessor();
+        services.AddScoped<IAuditService, AuditService>();
 
         services.ConfigureApplicationCookie(options =>
         {
@@ -103,6 +108,19 @@ public static class DependencyInjection
                     if (string.IsNullOrEmpty(expected) || presented != expected)
                     {
                         context.HttpContext.Items[SessionConflictItemKey] = true;
+
+                        // Only audit an actual takeover. An empty `expected` just means the
+                        // user logged out, which Logout already recorded.
+                        if (!string.IsNullOrEmpty(expected))
+                        {
+                            var audit = context.HttpContext.RequestServices
+                                .GetRequiredService<IAuditService>();
+                            await audit.LogAsync(
+                                AuditEvents.SessionKicked, success: true, userId: userId,
+                                actorEmail: context.Principal.FindFirstValue(ClaimTypes.Email),
+                                detail: "Session ended: the account was signed in on another device.");
+                        }
+
                         context.RejectPrincipal();
                         await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
                         return;

@@ -27,7 +27,7 @@ namespace CiviCore.Api.Controllers
         /// Order matters: the token must exist before the cookie is issued, or the ticket
         /// carries no token and the session is rejected immediately.
         /// </summary>
-        private async Task<string> SignInWithSessionAsync(ApplicationUser user, bool isPersistent)
+        private async Task<string> SignInWithSessionAsync(ApplicationUser user, bool isPersistent, string method)
         {
             user.SessionToken = Guid.NewGuid().ToString();
             user.LastLoginAt = DateTime.UtcNow;
@@ -39,6 +39,11 @@ namespace CiviCore.Api.Controllers
             props.SetString(SessionTokenService.PropertyKey, user.SessionToken);
             await _signInManager.SignInAsync(user, props);
 
+            // Every successful sign-in funnels through here, so one call covers
+            // password, captcha, 2FA and Google.
+            await _audit.LogAsync(AuditEvents.LoginSuccess, success: true,
+                userId: user.Id, actorEmail: user.Email, detail: $"Signed in via {method}.");
+
             return user.SessionToken;
         }
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -48,8 +53,9 @@ namespace CiviCore.Api.Controllers
         private readonly IConfiguration _config;
         private readonly IRecaptchaService _recaptcha;
         private readonly ISessionTokenService _sessionTokens;
+        private readonly IAuditService _audit;
 
-        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IEmailService emailService, IConfiguration config, IRecaptchaService recaptcha, ISessionTokenService sessionTokens)
+        public AuthController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IEmailService emailService, IConfiguration config, IRecaptchaService recaptcha, ISessionTokenService sessionTokens, IAuditService audit)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -58,6 +64,7 @@ namespace CiviCore.Api.Controllers
             _config = config;
             _recaptcha = recaptcha;
             _sessionTokens = sessionTokens;
+            _audit = audit;
         }
 
         [HttpPost("login")]
@@ -69,17 +76,31 @@ namespace CiviCore.Api.Controllers
 
             var user = await _userManager.FindByEmailAsync(request.Email) ?? await _userManager.FindByNameAsync(request.Email);
             if (user == null)
+            {
+                // No user row, so no UserId — the attempted address is the only trace,
+                // and it is what makes credential-stuffing visible.
+                await _audit.LogAsync(AuditEvents.LoginFailed, success: false,
+                    actorEmail: request.Email, detail: "No account matches this email.");
                 return Unauthorized(new { message = InvalidCredentialsMsg });
+            }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
-            
+
             if (result.IsLockedOut)
+            {
+                await _audit.LogAsync(AuditEvents.LoginLockedOut, success: false,
+                    userId: user.Id, actorEmail: user.Email,
+                    detail: "Locked out after repeated failed attempts.");
                 return Unauthorized(new { message = "Account locked out due to multiple failed attempts." });
+            }
 
             if (result.Succeeded)
             {
                 if (!user.IsActive)
                 {
+                    var reason = user.EmailConfirmed ? "Account is deactivated." : "Account is pending admin approval.";
+                    await _audit.LogAsync(AuditEvents.LoginFailed, success: false,
+                        userId: user.Id, actorEmail: user.Email, detail: reason);
                     if (user.EmailConfirmed)
                         return Unauthorized(new { message = "Your account has been deactivated." });
                     else
@@ -111,7 +132,7 @@ namespace CiviCore.Api.Controllers
                 if (securityMode == "none")
                 {
                     // No extra security — issue token directly
-                    var sessionToken = await SignInWithSessionAsync(user, isPersistent: false);
+                    var sessionToken = await SignInWithSessionAsync(user, isPersistent: false, method: "password");
                     return Ok(new { message = "Login successful", token = sessionToken, user = new { name = user.Name, email = user.Email, role = roleName ?? "", language = user.Language } });
                 }
 
@@ -119,6 +140,8 @@ namespace CiviCore.Api.Controllers
                 return StatusCode(403, new { message = "Mandatory Security: You must set up Two-Factor Authentication.", requires_2fa_setup = true });
             }
 
+            await _audit.LogAsync(AuditEvents.LoginFailed, success: false,
+                userId: user.Id, actorEmail: user.Email, detail: "Incorrect password.");
             return Unauthorized(new { message = InvalidCredentialsMsg });
         }
 
@@ -150,7 +173,7 @@ namespace CiviCore.Api.Controllers
             if (!user.IsActive)
                 return Unauthorized(new { message = user.EmailConfirmed ? "Your account has been deactivated." : "Your account is pending admin approval." });
 
-            var captchaSessionToken = await SignInWithSessionAsync(user, request.RememberMe);
+            var captchaSessionToken = await SignInWithSessionAsync(user, request.RememberMe, method: "password + captcha");
 
             var userRoles = await _userManager.GetRolesAsync(user);
             var userRole = userRoles.FirstOrDefault() ?? "";
@@ -185,7 +208,7 @@ namespace CiviCore.Api.Controllers
             var totp = new Totp(Base32Encoding.ToBytes(user.TwoFactorSecretKey));
             if (totp.VerifyTotp(request.Code, out _, window: null))
             {
-                var twoFactorSessionToken = await SignInWithSessionAsync(user, request.RememberMe);
+                var twoFactorSessionToken = await SignInWithSessionAsync(user, request.RememberMe, method: "password + 2FA");
 
                 var roles = await _userManager.GetRolesAsync(user);
                 var userRole = roles.FirstOrDefault() ?? "";
@@ -225,6 +248,8 @@ namespace CiviCore.Api.Controllers
                 user.SessionToken = null;
                 await _userManager.UpdateAsync(user);
                 await _sessionTokens.InvalidateAsync(user.Id);
+                await _audit.LogAsync(AuditEvents.Logout, success: true,
+                    userId: user.Id, actorEmail: user.Email);
             }
             await _signInManager.SignOutAsync();
             return Ok(new { message = "Logged out successfully" });
@@ -369,7 +394,7 @@ namespace CiviCore.Api.Controllers
                 return Redirect($"{loginUrl}?requires_2fa=true&email={Uri.EscapeDataString(user.Email)}");
             }
             
-            var googleSessionToken = await SignInWithSessionAsync(user, isPersistent: true);
+            var googleSessionToken = await SignInWithSessionAsync(user, isPersistent: true, method: "Google");
 
             // Redirect to login page with token so the React frontend can save it to localStorage
             return Redirect($"{loginUrl}?requires_2fa_setup=true&token={googleSessionToken}&user={encodedUser}&email={Uri.EscapeDataString(user.Email)}");

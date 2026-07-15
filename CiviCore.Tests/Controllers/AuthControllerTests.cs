@@ -34,7 +34,8 @@ public class AuthControllerTests : TestBase
             _mockEmailService.Object,
             _config,
             _mockRecaptchaService.Object,
-            new Mock<ISessionTokenService>().Object
+            new Mock<ISessionTokenService>().Object,
+            new Mock<IAuditService>().Object
         );
     }
 
