@@ -24,6 +24,18 @@ export default function Login() {
   const [dark, toggleDark] = useDarkMode();
   const { t } = useTranslation();
 
+  // Set by the axios 401 handler when the server kicked this browser because the
+  // account was signed in somewhere else. Read once, then cleared.
+  React.useEffect(() => {
+    if (sessionStorage.getItem('logout_reason') === 'session_conflict') {
+      sessionStorage.removeItem('logout_reason');
+      setError(t(
+        'login.error_session_conflict',
+        'You were signed out because your account was signed in on another device.'
+      ));
+    }
+  }, [t]);
+
   const [successMessage, setSuccessMessage] = useState(() => {
     const msg = location.state?.message;
     if (msg) {

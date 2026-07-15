@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Domain.Entities;
 using CiviCore.Infrastructure.Data;
+using CiviCore.Infrastructure.Services;
 using CiviCore.Api.Services;
 
 namespace CiviCore.Api.Controllers;
@@ -18,13 +19,15 @@ public class SettingsController : ControllerBase
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
     private readonly ILocalStorageService _storage;
+    private readonly ISessionSettingsService _sessionSettings;
 
-    public SettingsController(UserManager<ApplicationUser> userManager, AppDbContext context, IConfiguration config, ILocalStorageService storage)
+    public SettingsController(UserManager<ApplicationUser> userManager, AppDbContext context, IConfiguration config, ILocalStorageService storage, ISessionSettingsService sessionSettings)
     {
         _userManager = userManager;
         _context = context;
         _config = config;
         _storage = storage;
+        _sessionSettings = sessionSettings;
     }
 
     // ── Profile ───────────────────────────────────────────────────────────
@@ -166,6 +169,10 @@ public class SettingsController : ControllerBase
 
         await SetSettingValue("session_timeout_minutes", dto.SessionTimeoutMinutes.ToString());
         await SetSettingValue("ga_measurement_id", dto.GaMeasurementId?.Trim() ?? "");
+
+        // Drop the cached copy so the new idle window applies to the next request
+        // instead of waiting out the cache TTL.
+        await _sessionSettings.InvalidateAsync();
 
         return Ok(new { message = "Security settings saved." });
     }

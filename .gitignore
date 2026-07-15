@@ -40,3 +40,6 @@ CiviCore.Web/.scannerwork/
 
 .rtk
 CLAUDE.md
+
+# Serilog output
+logs/

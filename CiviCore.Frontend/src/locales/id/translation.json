@@ -1069,7 +1069,8 @@
     "req_2fa_subtitle": "Silakan masukkan kode verifikasi 6 digit dari aplikasi authenticator Anda.",
     "err_empty": "Silakan masukkan nama pengguna/email dan kata sandi Anda.",
     "err_code_empty": "Silakan masukkan kode 6 digit Anda.",
-    "err_default": "Gagal masuk. Silakan periksa kredensial Anda."
+    "err_default": "Gagal masuk. Silakan periksa kredensial Anda.",
+    "error_session_conflict": "Anda keluar karena akun Anda masuk di perangkat lain."
   },
   "register": {
     "title": "Buat Akun Anda",

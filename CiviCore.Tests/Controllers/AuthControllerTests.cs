@@ -1,6 +1,7 @@
 using CiviCore.Api.Controllers;
 using CiviCore.Api.Services;
 using CiviCore.Domain.Entities;
+using CiviCore.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -32,7 +33,8 @@ public class AuthControllerTests : TestBase
             MockRoleManager.Object,
             _mockEmailService.Object,
             _config,
-            _mockRecaptchaService.Object
+            _mockRecaptchaService.Object,
+            new Mock<ISessionTokenService>().Object
         );
     }
 

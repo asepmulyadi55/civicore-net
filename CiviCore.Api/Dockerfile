@@ -16,8 +16,8 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # BEST PRACTICE: Create required directories and give the non-root 'app' user ownership
-RUN mkdir -p /app/DataProtection-Keys /app/wwwroot/public-media /app/App_Data/PrivateMedia \
-    && chown -R app:app /app/DataProtection-Keys /app/wwwroot /app/App_Data
+RUN mkdir -p /app/DataProtection-Keys /app/wwwroot/public-media /app/App_Data/PrivateMedia /app/logs \
+    && chown -R app:app /app/DataProtection-Keys /app/wwwroot /app/App_Data /app/logs
 
 USER app
 ENTRYPOINT ["dotnet", "CiviCore.Api.dll"]

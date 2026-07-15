@@ -3,10 +3,13 @@ using CiviCore.Domain.Entities;
 using CiviCore.Infrastructure.Data;
 using CiviCore.Api.Services;
 using CiviCore.Api.Middleware;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.DataProtection;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,34 @@ if (!Directory.Exists(wwwrootPath))
     Directory.CreateDirectory(wwwrootPath);
 }
 builder.Environment.WebRootPath = wwwrootPath;
+
+// In the container this resolves to /app/logs, which docker-compose maps to ./logs
+// on the host. The Dockerfile must create+chown it, since the image runs as non-root.
+var logPath = Path.Combine(builder.Environment.ContentRootPath, "logs");
+Directory.CreateDirectory(logPath);
+
+// Configured in code rather than appsettings.json on purpose: that file is
+// gitignored, so a fresh clone or CI build would silently produce no logs at all.
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    // Optional overlay: a "Serilog" section, if present, wins over the defaults above.
+    .ReadFrom.Configuration(context.Configuration)
+    // Console keeps `docker compose logs api` working — the Docker-native path.
+    .WriteTo.Console()
+    // Files are what you actually open. Rolls daily and at 20 MB, keeps 14 files,
+    // so it cannot fill the disk.
+    .WriteTo.File(
+        path: Path.Combine(logPath, "civicore-.log"),
+        rollingInterval: RollingInterval.Day,
+        rollOnFileSizeLimit: true,
+        fileSizeLimitBytes: 20L * 1024 * 1024,
+        retainedFileCountLimit: 14,
+        shared: true,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}"));
 
 // Add services to the container.
 builder.Services.AddControllers(options => {
@@ -105,7 +136,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // Configure Infrastructure Layer
-builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment.IsDevelopment());
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
@@ -137,11 +168,37 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// First in the pipeline so it catches anything thrown downstream. Development keeps
+// the built-in developer exception page instead.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+    {
+        var feature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(feature?.Error, "Unhandled exception on {Method} {Path}",
+            context.Request.Method, feature?.Path ?? context.Request.Path);
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/problem+json";
+        // TraceId lets a user-reported error be matched to the log line.
+        await context.Response.WriteAsJsonAsync(new
+        {
+            status = 500,
+            message = "An unexpected error occurred.",
+            traceId = context.TraceIdentifier
+        });
+    }));
+}
+
 // please comment it while development to avoid certificate error
 app.UseHttpsRedirection();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+// After the static-file middleware so SPA asset requests don't drown the log.
+app.UseSerilogRequestLogging();
 
 app.UseTrustProxies();
 app.UseMiddleware<SetLocaleMiddleware>();
@@ -161,7 +218,8 @@ app.UseAuthorization();
 // Custom CiviCore Middlewares
 app.UseMiddleware<AuditMiddleware>();
 app.UseMiddleware<VerifyApiKeyMiddleware>();
-app.UseMiddleware<SessionConflictMiddleware>();
+// SessionConflictMiddleware removed: single-session is now enforced in the cookie's
+// OnValidatePrincipal, which actually compares tokens (the middleware never did).
 app.UseMiddleware<UpdateLastActiveMiddleware>();
 app.UseMiddleware<EnsureUserIsApprovedMiddleware>();
 app.UseMiddleware<RequireTwoFactorMiddleware>();
@@ -192,4 +250,12 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();
+try
+{
+    app.Run();
+}
+finally
+{
+    // Serilog buffers; without this the last writes are lost when the container stops.
+    Log.CloseAndFlush();
+}

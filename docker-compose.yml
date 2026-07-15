@@ -13,6 +13,15 @@ services:
     volumes:
       - ./CiviCore.Api/wwwroot/public-media:/app/wwwroot/public-media
       - ./CiviCore.Api/App_Data/PrivateMedia:/app/App_Data/PrivateMedia
+      # Serilog's rolling files, readable on the host at ./logs
+      - ./logs:/app/logs
+    # `docker compose logs` reads this. The json-file driver is UNBOUNDED by
+    # default and will eventually fill the disk — cap it.
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   redis:
     image: redis:alpine

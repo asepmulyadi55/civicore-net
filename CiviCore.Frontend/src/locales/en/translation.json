@@ -1069,7 +1069,8 @@
     "req_2fa_subtitle": "Please enter the 6-digit verification code from your authenticator app.",
     "err_empty": "Please enter your username/email and password.",
     "err_code_empty": "Please enter your 6-digit code.",
-    "err_default": "Login failed. Please check your credentials."
+    "err_default": "Login failed. Please check your credentials.",
+    "error_session_conflict": "You were signed out because your account was signed in on another device."
   },
   "register": {
     "title": "Create Your Account",

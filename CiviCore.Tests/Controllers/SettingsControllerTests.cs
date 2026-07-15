@@ -1,6 +1,7 @@
 using CiviCore.Api.Controllers;
 using CiviCore.Api.Services;
 using CiviCore.Domain.Entities;
+using CiviCore.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Xunit;
@@ -15,12 +16,14 @@ public class SettingsControllerTests : TestBase
 {
     private readonly SettingsController _controller;
     private readonly Mock<ILocalStorageService> _mockStorageService;
+    private readonly Mock<ISessionSettingsService> _mockSessionSettings;
     private readonly IConfiguration _configuration;
 
     public SettingsControllerTests()
     {
         _mockStorageService = new Mock<ILocalStorageService>();
-        
+        _mockSessionSettings = new Mock<ISessionSettingsService>();
+
         var myConfiguration = new System.Collections.Generic.Dictionary<string, string?>
         {
             {"AppUrl", "http://localhost"}
@@ -29,7 +32,7 @@ public class SettingsControllerTests : TestBase
             .AddInMemoryCollection(myConfiguration)
             .Build();
 
-        _controller = new SettingsController(MockUserManager.Object, DbContext, _configuration, _mockStorageService.Object);
+        _controller = new SettingsController(MockUserManager.Object, DbContext, _configuration, _mockStorageService.Object, _mockSessionSettings.Object);
         
         var adminUser = new ApplicationUser { Id = Guid.NewGuid(), UserName = "admin", Email = "admin@test.com" };
         SetControllerContextUser(_controller, adminUser, new[] { "Admin" });
