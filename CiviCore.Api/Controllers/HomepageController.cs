@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
@@ -146,6 +147,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_hero.edit")]
     [HttpPut("hero")]
     public async Task<IActionResult> UpdateHero([FromForm] string? title, [FromForm] string? subtitle,
         [FromForm] string? cta_label, [FromForm] string? cta_url, IFormFile? background_image)
@@ -189,6 +191,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_events.create")]
     [HttpPost("events")]
     public async Task<IActionResult> StoreEvent([FromForm] string title, [FromForm] string? description,
         [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, [FromForm] string? action_type, [FromForm] string? action_value, IFormFile? image_file)
@@ -224,6 +227,7 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Event added." });
     }
 
+    [RequirePermission("homepage_events.edit")]
     [HttpPut("events/{id}")]
     public async Task<IActionResult> UpdateEvent(string id, [FromForm] string title, [FromForm] string? description,
         [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, [FromForm] string? action_type, [FromForm] string? action_value, IFormFile? image_file)
@@ -281,6 +285,7 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Event updated." });
     }
 
+    [RequirePermission("homepage_events.delete")]
     [HttpDelete("events/{id}")]
     public async Task<IActionResult> DestroyEvent(string id)
     {
@@ -310,6 +315,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_events.edit")]
     [HttpPut("event-settings")]
     public async Task<IActionResult> UpdateEventSettings([FromForm] string? eyebrow, [FromForm] string? title,
         [FromForm] string? subtitle)
@@ -335,6 +341,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_gallery.edit")]
     [HttpPut("gallery-settings")]
     public async Task<IActionResult> UpdateGallerySettings([FromForm] string? eyebrow, [FromForm] string? title,
         [FromForm] string? subtitle)
@@ -360,6 +367,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_gallery.create")]
     [HttpPost("gallery")]
     public async Task<IActionResult> StoreAlbum([FromForm] string title, [FromForm] string? description, IFormFile? image_file)
     {
@@ -382,6 +390,7 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Album added." });
     }
 
+    [RequirePermission("homepage_gallery.edit")]
     [HttpPut("gallery/{id}")]
     public async Task<IActionResult> UpdateAlbum(string id, [FromForm] string title, [FromForm] string? description, IFormFile? image_file)
     {
@@ -434,6 +443,7 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Album updated." });
     }
 
+    [RequirePermission("homepage_gallery.delete")]
     [HttpDelete("gallery/{id}")]
     public async Task<IActionResult> DestroyAlbum(string id)
     {
@@ -483,6 +493,7 @@ public class HomepageController : ControllerBase
         return Ok(album);
     }
 
+    [RequirePermission("homepage_gallery.edit")]
     [HttpPost("gallery/{id}/photos")]
     public async Task<IActionResult> StorePhoto(string id, [FromForm] string? title, [FromForm] string? description, IFormFile image_file)
     {
@@ -527,6 +538,7 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Photo added." });
     }
 
+    [RequirePermission("homepage_gallery.edit")]
     [HttpDelete("gallery/{id}/photos/{photoId}")]
     public async Task<IActionResult> DestroyPhoto(string id, string photoId)
     {
@@ -575,6 +587,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_bulletin.edit")]
     [HttpPut("bulletin-settings")]
     public async Task<IActionResult> UpdateBulletinSettings([FromForm] string? eyebrow, [FromForm] string? title, [FromForm] string? subtitle)
     {
@@ -610,6 +623,7 @@ public class HomepageController : ControllerBase
         return Ok(sorted);
     }
 
+    [RequirePermission("homepage_bulletin.create")]
     [HttpPost("bulletin")]
     public async Task<IActionResult> StoreBulletin([FromForm] string title, [FromForm] string? description,
         [FromForm] string? date, [FromForm] string? category, [FromForm] string? url, IFormFile? image_file)
@@ -635,6 +649,7 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Bulletin added." });
     }
 
+    [RequirePermission("homepage_bulletin.edit")]
     [HttpPut("bulletin/{id}")]
     public async Task<IActionResult> UpdateBulletin(string id, [FromForm] string title, [FromForm] string? description,
         [FromForm] string? date, [FromForm] string? category, [FromForm] string? url, IFormFile? image_file)
@@ -695,6 +710,7 @@ public class HomepageController : ControllerBase
         return Ok(bulletin);
     }
 
+    [RequirePermission("homepage_bulletin.delete")]
     [HttpDelete("bulletin/{id}")]
     public async Task<IActionResult> DestroyBulletin(string id)
     {
@@ -724,6 +740,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_footer.edit")]
     [HttpPut("footer")]
     public async Task<IActionResult> UpdateFooter(IFormCollection formData, IFormFile? logo)
     {
@@ -781,6 +798,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_property.edit")]
     [HttpPut("property-settings")]
     public async Task<IActionResult> UpdatePropertySettings([FromForm] string? eyebrow, [FromForm] string? title, [FromForm] string? subtitle)
     {
@@ -806,6 +824,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_metadata.edit")]
     [HttpPut("metadata")]
     public async Task<IActionResult> UpdateMetadata([FromForm] string? page_title, [FromForm] string? meta_description,
         [FromForm] string? meta_keywords, [FromForm] string? og_title, [FromForm] string? og_description,
@@ -844,6 +863,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_metadata.edit")]
     [HttpPut("section-labels")]
     public async Task<IActionResult> UpdateSectionLabels([FromBody] JsonElement body)
     {
@@ -909,6 +929,7 @@ public class HomepageController : ControllerBase
         return Content(json, MediaTypeJson);
     }
 
+    [RequirePermission("homepage_emergency.edit")]
     [HttpPut("emergency-contacts")]
     public async Task<IActionResult> UpdateEmergencyContacts([FromBody] JsonElement body)
     {

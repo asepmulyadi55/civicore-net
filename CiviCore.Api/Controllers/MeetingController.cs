@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
@@ -57,6 +58,7 @@ public class AttendanceRecordDto
 [ApiController]
 [Route("api/[controller]s")]
 [Authorize]
+[RequirePermissionModule("meetings")]
 public class MeetingController : ControllerBase
 {
     private const string HouseholderRole = "householder";
@@ -241,6 +243,7 @@ public class MeetingController : ControllerBase
         return Ok(images);
     }
 
+    [RequirePermission("meetings.edit")]
     [HttpPost("{id}/images")]
     public async Task<IActionResult> UploadImage(Guid id, IFormFile file)
     {
@@ -271,6 +274,7 @@ public class MeetingController : ControllerBase
         });
     }
 
+    [RequirePermission("meetings.edit")]
     [HttpDelete("images/{imageId}")]
     public async Task<IActionResult> DeleteImage(Guid imageId)
     {
@@ -335,6 +339,7 @@ public class MeetingController : ControllerBase
         return Ok(sortedResult);
     }
 
+    [RequirePermission("meetings.edit")]
     [HttpPost("{id}/attendance")]
     public async Task<IActionResult> SubmitAttendance(Guid id, [FromBody] AttendanceSubmitDto dto)
     {

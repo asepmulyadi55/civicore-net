@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -32,6 +33,7 @@ public class SettingsController : ControllerBase
 
     // ── Profile ───────────────────────────────────────────────────────────
 
+    [RequirePermission("settings_profile.view")]
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfile()
     {
@@ -55,6 +57,7 @@ public class SettingsController : ControllerBase
         });
     }
 
+    [RequirePermission("settings_profile.edit")]
     [HttpPut("profile")]
     public async Task<IActionResult> UpdateProfile([FromForm] ProfileUpdateDto dto)
     {
@@ -102,6 +105,7 @@ public class SettingsController : ControllerBase
 
     // ── Password ──────────────────────────────────────────────────────────
 
+    [RequirePermission("settings_password.edit")]
     [HttpPut("password")]
     public async Task<IActionResult> UpdatePassword([FromBody] PasswordUpdateDto dto)
     {
@@ -138,6 +142,7 @@ public class SettingsController : ControllerBase
 
     // ── Security (admin only) ─────────────────────────────────────────────
 
+    [RequirePermission("settings_security.view")]
     [HttpGet("security")]
     public async Task<IActionResult> GetSecurity()
     {
@@ -154,6 +159,7 @@ public class SettingsController : ControllerBase
         });
     }
 
+    [RequirePermission("settings_security.edit")]
     [HttpPut("security")]
     public async Task<IActionResult> UpdateSecurity([FromBody] SecurityUpdateDto dto)
     {
@@ -179,6 +185,7 @@ public class SettingsController : ControllerBase
 
     // ── Admin Memo ────────────────────────────────────────────────────────
 
+    [RequirePermission("settings_memo.view")]
     [HttpGet("memo")]
     public async Task<IActionResult> GetMemo()
     {
@@ -193,6 +200,7 @@ public class SettingsController : ControllerBase
         return Ok(new { admin_memo = memo });
     }
 
+    [RequirePermission("settings_memo.edit")]
     [HttpPut("memo")]
     public async Task<IActionResult> UpdateMemo([FromBody] MemoUpdateDto dto)
     {
@@ -209,6 +217,7 @@ public class SettingsController : ControllerBase
 
     // ── Posyandu (admin only) ─────────────────────────────────────────────
 
+    [RequirePermission("settings_posyandu.view")]
     [HttpGet("posyandu")]
     public async Task<IActionResult> GetPosyandu()
     {
@@ -229,6 +238,7 @@ public class SettingsController : ControllerBase
         });
     }
 
+    [RequirePermission("settings_posyandu.edit")]
     [HttpPut("posyandu")]
     public async Task<IActionResult> UpdatePosyandu([FromBody] PosyanduUpdateDto dto)
     {

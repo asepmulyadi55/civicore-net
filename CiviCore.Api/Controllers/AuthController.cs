@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
@@ -16,6 +17,7 @@ namespace CiviCore.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [NoPermissionRequired]
     public class AuthController : ControllerBase
 {
     private const string InvalidCredentialsMsg = "Invalid credentials";

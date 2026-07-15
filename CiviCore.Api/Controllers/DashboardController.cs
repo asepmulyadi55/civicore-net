@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using CiviCore.Infrastructure.Data;
@@ -15,6 +16,7 @@ namespace CiviCore.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize] // Added authorization
+[RequirePermissionModule("dashboard")]
 public class DashboardController : ControllerBase
 {
     private readonly AppDbContext _context;

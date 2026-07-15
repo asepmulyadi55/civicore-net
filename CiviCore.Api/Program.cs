@@ -51,6 +51,9 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 // Add services to the container.
 builder.Services.AddControllers(options => {
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+    // Server-side permission enforcement. Global and fail-closed: an authenticated
+    // endpoint that declares no permission is denied rather than left open.
+    options.Filters.Add<CiviCore.Api.Authorization.PermissionAuthorizationFilter>();
 }).AddJsonOptions(options => {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 });

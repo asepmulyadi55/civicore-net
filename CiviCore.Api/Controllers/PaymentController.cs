@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
@@ -31,6 +32,7 @@ public class PaymentRejectDto
 [ApiController]
 [Route("api/payments")]
 [Authorize]
+[RequirePermissionModule("payments")]
 public class PaymentController : ControllerBase
 {
     private const string IsoDateFormat = "yyyy-MM-ddTHH:mm:ssZ";
@@ -297,6 +299,7 @@ public class PaymentController : ControllerBase
         return Ok(new { url = publicUrl });
     }
 
+    [RequirePermission("payments.approve")]
     [HttpPost("{id}/approve")]
     public async Task<IActionResult> Approve(Guid id)
     {
@@ -334,6 +337,7 @@ public class PaymentController : ControllerBase
         return Ok(new { message = "Payment approved successfully." });
     }
 
+    [RequirePermission("payments.approve")]
     [HttpPost("{id}/reject")]
     public async Task<IActionResult> Reject(Guid id, [FromBody] PaymentRejectDto dto)
     {

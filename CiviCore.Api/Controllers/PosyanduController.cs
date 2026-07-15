@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ namespace CiviCore.Api.Controllers;
 [ApiController]
 [Route("api/posyandu")]
 [Authorize]
+[RequirePermissionModule("posyandu")]
 public class PosyanduController : ControllerBase
 {
     private readonly AppDbContext _context;

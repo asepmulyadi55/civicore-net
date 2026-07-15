@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -66,6 +67,7 @@ public class ResidentPortalController : ControllerBase
         return householder;
     }
 
+    [RequirePermission("overview.view")]
     [HttpGet("overview")]
     public async Task<IActionResult> GetOverview()
     {
@@ -117,6 +119,7 @@ public class ResidentPortalController : ControllerBase
         });
     }
 
+    [RequirePermission("my_household.view")]
     [HttpGet("household")]
     public async Task<IActionResult> GetHousehold()
     {
@@ -167,6 +170,7 @@ public class ResidentPortalController : ControllerBase
         public string? PhotoPath { get; set; }
     }
 
+    [RequirePermission("my_household.edit")]
     [HttpPut("household")]
     public async Task<IActionResult> UpdateHousehold([FromBody] UpdateHouseholdDto dto)
     {
@@ -196,6 +200,7 @@ public class ResidentPortalController : ControllerBase
         public string? PhotoPath { get; set; }
     }
 
+    [RequirePermission("my_household.edit")]
     [HttpPost("household/residents")]
     public async Task<IActionResult> AddResident([FromBody] ResidentDto dto)
     {
@@ -223,6 +228,7 @@ public class ResidentPortalController : ControllerBase
         return Ok(new { message = "Resident added successfully.", id = newResident.Id });
     }
 
+    [RequirePermission("my_household.edit")]
     [HttpPut("household/residents/{id}")]
     public async Task<IActionResult> UpdateResident(Guid id, [FromBody] ResidentDto dto)
     {
@@ -247,6 +253,7 @@ public class ResidentPortalController : ControllerBase
         return Ok(new { message = "Resident updated successfully." });
     }
 
+    [RequirePermission("my_household.edit")]
     [HttpDelete("household/residents/{id}")]
     public async Task<IActionResult> DeleteResident(Guid id)
     {
@@ -264,6 +271,7 @@ public class ResidentPortalController : ControllerBase
         return Ok(new { message = "Resident deleted successfully." });
     }
 
+    [RequirePermission("my_household.edit")]
     [HttpPatch("household/residents/{id}/set-head")]
     public async Task<IActionResult> SetResidentHead(Guid id)
     {

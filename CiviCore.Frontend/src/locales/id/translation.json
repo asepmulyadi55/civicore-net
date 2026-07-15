@@ -662,7 +662,8 @@
     "module_settings_memo": "Memo Admin",
     "error_name_required": "Nama peran wajib diisi.",
     "module_homepage_emergency": "Kontak Darurat",
-    "module_audit": "Jejak Audit"
+    "module_audit": "Jejak Audit",
+    "module_settings_posyandu": "Pengaturan Posyandu"
   },
   "posyandu": {
     "title": "Posyandu",

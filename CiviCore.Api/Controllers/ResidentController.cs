@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
@@ -9,6 +10,7 @@ namespace CiviCore.Api.Controllers;
 [ApiController]
 [Route("api/residents")]
 [Authorize]
+[RequirePermissionModule("householders")]
 public class ResidentController : ControllerBase
 {
     private readonly AppDbContext _context;

@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
@@ -30,6 +31,7 @@ public class PropertyCreateDto
 [ApiController]
 [Route("api/property")]
 [Authorize]
+[RequirePermissionModule("homepage_property")]
 public class PropertyController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -213,6 +215,7 @@ public class PropertyController : ControllerBase
         return NoContent();
     }
 
+    [RequirePermission("homepage_property.edit")]
     [HttpPost("{id}/images")]
     public async Task<IActionResult> UploadImage(Guid id, IFormFile file)
     {
@@ -248,6 +251,7 @@ public class PropertyController : ControllerBase
         return Ok(new { url = imageUrl });
     }
 
+    [RequirePermission("homepage_property.edit")]
     [HttpDelete("{id}/images")]
     public async Task<IActionResult> DeleteImage(Guid id, [FromQuery] string url)
     {

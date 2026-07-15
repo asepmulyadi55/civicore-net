@@ -47,6 +47,8 @@ public static class DependencyInjection
         services.AddScoped<ISessionSettingsService, SessionSettingsService>();
         services.AddScoped<ISessionTokenService, SessionTokenService>();
 
+        services.AddScoped<IUserPermissionService, UserPermissionService>();
+
         // AuditService reads the caller's IP/user-agent off the ambient request.
         services.AddHttpContextAccessor();
         services.AddScoped<IAuditService, AuditService>();

@@ -1,6 +1,8 @@
 using CiviCore.Api.Controllers;
 using CiviCore.Domain.Entities;
+using CiviCore.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 using Xunit;
 using System.Threading.Tasks;
 using System;
@@ -14,7 +16,7 @@ public class RoleControllerTests : TestBase
 
     public RoleControllerTests()
     {
-        _controller = new RoleController(DbContext);
+        _controller = new RoleController(DbContext, new Mock<IUserPermissionService>().Object);
         
         var adminUser = new ApplicationUser { Id = Guid.NewGuid(), UserName = "admin", Email = "admin@test.com" };
         SetControllerContextUser(_controller, adminUser, new[] { "Admin" });

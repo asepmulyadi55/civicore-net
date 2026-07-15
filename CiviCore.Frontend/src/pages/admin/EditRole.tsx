@@ -48,7 +48,9 @@ const PERMISSION_TABS = [
     groups: [
       { module: 'users', labelKey: 'edit_role.module_users', actions: ['view', 'create', 'edit', 'delete', 'approve'] },
       { module: 'roles', labelKey: 'edit_role.module_roles', actions: ['view', 'create', 'edit', 'delete'] },
-      { module: 'media', labelKey: 'edit_role.module_media', actions: ['view', 'delete'] },
+      // 'create' added: Media.tsx already checks can('media.create') for the upload
+      // button, but the key could never be granted, so it was dead for every non-admin.
+      { module: 'media', labelKey: 'edit_role.module_media', actions: ['view', 'create', 'delete'] },
       // Read-only by design: an audit trail nobody can edit is the point.
       { module: 'audit', labelKey: 'edit_role.module_audit', actions: ['view'] },
     ],
@@ -87,6 +89,9 @@ const PERMISSION_TABS = [
       { module: 'settings_password', labelKey: 'edit_role.module_settings_password', actions: ['view', 'edit'] },
       { module: 'settings_security', labelKey: 'edit_role.module_settings_security', actions: ['view', 'edit'] },
       { module: 'settings_memo', labelKey: 'edit_role.module_settings_memo', actions: ['view', 'edit'] },
+      // The sidebar already gates /settings/posyandu on settings_posyandu.view, but the
+      // key was never grantable here — so nobody except a wildcard admin could hold it.
+      { module: 'settings_posyandu', labelKey: 'edit_role.module_settings_posyandu', actions: ['view', 'edit'] },
     ],
   },
 ];

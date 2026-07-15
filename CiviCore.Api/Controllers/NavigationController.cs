@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
@@ -21,6 +22,7 @@ public class NavigationLinkDto
 [ApiController]
 [Route("api/navigation")]
 [Authorize]
+[RequirePermissionModule("homepage_navigation")]
 public class NavigationController : ControllerBase
 {
     private readonly AppDbContext _context;

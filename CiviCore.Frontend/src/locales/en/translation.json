@@ -662,7 +662,8 @@
     "module_settings_memo": "Memo",
     "error_name_required": "Role name is required.",
     "module_homepage_emergency": "Emergency Contacts",
-    "module_audit": "Audit Trail"
+    "module_audit": "Audit Trail",
+    "module_settings_posyandu": "Posyandu Settings"
   },
   "posyandu": {
     "title": "Posyandu",

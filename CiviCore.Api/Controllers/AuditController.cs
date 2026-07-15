@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Domain.Entities;
 using CiviCore.Infrastructure.Data;
+using CiviCore.Infrastructure.Services;
 
 namespace CiviCore.Api.Controllers;
 
 [ApiController]
 [Route("api/audit")]
 [Authorize]
+[RequirePermissionModule("audit")]
 public class AuditController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -24,9 +27,8 @@ public class AuditController : ControllerBase
     }
 
     /// <summary>
-    /// Checked server-side rather than relying on the UI hiding the menu: these rows
-    /// carry every user's email and IP, so an unprivileged caller must not be able to
-    /// read them by hitting the endpoint directly.
+    /// Kept only so the existing tests can assert the guard directly. Enforcement itself
+    /// is the global PermissionAuthorizationFilter via [RequirePermissionModule("audit")].
     /// </summary>
     private async Task<bool> CanViewAuditAsync()
     {
@@ -36,9 +38,7 @@ public class AuditController : ControllerBase
         var roleName = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
         if (string.IsNullOrEmpty(roleName)) return false;
 
-        if (roleName.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
-            roleName.Equals("Super Admin", StringComparison.OrdinalIgnoreCase))
-            return true;
+        if (UserPermissionService.IsSuperRole(roleName)) return true;
 
         var role = await _roleManager.Roles.Include(r => r.Permissions)
             .FirstOrDefaultAsync(r => r.Name == roleName);

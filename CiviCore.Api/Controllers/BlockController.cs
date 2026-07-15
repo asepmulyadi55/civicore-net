@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
@@ -14,6 +15,7 @@ namespace CiviCore.Api.Controllers;
 [ApiController]
 [Route("api/blocks")]
 [Authorize]
+[RequirePermissionModule("blocks")]
 public class BlockController : ControllerBase
 {
     private const string ResidentRole = "resident";

@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
@@ -21,6 +22,7 @@ public class FinanceTransactionDto
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[RequirePermissionModule("finance")]
 public class FinanceController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -326,6 +328,7 @@ public class FinanceController : ControllerBase
         return Ok(report);
     }
 
+    [RequirePermission("finance.approve")]
     [HttpPatch("reports/{id}/approve")]
     [Authorize(Roles = "Admin,Super Admin,admin,super-admin")]
     public async Task<IActionResult> ApproveReport(Guid id)
@@ -344,6 +347,7 @@ public class FinanceController : ControllerBase
 
     public class RejectReportDto { public string Reason { get; set; } = string.Empty; }
 
+    [RequirePermission("finance.approve")]
     [HttpPatch("reports/{id}/reject")]
     [Authorize(Roles = "Admin,Super Admin,admin,super-admin")]
     public async Task<IActionResult> RejectReport(Guid id, [FromBody] RejectReportDto dto)

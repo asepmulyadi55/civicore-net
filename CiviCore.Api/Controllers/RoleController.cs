@@ -1,6 +1,8 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CiviCore.Infrastructure.Data;
+using CiviCore.Infrastructure.Services;
 using CiviCore.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 
@@ -9,13 +11,16 @@ namespace CiviCore.Api.Controllers;
 [ApiController]
 [Route("api/roles")]
 [Authorize(Roles = "admin,Admin")]
+[RequirePermissionModule("roles")]
 public class RoleController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IUserPermissionService _permissions;
 
-    public RoleController(AppDbContext context)
+    public RoleController(AppDbContext context, IUserPermissionService permissions)
     {
         _context = context;
+        _permissions = permissions;
     }
 
     [HttpGet]
@@ -79,10 +84,13 @@ public class RoleController : ControllerBase
         var role = await _context.Roles.Include(r => r.Permissions).FirstOrDefaultAsync(r => r.Id == id);
         if (role == null) return NotFound();
 
+        // Captured before the rename, so the cache entry under the *old* name is cleared too.
+        var previousName = role.Name;
+
         role.Name = updatedRole.Name;
         role.Description = updatedRole.Description;
         role.Style = updatedRole.Style;
-        
+
         // Simplified permissions update
         if (updatedRole.Permissions != null)
         {
@@ -93,8 +101,14 @@ public class RoleController : ControllerBase
                 _context.Set<Permission>().Add(p);
             }
         }
-        
+
         await _context.SaveChangesAsync();
+
+        // Without this the edit wouldn't bite until the cache TTL expired.
+        if (!string.IsNullOrEmpty(previousName)) await _permissions.InvalidateRoleAsync(previousName);
+        if (!string.IsNullOrEmpty(role.Name) && role.Name != previousName)
+            await _permissions.InvalidateRoleAsync(role.Name);
+
         return Ok(role);
     }
 

@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ namespace CiviCore.Api.Controllers;
 [ApiController]
 [Route("api/users")]
 [Authorize]
+[RequirePermissionModule("users")]
 public class UserController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -222,6 +224,7 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
+    [RequirePermission("users.approve")]
     [HttpPost("{id}/approve")]
     public async Task<IActionResult> Approve(Guid id, [FromBody] ApproveDto dto)
     {
@@ -258,6 +261,7 @@ public class UserController : ControllerBase
         return Ok(new { message = "User approved" });
     }
 
+    [RequirePermission("users.edit")]
     [HttpPost("{id}/deactivate")]
     public async Task<IActionResult> Deactivate(Guid id)
     {
@@ -275,6 +279,7 @@ public class UserController : ControllerBase
         return Ok(new { message = "User deactivated" });
     }
 
+    [RequirePermission("users.edit")]
     [HttpPost("{id}/reactivate")]
     public async Task<IActionResult> Reactivate(Guid id)
     {
@@ -329,6 +334,7 @@ public class UserController : ControllerBase
         await _context.SaveChangesAsync();
     }
 
+    [RequirePermission("users.edit")]
     [HttpPost("{id}/2fa/send-qr")]
     public async Task<IActionResult> SendQrCode(Guid id)
     {
@@ -344,6 +350,7 @@ public class UserController : ControllerBase
         return Ok(new { message = "QR code sent." });
     }
 
+    [RequirePermission("users.edit")]
     [HttpPost("{id}/2fa/regenerate-qr")]
     public async Task<IActionResult> RegenerateQrCode(Guid id)
     {

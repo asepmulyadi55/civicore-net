@@ -1,3 +1,4 @@
+using CiviCore.Api.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
@@ -12,6 +13,7 @@ namespace CiviCore.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[RequirePermissionModule("media")]
 public class MediaController : ControllerBase
 {
     private readonly ILocalStorageService _storageService;
@@ -60,6 +62,7 @@ public class MediaController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<IActionResult> GetMedia(Guid id)
     {
         var media = await _context.MediaFiles.FindAsync(id);
@@ -102,8 +105,13 @@ public class MediaController : ControllerBase
         }
     }
 
+    // Shared utility, not just the Media library: EditHouseholder and ResidentHousehold
+    // post here to attach a photo. Gating it on media.create would break those flows for
+    // roles that legitimately hold only householders.edit / my_household.edit. Tightening
+    // this properly means per-module upload endpoints — see the note in the handover.
     [HttpPost("upload")]
     [Authorize]
+    [NoPermissionRequired]
     public async Task<IActionResult> UploadMedia(List<IFormFile>? files, IFormFile? file, [FromForm] string? replacePath = null, [FromForm] string? module = null)
     {
         // Support both single file upload and multi-file upload (files[] or file)
@@ -221,6 +229,7 @@ public class MediaController : ControllerBase
     /// Removes DB records and physical files for media that is no longer in use, 
     /// as well as cleaning up ghost records (404s).
     /// </summary>
+    [RequirePermission("media.delete")]
     [HttpPost("cleanup-orphans")]
     [Authorize]
     public async Task<IActionResult> CleanupOrphans()
