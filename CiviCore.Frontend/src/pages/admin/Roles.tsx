@@ -139,7 +139,7 @@ export default function Roles() {
                       </button>
                       {can('roles.edit') && (
                         <button
-                          onClick={() => navigate(`/admin/roles/${r.id}/edit`)}
+                          onClick={() => navigate(`/roles/${r.id}/edit`)}
                           className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"
                           title="Edit peran & izin"
                         >

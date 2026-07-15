@@ -409,7 +409,7 @@ export default function Users() {
       {loading ?
       <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div> :
 
-      <TableWrapper>
+      <TableWrapper footer={meta && <Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} />}>
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
               <Th>{t('users.th_user')}</Th>
@@ -494,11 +494,6 @@ export default function Users() {
 
           })}
           </tbody>
-          {meta &&
-        <tfoot>
-              <tr><td colSpan={5}><Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} /></td></tr>
-            </tfoot>
-        }
         </TableWrapper>
       }
     </AdminLayout>);

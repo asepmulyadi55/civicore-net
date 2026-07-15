@@ -37,3 +37,6 @@ DataProtection-Keys/
 .sonarqube/
 CiviCore.Frontend/.scannerwork/
 CiviCore.Web/.scannerwork/
+
+.rtk
+CLAUDE.md

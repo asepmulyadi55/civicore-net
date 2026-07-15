@@ -350,7 +350,9 @@
     "delete_message": "Apakah Anda yakin tentang <strong>{{name}}</strong>?",
     "btn_delete": "Ya, Hapus",
     "btn_deactivate": "Ya, Nonaktifkan",
-    "error_fullname_required": "Nama lengkap wajib diisi."
+    "error_fullname_required": "Nama lengkap wajib diisi.",
+    "th_householder": "Kepala Keluarga",
+    "btn_delete_selected": "Hapus Terpilih"
   },
   "dashboard": {
     "title": "Ringkasan Dasbor",

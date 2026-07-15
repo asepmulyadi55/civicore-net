@@ -98,7 +98,7 @@ export default function HomepageEventForm() {
 
     return (
         <AdminLayout title={isEdit ? t('homepage.edit_event', 'Edit Event') : t('homepage.add_event', 'Add Event')} subtitle={t('homepage.manage_event_subtitle', 'Manage event details for the homepage')}>
-            <div className="w-[80%] max-w-7xl mx-auto pb-12">
+            <div className="w-full lg:w-[80%] max-w-7xl mx-auto pb-12">
                 <div className="flex items-center gap-4 mb-8">
                     <Link to="/homepage/events" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
                         <span className="material-icons">arrow_back</span>

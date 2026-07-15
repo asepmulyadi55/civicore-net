@@ -248,7 +248,7 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
             </Link>}
           </FilterBar>
 
-          <TableWrapper>
+          <TableWrapper footer={!loading && meta.last_page > 1 && <Pagination meta={meta} onChange={p => setPage(p)} />}>
             {loading ? (
               <tbody><tr><td colSpan={7} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
             ) : (
@@ -281,14 +281,13 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
-                          {canEdit && <Link to={`/admin/homepage/events/${ev.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
+                          {canEdit && <Link to={`/homepage/events/${ev.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
                           {canEdit && <button onClick={() => setDeleteModal({ open: true, id: ev.id, title: ev.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                {meta.last_page > 1 && <tfoot><tr><td colSpan={5}><Pagination meta={meta} onChange={p => setPage(p)} /></td></tr></tfoot>}
               </>
             )}
           </TableWrapper>
@@ -597,7 +596,7 @@ function GalleryTab({ canEdit }: { canEdit: boolean }) {
             </button>}
           </FilterBar>
 
-          <TableWrapper>
+          <TableWrapper footer={!loading && meta.last_page > 1 && <Pagination meta={meta} onChange={p => setPage(p)} />}>
             {loading ? (
               <tbody><tr><td colSpan={4} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
             ) : (
@@ -632,7 +631,6 @@ function GalleryTab({ canEdit }: { canEdit: boolean }) {
                     </tr>
                   ))}
                 </tbody>
-                {meta.last_page > 1 && <tfoot><tr><td colSpan={4}><Pagination meta={meta} onChange={p => setPage(p)} /></td></tr></tfoot>}
               </>
             )}
           </TableWrapper>
@@ -734,7 +732,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
             </Link>}
           </FilterBar>
 
-          <TableWrapper>
+          <TableWrapper footer={!loading && meta.last_page > 1 && <Pagination meta={meta} onChange={(p: any) => setPage(p)} />}>
             {loading ? (
               <tbody><tr><td colSpan={3} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
             ) : (
@@ -760,14 +758,13 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
                       <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{b.date ? new Date(b.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
-                          {canEdit && <Link to={`/admin/homepage/bulletin/${b.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
+                          {canEdit && <Link to={`/homepage/bulletin/${b.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
                           {canEdit && <button onClick={() => setDeleteModal({ open: true, id: b.id, title: b.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                {meta.last_page > 1 && <tfoot><tr><td colSpan={3}><Pagination meta={meta} onChange={(p: any) => setPage(p)} /></td></tr></tfoot>}
               </>
             )}
           </TableWrapper>
@@ -941,7 +938,7 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
             </Link>}
           </FilterBar>
 
-          <TableWrapper>
+          <TableWrapper footer={!loading && meta && meta.last_page > 1 && <Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} />}>
             {loading ? (
               <tbody><tr><td colSpan={5} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
             ) : (
@@ -974,7 +971,7 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
                           <button onClick={() => setImageModal({ open: true, property: p })} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors cursor-pointer">
                             <span className="material-icons text-lg">image</span>
                           </button>
-                          {canEdit && <Link to={`/admin/homepage/properties/${p.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block">
+                          {canEdit && <Link to={`/homepage/properties/${p.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block">
                             <span className="material-icons text-lg block">edit</span>
                           </Link>}
                           {canEdit && <button onClick={() => setConfirm({ open: true, item: p, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer">
@@ -985,7 +982,6 @@ function PropertyTab({ canEdit }: { canEdit: boolean }) {
                     </tr>
                   ))}
                 </tbody>
-                {meta && meta.last_page > 1 && <tfoot><tr><td colSpan={6}><Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} /></td></tr></tfoot>}
               </>
             )}
           </TableWrapper>
@@ -1240,7 +1236,7 @@ function EmergencyTab({ canEdit }: { canEdit: boolean }) {
   return (
     <SectionCard icon="emergency" iconBg="bg-red-100 dark:bg-red-900/30" iconColor="text-red-500" title={t('homepage.title_emergency', 'Kontak Darurat')} subtitle={t('homepage.subtitle_emergency', 'Emergency contact numbers shown on the Laporan Warga page')} badge={contacts.length}>
       <SuccessBanner show={success} />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <p className="text-sm text-slate-500 dark:text-slate-400">
           {t('homepage.hint_emergency', 'These contacts appear in the red "Kontak Darurat" card on the resident report form page. Keep these up to date.')}
         </p>
@@ -1254,36 +1250,48 @@ function EmergencyTab({ canEdit }: { canEdit: boolean }) {
 
         <div className="space-y-3">
           {contacts.map((contact, idx) => (
-            <div key={idx} className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl">
-              {/* Move buttons */}
-              <div className="flex flex-col gap-1">
-                <button onClick={() => moveUp(idx)} disabled={idx === 0 || !canEdit}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
-                  <span className="material-icons text-sm text-slate-500">arrow_upward</span>
-                </button>
-                <button onClick={() => moveDown(idx)} disabled={idx === contacts.length - 1 || !canEdit}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
-                  <span className="material-icons text-sm text-slate-500">arrow_downward</span>
-                </button>
-              </div>
+            <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl">
+              {/* On mobile these controls share one row above the inputs; `sm:contents`
+                  dissolves the wrapper on desktop so they sit inline as before. */}
+              <div className="flex items-center gap-3 sm:contents">
+                {/* Move buttons */}
+                <div className="flex flex-col gap-1 shrink-0">
+                  <button onClick={() => moveUp(idx)} disabled={idx === 0 || !canEdit}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                    <span className="material-icons text-sm text-slate-500">arrow_upward</span>
+                  </button>
+                  <button onClick={() => moveDown(idx)} disabled={idx === contacts.length - 1 || !canEdit}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                    <span className="material-icons text-sm text-slate-500">arrow_downward</span>
+                  </button>
+                </div>
 
-              {/* Icon selector */}
-              <div className="shrink-0">
-                <label className="block text-xs font-semibold text-slate-500 mb-1">{t('homepage.label_icon', 'Icon')}</label>
-                <select value={contact.icon || 'phone'} disabled={!canEdit}
-                  onChange={e => updateContact(idx, 'icon', e.target.value)}
-                  className="text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-2 text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-60">
-                  {ICON_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </div>
+                {/* Icon selector */}
+                <div className="flex-1 min-w-0 sm:flex-none sm:shrink-0">
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">{t('homepage.label_icon', 'Icon')}</label>
+                  <select value={contact.icon || 'phone'} disabled={!canEdit}
+                    onChange={e => updateContact(idx, 'icon', e.target.value)}
+                    className="w-full sm:w-auto text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-2 text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-60">
+                    {ICON_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
 
-              {/* Preview icon */}
-              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
-                <span className="material-icons text-red-500 text-[18px]">{contact.icon || 'phone'}</span>
+                {/* Preview icon */}
+                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                  <span className="material-icons text-red-500 text-[18px]">{contact.icon || 'phone'}</span>
+                </div>
+
+                {/* Delete — trails the controls row on mobile, far right on desktop */}
+                {canEdit && (
+                  <button onClick={() => setDeleteModal({ open: true, index: idx, label: contact.label })}
+                    className="shrink-0 ml-auto sm:ml-0 sm:order-last w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
+                    <span className="material-icons text-[18px]">delete</span>
+                  </button>
+                )}
               </div>
 
               {/* Label & Phone */}
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1">{t('homepage.label_contact_name', 'Nama / Label')}</label>
                   <input value={contact.label} disabled={!canEdit} onChange={e => updateContact(idx, 'label', e.target.value)}
@@ -1297,14 +1305,6 @@ function EmergencyTab({ canEdit }: { canEdit: boolean }) {
                     className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-60" />
                 </div>
               </div>
-
-              {/* Delete */}
-              {canEdit && (
-                <button onClick={() => setDeleteModal({ open: true, index: idx, label: contact.label })}
-                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
-                  <span className="material-icons text-[18px]">delete</span>
-                </button>
-              )}
             </div>
           ))}
         </div>
@@ -1367,7 +1367,7 @@ export default function AdminHomepage() {
 
   return (
     <AdminLayout title={tabTitle}>
-      <div className="w-[80%] mx-auto pb-12">
+      <div className="w-full lg:w-[80%] mx-auto pb-12">
         <PageHeader title={tabTitle} subtitle={t('homepage.subtitle', { defaultValue: "Manage homepage content" })} />
 
         {!can('homepage.edit') && (

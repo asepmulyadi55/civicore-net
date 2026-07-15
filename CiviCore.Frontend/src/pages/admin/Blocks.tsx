@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
@@ -206,6 +207,7 @@ function BlockCard({ block, onEdit, onDelete, onManageUnits, isSelected, onToggl
 export default function Blocks() {
   const { t } = useTranslation();
   const { can } = usePermissions();
+  const navigate = useNavigate();
   const [blocks, setBlocks] = useState([]);
   const [residents, setResidents] = useState([]);
   const [householders, setHouseholders] = useState([]);
@@ -317,7 +319,7 @@ export default function Blocks() {
     <AdminLayout title={t('blocks.title')}>
       {importing &&
       <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-full max-w-[400px]">
             <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t('blocks.importing_data')}</h3>
             
@@ -405,19 +407,19 @@ export default function Blocks() {
         <SearchInput value={search} onChange={setSearch} placeholder={t('common.search')} />
       </FilterBar>
 
-      <div className="mb-6 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between shadow-sm">
+      <div className="mb-6 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
         <div className="flex items-center gap-3 pl-2">
           {can('blocks.delete') &&
-          <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+          <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer shrink-0" />
           }
-           <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3">{t('blocks.select_all')}</span>
-           <span className={`text-sm font-semibold transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
+           <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3 whitespace-nowrap">{t('blocks.select_all')}</span>
+           <span className={`text-sm font-semibold whitespace-nowrap transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
              {t('blocks.selected_count', { count: selected.length })}
            </span>
         </div>
         {can('blocks.delete') && selected.length > 0 &&
-        <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
-            <span className="material-icons text-sm">delete</span> {t('blocks.btn_delete_selected')}
+        <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex w-full sm:w-auto justify-center items-center gap-1.5 px-3 py-2 sm:py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
+            <span className="material-icons text-sm shrink-0">delete</span> {t('blocks.btn_delete_selected')}
           </button>
         }
       </div>
@@ -436,7 +438,7 @@ export default function Blocks() {
         onToggleSelect={(id, checked) => setSelected((prev) => checked ? [...prev, id] : prev.filter((s) => s !== id))}
         onEdit={(b) => setModal({ open: true, data: b })}
         onDelete={(b) => setConfirm({ open: true, type: 'delete', item: b, loading: false })}
-        onManageUnits={(b) => window.location.href = `/admin/blocks/${b.id}/units`} />
+        onManageUnits={(b) => navigate(`/blocks/${b.id}/units`)} />
 
         )}
         </div>

@@ -213,7 +213,7 @@ export default function Householders() {
     <AdminLayout title={t('householders.title')}>
       {importing &&
       <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-full max-w-[400px]">
             <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t('householders.importing_data')}</h3>
             
@@ -301,16 +301,16 @@ export default function Householders() {
         title={t('householders.title')}
         subtitle={t('householders.subtitle')}
         actions={
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center">
             {can('householders.create') &&
           <>
                 <button onClick={() => setImportModalOpen(true)} disabled={importing}
-            className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-                  <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('householders.importing_data') : t('householders.btn_import_excel')}
+            className="flex justify-center items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 text-center">
+                  <span className="material-icons text-sm shrink-0">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('householders.importing_data') : t('householders.btn_import_excel')}
                 </button>
                 <button onClick={() => setModal({ open: true, data: null })}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-                  <span className="material-icons text-sm">add</span> {t('householders.btn_add_householder')}
+            className="flex justify-center items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer text-center">
+                  <span className="material-icons text-sm shrink-0">add</span> {t('householders.btn_add_householder')}
                 </button>
               </>
           }
@@ -332,15 +332,14 @@ export default function Householders() {
       {can('householders.delete') && selected.length > 0 &&
       <BulkActionBar
         count={selected.length}
-        onClear={() => setSelected([])}
-        actions={[{ label: t('householders.btn_delete_selected'), icon: 'delete', onClick: () => setConfirm({ open: true, type: 'bulk', item: null, loading: false }), variant: 'danger' }]} />
+        onDelete={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} />
 
       }
 
       {loading ?
       <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div> :
 
-      <TableWrapper>
+      <TableWrapper footer={meta && <Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} />}>
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
               <th className="w-12 px-6 py-4 text-center">
@@ -396,7 +395,7 @@ export default function Householders() {
                     <div className="flex items-center justify-end gap-2">
                       {can('householders.edit') &&
                     <>
-                          <Link to={`/admin/householders/${h.id}/edit`} className="text-slate-400 hover:text-primary transition-colors cursor-pointer" title={t('householders.tooltip_edit')}>
+                          <Link to={`/householders/${h.id}/edit`} className="text-slate-400 hover:text-primary transition-colors cursor-pointer" title={t('householders.tooltip_edit')}>
                             <span className="material-icons text-[18px]">edit</span>
                           </Link>
                           {h.is_active &&
@@ -417,11 +416,6 @@ export default function Householders() {
 
           })}
           </tbody>
-          {meta &&
-        <tfoot>
-              <tr><td colSpan={6}><Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} /></td></tr>
-            </tfoot>
-        }
         </TableWrapper>
       }
     </AdminLayout>);

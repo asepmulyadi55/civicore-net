@@ -1,7 +1,6 @@
 // @ts-nocheck
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import AdminLayout from './admin/AdminLayout';
 import RequireAuth from './admin/RequireAuth';
 import RequirePermission from './admin/RequirePermission';
 
@@ -65,9 +64,6 @@ export default function Router() {
       <Routes>
         {/* Base Redirect */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-        {/* Admin Layout */}
-        <Route path="/*" element={<AdminLayout />} />
 
         {/* Auth pages */}
         <Route path="/login" element={<Login />} />

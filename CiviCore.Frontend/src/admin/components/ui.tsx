@@ -142,14 +142,21 @@ export function Avatar({ name = '', photo, size = 9 }: {name?: string;photo?: st
 
 }
 
-export function PageHeader({ title, subtitle, actions }: {title: string;subtitle?: string;actions?: React.ReactNode;}) {
+export function PageHeader({ title, subtitle, actions, onBack }: {title: string;subtitle?: string;actions?: React.ReactNode;onBack?: () => void;}) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <div>
-        <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">{title}</h2>
-        {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
+      <div className="flex items-center gap-3 min-w-0">
+        {onBack &&
+        <button onClick={onBack} className="shrink-0 p-2 -ml-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer">
+            <span className="material-icons">arrow_back</span>
+          </button>
+        }
+        <div className="min-w-0">
+          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">{title}</h2>
+          {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
+        </div>
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
     </div>);
 
 }
@@ -230,12 +237,19 @@ export function BulkActionBar({ count, onDelete }: {count: number;onDelete: () =
 
 }
 
-export function TableWrapper({ children }: {children: React.ReactNode;}) {
+export function TableWrapper({ children, footer, loading = false, minWidthClass = 'min-w-[640px]' }: {children: React.ReactNode;footer?: React.ReactNode;loading?: boolean;minWidthClass?: string;}) {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">{children}</table>
-      </div>
+      {loading ?
+      <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div> :
+      <>
+          {/* Only the table scrolls horizontally — footer stays pinned to the card. */}
+          <div className="overflow-x-auto">
+            <table className={`w-full ${minWidthClass} text-left`}>{children}</table>
+          </div>
+          {footer}
+        </>
+      }
     </div>);
 
 }

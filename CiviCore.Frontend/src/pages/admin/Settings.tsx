@@ -510,7 +510,7 @@ export default function Settings() {
 
   return (
     <AdminLayout title={tabTitle}>
-      <div className="w-[80%] mx-auto pb-12">
+      <div className="w-full lg:w-[80%] mx-auto pb-12">
         {/* Flash */}
         <Flash message={flash.message} type={flash.type} />
 

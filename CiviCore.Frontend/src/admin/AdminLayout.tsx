@@ -213,9 +213,15 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
 
   React.useEffect(() => {
     let timeoutId: NodeJS.Timeout;
+    // Guards the async settings fetch: without this, a response that lands after
+    // unmount re-arms the timer in a scope whose activity listeners are already
+    // gone, leaving an orphan timer that logs the user out mid-activity.
+    let cancelled = false;
+    let lastReset = 0;
     let sessionTimeoutMinutes = 30; // default
 
     const resetTimeout = () => {
+      if (cancelled) return;
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         handleLogout();
@@ -225,6 +231,7 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
     // Fetch the timeout setting from security settings
     axios.get('/api/settings/security').
     then((res) => {
+      if (cancelled) return;
       sessionTimeoutMinutes = res.data.sessionTimeoutMinutes ?? res.data.session_timeout_minutes ?? 30;
       resetTimeout();
     }).
@@ -232,17 +239,24 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
       resetTimeout();
     });
 
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    // `keydown` not `keypress`: the latter is deprecated and never fires for
+    // Backspace/arrows/Tab. `scroll` does not bubble, so listen in the capture
+    // phase to also catch scrolling inside tables, the sidebar and modals.
+    const events = ['mousedown', 'mousemove', 'wheel', 'keydown', 'scroll', 'touchstart'];
     const handleUserActivity = () => {
+      const now = Date.now();
+      if (now - lastReset < 1000) return; // mousemove fires constantly; throttle the churn
+      lastReset = now;
       resetTimeout();
     };
 
-    events.forEach((name) => window.addEventListener(name, handleUserActivity, { passive: true }));
+    events.forEach((name) => window.addEventListener(name, handleUserActivity, { passive: true, capture: true }));
     resetTimeout();
 
     return () => {
+      cancelled = true;
       clearTimeout(timeoutId);
-      events.forEach((name) => window.removeEventListener(name, handleUserActivity));
+      events.forEach((name) => window.removeEventListener(name, handleUserActivity, { capture: true }));
     };
   }, []);
 

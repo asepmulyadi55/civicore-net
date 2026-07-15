@@ -250,7 +250,7 @@ export default function EditHouseholder() {
   return (
     <AdminLayout title="Householders" subtitle={t('edit_householder.page_subtitle')}>
       <ResidentModal open={residentModal.open} onClose={() => setResidentModal({ open: false, data: null })} onSaved={fetchData} data={residentModal.data} householderId={id} />
-      <div className="w-[80%] max-w-7xl mx-auto pb-12">
+      <div className="w-full lg:w-[80%] max-w-7xl mx-auto pb-12">
 
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -370,7 +370,7 @@ export default function EditHouseholder() {
                     <span className="text-slate-500 dark:text-slate-400 text-xs">
                       {[t('edit_householder.status_owner'), t('edit_householder.status_rented'), t('edit_householder.status_vacant'), t('edit_householder.status_public'), t('edit_householder.status_developer')][data.unit?.houseStatus ?? 0] || t('edit_householder.unknown')}
                     </span>
-                    <Link to={`/admin/blocks/${data.blockId}/units`} className="text-primary text-xs flex items-center gap-1 cursor-pointer group">
+                    <Link to={`/blocks/${data.blockId}/units`} className="text-primary text-xs flex items-center gap-1 cursor-pointer group">
                       <span className="material-icons text-[16px]">open_in_new</span>
                       <span className="group-hover:underline">{t('edit_householder.go_to_unit_mgmt')}</span>
                     </Link>

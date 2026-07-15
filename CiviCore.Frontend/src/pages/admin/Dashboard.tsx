@@ -100,14 +100,14 @@ export default function Dashboard() {
                 <a href="/payments" className="text-sm font-semibold text-amber-500 hover:underline">{t('dashboard.view_all')}</a>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-left">
+                <table className="w-full min-w-[640px] text-left">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-800/30 text-slate-500 text-xs uppercase tracking-wider font-bold">
-                      <th className="px-6 py-4">{t('dashboard.table_householder')}</th>
-                      <th className="px-6 py-4">{t('dashboard.table_months')}</th>
-                      <th className="px-6 py-4">{t('dashboard.table_unit_block')}</th>
-                      <th className="px-6 py-4">{t('dashboard.table_date')}</th>
-                      <th className="px-6 py-4 text-right">{t('dashboard.table_status')}</th>
+                      <th className="px-6 py-4 whitespace-nowrap">{t('dashboard.table_householder')}</th>
+                      <th className="px-6 py-4 whitespace-nowrap">{t('dashboard.table_months')}</th>
+                      <th className="px-6 py-4 whitespace-nowrap">{t('dashboard.table_unit_block')}</th>
+                      <th className="px-6 py-4 whitespace-nowrap">{t('dashboard.table_date')}</th>
+                      <th className="px-6 py-4 text-right whitespace-nowrap">{t('dashboard.table_status')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -133,7 +133,7 @@ export default function Dashboard() {
                             const text = formatted.length > 2 ? `${formatted[0]}, ${formatted[1]}...` : formatted.join(', ');
                             return (
                               <div className="flex items-center gap-2">
-                                <span>{text}</span>
+                                <span className="whitespace-nowrap">{text}</span>
                                 <span className="bg-amber-500/20 text-amber-500 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
                                   {p.allMonths.length} {t('dashboard.months_count')}
                                 </span>

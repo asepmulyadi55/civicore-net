@@ -103,7 +103,7 @@ export default function HomepagePropertyForm() {
 
     return (
         <AdminLayout title={isEdit ? t('homepage.edit_property', 'Edit Property') : t('homepage.add_property', 'Add Property')} subtitle={t('homepage.manage_property_subtitle', 'Manage property listing details')}>
-            <div className="w-[80%] max-w-7xl mx-auto pb-12">
+            <div className="w-full lg:w-[80%] max-w-7xl mx-auto pb-12">
                 <div className="flex items-center gap-4 mb-8">
                     <Link to="/homepage/properties" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
                         <span className="material-icons">arrow_back</span>

@@ -350,7 +350,9 @@
     "delete_message": "Are you sure about <strong>{{name}}</strong>?",
     "btn_delete": "Yes, Delete",
     "btn_deactivate": "Yes, Deactivate",
-    "error_fullname_required": "Full name is required."
+    "error_fullname_required": "Full name is required.",
+    "th_householder": "Householder",
+    "btn_delete_selected": "Delete Selected"
   },
   "dashboard": {
     "title": "Dashboard Overview",

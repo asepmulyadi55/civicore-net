@@ -197,22 +197,23 @@ export default function Units() {
         </div>
       ) : (
         <>
-          <div className="mb-4 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between shadow-sm">
+          <div className="mb-4 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
             <div className="flex items-center gap-3 pl-2">
               {can('blocks.delete') && (
-                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer" />
+                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-transparent text-primary focus:ring-primary/30 cursor-pointer shrink-0" />
               )}
-               <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3">{t('units.select_all')}</span>
-               <span className={`text-sm font-semibold transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
+               <span className="text-sm font-bold text-slate-700 dark:text-white border-r border-slate-200 dark:border-slate-700 pr-3 whitespace-nowrap">{t('units.select_all')}</span>
+               <span className={`text-sm font-semibold whitespace-nowrap transition-opacity duration-200 ${selected.length > 0 ? 'opacity-100 text-slate-500 dark:text-slate-400' : 'opacity-0'}`}>
                  {t('units.selected', { count: selected.length })}
                </span>
             </div>
             {can('blocks.delete') && selected.length > 0 && (
-              <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
-                <span className="material-icons text-sm">delete</span> {t('units.btn_delete_selected')}
+              <button onClick={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} className="flex w-full sm:w-auto justify-center items-center gap-1.5 px-3 py-2 sm:py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
+                <span className="material-icons text-sm shrink-0">delete</span> {t('units.btn_delete_selected')}
               </button>
             )}
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map(unit => {
             const status = unit.houseStatus ?? unit.house_status;

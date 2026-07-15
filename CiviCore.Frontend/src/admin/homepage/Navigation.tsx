@@ -180,7 +180,7 @@ export default function Navigation() {
       <ErrorBanner message={errorMsg} />
 
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
-        <table className="w-full text-left min-w-[600px]">
+        <table className="w-full text-left min-w-[760px]">
           <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
             <tr>
               <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">{t('homepage.label_order', 'Order')}</th>
@@ -212,33 +212,35 @@ export default function Navigation() {
                 <td className="px-6 py-4 text-slate-500">{link.url}</td>
                 <td className="px-6 py-4">
                   {link.showInNavigation ? (
-                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_yes', 'Yes')}</span>
+                    <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_yes', 'Yes')}</span>
                   ) : (
-                    <span className="bg-slate-100 text-slate-800 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_no', 'No')}</span>
+                    <span className="bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_no', 'No')}</span>
                   )}
                 </td>
                 <td className="px-6 py-4">
                   {link.showInFooter ? (
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_yes', 'Yes')}</span>
+                    <span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_yes', 'Yes')}</span>
                   ) : (
-                    <span className="bg-slate-100 text-slate-800 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_no', 'No')}</span>
+                    <span className="bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300 text-xs px-2 py-1 rounded-full font-medium">{t('homepage.label_no', 'No')}</span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-6 py-4 text-right whitespace-nowrap">
+                  <div className="flex items-center justify-end gap-1">
                   <button
                     onClick={() => handleOpenModal(link)}
-                    className="text-primary hover:text-primary-dark mr-3 cursor-pointer"
+                    className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"
                     title="Edit"
                   >
-                    <span className="material-icons">edit</span>
+                    <span className="material-icons text-lg block">edit</span>
                   </button>
                   <button
                     onClick={() => setDeleteModal({ open: true, id: link.id, title: link.title, loading: false })}
-                    className="text-red-500 hover:text-red-700 cursor-pointer"
+                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"
                     title="Delete"
                   >
-                    <span className="material-icons">delete</span>
+                    <span className="material-icons text-lg block">delete_outline</span>
                   </button>
+                  </div>
                 </td>
               </tr>
             ))}

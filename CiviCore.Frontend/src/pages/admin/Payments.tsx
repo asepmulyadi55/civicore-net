@@ -675,17 +675,17 @@ export default function Payments() {
         title={t('payments.title')}
         subtitle={t('payments.subtitle')}
         actions={
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center">
             {can('payments.create') &&
           <>
                 <button onClick={() => fileInputRef.current?.click()} disabled={importing}
-            className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50">
-                  <span className="material-icons text-sm">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('payments.btn_importing') : t('payments.btn_import')}
+            className="flex justify-center items-center gap-2 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-50 text-center">
+                  <span className="material-icons text-sm shrink-0">{importing ? 'hourglass_empty' : 'upload_file'}</span> {importing ? t('payments.btn_importing') : t('payments.btn_import')}
                 </button>
                 <input type="file" ref={fileInputRef} onChange={handleImportExcel} className="hidden" accept=".xlsx,.xls" />
                 <button onClick={() => setAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer">
-                  <span className="material-icons text-sm">add</span> {t('payments.btn_add')}
+            className="flex justify-center items-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer text-center">
+                  <span className="material-icons text-sm shrink-0">add</span> {t('payments.btn_add')}
                 </button>
               </>
           }
@@ -695,7 +695,7 @@ export default function Payments() {
 
       {importing &&
       <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-[400px]">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center w-full max-w-[400px]">
             <span className="material-icons text-primary text-5xl animate-spin mb-4">autorenew</span>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t('payments.import_title')}</h3>
             
@@ -815,7 +815,7 @@ export default function Payments() {
       {loading ?
       <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div> :
 
-      <TableWrapper>
+      <TableWrapper footer={meta && <Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} />}>
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
               <th className="w-12 px-6 py-4 text-center">
@@ -948,11 +948,6 @@ export default function Payments() {
 
           })}
           </tbody>
-          {meta &&
-        <tfoot>
-              <tr><td colSpan={8}><Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} /></td></tr>
-            </tfoot>
-        }
         </TableWrapper>
       }
     </AdminLayout>);
