@@ -8,7 +8,20 @@ interface FooterProps {
 }
 
 export default function Footer({ setActiveTab, footerData }: FooterProps) {
-    const data = footerData || {};
+    const [data, setData] = React.useState<any>(footerData || {});
+
+    React.useEffect(() => {
+        if (!footerData || Object.keys(footerData).length === 0) {
+            fetch('/api/homepage/footer')
+                .then(res => res.json())
+                .then(res => {
+                    if (res) setData(res);
+                })
+                .catch(console.error);
+        } else {
+            setData(footerData);
+        }
+    }, [footerData]);
     
     const [displayLinks, setDisplayLinks] = React.useState([
         { label: 'Home', url: '/' },
@@ -55,7 +68,7 @@ export default function Footer({ setActiveTab, footerData }: FooterProps) {
                         {data.location ? (
                             <li className="flex items-start gap-4">
                                 <span className="material-symbols-outlined shrink-0 mt-1">location_on</span>
-                                <div className="prose prose-sm prose-invert max-w-none text-on-primary/80 [&>p]:m-0" dangerouslySetInnerHTML={{ __html: data.location }} />
+                                <div className="prose prose-sm prose-invert max-w-none text-on-primary/80 [&>p]:m-0" dangerouslySetInnerHTML={{ __html: typeof data.location === 'string' ? data.location.replace(/&nbsp;/g, ' ') : data.location }} />
                             </li>
                         ) : (
                             <li className="flex items-start gap-4">
