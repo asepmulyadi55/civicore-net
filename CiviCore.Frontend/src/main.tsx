@@ -5,6 +5,7 @@ import './bootstrap'
 import axios from 'axios'
 import './i18n'
 import Router from './Router'
+import ReloadPrompt from './admin/components/ReloadPrompt'
 
 axios.interceptors.response.use(
   (response) => response,
@@ -23,5 +24,6 @@ axios.interceptors.response.use(
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Router />
+    <ReloadPrompt />
   </StrictMode>,
 )

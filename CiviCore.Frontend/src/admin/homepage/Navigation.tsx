@@ -56,7 +56,7 @@ export default function Navigation() {
       const res = await axios.get('/api/navigation');
       setLinks(res.data.data);
     } catch (err) {
-      showError('Failed to load navigation links');
+      showError(t('homepage.msg_nav_load_failed', 'Failed to load navigation links'));
     } finally {
       setLoading(false);
     }
@@ -108,15 +108,15 @@ export default function Navigation() {
     try {
       if (editingId) {
         await axios.put(`/api/navigation/${editingId}`, formData);
-        showSuccess('Navigation link updated successfully');
+        showSuccess(t('homepage.msg_nav_updated', 'Navigation link updated successfully'));
       } else {
         await axios.post('/api/navigation', formData);
-        showSuccess('Navigation link created successfully');
+        showSuccess(t('homepage.msg_nav_created', 'Navigation link created successfully'));
       }
       handleCloseModal();
       fetchLinks();
     } catch (err) {
-      showError('Failed to save navigation link');
+      showError(t('homepage.msg_nav_save_failed', 'Failed to save navigation link'));
     }
   };
 
@@ -124,10 +124,10 @@ export default function Navigation() {
     setDeleteModal(d => ({ ...d, loading: true }));
     try {
       await axios.delete(`/api/navigation/${deleteModal.id}`);
-      showSuccess('Navigation link deleted');
+      showSuccess(t('homepage.msg_nav_deleted', 'Navigation link deleted'));
       fetchLinks();
     } catch (err) {
-      showError('Failed to delete link');
+      showError(t('homepage.msg_nav_delete_failed', 'Failed to delete link'));
     }
     setDeleteModal({ open: false, id: null, title: '', loading: false });
   };
@@ -154,9 +154,9 @@ export default function Navigation() {
           order: itm.order
         })
       ));
-      showSuccess('Navigation order updated');
+      showSuccess(t('homepage.msg_nav_order_updated', 'Navigation order updated'));
     } catch (err) {
-      showError('Failed to update order');
+      showError(t('homepage.msg_nav_order_failed', 'Failed to update order'));
       fetchLinks();
     }
   };

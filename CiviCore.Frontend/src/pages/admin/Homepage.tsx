@@ -22,6 +22,7 @@ const TABS = [
   { key: 'properties', label: 'Properties', icon: 'home_work' },
   { key: 'navigation', label: 'Navigation', icon: 'menu' },
   { key: 'footer', label: 'Footer', icon: 'web_asset' },
+  { key: 'emergency', label: 'Kontak Darurat', icon: 'emergency' },
   { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search' },
 ];
 
@@ -1176,6 +1177,165 @@ function MetadataTab({ canEdit }: { canEdit: boolean }) {
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   TAB 8: EMERGENCY CONTACTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+const ICON_OPTIONS = [
+  { value: 'local_police', label: 'Keamanan' },
+  { value: 'local_hospital', label: 'Klinik/RS' },
+  { value: 'local_fire_department', label: 'Pemadam' },
+  { value: 'support_agent', label: 'Manajemen' },
+  { value: 'ambulance', label: 'Ambulans' },
+  { value: 'emergency', label: 'Darurat' },
+  { value: 'phone', label: 'Telepon' },
+];
+
+function EmergencyTab({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ open: false, index: -1, label: '' });
+
+  useEffect(() => {
+    axios.get('/api/homepage/emergency-contacts')
+      .then(r => setContacts(Array.isArray(r.data) ? r.data : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const addContact = () => {
+    setContacts(prev => [...prev, { label: '', phone: '', icon: 'phone' }]);
+  };
+
+  const updateContact = (idx: number, key: string, value: string) => {
+    setContacts(prev => prev.map((c, i) => i === idx ? { ...c, [key]: value } : c));
+  };
+
+  const removeContact = (idx: number) => {
+    setContacts(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const moveUp = (idx: number) => {
+    if (idx === 0) return;
+    setContacts(prev => { const next = [...prev]; [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]; return next; });
+  };
+
+  const moveDown = (idx: number) => {
+    setContacts(prev => { if (idx === prev.length - 1) return prev; const next = [...prev]; [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]; return next; });
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await axios.put('/api/homepage/emergency-contacts', contacts);
+      setSuccess(true); setTimeout(() => setSuccess(false), 3000);
+    } catch { }
+    setSaving(false);
+  };
+
+  if (loading) return <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>;
+
+  return (
+    <SectionCard icon="emergency" iconBg="bg-red-100 dark:bg-red-900/30" iconColor="text-red-500" title={t('homepage.title_emergency', 'Kontak Darurat')} subtitle={t('homepage.subtitle_emergency', 'Emergency contact numbers shown on the Laporan Warga page')} badge={contacts.length}>
+      <SuccessBanner show={success} />
+      <div className="p-6 space-y-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          {t('homepage.hint_emergency', 'These contacts appear in the red "Kontak Darurat" card on the resident report form page. Keep these up to date.')}
+        </p>
+
+        {contacts.length === 0 && (
+          <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+            <span className="material-icons text-4xl text-slate-300 dark:text-slate-600 mb-2 block">emergency</span>
+            <p className="text-sm text-slate-500">{t('homepage.empty_emergency', 'No contacts yet. Click "Add Contact" to get started.')}</p>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {contacts.map((contact, idx) => (
+            <div key={idx} className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl">
+              {/* Move buttons */}
+              <div className="flex flex-col gap-1">
+                <button onClick={() => moveUp(idx)} disabled={idx === 0 || !canEdit}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                  <span className="material-icons text-sm text-slate-500">arrow_upward</span>
+                </button>
+                <button onClick={() => moveDown(idx)} disabled={idx === contacts.length - 1 || !canEdit}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                  <span className="material-icons text-sm text-slate-500">arrow_downward</span>
+                </button>
+              </div>
+
+              {/* Icon selector */}
+              <div className="shrink-0">
+                <label className="block text-xs font-semibold text-slate-500 mb-1">{t('homepage.label_icon', 'Icon')}</label>
+                <select value={contact.icon || 'phone'} disabled={!canEdit}
+                  onChange={e => updateContact(idx, 'icon', e.target.value)}
+                  className="text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-2 text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-60">
+                  {ICON_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+
+              {/* Preview icon */}
+              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                <span className="material-icons text-red-500 text-[18px]">{contact.icon || 'phone'}</span>
+              </div>
+
+              {/* Label & Phone */}
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">{t('homepage.label_contact_name', 'Nama / Label')}</label>
+                  <input value={contact.label} disabled={!canEdit} onChange={e => updateContact(idx, 'label', e.target.value)}
+                    placeholder="e.g. Pos Keamanan"
+                    className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-60" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">{t('homepage.label_phone', 'Nomor Telepon')}</label>
+                  <input value={contact.phone} disabled={!canEdit} onChange={e => updateContact(idx, 'phone', e.target.value)}
+                    placeholder="e.g. +62 123 4567 890"
+                    className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-60" />
+                </div>
+              </div>
+
+              {/* Delete */}
+              {canEdit && (
+                <button onClick={() => setDeleteModal({ open: true, index: idx, label: contact.label })}
+                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
+                  <span className="material-icons text-[18px]">delete</span>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {canEdit && (
+          <button onClick={addContact}
+            className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 rounded-xl hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors w-full justify-center text-sm font-semibold cursor-pointer">
+            <span className="material-icons text-[18px]">add</span>
+            {t('homepage.btn_add_contact', 'Add Contact')}
+          </button>
+        )}
+      </div>
+
+      {canEdit && <SaveButton onClick={save} loading={saving} label={t('homepage.btn_save_emergency', 'Save Contacts')} />}
+
+      <ConfirmModal 
+        open={deleteModal.open} 
+        onClose={() => setDeleteModal({ open: false, index: -1, label: '' })}
+        onConfirm={() => {
+          removeContact(deleteModal.index);
+          setDeleteModal({ open: false, index: -1, label: '' });
+        }}
+        icon="delete_outline"
+        title={t('homepage.label_delete_contact', 'Delete Contact?')} 
+        message={<>{t('homepage.text_are_you_sure_you_want_to_delete', 'Are you sure you want to delete')} <strong>{deleteModal.label || t('homepage.text_this_contact', 'this contact')}</strong>? {t('homepage.msg_cannot_be_undone', 'This cannot be undone.')}</>} 
+        confirmLabel={t('homepage.text_yes_delete', 'Yes, Delete')} 
+      />
+    </SectionCard>
+  );
+}
+
 /* Main Component */
 export default function AdminHomepage() {
   const { t } = useTranslation();
@@ -1196,6 +1356,7 @@ export default function AdminHomepage() {
       case 'properties': return <PropertyTab canEdit={canEdit} />;
       case 'navigation': return <NavigationTab />;
       case 'footer': return <FooterTab canEdit={canEdit} />;
+      case 'emergency': return <EmergencyTab canEdit={canEdit} />;
       case 'metadata': return <MetadataTab canEdit={canEdit} />;
       default: return null;
     }

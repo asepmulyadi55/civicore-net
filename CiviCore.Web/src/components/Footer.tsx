@@ -68,7 +68,7 @@ export default function Footer({ setActiveTab, footerData }: FooterProps) {
                         {data.location ? (
                             <li className="flex items-start gap-4">
                                 <span className="material-symbols-outlined shrink-0 mt-1">location_on</span>
-                                <div className="prose prose-sm prose-invert max-w-none text-on-primary/80 [&>p]:m-0" dangerouslySetInnerHTML={{ __html: typeof data.location === 'string' ? data.location.replace(/&nbsp;/g, ' ') : data.location }} />
+                                <div className="prose prose-sm prose-invert max-w-none text-on-primary/80 [&>p]:m-0 min-w-0 break-words" dangerouslySetInnerHTML={{ __html: typeof data.location === 'string' ? data.location.replace(/&nbsp;/g, ' ') : data.location }} />
                             </li>
                         ) : (
                             <li className="flex items-start gap-4">

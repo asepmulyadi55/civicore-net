@@ -1722,6 +1722,17 @@
     "title_create_new_password": "Create New Password",
     "title_reset_password": "Reset Password"
   },
+  "sidebar.emergency": "Emergency Contacts",
+  "homepage.tab_emergency": "Emergency Contacts",
+  "homepage.title_emergency": "Emergency Contacts",
+  "homepage.subtitle_emergency": "Emergency contact numbers shown on the Laporan Warga page",
+  "homepage.hint_emergency": "These contacts appear in the red \"Kontak Darurat\" card on the resident report form page. Keep these up to date.",
+  "homepage.empty_emergency": "No contacts yet. Click \"Add Contact\" to get started.",
+  "homepage.label_icon": "Icon",
+  "homepage.label_contact_name": "Name / Label",
+  "homepage.label_phone": "Phone Number",
+  "homepage.btn_add_contact": "Add Contact",
+  "homepage.btn_save_emergency": "Save Contacts",
   "admin": {
     "access_denied": "Access Denied",
     "permission_denied_msg": "You do not have permission to view this page. If you believe this is an error, please contact your administrator."

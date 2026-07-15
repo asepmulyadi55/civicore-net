@@ -53,6 +53,7 @@ const NAV_GROUPS = [
   { key: 'hp-property', label: 'Properties', icon: 'home_work', path: '/homepage/properties', permission: 'homepage_property.view' },
   { key: 'navigation', label: 'Navigation', icon: 'menu', path: '/homepage/navigation', permission: 'homepage_navigation.view' },
   { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/homepage/footer', permission: 'homepage_footer.view' },
+  { key: 'emergency', label: 'Kontak Darurat', icon: 'emergency', path: '/homepage/emergency', permission: 'homepage_footer.view' },
   { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/homepage/metadata', permission: 'homepage_metadata.view' }]
 
 },

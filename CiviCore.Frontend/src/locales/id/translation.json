@@ -1746,6 +1746,22 @@
     "title_create_new_password": "Buat Kata Sandi Baru",
     "title_reset_password": "Atur Ulang Kata Sandi"
   },
+  "sidebar.emergency": "Kontak Darurat",
+  "homepage.tab_emergency": "Kontak Darurat",
+  "homepage.title_emergency": "Kontak Darurat",
+  "homepage.subtitle_emergency": "Nomor kontak darurat yang ditampilkan di halaman Laporan Warga",
+  "homepage.hint_emergency": "Kontak-kontak ini muncul di kartu merah \"Kontak Darurat\" pada halaman form laporan warga. Pastikan selalu terbaru.",
+  "homepage.empty_emergency": "Belum ada kontak. Klik \"Tambah Kontak\" untuk memulai.",
+  "homepage.label_icon": "Ikon",
+  "homepage.label_contact_name": "Nama / Label",
+  "homepage.label_phone": "Nomor Telepon",
+  "homepage.btn_add_contact": "Tambah Kontak",
+  "homepage.btn_save_emergency": "Simpan Kontak",
+  "homepage.label_delete_contact": "Hapus Kontak?",
+  "homepage.text_this_contact": "kontak ini",
+  "homepage.text_are_you_sure_you_want_to_delete": "Apakah Anda yakin ingin menghapus",
+  "homepage.msg_cannot_be_undone": "Tindakan ini tidak dapat dibatalkan.",
+  "homepage.text_yes_delete": "Ya, Hapus",
   "admin": {
     "access_denied": "Akses Ditolak",
     "permission_denied_msg": "Anda tidak memiliki izin untuk melihat halaman ini. Jika Anda yakin ini adalah sebuah kesalahan, silakan hubungi administrator Anda."

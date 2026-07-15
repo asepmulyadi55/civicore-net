@@ -36,7 +36,7 @@ export default function ResidentReportPage() {
     const toggleDark = () => {
         setIsDark(prev => {
             const next = !prev;
-            try { localStorage.setItem('homepageDark', String(next)); } catch {}
+            try { localStorage.setItem('homepageDark', String(next)); } catch { }
             return next;
         });
     };
@@ -124,7 +124,7 @@ export default function ResidentReportPage() {
                                             {isCategoryOpen && (
                                                 <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
                                                     {categoryOptions.map((option) => (
-                                                        <li key={option.value}  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setCategory(option.value); setIsCategoryOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
+                                                        <li key={option.value} tabIndex={0} role="button" onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setCategory(option.value); setIsCategoryOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
                                                             {option.label}
                                                         </li>
                                                     ))}
@@ -165,7 +165,7 @@ export default function ResidentReportPage() {
                                         <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2">Foto Bukti (Opsional)</label>
                                         <div
                                             className="w-full border-2 border-dashed border-border-subtle dark:border-primary-container/50 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-surface-container-low dark:hover:bg-primary-container/20 transition-colors cursor-pointer group"
-                                             tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => fileInputRef.current?.click()}
+                                            tabIndex={0} role="button" onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => fileInputRef.current?.click()}
                                         >
                                             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => setSelectedPhoto(e.target.files?.[0] || null)} />
                                             <div className="w-12 h-12 rounded-full bg-primary-container/10 dark:bg-primary-fixed-dim/10 flex items-center justify-center text-primary dark:text-primary-fixed-dim mb-4 group-hover:scale-110 transition-transform">
@@ -203,7 +203,7 @@ export default function ResidentReportPage() {
                             <div className="absolute -right-12 -top-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
                             <div className="flex items-center gap-3 mb-6 relative z-10">
                                 <span className="material-symbols-outlined text-[32px]">warning</span>
-                                <h3 className="font-headline-md text-headline-sm">Kontak<br/>Darurat</h3>
+                                <h3 className="font-headline-md text-headline-sm">Kontak Darurat</h3>
                             </div>
                             <p className="text-white/80 font-body-md text-body-md mb-8 relative z-10">
                                 Untuk bantuan segera atau darurat yang mengancam jiwa, hubungi nomor berikut secara langsung.

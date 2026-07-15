@@ -179,10 +179,10 @@ export default function BulletinDetailPage() {
                                 )}
                                 {(footerData.location) && (
                                     <div className="flex items-start">
-                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1">location_on</span>
-                                        <div>
+                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1 shrink-0">location_on</span>
+                                        <div className="min-w-0">
                                             <p className="font-label-md text-label-md text-on-surface-variant dark:text-on-primary/70">Lokasi Kantor</p>
-                                            <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0" dangerouslySetInnerHTML={{ __html: footerData.location }} />
+                                            <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 break-words" dangerouslySetInnerHTML={{ __html: footerData.location }} />
                                         </div>
                                     </div>
                                 )}
