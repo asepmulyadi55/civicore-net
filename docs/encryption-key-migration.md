@@ -41,9 +41,39 @@ corruption. Hence the migration: it re-encrypts existing data onto the new key.
 
 ## Step 0 — Back up
 
+bash:
+
 ```bash
 pg_dump "postgresql://USER:PASS@HOST:5432/postgres" -t '"Householders"' -f kk_backup.sql
 ```
+
+PowerShell:
+
+```powershell
+pg_dump "postgresql://USER:PASS@HOST:5432/postgres" -t '\"Householders\"' -f kk_backup.sql
+```
+
+The two differ for a reason. `-t` folds unquoted names to lower case, and the table is
+`Householders` — so the double quotes have to reach `pg_dump` intact or it hunts for
+`householders` and finds nothing. Windows PowerShell strips the inner quotes when handing
+arguments to a native `.exe`, hence `\"` there; bash passes `'"..."'` through as-is. Copying
+the bash line into PowerShell is the usual way this goes wrong — see Troubleshooting.
+
+> **The URI carries your database password, and both shells log it.** bash to
+> `~/.bash_history`, PowerShell to `ConsoleHost_history.txt` — plaintext, survives reboots.
+> To keep it out of history, drop the password from the URI and let `pg_dump` prompt for it:
+>
+> ```
+> pg_dump -h HOST -p 5432 -U USER -d postgres -W -t '\"Householders\"' -f kk_backup.sql
+> ```
+>
+> If you've already run it with the password inline, rotate the password — it's on disk.
+
+> **Don't commit the dump.** `kk_backup.sql` lands in whatever directory you ran from — often
+> the repo — and nothing in `.gitignore` catches it, so `git add .` will happily stage it. It
+> holds every householder's name, phone, email and address in plaintext, and until step 4 has
+> run the KK numbers in it are sealed with the *public* fallback key, so treat those as
+> plaintext as well. Write it outside the repo, or add it to `.gitignore` before you dump.
 
 The migration is idempotent and safe to re-run, but a backup is the only thing that saves
 you if something *outside* the migration goes wrong.
@@ -166,6 +196,11 @@ Ask, and it's a one-line change.
 ---
 
 ## Troubleshooting
+
+**`pg_dump: error: no matching tables were found`**
+The table is there. Your shell ate the quotes around `Householders`, so `pg_dump` lower-cased
+the pattern and looked for `householders`. Almost always the bash line from step 0 pasted into
+PowerShell — use the PowerShell variant, `-t '\"Householders\"'`.
 
 **`UNDECRYPTABLE` is not zero.**
 Those rows can't be opened by the new key *or* the old fallback. The migration leaves them
