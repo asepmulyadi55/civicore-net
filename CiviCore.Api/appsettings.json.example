@@ -1,0 +1,62 @@
+// Copy to appsettings.json and fill in. appsettings.json is gitignored — never commit real
+// values. (.NET's JSON config provider allows these // comments; they are safe to keep.)
+//
+//   cp CiviCore.Api/appsettings.json.example CiviCore.Api/appsettings.json
+//
+// NOTE: .dockerignore does NOT exclude appsettings.json, so `COPY . .` bakes this file into
+// the built image. Anything you put here ships inside the artifact. Secrets that can live in
+// the environment instead should — see docker-compose.yml and .env.example.
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+
+  // Redis is opt-in. When false the app falls back to an in-memory cache, which is fine for
+  // local development. Compose sets ConnectionStrings__Redis for the container.
+  "UseRedis": false,
+
+  "Google": {
+    "ClientId": "<google-oauth-client-id>.apps.googleusercontent.com",
+    "ClientSecret": "<google-oauth-client-secret>"
+  },
+
+  "ConnectionStrings": {
+    "SupabaseConnection": "Host=<db-host>;Port=5432;Database=postgres;Username=<db-user>;Password=<db-password>;Pooling=true;Include Error Detail=true;"
+  },
+
+  "Supabase": {
+    "Url": "https://<project-ref>.supabase.co",
+    // Service role key bypasses row-level security — it is the master credential for the
+    // project. Treat it like a root password.
+    "ServiceRoleKey": "<supabase-service-role-key>"
+  },
+
+  "MailSettings": {
+    "Mailer": "smtp",
+    "Scheme": null,
+    "Host": "smtp.gmail.com",
+    "Port": 587,
+    "Username": "<smtp-username>",
+    // For Gmail this is an App Password, not the account password.
+    "Password": "<smtp-password>",
+    "Encryption": "tls",
+    "FromAddress": "<from-address>",
+    "FromName": "Civicore"
+  },
+
+  "Recaptcha": {
+    // SiteKey is public (it ships to the browser). SecretKey is not.
+    "SiteKey": "<recaptcha-site-key>",
+    "SecretKey": "<recaptcha-secret-key>"
+  }
+
+  // DELIBERATELY ABSENT: "Encryption": { "Key": "..." }
+  //
+  // The encryption key must NOT live here — this file is baked into the image (see the note
+  // at the top). Set ENCRYPTION_KEY in .env instead; docker-compose.yml maps it to
+  // Encryption__Key and refuses to start without it. See docs/encryption-key-migration.md.
+}
