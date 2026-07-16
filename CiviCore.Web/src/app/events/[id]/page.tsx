@@ -106,13 +106,9 @@ export default function EventDetailPage() {
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed-dim/20 text-on-primary-fixed dark:text-primary-fixed-dim font-label-sm text-label-sm uppercase tracking-wider">
                                     {event.category} Event
                                 </span>
-                                {event.status === 'ongoing' ? (
-                                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#b45309]/20 text-[#b45309] dark:text-[#f59e0b] font-label-sm text-label-sm uppercase tracking-wider">
-                                        Berlangsung
-                                    </span>
-                                ) : (
+                                {event.created_at && (
                                     <span className="inline-flex items-center px-3 py-1 rounded-full bg-surface-variant/50 text-on-surface-variant dark:text-on-primary/60 font-label-sm text-label-sm uppercase tracking-wider">
-                                        Telah Berlalu
+                                        Diposting {new Date(event.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
                                     </span>
                                 )}
                             </div>

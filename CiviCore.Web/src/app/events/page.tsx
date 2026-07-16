@@ -206,7 +206,6 @@ export default function EventsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {paginated.map(ev => {
                                 const evDate = ev.date ? new Date(ev.date) : new Date();
-                                const isPast = (ev.status !== 'ongoing') && !!ev.date && ev.date < today;
                                 const imgUrl = ev.image_url ? (ev.image_url) : '/placeholder-event.png';
                                 return (
                                     <Link href={ev.url || `/events/${ev.id}`} key={ev.id} className="group flex flex-col bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -219,11 +218,10 @@ export default function EventsPage() {
                                                         {new Date(ev.date).toLocaleDateString('id-ID', { month: 'short', day: '2-digit' })}
                                                     </div>
                                                 )}
-                                                {isPast && (
-                                                    <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">Berlalu</div>
-                                                )}
-                                                {ev.status === 'ongoing' && (
-                                                    <div className="bg-[#b45309] text-white px-3 py-1 rounded font-bold text-sm">Berlangsung</div>
+                                                {ev.created_at && (
+                                                    <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
+                                                        Diposting {new Date(ev.created_at).toLocaleDateString('id-ID', { month: 'short', day: '2-digit' })}
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
