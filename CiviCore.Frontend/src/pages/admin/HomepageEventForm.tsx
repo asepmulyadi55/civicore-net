@@ -130,7 +130,6 @@ export default function HomepageEventForm() {
                         ]} placeholder={t('homepage.placeholder_none', 'None')} />
                         <FormSelect label={t('homepage.field_action_type', 'Event Action / Content')} id="ev-action-type" value={form.action_type} onChange={e => setForm(f => ({ ...f, action_type: e.target.value, action_value: '' }))} options={[
                             { value: 'informational', label: t('homepage.action_informational', 'Informational Only') },
-                            { value: 'rsvp', label: t('homepage.action_rsvp', 'Requires RSVP') },
                             { value: 'youtube', label: t('homepage.action_youtube', 'Embed YouTube Video') },
                             { value: 'link', label: t('homepage.action_link', 'External Link') }
                         ]} />

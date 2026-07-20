@@ -221,6 +221,7 @@ public class HomepageController : ControllerBase
             ["status"] = eventStatus,
             ["action_type"] = action_type,
             ["action_value"] = action_value,
+            ["created_at"] = DateTime.UtcNow.ToString("o"),
         });
 
         await SaveSetting(KeyHomepageEvents, JsonSerializer.Serialize(events));
@@ -259,6 +260,10 @@ public class HomepageController : ControllerBase
                     ["action_type"] = action_type,
                     ["action_value"] = action_value,
                 };
+                if (events[i].TryGetValue("created_at", out var ca) && ca.ValueKind != JsonValueKind.Null)
+                {
+                    updated["created_at"] = ca.GetString();
+                }
 
                 if (image_file != null)
                 {

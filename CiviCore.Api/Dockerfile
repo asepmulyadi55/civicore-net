@@ -15,9 +15,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# BEST PRACTICE: Create required directories and give the non-root 'app' user ownership
-RUN mkdir -p /app/DataProtection-Keys /app/wwwroot/public-media /app/App_Data/PrivateMedia /app/logs \
-    && chown -R app:app /app/DataProtection-Keys /app/wwwroot /app/App_Data /app/logs
-
-USER app
+# Run as root to prevent host volume mount permission issues
+# USER app
 ENTRYPOINT ["dotnet", "CiviCore.Api.dll"]

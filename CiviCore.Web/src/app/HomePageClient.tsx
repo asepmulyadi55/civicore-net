@@ -120,7 +120,6 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
                             {sortedEvents.slice(0, 3).map((ev: any) => {
                                 const today = new Date().toISOString().slice(0, 10);
-                                const isPast = (ev.status !== 'ongoing') && !!ev.date && ev.date < today;
                                 return (
                                     <div key={ev.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
                                         {ev.image_url && (
@@ -133,11 +132,10 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                                                             {new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                                         </div>
                                                     )}
-                                                    {isPast && (
-                                                        <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">Past</div>
-                                                    )}
-                                                    {ev.status === 'ongoing' && (
-                                                        <div className="bg-[#b45309] text-white px-3 py-1 rounded font-bold text-sm">Ongoing</div>
+                                                    {ev.created_at && (
+                                                        <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
+                                                            Diposting {new Date(ev.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
