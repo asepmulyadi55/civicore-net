@@ -59,23 +59,43 @@ export default async function Page() {
     const propertySettings = await getData('property-settings');
     const footer = await getData('footer');
     const propertiesData = await getProperties();
+    const seoData = await getData('metadata');
     
     // Properties pagination endpoint returns { data: [...], meta: {...} }
     const properties = propertiesData?.data?.slice(0, 3) || []; 
 
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dwipapuri.amsite.click';
+    const orgJsonLd = seoData?.org_name
+        ? JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: seoData.org_name,
+              url: SITE_URL,
+              logo: `${SITE_URL}/logo.png`,
+          })
+        : null;
+
     return (
-        <HomePageClient 
-            hero={hero || {}} 
-            events={events || []} 
-            eventSettings={eventSettings || {}} 
-            gallerySettings={gallerySettings || {}} 
-            gallery={gallery || []} 
-            bulletinSettings={bulletinSettings || {}}
-            bulletins={bulletin || []} 
-            propertySettings={propertySettings || {}}
-            properties={properties} 
-            footerData={footer || {}}
-            apiUrl={API_URL}
-        />
+        <>
+            {orgJsonLd && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: orgJsonLd }}
+                />
+            )}
+            <HomePageClient 
+                hero={hero || {}} 
+                events={events || []} 
+                eventSettings={eventSettings || {}} 
+                gallerySettings={gallerySettings || {}} 
+                gallery={gallery || []} 
+                bulletinSettings={bulletinSettings || {}}
+                bulletins={bulletin || []} 
+                propertySettings={propertySettings || {}}
+                properties={properties} 
+                footerData={footer || {}}
+                apiUrl={API_URL}
+            />
+        </>
     );
 }

@@ -1081,6 +1081,7 @@ function MetadataTab({ canEdit }: { canEdit: boolean }) {
     fd.append('meta_keywords', data.meta_keywords || '');
     fd.append('og_title', data.og_title || '');
     fd.append('og_description', data.og_description || '');
+    fd.append('org_name', data.org_name || '');
     if (ogFile) fd.append('og_image', await compressImage(ogFile));
     try {
       await axios.put('/api/homepage/metadata', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -1134,6 +1135,10 @@ function MetadataTab({ canEdit }: { canEdit: boolean }) {
         <div>
           <FormInput label={t('homepage.label_meta_keywords', 'Meta Keywords (optional)')} id="seo-kw" value={data.meta_keywords || ''} onChange={e => set('meta_keywords', e.target.value)} placeholder={t('homepage.placeholder_meta_kw', 'e.g. perumahan, iuran warga, komunitas, dwipapuri')} />
           <p className="text-xs text-slate-400 mt-1">{t('homepage.hint_meta_keywords', 'Comma-separated keywords. Mostly ignored by Google but used by some search engines.')}</p>
+        </div>
+        <div>
+          <FormInput label={t('homepage.label_org_name', 'Organisation Name (JSON-LD)')} id="seo-org" value={data.org_name || ''} onChange={e => set('org_name', e.target.value)} placeholder={t('homepage.placeholder_org_name', 'e.g. Dwipapuri Residence')} />
+          <p className="text-xs text-slate-400 mt-1">{t('homepage.hint_org_name', 'Used by Google to display your organisation logo in search results. Leave blank to disable.')}</p>
         </div>
       </div>
 

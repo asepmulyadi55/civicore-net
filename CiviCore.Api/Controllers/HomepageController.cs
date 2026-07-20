@@ -828,7 +828,7 @@ public class HomepageController : ControllerBase
     [HttpPut("metadata")]
     public async Task<IActionResult> UpdateMetadata([FromForm] string? page_title, [FromForm] string? meta_description,
         [FromForm] string? meta_keywords, [FromForm] string? og_title, [FromForm] string? og_description,
-        IFormFile? og_image)
+        [FromForm] string? org_name, IFormFile? og_image)
     {
         var existing = JsonSerializer.Deserialize<Dictionary<string, string?>>(
             await GetSettingValue("homepage_metadata") ?? "{}") ?? new();
@@ -838,6 +838,7 @@ public class HomepageController : ControllerBase
         if (meta_keywords != null) existing["meta_keywords"] = meta_keywords;
         if (og_title != null) existing["og_title"] = og_title;
         if (og_description != null) existing["og_description"] = og_description;
+        if (org_name != null) existing["org_name"] = org_name;
 
         if (og_image != null)
         {
