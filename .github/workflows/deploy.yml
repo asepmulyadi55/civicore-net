@@ -63,8 +63,9 @@ jobs:
 
             # If docker-compose.yml changed, rebuild everything
             if [ "$CHANGED_COMPOSE" = "true" ]; then
-              echo ">>> docker-compose.yml changed — rebuilding all services..."
-              docker compose up -d --build
+              echo ">>> docker-compose.yml changed — rebuilding all services (zero downtime)..."
+              docker compose build
+              docker compose up -d
               exit 0
             fi
 
