@@ -4,11 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 
 const CATEGORY_BADGE_STYLES = {
-    wellness: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
-    meetings: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
-    education: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
-    cultural: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
-    sports: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
+    media: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
+    religious: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
+    national: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
+    social: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
     other: { background: 'rgba(255,255,255,0.85)', color: '#1C2D27' },
 };
 

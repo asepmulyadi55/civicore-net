@@ -157,7 +157,7 @@ export default function BulletinDetailPage() {
                     <aside className="lg:col-span-4 space-y-8 mt-12 lg:mt-0">
                         {/* Contact Card */}
                         <div className="bg-surface-glass dark:bg-primary-container backdrop-blur-md border border-border-subtle dark:border-primary-container/50 rounded-xl p-6 shadow-sm">
-                            <h3 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mb-6 border-b border-border-subtle dark:border-primary-container/50 pb-4">Kantor Manajemen</h3>
+                            <h3 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mb-6 border-b border-border-subtle dark:border-primary-container/50 pb-4">Info Kontak</h3>
                             <div className="space-y-4 font-body-md text-body-md dark:text-on-primary/90">
                                 {(footerData.contact_phone) && (
                                     <div className="flex items-start">
@@ -181,7 +181,7 @@ export default function BulletinDetailPage() {
                                     <div className="flex items-start">
                                         <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1 shrink-0">location_on</span>
                                         <div className="min-w-0">
-                                            <p className="font-label-md text-label-md text-on-surface-variant dark:text-on-primary/70">Lokasi Kantor</p>
+                                            <p className="font-label-md text-label-md text-on-surface-variant dark:text-on-primary/70">Lokasi</p>
                                             <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 break-words" dangerouslySetInnerHTML={{ __html: footerData.location }} />
                                         </div>
                                     </div>
@@ -192,7 +192,7 @@ export default function BulletinDetailPage() {
                                 className="w-full mt-8 bg-[#b45309] text-white font-label-md text-label-md py-3 px-4 rounded-lg hover:bg-[#8b4006] transition-colors flex justify-center items-center"
                             >
                                 <span className="material-symbols-outlined mr-2 text-sm">chat</span>
-                                Hubungi Dukungan
+                                Hubungi Penerbit
                             </button>
                         </div>
 

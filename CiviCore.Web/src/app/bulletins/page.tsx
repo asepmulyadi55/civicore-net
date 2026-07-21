@@ -71,9 +71,7 @@ export default function BuletinPage() {
                             <span className="text-on-surface dark:text-on-primary">Bulletins</span>
                         </div>
                         <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">{settings.title || 'Bulletins'}</h1>
-                        <p className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/70 max-w-2xl">
-                            {settings.subtitle || 'Stay updated with the latest announcements, schedules, and community news.'}
-                        </p>
+                        {settings.subtitle && <p className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/70 max-w-2xl">{settings.subtitle}</p>}
                     </div>
 
                     <div className="w-full md:w-auto relative">
