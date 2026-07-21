@@ -21,7 +21,7 @@ export default function ScheduleVisitPage() {
     const toggleDark = () => {
         setIsDark(prev => {
             const next = !prev;
-            try { localStorage.setItem('homepageDark', String(next)); } catch {}
+            try { localStorage.setItem('homepageDark', String(next)); } catch { }
             return next;
         });
     };
@@ -32,6 +32,14 @@ export default function ScheduleVisitPage() {
     const [isTimeOpen, setIsTimeOpen] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [submitMsg, setSubmitMsg] = useState('');
+    const [visitItems, setVisitItems] = useState<{ icon: string; title: string; description: string }[]>([]);
+
+    useEffect(() => {
+        fetch('/api/homepage/visit-settings')
+            .then(r => r.json())
+            .then(d => { if (Array.isArray(d)) setVisitItems(d); })
+            .catch(() => {});
+    }, []);
 
     const propertyOptions = [
         { value: 'emerald', label: 'The Emerald Villa' },
@@ -89,9 +97,9 @@ export default function ScheduleVisitPage() {
                         <span className="text-on-surface dark:text-on-primary">Jadwalkan Kunjungan</span>
                     </div>
                     <div className="max-w-2xl">
-                        <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">Rasakan Pengalaman Dwipapuri</h1>
+                        <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">Jadwalkan Kunjungan</h1>
                         <p className="text-text-muted dark:text-on-primary/70 font-body-md text-body-md">
-                            Melihat langsung adalah pengalaman terbaik. Jadwalkan tur personal eksklusif bersama kami untuk melihat properti, fasilitas kelas dunia, dan taman komunitas yang indah.
+                            Melihat langsung adalah pengalaman terbaik. Jadwalkan tur personal eksklusif bersama kami untuk melihat properti, fasilitas Dwipapuri, dan berbincang dengan pengurus Dwipapuri.
                         </p>
                     </div>
                 </div>
@@ -139,7 +147,7 @@ export default function ScheduleVisitPage() {
                                             {isPropertyOpen && (
                                                 <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
                                                     {propertyOptions.map((option) => (
-                                                        <li key={option.value}  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setSelectedProperty(option.value); setIsPropertyOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
+                                                        <li key={option.value} tabIndex={0} role="button" onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setSelectedProperty(option.value); setIsPropertyOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
                                                             {option.label}
                                                         </li>
                                                     ))}
@@ -152,7 +160,7 @@ export default function ScheduleVisitPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
                                         <div>
                                             <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2" htmlFor="date">Tanggal yang Diinginkan</label>
-                                            <input type="date" id="date" name="date" required min={new Date().toISOString().split('T')[0]} onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch(err) {} }} className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors cursor-pointer" />
+                                            <input type="date" id="date" name="date" required min={new Date().toISOString().split('T')[0]} onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch (err) { } }} className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 focus:border-primary dark:focus:border-primary-fixed-dim bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-fixed-dim transition-colors cursor-pointer" />
                                         </div>
                                         <div>
                                             <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-2">Waktu yang Diinginkan</label>
@@ -166,7 +174,7 @@ export default function ScheduleVisitPage() {
                                                 {isTimeOpen && (
                                                     <ul className="absolute z-50 w-full mt-2 bg-surface dark:bg-primary-container border border-border-subtle dark:border-primary-container/50 rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
                                                         {timeOptions.map((option) => (
-                                                            <li key={option.value}  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setSelectedTime(option.value); setIsTimeOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
+                                                            <li key={option.value} tabIndex={0} role="button" onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => { setSelectedTime(option.value); setIsTimeOpen(false); }} className="px-4 py-3 hover:bg-surface-container-low dark:hover:bg-primary/50 cursor-pointer font-body-md text-on-surface dark:text-on-primary border-b border-border-subtle/20 dark:border-primary-container/20 last:border-0 transition-colors truncate">
                                                                 {option.label}
                                                             </li>
                                                         ))}
@@ -208,33 +216,17 @@ export default function ScheduleVisitPage() {
                                 <h3 className="font-headline-md text-headline-sm">Mengapa Harus Berkunjung?</h3>
                             </div>
                             <ul className="space-y-6 relative z-10 mb-8">
-                                <li className="flex gap-4">
-                                    <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 dark:bg-primary/50 flex items-center justify-center text-primary-fixed-dim dark:text-primary-fixed">
-                                        <span className="material-symbols-outlined text-[20px]">person_check</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-label-lg text-label-lg mb-1">Tur Dipandu oleh Ahli</h4>
-                                        <p className="font-body-sm text-body-sm text-on-primary/70">Spesialis properti kami akan memandu Anda melihat setiap detail rumah dan fasilitas komunitas.</p>
-                                    </div>
-                                </li>
-                                <li className="flex gap-4">
-                                    <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 dark:bg-primary/50 flex items-center justify-center text-primary-fixed-dim dark:text-primary-fixed">
-                                        <span className="material-symbols-outlined text-[20px]">pool</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-label-lg text-label-lg mb-1">Rasakan Fasilitas Langsung</h4>
-                                        <p className="font-body-sm text-body-sm text-on-primary/70">Lihat clubhouse, kolam renang olimpik, dan taman terawat kami secara langsung.</p>
-                                    </div>
-                                </li>
-                                <li className="flex gap-4">
-                                    <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 dark:bg-primary/50 flex items-center justify-center text-primary-fixed-dim dark:text-primary-fixed">
-                                        <span className="material-symbols-outlined text-[20px]">handshake</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-label-lg text-label-lg mb-1">Kenali Komunitas</h4>
-                                        <p className="font-body-sm text-body-sm text-on-primary/70">Rasakan suasana lingkungan dan temui calon tetangga Anda saat berkunjung.</p>
-                                    </div>
-                                </li>
+                                {visitItems.map((item, i) => (
+                                    <li key={i} className="flex gap-4">
+                                        <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 dark:bg-primary/50 flex items-center justify-center text-primary-fixed-dim dark:text-primary-fixed">
+                                            <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-label-lg text-label-lg mb-1">{item.title}</h4>
+                                            <p className="font-body-sm text-body-sm text-on-primary/70">{item.description}</p>
+                                        </div>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
                     </div>

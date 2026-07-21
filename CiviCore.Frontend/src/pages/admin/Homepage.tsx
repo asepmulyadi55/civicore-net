@@ -23,6 +23,7 @@ const TABS = [
   { key: 'navigation', label: 'Navigation', icon: 'menu' },
   { key: 'footer', label: 'Footer', icon: 'web_asset' },
   { key: 'emergency', label: 'Kontak Darurat', icon: 'emergency' },
+  { key: 'visit', label: 'Jadwalkan Kunjungan', icon: 'calendar_month' },
   { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search' },
 ];
 
@@ -1341,6 +1342,160 @@ function EmergencyTab({ canEdit }: { canEdit: boolean }) {
   );
 }
 
+const VISIT_ICON_OPTIONS = [
+  { value: 'person_check', label: 'Person Check' },
+  { value: 'pool', label: 'Pool' },
+  { value: 'handshake', label: 'Handshake' },
+  { value: 'home', label: 'Home' },
+  { value: 'star', label: 'Star' },
+  { value: 'calendar_month', label: 'Calendar' },
+  { value: 'support_agent', label: 'Support Agent' },
+  { value: 'groups', label: 'Groups' },
+  { value: 'park', label: 'Park' },
+  { value: 'verified', label: 'Verified' },
+];
+
+function VisitTab({ canEdit }: { canEdit: boolean }) {
+  const { t } = useTranslation();
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ open: false, index: -1, title: '' });
+
+  useEffect(() => {
+    axios.get('/api/homepage/visit-settings')
+      .then(r => setItems(Array.isArray(r.data) ? r.data : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const addItem = () => setItems(prev => [...prev, { icon: 'star', title: '', description: '' }]);
+
+  const updateItem = (idx: number, key: string, value: string) =>
+    setItems(prev => prev.map((it, i) => i === idx ? { ...it, [key]: value } : it));
+
+  const removeItem = (idx: number) => setItems(prev => prev.filter((_, i) => i !== idx));
+
+  const moveUp = (idx: number) => {
+    if (idx === 0) return;
+    setItems(prev => { const next = [...prev]; [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]; return next; });
+  };
+
+  const moveDown = (idx: number) => {
+    setItems(prev => { if (idx === prev.length - 1) return prev; const next = [...prev]; [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]; return next; });
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await axios.put('/api/homepage/visit-settings', items);
+      setSuccess(true); setTimeout(() => setSuccess(false), 3000);
+    } catch { }
+    setSaving(false);
+  };
+
+  if (loading) return <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div>;
+
+  return (
+    <SectionCard icon="calendar_month" iconBg="bg-green-100 dark:bg-green-900/30" iconColor="text-green-600" title={t('homepage.title_visit', 'Jadwalkan Kunjungan — Sidebar')} subtitle={t('homepage.subtitle_visit', 'Selling points shown in the green sidebar on the Schedule Visit page')} badge={items.length}>
+      <SuccessBanner show={success} />
+      <div className="p-4 sm:p-6 space-y-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          {t('homepage.hint_visit', 'These items appear in the "Mengapa Harus Berkunjung?" card on the visit scheduling page.')}
+        </p>
+
+        {items.length === 0 && (
+          <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+            <span className="material-icons text-4xl text-slate-300 dark:text-slate-600 mb-2 block">calendar_month</span>
+            <p className="text-sm text-slate-500">{t('homepage.empty_visit', 'No items yet. Click "Add Item" to get started.')}</p>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {items.map((item, idx) => (
+            <div key={idx} className="flex flex-col sm:flex-row sm:items-start gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl">
+              <div className="flex items-center gap-3 sm:contents">
+                {/* Move buttons */}
+                <div className="flex flex-col gap-1 shrink-0">
+                  <button onClick={() => moveUp(idx)} disabled={idx === 0 || !canEdit}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                    <span className="material-icons text-sm text-slate-500">arrow_upward</span>
+                  </button>
+                  <button onClick={() => moveDown(idx)} disabled={idx === items.length - 1 || !canEdit}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                    <span className="material-icons text-sm text-slate-500">arrow_downward</span>
+                  </button>
+                </div>
+
+                {/* Icon selector */}
+                <div className="flex-1 min-w-0 sm:flex-none sm:shrink-0">
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">{t('homepage.label_icon', 'Icon')}</label>
+                  <select value={item.icon || 'star'} disabled={!canEdit}
+                    onChange={e => updateItem(idx, 'icon', e.target.value)}
+                    className="w-full sm:w-auto text-sm bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-2 text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-60">
+                    {VISIT_ICON_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+
+                {/* Preview icon */}
+                <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                  <span className="material-icons text-green-600 text-[18px]">{item.icon || 'star'}</span>
+                </div>
+
+                {/* Delete */}
+                {canEdit && (
+                  <button onClick={() => setDeleteModal({ open: true, index: idx, title: item.title })}
+                    className="shrink-0 ml-auto sm:ml-0 sm:order-last w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
+                    <span className="material-icons text-[18px]">delete</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Title & Description */}
+              <div className="flex-1 min-w-0 grid grid-cols-1 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">{t('homepage.label_title', 'Judul')}</label>
+                  <input value={item.title} disabled={!canEdit} onChange={e => updateItem(idx, 'title', e.target.value)}
+                    placeholder="e.g. Tur Dipandu oleh Ahli"
+                    className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-60" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">{t('homepage.label_description', 'Deskripsi')}</label>
+                  <textarea value={item.description} disabled={!canEdit} onChange={e => updateItem(idx, 'description', e.target.value)}
+                    placeholder="e.g. Spesialis properti kami akan memandu..."
+                    rows={2}
+                    className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 outline-none resize-none disabled:opacity-60" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {canEdit && (
+          <button onClick={addItem}
+            className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 rounded-xl hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors w-full justify-center text-sm font-semibold cursor-pointer">
+            <span className="material-icons text-[18px]">add</span>
+            {t('homepage.btn_add_item', 'Add Item')}
+          </button>
+        )}
+      </div>
+
+      {canEdit && <SaveButton onClick={save} loading={saving} label={t('homepage.btn_save_visit', 'Save Settings')} />}
+
+      <ConfirmModal
+        open={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, index: -1, title: '' })}
+        onConfirm={() => { removeItem(deleteModal.index); setDeleteModal({ open: false, index: -1, title: '' }); }}
+        icon="delete_outline"
+        title={t('homepage.label_delete_item', 'Delete Item?')}
+        message={<>{t('homepage.text_are_you_sure_you_want_to_delete', 'Are you sure you want to delete')} <strong>{deleteModal.title || t('homepage.text_this_item', 'this item')}</strong>? {t('homepage.msg_cannot_be_undone', 'This cannot be undone.')}</>}
+        confirmLabel={t('homepage.text_yes_delete', 'Yes, Delete')}
+      />
+    </SectionCard>
+  );
+}
+
 /* Main Component */
 export default function AdminHomepage() {
   const { t } = useTranslation();
@@ -1362,6 +1517,7 @@ export default function AdminHomepage() {
       case 'navigation': return <NavigationTab />;
       case 'footer': return <FooterTab canEdit={canEdit} />;
       case 'emergency': return <EmergencyTab canEdit={canEdit} />;
+      case 'visit': return <VisitTab canEdit={canEdit} />;
       case 'metadata': return <MetadataTab canEdit={canEdit} />;
       default: return null;
     }

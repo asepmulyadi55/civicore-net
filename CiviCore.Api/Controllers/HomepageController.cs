@@ -943,6 +943,34 @@ public class HomepageController : ControllerBase
         return Ok(new { message = "Kontak darurat disimpan." });
     }
 
+    // ── Visit Page Settings ───────────────────────────────────────────────────
+
+    [HttpGet("visit-settings")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetVisitSettings()
+    {
+        var json = await GetSettingValue("homepage_visit_settings");
+        if (string.IsNullOrEmpty(json))
+        {
+            var defaults = new[]
+            {
+                new { icon = "person_check", title = "Tur Dipandu oleh Ahli", description = "Spesialis properti kami akan memandu Anda melihat setiap detail rumah dan fasilitas komunitas." },
+                new { icon = "pool",         title = "Rasakan Fasilitas Langsung", description = "Lihat clubhouse, kolam renang olimpik, dan taman terawat kami secara langsung." },
+                new { icon = "handshake",    title = "Kenali Komunitas", description = "Rasakan suasana lingkungan dan temui calon tetangga Anda saat berkunjung." },
+            };
+            return Ok(defaults);
+        }
+        return Content(json, MediaTypeJson);
+    }
+
+    [RequirePermission("homepage_visit.edit")]
+    [HttpPut("visit-settings")]
+    public async Task<IActionResult> UpdateVisitSettings([FromBody] JsonElement body)
+    {
+        await SaveSetting("homepage_visit_settings", body.GetRawText());
+        return Ok(new { message = "Visit settings saved." });
+    }
+
     // ── Form Submissions ──────────────────────────────────────────────────────
 
     private async Task<string> GetReceiverEmail()
