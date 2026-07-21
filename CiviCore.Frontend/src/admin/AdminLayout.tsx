@@ -55,6 +55,7 @@ const NAV_GROUPS = [
   { key: 'navigation', label: 'Navigation', icon: 'menu', path: '/homepage/navigation', permission: 'homepage_navigation.view' },
   { key: 'footer', label: 'Footer', icon: 'web_asset', path: '/homepage/footer', permission: 'homepage_footer.view' },
   { key: 'emergency', label: 'Kontak Darurat', icon: 'emergency', path: '/homepage/emergency', permission: 'homepage_emergency.view' },
+  { key: 'visit', label: 'Jadwalkan Kunjungan', icon: 'calendar_month', path: '/homepage/visit', permission: 'homepage_visit.view' },
   { key: 'metadata', label: 'SEO & Metadata', icon: 'manage_search', path: '/homepage/metadata', permission: 'homepage_metadata.view' }]
 
 },
