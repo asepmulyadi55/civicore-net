@@ -289,20 +289,28 @@ When you push new code, SSH into the VPS and run:
 ```bash
 cd ~/civicore-net
 git pull origin main
-docker compose up -d --build
+
+# Build first (website stays online)
+docker compose build
+
+# Restart containers with new image (1-2 seconds downtime)
+docker compose up -d
 ```
 
 To rebuild only a specific service (faster):
 
 ```bash
 # Only rebuild the public site
-docker compose up -d --build web
+docker compose build web
+docker compose up -d web
 
 # Only rebuild the admin panel
-docker compose up -d --build frontend
+docker compose build frontend
+docker compose up -d frontend
 
 # Only rebuild the API
-docker compose up -d --build api
+docker compose build api
+docker compose up -d api
 ```
 
 Check container status at any time:

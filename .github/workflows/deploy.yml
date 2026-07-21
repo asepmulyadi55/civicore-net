@@ -77,10 +77,8 @@ jobs:
             fi
 
             if [ "$CHANGED_WEB" = "true" ]; then
-              echo ">>> Web changed — clean rebuild: web"
-              docker compose stop web
-              docker compose rm -f web
-              docker compose up -d --build web
+              echo ">>> Web changed — queuing rebuild: web"
+              SERVICES="$SERVICES web"
             fi
 
             if [ "$CHANGED_FRONTEND" = "true" ]; then
@@ -89,8 +87,10 @@ jobs:
             fi
 
             if [ -n "$SERVICES" ]; then
-              echo ">>> Building and restarting:$SERVICES"
-              docker compose up -d --build $SERVICES
+              echo ">>> Building new images (website stays up during build):$SERVICES"
+              docker compose build $SERVICES
+              echo ">>> Restarting containers with new images (minimal downtime):$SERVICES"
+              docker compose up -d $SERVICES
             fi
 
             echo ">>> Cleaning up unused Docker images..."
