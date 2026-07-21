@@ -77,8 +77,10 @@ jobs:
             fi
 
             if [ "$CHANGED_WEB" = "true" ]; then
-              echo ">>> Web changed — queuing rebuild: web"
-              SERVICES="$SERVICES web"
+              echo ">>> Web changed — clean rebuild: web"
+              docker compose stop web
+              docker compose rm -f web
+              docker compose up -d --build web
             fi
 
             if [ "$CHANGED_FRONTEND" = "true" ]; then

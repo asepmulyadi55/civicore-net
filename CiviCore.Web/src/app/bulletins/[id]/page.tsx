@@ -219,12 +219,12 @@ export default function BulletinDetailPage() {
 
             {/* Message Support Modal */}
             {showMsgModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setShowMsgModal(false)}>
-                    <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-2xl p-8 w-full max-w-md relative"  tabIndex={0} role="button" onKeyDown={(e) => { if(["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" tabIndex={0} role="button" onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setShowMsgModal(false)}>
+                    <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-2xl p-8 w-full max-w-md relative" tabIndex={0} role="button" onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={e => e.stopPropagation()}>
                         <button onClick={() => setShowMsgModal(false)} className="absolute top-4 right-4 text-text-muted hover:text-primary transition-colors">
                             <span className="material-symbols-outlined">close</span>
                         </button>
-                        <h2 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mb-2">Hubungi Manajemen</h2>
+                        <h2 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mb-2">Hubungi Penerbit</h2>
                         <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6">Terkait: <span className="font-semibold text-on-surface dark:text-on-primary">{bulletin.title}</span></p>
 
                         {msgStatus === 'success' ? (
