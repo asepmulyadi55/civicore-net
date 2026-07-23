@@ -399,13 +399,13 @@ namespace CiviCore.Api.Controllers
                 var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Id.ToString()) };
                 var identity = new ClaimsIdentity(claims, IdentityConstants.TwoFactorUserIdScheme);
                 await HttpContext.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, new ClaimsPrincipal(identity));
-                return Redirect($"{loginUrl}?requires_2fa=true&email={Uri.EscapeDataString(user.Email)}");
+                return Redirect($"{loginUrl}?requires_2fa=true&email={Uri.EscapeDataString(user.Email ?? "")}");
             }
             
             var googleSessionToken = await SignInWithSessionAsync(user, isPersistent: true, method: "Google");
 
             // Redirect to login page with token so the React frontend can save it to localStorage
-            return Redirect($"{loginUrl}?requires_2fa_setup=true&token={googleSessionToken}&user={encodedUser}&email={Uri.EscapeDataString(user.Email)}");
+            return Redirect($"{loginUrl}?requires_2fa_setup=true&token={googleSessionToken}&user={encodedUser}&email={Uri.EscapeDataString(user.Email ?? "")}");
         }
 
         [HttpPost("2fa/setup")]

@@ -10,6 +10,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Serilog;
 using Serilog.Events;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -147,9 +148,9 @@ builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddHttpClient<IRecaptchaService, RecaptchaService>();
 
-builder.Services.Configure<Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersOptions>(options =>
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
