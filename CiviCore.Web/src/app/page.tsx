@@ -27,23 +27,39 @@ async function getProperties() {
 
 export async function generateMetadata(): Promise<Metadata> {
     const data = await getData('metadata');
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dwipapuri.amsite.click';
     
-    const title = data?.page_title || "Dwipapuri - Community Events & Residential Living";
-    const description = data?.meta_description || "Dwipapuri residential portal for community events, bulletins, and properties.";
-    const keywords = data?.meta_keywords || "perumahan, dwipapuri, community";
-    const FRONTEND_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const ogImage = data?.og_image ? (data.og_image.startsWith('http') ? data.og_image : `${FRONTEND_URL}${data.og_image}`) : null;
+    const title = data?.page_title || "Dwipapuri Residence - Portal Komunitas & Perumahan";
+    const description = data?.meta_description || "Portal resmi Perumahan Dwipapuri Residence, Cipadung, Cibiru, Bandung. Berita warga, acara komunitas, fasilitas, dan informasi hunian.";
+    const keywords = data?.meta_keywords || "perumahan, dwipapuri, cibiru, bandung, cipadung, dwipapuri residence";
+    const ogImage = data?.og_image 
+        ? (data.og_image.startsWith('http') ? data.og_image : `${SITE_URL}${data.og_image}`)
+        : `${SITE_URL}/logo.png`;
+    const siteName = data?.org_name || "Dwipapuri Residence";
     const ogTitle = data?.og_title || title;
     const ogDescription = data?.og_description || description;
     
     return {
+        metadataBase: new URL(SITE_URL),
         title,
         description,
         keywords,
+        icons: {
+            icon: [
+                { url: '/logo.png', type: 'image/png' },
+                { url: '/favicon.ico', sizes: 'any' }
+            ],
+            shortcut: '/logo.png',
+            apple: '/logo.png',
+        },
         openGraph: {
+            siteName: siteName,
             title: ogTitle,
             description: ogDescription,
-            ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+            url: SITE_URL,
+            type: "website",
+            locale: "id_ID",
+            images: [{ url: ogImage }],
         }
     };
 }
@@ -65,24 +81,44 @@ export default async function Page() {
     const properties = propertiesData?.data?.slice(0, 3) || []; 
 
     const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dwipapuri.amsite.click';
-    const orgJsonLd = seoData?.org_name
-        ? JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: seoData.org_name,
-              url: SITE_URL,
-              logo: `${SITE_URL}/logo.png`,
-          })
-        : null;
+    const siteName = seoData?.org_name || 'Dwipapuri Residence';
+
+    const webSiteJsonLd = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: siteName,
+        alternateName: ['Dwipapuri', `${siteName} Bandung`],
+        url: SITE_URL,
+    });
+
+    const residenceJsonLd = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Residence',
+        name: siteName,
+        url: SITE_URL,
+        logo: `${SITE_URL}/logo.png`,
+        image: `${SITE_URL}/logo.png`,
+        address: {
+            '@type': 'PostalAddress',
+            streetAddress: 'Jl. Desa Cipadung',
+            addressLocality: 'Cipadung, Cibiru',
+            addressRegion: 'Kota Bandung, Jawa Barat',
+            postalCode: '40615',
+            addressCountry: 'ID'
+        },
+        description: seoData?.meta_description || 'Dwipapuri Residence adalah kawasan hunian dan portal komunitas warga di Cipadung, Cibiru, Bandung.'
+    });
 
     return (
         <>
-            {orgJsonLd && (
-                <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: orgJsonLd }}
-                />
-            )}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: webSiteJsonLd }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: residenceJsonLd }}
+            />
             <HomePageClient 
                 hero={hero || {}} 
                 events={events || []} 

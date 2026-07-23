@@ -1,9 +1,36 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dwipapuri.amsite.click';
+
 export const metadata: Metadata = {
-  title: "Dwipapuri - Community Events & Residential Living",
-  description: "Dwipapuri residential portal for community events, bulletins, and properties.",
+  metadataBase: new URL(SITE_URL),
+  title: "Dwipapuri Residence - Portal Komunitas & Perumahan",
+  description: "Portal resmi Perumahan Dwipapuri Residence, Cipadung, Cibiru, Bandung. Berita warga, acara komunitas, fasilitas, dan informasi hunian.",
+  icons: {
+    icon: [
+      { url: '/logo.png', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' }
+    ],
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
+  openGraph: {
+    siteName: "Dwipapuri Residence",
+    title: "Dwipapuri Residence - Portal Komunitas & Perumahan",
+    description: "Portal resmi Perumahan Dwipapuri Residence, Cipadung, Cibiru, Bandung.",
+    url: SITE_URL,
+    type: "website",
+    locale: "id_ID",
+    images: [
+      {
+        url: `${SITE_URL}/logo.png`,
+        width: 1200,
+        height: 630,
+        alt: "Dwipapuri Residence",
+      }
+    ]
+  }
 };
 
 export default function RootLayout({
