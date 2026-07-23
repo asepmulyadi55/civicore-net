@@ -23,8 +23,13 @@ public class UnitController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var units = await _context.Set<Unit>().OrderBy(u => u.UnitNumber.Length).ThenBy(u => u.UnitNumber).ToListAsync();
-        return Ok(units);
+        var units = await _context.Set<Unit>().ToListAsync();
+        var sorted = units.OrderBy(u =>
+        {
+            var part = u.UnitNumber.Split('&')[0].Trim();
+            return int.TryParse(part, out var n) ? n : int.MaxValue;
+        }).ToList();
+        return Ok(sorted);
     }
 
     [HttpGet("{id}")]

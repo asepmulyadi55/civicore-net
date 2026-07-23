@@ -137,7 +137,8 @@ function CustomSelect({ label, value, onChange, options, disabled, icon }) {
 function PaymentModal({ open, onClose, onSaved, editData = null }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({ householderId: '', amount: 0, notes: '', year: new Date().getFullYear(), paymentMethodId: '' });
-  const [householders, setHouseholders] = useState([]);
+  const [hhResults, setHhResults] = useState([]);
+  const [hhLoading, setHhLoading] = useState(false);
   const [blocks, setBlocks] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [errors, setErrors] = useState({});
@@ -151,6 +152,8 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
   const dropdownRef = useRef(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const searchTimerRef = useRef<any>(null);
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -162,11 +165,21 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownRef]);
 
+  // Debounced server-side householder search
   useEffect(() => {
-    if (!dropdownOpen) {
-      setSearchQuery('');
-    }
-  }, [dropdownOpen]);
+    if (!dropdownOpen) { setSearchQuery(''); return; }
+    clearTimeout(searchTimerRef.current);
+    setHhLoading(true);
+    searchTimerRef.current = setTimeout(() => {
+      const params = new URLSearchParams({ per_page: '20' });
+      if (searchQuery.trim()) params.set('search', searchQuery.trim());
+      axios.get(`/api/householders?${params}`)
+        .then(res => setHhResults(res.data.data || res.data || []))
+        .catch(() => setHhResults([]))
+        .finally(() => setHhLoading(false));
+    }, 300);
+    return () => clearTimeout(searchTimerRef.current);
+  }, [dropdownOpen, searchQuery]);
 
   useEffect(() => {
     if (open && form.householderId && form.year) {
@@ -233,7 +246,6 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
       }
       setProofFile(null);
       setErrors({});
-      axios.get('/api/householders').then((res) => setHouseholders(res.data.data || res.data)).catch(() => {});
       axios.get('/api/payments/methods').then((res) => setPaymentMethods(res.data)).catch(() => {});
     }
   }, [open, editData]);
@@ -288,14 +300,10 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
 
   const totalAmount = form.amount * selectedMonths.size;
 
-  const selectedResident = householders.find((h) => h.id === form.householderId);
-  const filteredHouseholders = householders.filter((h) => {
-    const term = searchQuery.toLowerCase();
-    const name = h.fullname?.toLowerCase() || '';
-    const unit = (h.unit?.unitNumber || h.unit_number || '').toLowerCase();
-    const block = (h.block?.name || '').toLowerCase();
-    return name.includes(term) || unit.includes(term) || block.includes(term);
-  });
+  const selectedResident = hhResults.find((h) => h.id === form.householderId)
+    // When editing, the selected householder may not be in the current search results — fall back to the editData snapshot
+    || (editData ? { id: editData.householderId, fullname: editData.householderName, block: null, unit: null, unit_number: editData.unitNumber } : null);
+  const filteredHouseholders = hhResults;
 
   return (
     <Modal open={open} onClose={onClose} title={editData ? t('payments.modal_edit') : t('payments.modal_record')} subtitle={t('payments.modal_subtitle')} size="lg">
@@ -330,12 +338,18 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
                 className={`w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-semibold text-slate-700 dark:text-white outline-none focus:border-primary transition-all placeholder:text-slate-500 ${!!editData ? 'opacity-70 cursor-not-allowed' : ''}`} />
               
                <span className={`material-icons absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}>expand_more</span>
-               
-               {dropdownOpen &&
+                {dropdownOpen &&
               <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#1B2236] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden py-1">
-                   {filteredHouseholders.length === 0 ?
-                <div className="p-4 text-center text-sm text-slate-500">{t('payments.no_householder')}</div> :
-
+                   {hhLoading ? (
+                <div className="p-4 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
+                  <span className="material-icons text-primary text-base animate-spin">autorenew</span>
+                  {t('common.searching', 'Searching...')}
+                </div>
+              ) : filteredHouseholders.length === 0 ? (
+                <div className="p-4 text-center text-sm text-slate-500">
+                  {searchQuery ? t('payments.no_householder') : t('payments.search_hint', 'Type a name to search...')}
+                </div>
+              ) : (
                 filteredHouseholders.map((h) =>
                 <div key={h.id}
                 tabIndex={0} role="button" onClick={() => {
@@ -351,7 +365,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
                          <span className="text-slate-500 dark:text-slate-400 text-[13px] whitespace-nowrap">— {h.block?.name || ''} Unit {h.unit?.unitNumber || h.unit_number || '?'}</span>
                        </div>
                 )
-                }
+              )}
                  </div>
               }
             </div>

@@ -27,6 +27,18 @@ public class BlockController : ControllerBase
         _context = context;
     }
 
+    // Extracts the leading number from a unit string, supporting combined units like "2 & 6" or "21 & 23".
+    // Falls back to int.MaxValue for non-numeric strings so they sort last.
+    private static int ParseLeadingNumber(string s)
+    {
+        var part = s.Split('&')[0].Trim();
+        return int.TryParse(part, out var n) ? n : int.MaxValue;
+    }
+
+    // Normalises spacing around '&' so "2&6", "2 &6", "2& 6" all become "2 & 6".
+    private static string NormalizeUnitNumber(string s)
+        => System.Text.RegularExpressions.Regex.Replace(s, @"\s*&\s*", " & ").Trim();
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -43,31 +55,34 @@ public class BlockController : ControllerBase
             query = query.Where(b => b.Id == userBlockId.Value);
         }
 
-        var blocks = await query
+        var rawBlocks = await query
             .OrderBy(b => b.Name)
-            .Select(b => new {
-                b.Id,
-                b.Name,
-                b.Description,
-                units_count = b.Units.Count,
-                owner_occupied_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.OwnerOccupied),
-                rented_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Rented),
-                vacant_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Vacant),
-                public_facility_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.PublicFacility),
-                developer_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Developer),
-                Coordinators = b.Coordinators.Select(c => new {
-                    type = c.ResidentId != null ? ResidentRole : HouseholderRole,
-                    id = c.ResidentId ?? c.HouseholderId,
-                    name = c.Resident != null ? c.Resident.Fullname : (c.Householder != null ? c.Householder.Fullname : "Unknown")
-                }).ToList(),
-                Units = b.Units.OrderBy(u => u.UnitNumber.Length).ThenBy(u => u.UnitNumber).Select(u => new {
+            .ToListAsync();
+
+        var blocks = rawBlocks.Select(b => new {
+            b.Id,
+            b.Name,
+            b.Description,
+            units_count = b.Units.Count,
+            owner_occupied_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.OwnerOccupied),
+            rented_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Rented),
+            vacant_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Vacant),
+            public_facility_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.PublicFacility),
+            developer_units_count = b.Units.Count(u => u.HouseStatus == CiviCore.Domain.Enums.HouseStatus.Developer),
+            Coordinators = b.Coordinators.Select(c => new {
+                type = c.ResidentId != null ? ResidentRole : HouseholderRole,
+                id = c.ResidentId ?? c.HouseholderId,
+                name = c.Resident != null ? c.Resident.Fullname : (c.Householder != null ? c.Householder.Fullname : "Unknown")
+            }).ToList(),
+            Units = b.Units
+                .OrderBy(u => ParseLeadingNumber(u.UnitNumber))
+                .Select(u => new {
                     u.Id,
                     u.UnitNumber,
                     u.HouseStatus,
                     IsAssigned = _context.Set<Householder>().Any(h => h.UnitId == u.Id)
                 }).ToList()
-            })
-            .ToListAsync();
+        }).ToList();
         return Ok(blocks);
     }
 
@@ -104,12 +119,14 @@ public class BlockController : ControllerBase
                 id = c.ResidentId ?? c.HouseholderId,
                 name = c.Resident != null ? c.Resident.Fullname : (c.Householder != null ? c.Householder.Fullname : "Unknown")
             }).ToList(),
-            Units = block.Units.OrderBy(u => u.UnitNumber.Length).ThenBy(u => u.UnitNumber).Select(u => new {
-                u.Id,
-                u.UnitNumber,
-                u.HouseStatus,
-                current_householder = u.Householder != null ? new { fullname = u.Householder.Fullname } : null
-            }).ToList()
+            Units = block.Units
+                .OrderBy(u => ParseLeadingNumber(u.UnitNumber))
+                .Select(u => new {
+                    u.Id,
+                    u.UnitNumber,
+                    u.HouseStatus,
+                    current_householder = u.Householder != null ? new { fullname = u.Householder.Fullname } : null
+                }).ToList()
         });
     }
 
@@ -299,7 +316,7 @@ public class BlockController : ControllerBase
                     else
                         blockLetter = lastBlockLetter;
 
-                    var unitNum = worksheet.Cell(row, 2).GetString().Trim();
+                    var unitNum = NormalizeUnitNumber(worksheet.Cell(row, 2).GetString().Trim());
                     var rawStatus = System.Text.RegularExpressions.Regex.Replace(
                         worksheet.Cell(row, 4).GetString().Trim().ToLower(), 
                         @"\s+", " ", System.Text.RegularExpressions.RegexOptions.None, System.TimeSpan.FromMilliseconds(500));
