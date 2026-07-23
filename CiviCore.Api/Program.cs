@@ -147,12 +147,19 @@ builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddHttpClient<IRecaptchaService, RecaptchaService>();
 
+builder.Services.Configure<Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
     {
         options.ClientId = builder.Configuration["Google:ClientId"] ?? "dummy";
         options.ClientSecret = builder.Configuration["Google:ClientSecret"] ?? "dummy";
-        options.CallbackPath = "/auth/google/callback";
+        options.CallbackPath = "/api/auth/google/callback";
     });
 
 var app = builder.Build();
@@ -193,6 +200,8 @@ if (!app.Environment.IsDevelopment())
         });
     }));
 }
+
+app.UseForwardedHeaders();
 
 // please comment it while development to avoid certificate error
 app.UseHttpsRedirection();

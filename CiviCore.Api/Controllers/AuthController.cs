@@ -340,15 +340,21 @@ namespace CiviCore.Api.Controllers
         [HttpGet("google-response")]
         public async Task<IActionResult> GoogleResponse([FromQuery] string intent = "login")
         {
-            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
-            if (!result.Succeeded) return BadRequest();
-
-            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
-            if (email == null) return BadRequest();
-
             var frontendUrl = _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
             var loginUrl = $"{frontendUrl}/login";
             var registerUrl = $"{frontendUrl}/register";
+
+            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            if (!result.Succeeded || result.Principal == null)
+            {
+                return Redirect($"{loginUrl}?message={Uri.EscapeDataString("Google authentication failed or expired. Please try again.")}&isError=true");
+            }
+
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(email))
+            {
+                return Redirect($"{loginUrl}?message={Uri.EscapeDataString("Could not retrieve email from Google account.")}&isError=true");
+            }
 
             var user = await _userManager.FindByEmailAsync(email);
 
