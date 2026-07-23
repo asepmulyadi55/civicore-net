@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import useDarkMode from './useDarkMode';
 import axios from 'axios';
 import { usePermissions } from './PermissionsContext';
+import { ConfirmModal } from './components/ui';
 
 const NAV_GROUPS = [
 {
@@ -155,6 +156,7 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
   const navigate = useNavigate();
   const [dark, toggleDark] = useDarkMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const { permissions, loading: loadingPerms } = usePermissions();
   const userStr = localStorage.getItem('admin_user');
   const user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : {};
@@ -303,7 +305,7 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
               <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">{user.name || 'Admin'}</p>
               <p className="text-xs text-slate-400 truncate">{user.email || ''}</p>
             </div>
-            <button onClick={handleLogout} title="Logout" className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
+            <button onClick={() => setLogoutConfirmOpen(true)} title="Logout" className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
               <span className="material-icons text-lg">logout</span>
             </button>
           </div>
@@ -356,6 +358,16 @@ export default function AdminLayout({ children, title, subtitle }: {children: Re
           }
         </main>
       </div>
+
+      <ConfirmModal
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        onConfirm={handleLogout}
+        title={t('sidebar.logout_title', 'Log Out?')}
+        message={t('sidebar.logout_msg', 'Are you sure you want to log out of your account?')}
+        confirmLabel={t('sidebar.btn_logout', 'Log Out')}
+        icon="logout"
+      />
     </div>);
 
 }

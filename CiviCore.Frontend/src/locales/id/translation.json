@@ -33,7 +33,10 @@
     "memo": "Memo Admin",
     "emergency": "Kontak Darurat",
     "hp-property": "Properti",
-    "audit": "Jejak Audit"
+    "audit": "Jejak Audit",
+    "logout_title": "Keluar?",
+    "logout_msg": "Apakah Anda yakin ingin keluar dari akun Anda?",
+    "btn_logout": "Keluar"
   },
   "settings": {
     "title": "Pengaturan",

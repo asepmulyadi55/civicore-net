@@ -33,7 +33,10 @@
     "memo": "Admin Memo",
     "emergency": "Emergency Contacts",
     "hp-property": "Properties",
-    "audit": "Audit Trail"
+    "audit": "Audit Trail",
+    "logout_title": "Log Out?",
+    "logout_msg": "Are you sure you want to log out of your account?",
+    "btn_logout": "Log Out"
   },
   "settings": {
     "title": "Settings",

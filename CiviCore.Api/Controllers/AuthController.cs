@@ -347,8 +347,8 @@ namespace CiviCore.Api.Controllers
             if (email == null) return BadRequest();
 
             var frontendUrl = _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
-            var loginUrl = $"{frontendUrl}/admin/login";
-            var registerUrl = $"{frontendUrl}/admin/register";
+            var loginUrl = $"{frontendUrl}/login";
+            var registerUrl = $"{frontendUrl}/register";
 
             var user = await _userManager.FindByEmailAsync(email);
 
