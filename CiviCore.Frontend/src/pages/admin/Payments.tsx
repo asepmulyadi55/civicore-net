@@ -379,7 +379,7 @@ function PaymentModal({ open, onClose, onSaved, editData = null }) {
             disabled={!!editData}
             value={form.year}
             onChange={(val) => setForm((f) => ({ ...f, year: Number(val) }))}
-            options={[0, 1, 2].map((i) => ({ value: new Date().getFullYear() - i, label: String(new Date().getFullYear() - i) }))} />
+            options={Array.from({ length: Math.max(1, new Date().getFullYear() - 2026 + 2) }, (_, i) => new Date().getFullYear() + 1 - i).filter((y) => y >= 2026).map((y) => ({ value: y, label: String(y) }))} />
           
         </div>
 

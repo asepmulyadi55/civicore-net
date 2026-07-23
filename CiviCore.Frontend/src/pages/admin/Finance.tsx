@@ -148,7 +148,7 @@ function GenerateReportModal({ open, onClose, onSaved }: { open: boolean; onClos
             id="report-year"
             value={String(form.year)}
             onChange={(e) => setForm(p => ({ ...p, year: Number(e.target.value) }))}
-            options={Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => ({ value: String(y), label: String(y) }))}
+            options={Array.from({ length: Math.max(1, new Date().getFullYear() - 2026 + 2) }, (_, i) => new Date().getFullYear() + 1 - i).filter((y) => y >= 2026).map((y) => ({ value: String(y), label: String(y) }))}
           />
         </div>
         <div className="flex justify-end gap-3 pt-2">
