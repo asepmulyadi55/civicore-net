@@ -121,7 +121,14 @@ namespace CiviCore.Api.Controllers
                     return StatusCode(403, new { message = "CAPTCHA verification required.", requires_captcha = true });
                 }
 
-                // 2FA flow (default)
+                if (securityMode == "none")
+                {
+                    // No extra security — issue token directly
+                    var sessionToken = await SignInWithSessionAsync(user, isPersistent: false, method: "password");
+                    return Ok(new { message = "Login successful", token = sessionToken, user = new { name = user.Name, email = user.Email, role = roleName ?? "", language = user.Language } });
+                }
+
+                // 2FA flow (securityMode == "2fa")
                 if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
                 {
                     var claims = new List<Claim> { new Claim(System.Security.Claims.ClaimTypes.Name, user.Id.ToString()) };
@@ -131,14 +138,7 @@ namespace CiviCore.Api.Controllers
                     return StatusCode(403, new { message = "Two factor authentication required", requires_2fa = true });
                 }
 
-                if (securityMode == "none")
-                {
-                    // No extra security — issue token directly
-                    var sessionToken = await SignInWithSessionAsync(user, isPersistent: false, method: "password");
-                    return Ok(new { message = "Login successful", token = sessionToken, user = new { name = user.Name, email = user.Email, role = roleName ?? "", language = user.Language } });
-                }
-
-                // Mandatory 2FA setup
+                // Mandatory 2FA setup for 2FA mode
                 return StatusCode(403, new { message = "Mandatory Security: You must set up Two-Factor Authentication.", requires_2fa_setup = true });
             }
 
@@ -391,21 +391,29 @@ namespace CiviCore.Api.Controllers
 
             var roles = await _userManager.GetRolesAsync(user);
             var userRole = roles.FirstOrDefault() ?? "";
+            var roleEntity = !string.IsNullOrEmpty(userRole) ? await _roleManager.FindByNameAsync(userRole) : null;
+            var securityMode = roleEntity?.SecurityMode ?? "2fa";
+
             var userJson = System.Text.Json.JsonSerializer.Serialize(new { name = user.Name, email = user.Email, role = userRole, language = user.Language });
             var encodedUser = Uri.EscapeDataString(userJson);
 
-            if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
+            if (securityMode == "2fa")
             {
-                var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Id.ToString()) };
-                var identity = new ClaimsIdentity(claims, IdentityConstants.TwoFactorUserIdScheme);
-                await HttpContext.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, new ClaimsPrincipal(identity));
-                return Redirect($"{loginUrl}?requires_2fa=true&email={Uri.EscapeDataString(user.Email ?? "")}");
+                if (!string.IsNullOrEmpty(user.TwoFactorSecretKey))
+                {
+                    var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Id.ToString()) };
+                    var identity = new ClaimsIdentity(claims, IdentityConstants.TwoFactorUserIdScheme);
+                    await HttpContext.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, new ClaimsPrincipal(identity));
+                    return Redirect($"{loginUrl}?requires_2fa=true&email={Uri.EscapeDataString(user.Email ?? "")}");
+                }
+                
+                var tempToken = await SignInWithSessionAsync(user, isPersistent: true, method: "Google");
+                return Redirect($"{loginUrl}?requires_2fa_setup=true&token={tempToken}&user={encodedUser}&email={Uri.EscapeDataString(user.Email ?? "")}");
             }
-            
-            var googleSessionToken = await SignInWithSessionAsync(user, isPersistent: true, method: "Google");
 
-            // Redirect to login page with token so the React frontend can save it to localStorage
-            return Redirect($"{loginUrl}?requires_2fa_setup=true&token={googleSessionToken}&user={encodedUser}&email={Uri.EscapeDataString(user.Email ?? "")}");
+            // For roles set to CAPTCHA or None, Google login completes authentication directly
+            var googleSessionToken = await SignInWithSessionAsync(user, isPersistent: true, method: "Google");
+            return Redirect($"{loginUrl}?token={googleSessionToken}&user={encodedUser}");
         }
 
         [HttpPost("2fa/setup")]
