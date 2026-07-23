@@ -48,6 +48,21 @@ namespace CiviCore.Api.Controllers
 
             return user.SessionToken;
         }
+
+        private bool HasActiveSession(ApplicationUser user, out int minutesAgo)
+        {
+            minutesAgo = 0;
+            if (string.IsNullOrEmpty(user.SessionToken) || !user.LastActiveAt.HasValue)
+                return false;
+
+            var elapsed = DateTime.UtcNow - user.LastActiveAt.Value;
+            if (elapsed.TotalMinutes < 30)
+            {
+                minutesAgo = Math.Max(1, (int)elapsed.TotalMinutes);
+                return true;
+            }
+            return false;
+        }
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
@@ -123,6 +138,11 @@ namespace CiviCore.Api.Controllers
 
                 if (securityMode == "none")
                 {
+                    if (!request.Force && HasActiveSession(user, out var minutesAgo))
+                    {
+                        return StatusCode(409, new { message = "Active session detected on another device.", active_session_conflict = true, last_active_minutes = minutesAgo });
+                    }
+
                     // No extra security — issue token directly
                     var sessionToken = await SignInWithSessionAsync(user, isPersistent: false, method: "password");
                     return Ok(new { message = "Login successful", token = sessionToken, user = new { name = user.Name, email = user.Email, role = roleName ?? "", language = user.Language } });
@@ -175,6 +195,11 @@ namespace CiviCore.Api.Controllers
             if (!user.IsActive)
                 return Unauthorized(new { message = user.EmailConfirmed ? "Your account has been deactivated." : "Your account is pending admin approval." });
 
+            if (!request.Force && HasActiveSession(user, out var captchaMinutesAgo))
+            {
+                return StatusCode(409, new { message = "Active session detected on another device.", active_session_conflict = true, last_active_minutes = captchaMinutesAgo });
+            }
+
             var captchaSessionToken = await SignInWithSessionAsync(user, request.RememberMe, method: "password + captcha");
 
             var userRoles = await _userManager.GetRolesAsync(user);
@@ -210,6 +235,11 @@ namespace CiviCore.Api.Controllers
             var totp = new Totp(Base32Encoding.ToBytes(user.TwoFactorSecretKey));
             if (totp.VerifyTotp(request.Code, out _, window: null))
             {
+                if (!request.Force && HasActiveSession(user, out var twofaMinutesAgo))
+                {
+                    return StatusCode(409, new { message = "Active session detected on another device.", active_session_conflict = true, last_active_minutes = twofaMinutesAgo });
+                }
+
                 var twoFactorSessionToken = await SignInWithSessionAsync(user, request.RememberMe, method: "password + 2FA");
 
                 var roles = await _userManager.GetRolesAsync(user);
@@ -331,14 +361,14 @@ namespace CiviCore.Api.Controllers
         }
 
         [HttpGet("google")]
-        public IActionResult GoogleLogin([FromQuery] string intent = "login")
+        public IActionResult GoogleLogin([FromQuery] string intent = "login", [FromQuery] bool force = false)
         {
-            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse", new { intent }) };
+            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse", new { intent, force }) };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
         [HttpGet("google-response")]
-        public async Task<IActionResult> GoogleResponse([FromQuery] string intent = "login")
+        public async Task<IActionResult> GoogleResponse([FromQuery] string intent = "login", [FromQuery] bool force = false)
         {
             var adminFrontendUrl = _config["AdminFrontendUrl"]?.TrimEnd('/') ?? _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
             var loginUrl = $"{adminFrontendUrl}/login";
@@ -387,6 +417,11 @@ namespace CiviCore.Api.Controllers
             if (!user.IsActive)
             {
                 return Redirect($"{loginUrl}?message={Uri.EscapeDataString("Your account is still pending admin approval.")}&isError=true");
+            }
+
+            if (!force && HasActiveSession(user, out var googleMinutesAgo))
+            {
+                return Redirect($"{loginUrl}?active_session_conflict=true&email={Uri.EscapeDataString(user.Email ?? "")}&minutes={googleMinutesAgo}");
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -508,6 +543,7 @@ namespace CiviCore.Api.Controllers
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool RememberMe { get; set; } = false;
+        public bool Force { get; set; } = false;
     }
 
     public class Login2FARequest
@@ -516,6 +552,7 @@ namespace CiviCore.Api.Controllers
         public string Password { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public bool RememberMe { get; set; } = false;
+        public bool Force { get; set; } = false;
     }
 
     public class LoginCaptchaRequest
@@ -524,6 +561,7 @@ namespace CiviCore.Api.Controllers
         public string Password { get; set; } = string.Empty;
         public string CaptchaToken { get; set; } = string.Empty;
         public bool RememberMe { get; set; } = false;
+        public bool Force { get; set; } = false;
     }
 
     public class RegisterRequest

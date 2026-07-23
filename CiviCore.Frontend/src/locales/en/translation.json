@@ -36,7 +36,10 @@
     "audit": "Audit Trail",
     "logout_title": "Log Out?",
     "logout_msg": "Are you sure you want to log out of your account?",
-    "btn_logout": "Log Out"
+    "btn_logout": "Log Out",
+    "session_conflict_title": "Active Session Detected",
+    "session_conflict_msg": "Your account is currently active on another device (last active {{minutes}} minute(s) ago). Signing in now will log out the other device. Do you want to continue?",
+    "btn_force_login": "Log Out Other Device & Continue"
   },
   "settings": {
     "title": "Settings",

@@ -36,7 +36,10 @@
     "audit": "Jejak Audit",
     "logout_title": "Keluar?",
     "logout_msg": "Apakah Anda yakin ingin keluar dari akun Anda?",
-    "btn_logout": "Keluar"
+    "btn_logout": "Keluar",
+    "session_conflict_title": "Sesi Aktif Terdeteksi",
+    "session_conflict_msg": "Akun Anda saat ini sedang aktif di perangkat lain (terakhir aktif {{minutes}} menit lalu). Masuk sekarang akan mengeluarkan perangkat tersebut. Apakah Anda ingin melanjutkan?",
+    "btn_force_login": "Keluar dari Perangkat Lain & Lanjutkan"
   },
   "settings": {
     "title": "Pengaturan",

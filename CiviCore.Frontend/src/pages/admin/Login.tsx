@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate, useLocation, Link, useSearchParams } from 'react-router-dom';
 import useDarkMode from '../../admin/useDarkMode';
 import { useTranslation } from 'react-i18next';
+import { ConfirmModal } from '../../admin/components/ui';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -23,6 +24,11 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const [dark, toggleDark] = useDarkMode();
   const { t } = useTranslation();
+  const [sessionConflict, setSessionConflict] = useState<{
+    open: boolean;
+    minutes: number;
+    loginType: 'password' | 'captcha' | '2fa' | 'google';
+  } | null>(null);
 
   // Set by the axios 401 handler when the server kicked this browser because the
   // account was signed in somewhere else. Read once, then cleared.
@@ -61,6 +67,19 @@ export default function Login() {
     const req2fa = searchParams.get('requires_2fa');
     const req2faSetup = searchParams.get('requires_2fa_setup');
     const email = searchParams.get('email');
+    const activeConflict = searchParams.get('active_session_conflict');
+    const conflictMinutes = searchParams.get('minutes');
+
+    if (activeConflict === 'true') {
+      if (email) setUsername(email);
+      setSessionConflict({
+        open: true,
+        minutes: conflictMinutes ? parseInt(conflictMinutes, 10) : 1,
+        loginType: 'google'
+      });
+      window.history.replaceState({}, document.title, '/login');
+      return;
+    }
 
     if (msg) {
       if (isError) setError(msg);
@@ -92,8 +111,8 @@ export default function Login() {
     }
   }, [searchParams, navigate]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (e?: any, force = false) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!username || !password) {
       setError(t('login.err_empty'));
       return;
@@ -106,6 +125,7 @@ export default function Login() {
         email: username,
         password: password,
         remember: remember,
+        force: force,
       });
       const { token, user } = response.data;
       localStorage.setItem('admin_token', token);
@@ -113,7 +133,13 @@ export default function Login() {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       navigate('/dashboard');
     } catch (err) {
-      if (err.response?.data?.requires_2fa) {
+      if (err.response?.data?.active_session_conflict) {
+        setSessionConflict({
+          open: true,
+          minutes: err.response.data.last_active_minutes || 1,
+          loginType: 'password'
+        });
+      } else if (err.response?.data?.requires_2fa) {
         setRequires2FA(true);
       } else if (err.response?.data?.requires_captcha) {
         setRequiresCaptcha(true);
@@ -140,8 +166,8 @@ export default function Login() {
     });
   };
 
-  const handleCaptchaLogin = async (e) => {
-    e.preventDefault();
+  const handleCaptchaLogin = async (e?: any, force = false) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!username || !password) { setError(t('login.err_empty')); return; }
     setIsLoading(true);
     setError(null);
@@ -162,6 +188,7 @@ export default function Login() {
         password,
         captchaToken: token,
         rememberMe: remember,
+        force: force,
       });
       const { token: sessionToken, user } = response.data;
       localStorage.setItem('admin_token', sessionToken);
@@ -169,7 +196,15 @@ export default function Login() {
       axios.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'CAPTCHA login failed. Please try again.');
+      if (err.response?.data?.active_session_conflict) {
+        setSessionConflict({
+          open: true,
+          minutes: err.response.data.last_active_minutes || 1,
+          loginType: 'captcha'
+        });
+      } else {
+        setError(err.response?.data?.message || 'CAPTCHA login failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -192,8 +227,8 @@ export default function Login() {
     }
   };
 
-  const handle2FASubmit = async (e) => {
-    e.preventDefault();
+  const handle2FASubmit = async (e?: any, force = false) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!twoFaCode) {
       setError(t('login.err_code_empty'));
       return;
@@ -207,7 +242,6 @@ export default function Login() {
         const config = tempToken ? { headers: { Authorization: `Bearer ${tempToken}` } } : {};
         response = await axios.post('/api/auth/2fa/verify', { code: twoFaCode }, config);
         
-        // Setup successful. Now we can fully login.
         if (tempToken && tempUserStr) {
           localStorage.setItem('admin_token', tempToken);
           localStorage.setItem('admin_user', tempUserStr);
@@ -215,12 +249,12 @@ export default function Login() {
           navigate('/dashboard');
           return;
         } else {
-          // Normal flow fallback
           response = await axios.post('/api/auth/login-2fa', {
             email: username,
             password: password,
             code: twoFaCode,
             rememberMe: remember,
+            force: force,
           });
         }
       } else {
@@ -229,6 +263,7 @@ export default function Login() {
           password: password,
           code: twoFaCode,
           rememberMe: remember,
+          force: force,
         });
       }
 
@@ -240,9 +275,33 @@ export default function Login() {
         navigate('/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid 2FA code.');
+      if (err.response?.data?.active_session_conflict) {
+        setSessionConflict({
+          open: true,
+          minutes: err.response.data.last_active_minutes || 1,
+          loginType: '2fa'
+        });
+      } else {
+        setError(err.response?.data?.message || 'Invalid 2FA code.');
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForceLogin = () => {
+    if (!sessionConflict) return;
+    const type = sessionConflict.loginType;
+    setSessionConflict(null);
+
+    if (type === 'google') {
+      window.location.href = '/api/auth/google?intent=login&force=true';
+    } else if (type === 'captcha') {
+      handleCaptchaLogin(undefined, true);
+    } else if (type === '2fa') {
+      handle2FASubmit(undefined, true);
+    } else {
+      handleLogin(undefined, true);
     }
   };
 
@@ -544,6 +603,16 @@ export default function Login() {
           <span className="material-icons">{dark ? 'light_mode' : 'dark_mode'}</span>
         </button>
       </div>
+
+      <ConfirmModal
+        open={Boolean(sessionConflict?.open)}
+        onClose={() => setSessionConflict(null)}
+        onConfirm={handleForceLogin}
+        title={t('sidebar.session_conflict_title', 'Active Session Detected')}
+        message={t('sidebar.session_conflict_msg', 'Your account is currently active on another device (last active {{minutes}} minute(s) ago). Signing in now will log out the other device. Do you want to continue?', { minutes: sessionConflict?.minutes || 1 })}
+        confirmLabel={t('sidebar.btn_force_login', 'Log Out Other Device & Continue')}
+        icon="devices_other"
+      />
     </div>
   );
 }
