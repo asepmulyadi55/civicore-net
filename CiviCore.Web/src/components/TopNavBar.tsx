@@ -13,7 +13,7 @@ export default function TopNavBar({ activeTab, setActiveTab, isDark, toggleDark 
     const [navLinks, setNavLinks] = useState([
         { id: 'home', label: 'Home', href: '/' },
         { id: 'properties', label: 'Properties', href: '/#properties' },
-        { id: 'events', label: 'Events', href: '/#events' },
+        { id: 'news', label: 'News', href: '/#news' },
         { id: 'gallery', label: 'Gallery', href: '/#gallery' },
         { id: 'bulletins', label: 'Bulletins', href: '/#bulletins' },
         { id: 'contact', label: 'Contact', href: '#contact' },

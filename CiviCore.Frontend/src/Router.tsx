@@ -27,7 +27,7 @@ import EditRole from './pages/admin/EditRole';
 import Settings from './pages/admin/Settings';
 import Posyandu from './pages/admin/Posyandu';
 import AdminHomepage from './pages/admin/Homepage';
-import HomepageEventForm from './pages/admin/HomepageEventForm';
+import HomepageNewsForm from './pages/admin/HomepageNewsForm';
 import HomepageBulletinForm from './pages/admin/HomepageBulletinForm';
 import HomepagePropertyForm from './pages/admin/HomepagePropertyForm';
 import Media from './pages/admin/Media';
@@ -96,8 +96,8 @@ export default function Router() {
         <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />
         <Route path="/settings/:tab" element={<RequireAuth><Settings /></RequireAuth>} />
         <Route path="/homepage" element={<Navigate to="/homepage/featured" replace />} />
-        <Route path="/homepage/events/new" element={<RequireAuth><RequirePermission perm="homepage_events.create"><HomepageEventForm /></RequirePermission></RequireAuth>} />
-        <Route path="/homepage/events/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_events.edit"><HomepageEventForm /></RequirePermission></RequireAuth>} />
+        <Route path="/homepage/news/new" element={<RequireAuth><RequirePermission perm="homepage_news.create"><HomepageNewsForm /></RequirePermission></RequireAuth>} />
+        <Route path="/homepage/news/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_news.edit"><HomepageNewsForm /></RequirePermission></RequireAuth>} />
         <Route path="/homepage/bulletin/new" element={<RequireAuth><RequirePermission perm="homepage_bulletin.create"><HomepageBulletinForm /></RequirePermission></RequireAuth>} />
         <Route path="/homepage/bulletin/:id/edit" element={<RequireAuth><RequirePermission perm="homepage_bulletin.edit"><HomepageBulletinForm /></RequirePermission></RequireAuth>} />
         <Route path="/homepage/properties/new" element={<RequireAuth><RequirePermission perm="homepage_property.create"><HomepagePropertyForm /></RequirePermission></RequireAuth>} />

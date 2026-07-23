@@ -25,7 +25,7 @@ export default function Footer({ setActiveTab, footerData }: FooterProps) {
     
     const [displayLinks, setDisplayLinks] = React.useState([
         { label: 'Home', url: '/' },
-        { label: 'Events', url: '/#events' },
+        { label: 'News', url: '/#news' },
         { label: 'Gallery', url: '/#gallery' },
         { label: 'Bulletins', url: '/#bulletins' },
     ]);

@@ -58,7 +58,7 @@ export default function Header({ isDark = false, toggleDark }: HeaderProps) {
   };
 
   const navLinks = [
-    { label: 'Events', href: '#events' },
+    { label: 'News', href: '#news' },
     { label: 'Gallery', href: '#gallery' },
     { label: 'Bulletins', href: '#bulletins' },
     { label: 'About', href: '#about' },

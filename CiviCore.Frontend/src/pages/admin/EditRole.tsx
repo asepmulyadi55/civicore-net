@@ -62,6 +62,7 @@ const PERMISSION_TABS = [
     groups: [
       { module: 'homepage_hero', labelKey: 'edit_role.module_homepage_hero', actions: ['view', 'edit'] },
       { module: 'homepage_events', labelKey: 'edit_role.module_homepage_events', actions: ['view', 'create', 'edit', 'delete'] },
+      { module: 'homepage_news', labelKey: 'edit_role.module_homepage_news', actions: ['view', 'create', 'edit', 'delete'] },
       { module: 'homepage_gallery', labelKey: 'edit_role.module_homepage_gallery', actions: ['view', 'create', 'edit', 'delete'] },
       { module: 'homepage_bulletin', labelKey: 'edit_role.module_homepage_bulletin', actions: ['view', 'create', 'edit', 'delete'] },
       { module: 'homepage_property', labelKey: 'edit_role.module_homepage_property', actions: ['view', 'create', 'edit', 'delete'] },

@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${siteUrl}/events`,
+      url: `${siteUrl}/news`,
       lastModified: now,
       changeFrequency: 'daily',
       priority: 0.9,

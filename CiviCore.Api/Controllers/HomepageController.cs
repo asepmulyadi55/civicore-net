@@ -23,6 +23,8 @@ public class HomepageController : ControllerBase
     private const string MediaTypeJson = "application/json";
     private const string PropBackgroundImageUrl = "background_image_url";
     private const string KeyHomepageEvents = "homepage_events";
+    private const string KeyHomepageNews = "homepage_news";
+    private const string KeyHomepageNewsSettings = "homepage_news_settings";
     private const string PropImageUrl = "image_url";
     private const string KeyHomepageGallery = "homepage_gallery";
     private const string PropPhotos = "photos";
@@ -182,33 +184,41 @@ public class HomepageController : ControllerBase
 
     // ── Events (CRUD) ────────────────────────────────────────────────────────
 
+    // ── News / Events (CRUD) ──────────────────────────────────────────────────
+
+    [HttpGet("news")]
     [HttpGet("events")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetEvents()
+    public async Task<IActionResult> GetNews()
     {
-        var json = await GetSettingValue(KeyHomepageEvents);
+        var json = await GetSettingValue(KeyHomepageNews);
+        if (string.IsNullOrEmpty(json))
+        {
+            json = await GetSettingValue(KeyHomepageEvents);
+        }
         if (string.IsNullOrEmpty(json)) return Ok(new List<object>());
         return Content(json, MediaTypeJson);
     }
 
-    [RequirePermission("homepage_events.create")]
+    [RequirePermission("homepage_news.create")]
+    [HttpPost("news")]
     [HttpPost("events")]
-    public async Task<IActionResult> StoreEvent([FromForm] string title, [FromForm] string? description,
+    public async Task<IActionResult> StoreNews([FromForm] string title, [FromForm] string? description,
         [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, [FromForm] string? action_type, [FromForm] string? action_value, IFormFile? image_file)
     {
-        var events = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(
-            await GetSettingValue(KeyHomepageEvents) ?? "[]") ?? new();
+        var json = await GetSettingValue(KeyHomepageNews) ?? await GetSettingValue(KeyHomepageEvents) ?? "[]";
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, object?>>>(json) ?? new();
 
         string? imageUrl = null;
-        if (image_file != null) imageUrl = await SaveUploadedFile(image_file, "events");
+        if (image_file != null) imageUrl = await SaveUploadedFile(image_file, "news");
 
-        var eventStatus = status;
-        if (string.IsNullOrEmpty(eventStatus))
+        var itemStatus = status;
+        if (string.IsNullOrEmpty(itemStatus))
         {
-            eventStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d) && d < DateTime.Today ? "past" : "upcoming";
+            itemStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d) && d < DateTime.Today ? "past" : "upcoming";
         }
 
-        events.Add(new Dictionary<string, object?>
+        items.Add(new Dictionary<string, object?>
         {
             ["id"] = Guid.NewGuid().ToString(),
             ["title"] = title,
@@ -218,33 +228,36 @@ public class HomepageController : ControllerBase
             ["category"] = category,
             ["url"] = url,
             [PropImageUrl] = imageUrl,
-            ["status"] = eventStatus,
+            ["status"] = itemStatus,
             ["action_type"] = action_type,
             ["action_value"] = action_value,
             ["created_at"] = DateTime.UtcNow.ToString("o"),
         });
 
-        await SaveSetting(KeyHomepageEvents, JsonSerializer.Serialize(events));
-        return Ok(new { message = "Event added." });
+        var serialized = JsonSerializer.Serialize(items);
+        await SaveSetting(KeyHomepageNews, serialized);
+        await SaveSetting(KeyHomepageEvents, serialized);
+        return Ok(new { message = "News item added." });
     }
 
-    [RequirePermission("homepage_events.edit")]
+    [RequirePermission("homepage_news.edit")]
+    [HttpPut("news/{id}")]
     [HttpPut("events/{id}")]
-    public async Task<IActionResult> UpdateEvent(string id, [FromForm] string title, [FromForm] string? description,
+    public async Task<IActionResult> UpdateNews(string id, [FromForm] string title, [FromForm] string? description,
         [FromForm] string? date, [FromForm] string? location, [FromForm] string? category, [FromForm] string? status, [FromForm] string? url, [FromForm] string? action_type, [FromForm] string? action_value, IFormFile? image_file)
     {
-        var events = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue(KeyHomepageEvents) ?? "[]") ?? new();
+        var json = await GetSettingValue(KeyHomepageNews) ?? await GetSettingValue(KeyHomepageEvents) ?? "[]";
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json) ?? new();
 
         var found = false;
-        for (int i = 0; i < events.Count; i++)
+        for (int i = 0; i < items.Count; i++)
         {
-            if (events[i].TryGetValue("id", out var idEl) && idEl.GetString() == id)
+            if (items[i].TryGetValue("id", out var idEl) && idEl.GetString() == id)
             {
-                var eventStatus = status;
-                if (string.IsNullOrEmpty(eventStatus))
+                var itemStatus = status;
+                if (string.IsNullOrEmpty(itemStatus))
                 {
-                    eventStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d) && d < DateTime.Today ? "past" : "upcoming";
+                    itemStatus = !string.IsNullOrEmpty(date) && DateTime.TryParse(date, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d) && d < DateTime.Today ? "past" : "upcoming";
                 }
 
                 var updated = new Dictionary<string, object?>
@@ -256,82 +269,95 @@ public class HomepageController : ControllerBase
                     ["location"] = location,
                     ["category"] = category,
                     ["url"] = url,
-                    ["status"] = eventStatus,
+                    ["status"] = itemStatus,
                     ["action_type"] = action_type,
                     ["action_value"] = action_value,
                 };
-                if (events[i].TryGetValue("created_at", out var ca) && ca.ValueKind != JsonValueKind.Null)
+                if (items[i].TryGetValue("created_at", out var ca) && ca.ValueKind != JsonValueKind.Null)
                 {
                     updated["created_at"] = ca.GetString();
                 }
 
                 if (image_file != null)
                 {
-                    if (events[i].TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+                    if (items[i].TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
                     {
                         await DeleteUploadedFile(imgEl.GetString());
                     }
-                    updated[PropImageUrl] = await SaveUploadedFile(image_file, "events");
+                    updated[PropImageUrl] = await SaveUploadedFile(image_file, "news");
                 }
-                else if (events[i].TryGetValue(PropImageUrl, out var img))
+                else if (items[i].TryGetValue(PropImageUrl, out var img))
                 {
                     updated[PropImageUrl] = img.GetString();
                 }
 
-                events[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(updated))!;
+                items[i] = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(updated))!;
                 found = true;
                 break;
             }
         }
 
-        if (!found) return NotFound(new { message = "Event not found." });
+        if (!found) return NotFound(new { message = "News item not found." });
 
-        await SaveSetting(KeyHomepageEvents, JsonSerializer.Serialize(events));
-        return Ok(new { message = "Event updated." });
+        var serialized = JsonSerializer.Serialize(items);
+        await SaveSetting(KeyHomepageNews, serialized);
+        await SaveSetting(KeyHomepageEvents, serialized);
+        return Ok(new { message = "News item updated." });
     }
 
-    [RequirePermission("homepage_events.delete")]
+    [RequirePermission("homepage_news.delete")]
+    [HttpDelete("news/{id}")]
     [HttpDelete("events/{id}")]
-    public async Task<IActionResult> DestroyEvent(string id)
+    public async Task<IActionResult> DestroyNews(string id)
     {
-        var events = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
-            await GetSettingValue(KeyHomepageEvents) ?? "[]") ?? new();
+        var json = await GetSettingValue(KeyHomepageNews) ?? await GetSettingValue(KeyHomepageEvents) ?? "[]";
+        var items = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json) ?? new();
 
-        var eventToRemove = events.FirstOrDefault(e => e.TryGetValue("id", out var idEl) && idEl.GetString() == id);
-        if (eventToRemove != null && eventToRemove.TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
+        var itemToRemove = items.FirstOrDefault(e => e.TryGetValue("id", out var idEl) && idEl.GetString() == id);
+        if (itemToRemove != null && itemToRemove.TryGetValue(PropImageUrl, out var imgEl) && imgEl.ValueKind != JsonValueKind.Null)
         {
             await DeleteUploadedFile(imgEl.GetString());
         }
 
-        events = events.Where(e => !(e.TryGetValue("id", out var idEl) && idEl.GetString() == id)).ToList();
+        items = items.Where(e => !(e.TryGetValue("id", out var idEl) && idEl.GetString() == id)).ToList();
 
-        await SaveSetting(KeyHomepageEvents, JsonSerializer.Serialize(events));
-        return Ok(new { message = "Event removed." });
+        var serialized = JsonSerializer.Serialize(items);
+        await SaveSetting(KeyHomepageNews, serialized);
+        await SaveSetting(KeyHomepageEvents, serialized);
+        return Ok(new { message = "News item removed." });
     }
 
-    // ── Event Settings ────────────────────────────────────────────────────────
+    // ── News Settings ─────────────────────────────────────────────────────────
 
+    [HttpGet("news-settings")]
     [HttpGet("event-settings")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetEventSettings()
+    public async Task<IActionResult> GetNewsSettings()
     {
-        var json = await GetSettingValue("homepage_event_settings");
-        if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Discover More", title = "Events", subtitle = "" });
+        var json = await GetSettingValue(KeyHomepageNewsSettings);
+        if (string.IsNullOrEmpty(json))
+        {
+            json = await GetSettingValue("homepage_event_settings");
+        }
+        if (string.IsNullOrEmpty(json)) return Ok(new { eyebrow = "Discover More", title = "News", subtitle = "" });
         return Content(json, MediaTypeJson);
     }
 
-    [RequirePermission("homepage_events.edit")]
+    [RequirePermission("homepage_news.edit")]
+    [HttpPut("news-settings")]
     [HttpPut("event-settings")]
-    public async Task<IActionResult> UpdateEventSettings([FromForm] string? eyebrow, [FromForm] string? title,
+    public async Task<IActionResult> UpdateNewsSettings([FromForm] string? eyebrow, [FromForm] string? title,
         [FromForm] string? subtitle)
     {
         var data = new Dictionary<string, object?>
         {
             ["eyebrow"] = eyebrow ?? "Discover More",
-            ["title"] = title ?? "Events",
+            ["title"] = title ?? "News",
             ["subtitle"] = subtitle
         };
-        await SaveSetting("homepage_event_settings", JsonSerializer.Serialize(data));
+        var serialized = JsonSerializer.Serialize(data);
+        await SaveSetting(KeyHomepageNewsSettings, serialized);
+        await SaveSetting("homepage_event_settings", serialized);
         return Ok(new { message = "Settings updated." });
     }
 

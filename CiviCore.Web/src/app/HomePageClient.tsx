@@ -4,7 +4,7 @@ import Link from 'next/link';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
 
-export default function HomePageClient({ hero, events, eventSettings, gallerySettings, gallery, bulletinSettings, bulletins, propertySettings, properties, footerData, apiUrl }: any) {
+export default function HomePageClient({ hero, news, newsSettings, events, eventSettings, gallerySettings, gallery, bulletinSettings, bulletins, propertySettings, properties, footerData, apiUrl }: any) {
     const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
@@ -55,7 +55,10 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
         return url;
     };
 
-    const sortedEvents = (events || []).slice().sort((a: any, b: any) => {
+    const newsItems = (news && news.length > 0) ? news : (events || []);
+    const newsSettingsData = (newsSettings && newsSettings.title) ? newsSettings : (eventSettings || {});
+
+    const sortedNews = newsItems.slice().sort((a: any, b: any) => {
         const today = new Date().toISOString().slice(0, 10);
         const getStatusWeight = (e: any) => {
             if (e.status === 'ongoing') return 0;
@@ -101,25 +104,25 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                     </div>
                 </section>
 
-                {/* Events Section */}
-                <section className="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="events">
+                {/* News Section */}
+                <section className="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto" id="news">
                     <div className="flex justify-between items-end mb-12 border-b border-border-subtle dark:border-primary-container pb-4 reveal">
                         <div>
-                            <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">{eventSettings?.eyebrow || 'Discover More'}</span>
-                            <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">{eventSettings?.title || 'Events'}</h2>
-                            {eventSettings?.subtitle && <p className="mt-2 text-body-md text-text-muted dark:text-on-primary/70">{eventSettings.subtitle}</p>}
+                            <span className="text-label-sm font-label-sm text-[#b45309] dark:text-[#d97706] uppercase tracking-wider block mb-2">{newsSettingsData?.eyebrow || 'Discover More'}</span>
+                            <h2 className="text-headline-md font-headline-md text-primary dark:text-primary-fixed-dim">{newsSettingsData?.title || 'News'}</h2>
+                            {newsSettingsData?.subtitle && <p className="mt-2 text-body-md text-text-muted dark:text-on-primary/70">{newsSettingsData.subtitle}</p>}
                         </div>
-                        {events && events.length > 0 && (
-                            <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/events">
+                        {newsItems && newsItems.length > 0 && (
+                            <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/news">
                                 View All 
                                 <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </Link>
                         )}
                     </div>
-                    {sortedEvents.length > 0 ? (
+                    {sortedNews.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
-                            {sortedEvents.slice(0, 3).map((ev: any) => {
-                                const today = new Date().toISOString().slice(0, 10);
+                            {sortedNews.slice(0, 3).map((ev: any) => {
+                                const targetUrl = ev.url ? ev.url.replace('/events/', '/news/') : `/news/${ev.id}`;
                                 return (
                                     <div key={ev.id} className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
                                         {ev.image_url && (
@@ -144,7 +147,7 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                                         <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2">{ev.title}</h3>
                                         <div className="text-body-md text-text-muted dark:text-on-primary/70 mb-6 flex-grow prose prose-sm dark:prose-invert max-w-none line-clamp-3" dangerouslySetInnerHTML={{ __html: ev.description || '' }} />
                                         <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
-                                            <Link className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" href={ev.url || `/events/${ev.id}`}>
+                                            <Link className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" href={targetUrl}>
                                                 <span className="group-hover/link:underline">View Details</span> 
                                                 <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
                                             </Link>
@@ -156,7 +159,7 @@ export default function HomePageClient({ hero, events, eventSettings, gallerySet
                         </div>
                     ) : (
                         <div className="text-center py-12 text-text-muted dark:text-on-primary/70 bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50">
-                            No events currently available.
+                            No news articles currently available.
                         </div>
                     )}
                 </section>

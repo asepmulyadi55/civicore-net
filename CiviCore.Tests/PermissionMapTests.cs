@@ -83,12 +83,14 @@ public class PermissionMapTests
         ["audit"] = new[] { "view" },
         ["homepage_hero"] = new[] { "view", "edit" },
         ["homepage_events"] = new[] { "view", "create", "edit", "delete" },
+        ["homepage_news"] = new[] { "view", "create", "edit", "delete" },
         ["homepage_gallery"] = new[] { "view", "create", "edit", "delete" },
         ["homepage_bulletin"] = new[] { "view", "create", "edit", "delete" },
         ["homepage_property"] = new[] { "view", "create", "edit", "delete" },
         ["homepage_navigation"] = new[] { "view", "create", "edit", "delete" },
         ["homepage_footer"] = new[] { "view", "edit" },
         ["homepage_emergency"] = new[] { "view", "edit" },
+        ["homepage_visit"] = new[] { "view", "create", "edit", "delete" },
         ["homepage_metadata"] = new[] { "view", "edit" },
         ["overview"] = new[] { "view" },
         ["my_household"] = new[] { "view", "edit" },
@@ -165,7 +167,7 @@ public class PermissionMapTests
     // Homepage mutations map to their own module, not a shared one
     [InlineData(nameof(HomepageController), "UpdateEmergencyContacts", "homepage_emergency.edit")]
     [InlineData(nameof(HomepageController), "UpdateHero", "homepage_hero.edit")]
-    [InlineData(nameof(HomepageController), "DestroyEvent", "homepage_events.delete")]
+    [InlineData(nameof(HomepageController), "DestroyNews", "homepage_news.delete")]
     // Audit rows carry every user's email and IP
     [InlineData(nameof(AuditController), "GetAll", "audit.view")]
     public void High_Risk_Endpoints_Demand_The_Expected_Permission(string controller, string action, string expected) =>
@@ -174,7 +176,7 @@ public class PermissionMapTests
     // The public site reads these unauthenticated; gating them would break the homepage.
     [Theory]
     [InlineData(nameof(HomepageController), "GetHero")]
-    [InlineData(nameof(HomepageController), "GetEvents")]
+    [InlineData(nameof(HomepageController), "GetNews")]
     [InlineData(nameof(HomepageController), "GetEmergencyContacts")]
     [InlineData(nameof(HomepageController), "SubmitReport")]
     public void Public_Homepage_Reads_Stay_Public(string controller, string action)

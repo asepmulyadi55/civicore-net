@@ -49,7 +49,7 @@ const NAV_GROUPS = [
   icon: 'public',
   items: [
   { key: 'hero', label: 'Hero Section', icon: 'star', path: '/homepage/hero', permission: 'homepage_hero.view' },
-  { key: 'events', label: 'Events', icon: 'event', path: '/homepage/events', permission: 'homepage_events.view' },
+  { key: 'news', label: 'News', icon: 'newspaper', path: '/homepage/news', permission: 'homepage_news.view' },
   { key: 'gallery', label: 'Gallery', icon: 'photo_library', path: '/homepage/gallery', permission: 'homepage_gallery.view' },
   { key: 'bulletin', label: 'Bulletin', icon: 'article', path: '/homepage/bulletin', permission: 'homepage_bulletin.view' },
   { key: 'hp-property', label: 'Properties', icon: 'home_work', path: '/homepage/properties', permission: 'homepage_property.view' },

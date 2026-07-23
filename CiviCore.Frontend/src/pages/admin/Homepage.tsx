@@ -16,7 +16,8 @@ import { usePermissions } from '../../admin/PermissionsContext';
    ═══════════════════════════════════════════════════════════════════════════ */
 const TABS = [
   { key: 'hero', label: 'Hero Section', icon: 'star' },
-  { key: 'events', label: 'Events', icon: 'event' },
+  { key: 'news', label: 'News', icon: 'newspaper' },
+  { key: 'events', label: 'News / Events', icon: 'newspaper' },
   { key: 'gallery', label: 'Gallery', icon: 'photo_library' },
   { key: 'bulletin', label: 'Bulletin', icon: 'article' },
   { key: 'properties', label: 'Properties', icon: 'home_work' },
@@ -148,9 +149,9 @@ function HeroTab({ canEdit }: { canEdit: boolean }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TAB 2: EVENTS
+   TAB 2: NEWS
    ═══════════════════════════════════════════════════════════════════════════ */
-function EventsTab({ canEdit }: { canEdit: boolean }) {
+function NewsTab({ canEdit }: { canEdit: boolean }) {
   const { t } = useTranslation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -162,21 +163,14 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
   const [settings, setSettings] = useState({ eyebrow: '', title: '', subtitle: '' });
   const [savingSettings, setSavingSettings] = useState(false);
 
-
-  const STATUS_OPTIONS = [
-    { value: 'upcoming', label: 'Upcoming' },
-    { value: 'ongoing', label: 'Ongoing' },
-    { value: 'past', label: 'Past' },
-  ];
-
   const fetchEvents = useCallback(async () => {
     setLoading(true);
-    try { const r = await axios.get('/api/homepage/events'); setEvents(r.data || []); } catch { setEvents([]); }
+    try { const r = await axios.get('/api/homepage/news'); setEvents(r.data || []); } catch { setEvents([]); }
     finally { setLoading(false); }
   }, []);
 
   const fetchSettings = useCallback(async () => {
-    try { const r = await axios.get('/api/homepage/event-settings'); setSettings(r.data); } catch { }
+    try { const r = await axios.get('/api/homepage/news-settings'); setSettings(r.data); } catch { }
   }, []);
 
   useEffect(() => { fetchEvents(); fetchSettings(); }, [fetchEvents, fetchSettings]);
@@ -188,7 +182,7 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
     fd.append('title', settings.title || '');
     fd.append('subtitle', settings.subtitle || '');
     try {
-      await axios.put('/api/homepage/event-settings', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await axios.put('/api/homepage/news-settings', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess('settings'); setTimeout(() => setSuccess(''), 3000);
     } catch { }
     setSavingSettings(false);
@@ -207,10 +201,9 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
   const meta = { current_page: page, last_page: lastPage, from: total === 0 ? 0 : (page - 1) * perPage + 1, to: Math.min(page * perPage, total), total };
 
-
   const deleteEvent = async () => {
     setDeleteModal(d => ({ ...d, loading: true }));
-    try { await axios.delete(`/api/homepage/events/${deleteModal.id}`); fetchEvents(); } catch { }
+    try { await axios.delete(`/api/homepage/news/${deleteModal.id}`); fetchEvents(); } catch { }
     setDeleteModal({ open: false, id: null, title: '', loading: false });
   };
 
@@ -220,14 +213,14 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
     <>
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
         onConfirm={deleteEvent} loading={deleteModal.loading} icon="delete_outline"
-        title={t('homepage.title_delete_event', 'Delete Event?')} message={<>{t('homepage.text_delete_before', 'Delete')} <strong>{deleteModal.title}</strong>? {t('homepage.text_delete_after', 'This cannot be undone.')}</>} confirmLabel={t('homepage.btn_yes_delete', 'Yes, Delete')} />
+        title={t('homepage.title_delete_news', 'Delete News Article?')} message={<>{t('homepage.text_delete_before', 'Delete')} <strong>{deleteModal.title}</strong>? {t('homepage.text_delete_after', 'This cannot be undone.')}</>} confirmLabel={t('homepage.btn_yes_delete', 'Yes, Delete')} />
 
-      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title={t('homepage.title_event_settings', 'Event Settings')} subtitle={t('homepage.subtitle_event_settings', 'Configure the main events header')}>
+      <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title={t('homepage.title_news_settings', 'News Settings')} subtitle={t('homepage.subtitle_news_settings', 'Configure the main news header')}>
         <SuccessBanner show={success === 'settings'} />
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <FormInput label={t('homepage.label_eyebrow', 'Eyebrow Label')} id="e-ey" value={settings.eyebrow || ''} onChange={e => setSettings(d => ({ ...d, eyebrow: e.target.value }))} placeholder={t('homepage.placeholder_discover_more', 'e.g. Discover More')} />
-            <FormInput label={t('homepage.label_section_title', 'Section Title')} id="e-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder={t('homepage.placeholder_events', 'e.g. Events')} />
+            <FormInput label={t('homepage.label_section_title', 'Section Title')} id="e-title" value={settings.title || ''} onChange={e => setSettings(d => ({ ...d, title: e.target.value }))} placeholder={t('homepage.placeholder_news', 'e.g. News')} />
             <div className="md:col-span-2"><FormInput label={t('homepage.label_subtitle', 'Subtitle')} id="e-sub" value={settings.subtitle || ''} onChange={e => setSettings(d => ({ ...d, subtitle: e.target.value }))} placeholder={t('homepage.placeholder_explore', 'Explore...')} /></div>
           </div>
         </div>
@@ -236,38 +229,38 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
 
       <div className="h-6"></div>
 
-      <SectionCard icon="event" iconBg="bg-emerald-100 dark:bg-emerald-900/30" iconColor="text-emerald-500" title={t('homepage.title_events', 'Events')} subtitle={t('homepage.subtitle_events', 'Manage community events displayed on the homepage')} badge={events.length}>
+      <SectionCard icon="newspaper" iconBg="bg-emerald-100 dark:bg-emerald-900/30" iconColor="text-emerald-500" title={t('homepage.title_news', 'News Articles')} subtitle={t('homepage.subtitle_news', 'Manage news articles displayed on the homepage')} badge={events.length}>
         <SuccessBanner show={success === 'event'} />
 
         <div className="p-6">
           <FilterBar>
-            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder={t('homepage.placeholder_search_events', 'Search events...')} />
+            <SearchInput value={search} onChange={v => { setSearch(v); setPage(1); }} placeholder={t('homepage.placeholder_search_news', 'Search news...')} />
             <SelectFilter value={catFilter} onChange={v => { setCatFilter(v); setPage(1); }} options={CATEGORY_OPTIONS} placeholder={t('homepage.placeholder_all_categories', 'All Categories')} />
             <div className="flex-grow"></div>
-            {canEdit && <Link to="/homepage/events/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
-              <span className="material-icons text-[18px]">add</span> {t('homepage.btn_add_event', 'Add Event')}
+            {canEdit && <Link to="/homepage/news/new" className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer whitespace-nowrap">
+              <span className="material-icons text-[18px]">add</span> {t('homepage.btn_add_news', 'Add Article')}
             </Link>}
           </FilterBar>
 
           <TableWrapper footer={!loading && meta.last_page > 1 && <Pagination meta={meta} onChange={p => setPage(p)} />}>
             {loading ? (
-              <tbody><tr><td colSpan={7} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
+              <tbody><tr><td colSpan={6} className="text-center py-16"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></td></tr></tbody>
             ) : (
               <>
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                    <Th>{t('homepage.table_title', 'TITLE')}</Th><Th>{t('homepage.table_category', 'CATEGORY')}</Th><Th>{t('homepage.table_date', 'DATE')}</Th><Th>{t('homepage.table_time', 'TIME')}</Th><Th>{t('homepage.table_location', 'LOCATION')}</Th><Th>{t('homepage.table_status', 'STATUS')}</Th><Th className="text-center">{t('homepage.table_actions', 'ACTIONS')}</Th>
-                  </tr>
+                    <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                      <Th>{t('homepage.table_title', 'TITLE')}</Th><Th>{t('homepage.table_category', 'CATEGORY')}</Th><Th>{t('homepage.table_date', 'DATE')}</Th><Th>{t('homepage.table_time', 'TIME')}</Th><Th>{t('homepage.table_location', 'LOCATION')}</Th><Th className="text-center">{t('homepage.table_actions', 'ACTIONS')}</Th>
+                    </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {paged.length === 0 ? (
-                    <tr><td colSpan={7}><EmptyState icon="event_busy" title={t('homepage.empty_events_title', 'No events found')} subtitle={t('homepage.empty_events_subtitle', 'Try adjusting your filters or add your first event above')} /></td></tr>
+                    <tr><td colSpan={6}><EmptyState icon="newspaper" title={t('homepage.empty_news_title', 'No news found')} subtitle={t('homepage.empty_news_subtitle', 'Try adjusting your filters or add your first news article above')} /></td></tr>
                   ) : paged.map(ev => (
                     <tr key={ev.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-3.5">
                         <div className="flex items-center gap-3">
                           {ev.image_url ? <img src={ev.image_url} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" /> : (
-                            <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0"><span className="material-icons text-emerald-500 text-[15px]">event</span></div>
+                            <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0"><span className="material-icons text-emerald-500 text-[15px]">newspaper</span></div>
                           )}
                           <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-xs">{ev.title}</span>
                         </div>
@@ -277,12 +270,8 @@ function EventsTab({ canEdit }: { canEdit: boolean }) {
                       <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{ev.date && ev.date.includes('T') ? new Date(ev.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
                       <td className="px-4 py-3.5 text-slate-500 text-xs">{ev.location || '—'}</td>
                       <td className="px-4 py-3.5">
-                        <StatusBadge status={ev.status === 'upcoming' ? 'pending' : (ev.status === 'ongoing' ? 'active' : 'inactive')} />
-                        {ev.status && <span className="ml-1 text-xs text-slate-400">({ev.status})</span>}
-                      </td>
-                      <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
-                          {canEdit && <Link to={`/homepage/events/${ev.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
+                          {canEdit && <Link to={`/homepage/news/${ev.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
                           {canEdit && <button onClick={() => setDeleteModal({ open: true, id: ev.id, title: ev.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
                       </td>
@@ -1510,7 +1499,8 @@ export default function AdminHomepage() {
     const canEdit = can('homepage.edit');
     switch (activeTab) {
       case 'hero': return <HeroTab canEdit={canEdit} />;
-      case 'events': return <EventsTab canEdit={canEdit} />;
+      case 'news':
+      case 'events': return <NewsTab canEdit={canEdit} />;
       case 'gallery': return <GalleryTab canEdit={canEdit} />;
       case 'bulletin': return <BulletinTab canEdit={canEdit} />;
       case 'properties': return <PropertyTab canEdit={canEdit} />;

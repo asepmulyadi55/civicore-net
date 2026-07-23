@@ -66,8 +66,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Page() {
     const hero = await getData('hero');
-    const events = await getData('events');
-    const eventSettings = await getData('event-settings');
+    const news = (await getData('news')) || (await getData('events'));
+    const newsSettings = (await getData('news-settings')) || (await getData('event-settings'));
     const gallerySettings = await getData('gallery-settings');
     const gallery = await getData('gallery');
     const bulletinSettings = await getData('bulletin-settings');
@@ -121,8 +121,10 @@ export default async function Page() {
             />
             <HomePageClient 
                 hero={hero || {}} 
-                events={events || []} 
-                eventSettings={eventSettings || {}} 
+                news={news || []}
+                newsSettings={newsSettings || {}}
+                events={news || []} 
+                eventSettings={newsSettings || {}} 
                 gallerySettings={gallerySettings || {}} 
                 gallery={gallery || []} 
                 bulletinSettings={bulletinSettings || {}}
