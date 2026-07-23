@@ -1440,7 +1440,7 @@ function VisitTab({ canEdit }: { canEdit: boolean }) {
 
                 {/* Preview icon */}
                 <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-                  <span className="material-icons text-green-600 text-[18px]">{item.icon || 'star'}</span>
+                  <span className="material-symbols-outlined text-green-600 text-[18px]">{item.icon || 'star'}</span>
                 </div>
 
                 {/* Delete */}

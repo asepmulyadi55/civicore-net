@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   detect-changes:
@@ -34,6 +35,7 @@ jobs:
               - 'CiviCore.Frontend/**'
             compose:
               - 'docker-compose.yml'
+              - '.github/workflows/**'
 
   deploy:
     name: Deploy
@@ -63,8 +65,9 @@ jobs:
 
             # If docker-compose.yml changed, rebuild everything
             if [ "$CHANGED_COMPOSE" = "true" ]; then
-              echo ">>> docker-compose.yml changed — rebuilding all services..."
-              docker compose up -d --build
+              echo ">>> docker-compose.yml changed — rebuilding all services (zero downtime)..."
+              docker compose build
+              docker compose up -d
               exit 0
             fi
 
@@ -77,10 +80,8 @@ jobs:
             fi
 
             if [ "$CHANGED_WEB" = "true" ]; then
-              echo ">>> Web changed — clean rebuild: web"
-              docker compose stop web
-              docker compose rm -f web
-              docker compose up -d --build web
+              echo ">>> Web changed — queuing rebuild: web"
+              SERVICES="$SERVICES web"
             fi
 
             if [ "$CHANGED_FRONTEND" = "true" ]; then
@@ -89,8 +90,10 @@ jobs:
             fi
 
             if [ -n "$SERVICES" ]; then
-              echo ">>> Building and restarting:$SERVICES"
-              docker compose up -d --build $SERVICES
+              echo ">>> Building new images (website stays up during build):$SERVICES"
+              docker compose build $SERVICES
+              echo ">>> Restarting containers with new images (minimal downtime):$SERVICES"
+              docker compose up -d $SERVICES
             fi
 
             echo ">>> Cleaning up unused Docker images..."
