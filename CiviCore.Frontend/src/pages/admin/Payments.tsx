@@ -628,12 +628,18 @@ export default function Payments() {
     }
   };
 
-  const setFilter = (k, v) => setFilters((p) => ({ ...p, [k]: v, page: 1 }));
+  const setFilter = (k, v) => {
+    setSelected([]);
+    setFilters((p) => ({ ...p, [k]: v, page: 1 }));
+  };
 
-  const clearFilters = () => setFilters({
-    search: '', status: '', block_id: '', month: '',
-    recorded_month: '', recorded_year: '', page: 1
-  });
+  const clearFilters = () => {
+    setSelected([]);
+    setFilters({
+      search: '', status: '', block_id: '', month: '',
+      recorded_month: '', recorded_year: '', page: 1
+    });
+  };
 
   const allChecked = data.length > 0 && selected.length === data.length;
   const toggleAll = () => setSelected(allChecked ? [] : data.map((p) => p.id));
@@ -829,7 +835,7 @@ export default function Payments() {
       {loading ?
       <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div> :
 
-      <TableWrapper footer={meta && <Pagination meta={meta} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} />}>
+      <TableWrapper footer={meta && <Pagination meta={meta} onChange={(p) => { setSelected([]); setFilters((f) => ({ ...f, page: p })); }} />}>
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
               <th className="w-12 px-6 py-4 text-center">

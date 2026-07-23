@@ -47,6 +47,10 @@ public class PaymentController : ControllerBase
         _storageService = storageService;
     }
 
+    // Normalises spacing around '&' so "2&6", "2 &6", "2& 6" all become "2 & 6".
+    private static string NormalizeUnitNumber(string s)
+        => System.Text.RegularExpressions.Regex.Replace(s, @"\s*&\s*", " & ").Trim();
+
     [HttpGet]
     public async Task<IActionResult> GetAll(
         [FromQuery] int page = 1,
@@ -428,12 +432,10 @@ public class PaymentController : ControllerBase
         }
 
         // Clean up any other pending records for this householder that match the newly selected months
-        // This allows merging separate pending payments into this single batch.
         var otherPendingRecords = await _context.Set<PaymentRecord>()
             .Where(p => p.HouseholderId == dto.HouseholderId && p.Status == PaymentStatus.Pending && newMonths.Contains(p.PaymentMonth))
             .ToListAsync();
             
-        // Exclude the ones we already queued for removal (the current batch)
         var batchIdToExclude = payment.BatchId;
         var recordsToClean = otherPendingRecords.Where(p => p.BatchId != batchIdToExclude && p.Id != payment.Id).ToList();
         
@@ -512,6 +514,44 @@ public class PaymentController : ControllerBase
         return NoContent();
     }
 
+    public class BulkDeleteRequest { public List<Guid> Ids { get; set; } = new(); }
+
+    [HttpDelete("bulk")]
+    [RequirePermission("payments.delete")]
+    public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteRequest request)
+    {
+        if (request.Ids == null || !request.Ids.Any())
+            return BadRequest(new { message = "No IDs provided." });
+
+        var user = await _userManager.GetUserAsync(User);
+        var isAdmin = user != null && await _userManager.IsInRoleAsync(user, "Admin");
+
+        // Collect all batch IDs touched by the selected payment IDs
+        var payments = await _context.Set<PaymentRecord>()
+            .Where(p => request.Ids.Contains(p.Id))
+            .ToListAsync();
+
+        var batchIds = payments
+            .Where(p => p.BatchId.HasValue)
+            .Select(p => p.BatchId!.Value)
+            .Distinct()
+            .ToList();
+
+        // Gather all records that belong to those batches (entire batch deleted together)
+        var toDelete = await _context.Set<PaymentRecord>()
+            .Where(p => batchIds.Contains(p.BatchId!.Value) ||
+                        (!p.BatchId.HasValue && request.Ids.Contains(p.Id)))
+            .ToListAsync();
+
+        if (!isAdmin && toDelete.Any(p => p.Status == PaymentStatus.Approved))
+            return Forbid("Only administrators can delete approved payments.");
+
+        _context.Set<PaymentRecord>().RemoveRange(toDelete);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = $"{toDelete.Count} payment record(s) deleted." });
+    }
+
     [HttpGet("export")]
     public async Task<IActionResult> ExportPayments([FromServices] IExcelExportService exportService)
     {
@@ -524,7 +564,6 @@ public class PaymentController : ControllerBase
         return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "payments.xlsx");
     }
 
-
     [HttpGet("blocks")]
     public async Task<IActionResult> GetBlocks()
     {
@@ -534,6 +573,7 @@ public class PaymentController : ControllerBase
             .ToListAsync();
         return Ok(blocks);
     }
+
     [HttpGet("import-status/{jobId}")]
     [Authorize(Roles = "Admin,Treasurer")]
     public IActionResult GetImportStatus(Guid jobId, [FromServices] ImportJobTracker tracker)
@@ -582,7 +622,7 @@ public class PaymentController : ControllerBase
                 job.TotalRows = rowCount > 1 ? rowCount - 1 : 0;
 
                 int paymentsCreated = 0;
-                int paymentsSkipped = 0;
+                int paymentsUpdated = 0;
 
                 var allBlocks = await dbContext.Set<Block>().ToListAsync();
                 var blockCache = allBlocks.ToDictionary(b => b.Name, StringComparer.OrdinalIgnoreCase);
@@ -606,7 +646,7 @@ public class PaymentController : ControllerBase
                     else
                         blockLetter = lastBlockLetter;
 
-                    var unitNum = worksheet.Cell(row, 2).GetString().Trim();
+                    var unitNum = NormalizeUnitNumber(worksheet.Cell(row, 2).GetString().Trim());
                     var name = worksheet.Cell(row, 3).GetString().Trim();
                     var rawStatus = System.Text.RegularExpressions.Regex.Replace(
                         worksheet.Cell(row, 4).GetString().Trim().ToLower(), 
@@ -633,13 +673,20 @@ public class PaymentController : ControllerBase
                         if (cellValue == "L")
                         {
                             var paymentMonth = new DateTime(year, monthNum, 1, 0, 0, 0, DateTimeKind.Utc);
-                            
-                            var exists = await dbContext.Set<PaymentRecord>()
-                                .AnyAsync(p => p.HouseholderId == householder.Id && p.PaymentMonth == paymentMonth);
 
-                            if (exists)
+                            // Upsert: update existing record instead of skipping
+                            var existing = await dbContext.Set<PaymentRecord>()
+                                .FirstOrDefaultAsync(p => p.HouseholderId == householder.Id && p.PaymentMonth == paymentMonth);
+
+                            if (existing != null)
                             {
-                                paymentsSkipped++;
+                                existing.Amount = amount;
+                                existing.Status = PaymentStatus.Approved;
+                                existing.ApprovedById = userId != null ? Guid.Parse(userId) : null;
+                                existing.ApprovedAt = DateTime.UtcNow;
+                                existing.UpdatedAt = DateTime.UtcNow;
+                                existing.Notes = $"Re-imported from Excel ({year})";
+                                paymentsUpdated++;
                                 continue;
                             }
 
@@ -677,8 +724,11 @@ public class PaymentController : ControllerBase
                     await dbContext.SaveChangesAsync();
                 }
 
+                // Save any upserted records
+                await dbContext.SaveChangesAsync();
+
                 job.Status = "Completed";
-                job.Message = $"Import complete! Created {paymentsCreated} payments. Skipped {paymentsSkipped} (already exists).";
+                job.Message = $"Import complete! Created {paymentsCreated} payments. Updated {paymentsUpdated} existing.";
             }
             catch (Exception ex)
             {
