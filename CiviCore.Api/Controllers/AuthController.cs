@@ -289,8 +289,8 @@ namespace CiviCore.Api.Controllers
             if (user != null)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var frontendUrl = _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
-                var resetLink = $"{frontendUrl}/admin/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email!)}";
+                var adminFrontendUrl = _config["AdminFrontendUrl"]?.TrimEnd('/') ?? _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+                var resetLink = $"{adminFrontendUrl}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email!)}";
                 
                 var emailBody = $@"
 <div style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);"">
@@ -340,9 +340,9 @@ namespace CiviCore.Api.Controllers
         [HttpGet("google-response")]
         public async Task<IActionResult> GoogleResponse([FromQuery] string intent = "login")
         {
-            var frontendUrl = _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
-            var loginUrl = $"{frontendUrl}/login";
-            var registerUrl = $"{frontendUrl}/register";
+            var adminFrontendUrl = _config["AdminFrontendUrl"]?.TrimEnd('/') ?? _config["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+            var loginUrl = $"{adminFrontendUrl}/login";
+            var registerUrl = $"{adminFrontendUrl}/register";
 
             var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
             if (!result.Succeeded || result.Principal == null)

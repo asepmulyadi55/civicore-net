@@ -9,6 +9,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - FrontendUrl=https://dwipapuri.amsite.click
+      - AdminFrontendUrl=https://admin.dwipapuri.amsite.click
       - ConnectionStrings__Redis=redis:6379
       # Encrypts Nomor KK at rest. `:?` makes compose REFUSE TO START when it is unset,
       # rather than letting the app fall back to the public key compiled into the source.

@@ -82,7 +82,8 @@ The key variables to verify:
 
 ```yaml
 # In the 'api' service:
-- FrontendUrl=https://dwipapuri.amsite.click   # ← public site domain for CORS
+- FrontendUrl=https://dwipapuri.amsite.click        # ← public site domain for CORS
+- AdminFrontendUrl=https://admin.dwipapuri.amsite.click  # ← admin dashboard domain for auth redirects
 
 # In the 'web' service (Next.js public site):
 - API_INTERNAL_URL=http://api:8080             # ← internal Docker network call
