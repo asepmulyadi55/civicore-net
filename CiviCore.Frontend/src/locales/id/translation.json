@@ -189,6 +189,8 @@
     "btn_confirm": "Konfirmasi Pembayaran",
     "confirm_delete_title": "Hapus Pembayaran?",
     "confirm_delete_msg": "Hapus catatan pembayaran ini? Tindakan ini <strong>tidak dapat</strong> dibatalkan.",
+    "confirm_delete_bulk_title": "Hapus Pembayaran Terpilih?",
+    "confirm_delete_bulk_msg": "Hapus <strong>{{count}}</strong> catatan pembayaran terpilih? Tindakan ini <strong>tidak dapat</strong> dibatalkan.",
     "btn_delete": "Ya, Hapus",
     "stat_total": "Total Pembayaran",
     "stat_pending": "Menunggu Tinjauan",

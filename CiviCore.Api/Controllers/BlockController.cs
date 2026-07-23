@@ -8,7 +8,7 @@ using CiviCore.Api.Services;
 using ClosedXML.Excel;
 using Microsoft.Extensions.DependencyInjection;
 using CiviCore.Api.Models;
-using CiviCore.Api.Extensions; // Import the extensions
+using CiviCore.Api.Extensions;
 
 namespace CiviCore.Api.Controllers;
 
@@ -200,8 +200,23 @@ public class BlockController : ControllerBase
             
         if (block == null) return NotFound();
 
-        bool hasHouseholders = await _context.Set<Householder>().AnyAsync(h => h.Unit.BlockId == id);
+        bool hasHouseholders = await _context.Set<Householder>().AnyAsync(h => h.BlockId == id || (h.Unit != null && h.Unit.BlockId == id));
         if (hasHouseholders) return BadRequest(new { message = "Cannot delete block as one or more of its units are assigned to householders." });
+
+        bool hasPayments = await _context.Set<PaymentRecord>().AnyAsync(p => p.BlockId == id);
+        if (hasPayments) return BadRequest(new { message = "Cannot delete block as it has associated payment records." });
+
+        // Unlink users associated with this block
+        var users = await _context.Set<ApplicationUser>().Where(u => u.BlockId == id).ToListAsync();
+        foreach (var u in users) { u.BlockId = null; }
+
+        // Unlink property listings associated with this block
+        var listings = await _context.Set<PropertyListing>().Where(p => p.BlockId == id).ToListAsync();
+        foreach (var p in listings) { p.BlockId = null; }
+
+        // Remove block units
+        var units = await _context.Set<Unit>().Where(u => u.BlockId == id).ToListAsync();
+        _context.Set<Unit>().RemoveRange(units);
 
         _context.Set<BlockCoordinator>().RemoveRange(block.Coordinators);
         _context.Set<Block>().Remove(block);
@@ -225,13 +240,27 @@ public class BlockController : ControllerBase
 
         foreach (var block in blocks)
         {
-            bool hasHouseholders = await _context.Set<Householder>().AnyAsync(h => h.Unit.BlockId == block.Id);
-            if (hasHouseholders)
+            bool hasHouseholders = await _context.Set<Householder>().AnyAsync(h => h.BlockId == block.Id || (h.Unit != null && h.Unit.BlockId == block.Id));
+            bool hasPayments = await _context.Set<PaymentRecord>().AnyAsync(p => p.BlockId == block.Id);
+
+            if (hasHouseholders || hasPayments)
             {
                 failedBlocks.Add(block.Name);
             }
             else
             {
+                // Unlink users associated with this block
+                var users = await _context.Set<ApplicationUser>().Where(u => u.BlockId == block.Id).ToListAsync();
+                foreach (var u in users) { u.BlockId = null; }
+
+                // Unlink property listings associated with this block
+                var listings = await _context.Set<PropertyListing>().Where(p => p.BlockId == block.Id).ToListAsync();
+                foreach (var p in listings) { p.BlockId = null; }
+
+                // Remove block units
+                var units = await _context.Set<Unit>().Where(u => u.BlockId == block.Id).ToListAsync();
+                _context.Set<Unit>().RemoveRange(units);
+
                 _context.Set<BlockCoordinator>().RemoveRange(block.Coordinators);
                 _context.Set<Block>().Remove(block);
                 deletedCount++;
@@ -242,11 +271,12 @@ public class BlockController : ControllerBase
 
         if (failedBlocks.Any())
         {
-            return BadRequest(new { message = $"Successfully deleted {deletedCount} blocks. Failed to delete blocks ({string.Join(", ", failedBlocks)}) because they still have related householders." });
+            return BadRequest(new { message = $"Successfully deleted {deletedCount} blocks. Failed to delete blocks ({string.Join(", ", failedBlocks)}) because they still have related householders or payment records." });
         }
 
         return NoContent();
     }
+
     [HttpGet("import-status/{jobId}")]
     public IActionResult GetImportStatus(Guid jobId, [FromServices] ImportJobTracker tracker)
     {
@@ -363,7 +393,6 @@ public class BlockController : ControllerBase
                     string unitCacheKey = $"{block.Id}_{unitNum}";
                     if (block.Id == Guid.Empty)
                     {
-                        // Block is not saved yet, its Id is empty, use its reference or name as cache key
                         unitCacheKey = $"TEMP_{blockLetter}_{unitNum}";
                     }
 
@@ -379,9 +408,6 @@ public class BlockController : ControllerBase
                         if (unit.HouseStatus != houseStatus)
                         {
                             unit.HouseStatus = houseStatus;
-                            // Need to track this update, since it's already in DB, we'll just let EF track it if we use it from DB,
-                            // but our unitCache is disconnected if we don't query it inside the background task tracking properly.
-                            // However, unit is retrieved from allUnits which IS tracked by dbContext! So modifying unit is fine.
                         }
                         unitsSkipped++;
                     }

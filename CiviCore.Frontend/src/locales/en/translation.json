@@ -189,6 +189,8 @@
     "btn_confirm": "Confirm Payment",
     "confirm_delete_title": "Delete Payment?",
     "confirm_delete_msg": "Delete this payment record? This <strong>cannot</strong> be undone.",
+    "confirm_delete_bulk_title": "Delete Selected Payments?",
+    "confirm_delete_bulk_msg": "Delete <strong>{{count}}</strong> selected payment records? This <strong>cannot</strong> be undone.",
     "btn_delete": "Yes, Delete",
     "stat_total": "Total Payments",
     "stat_pending": "Pending Review",

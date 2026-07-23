@@ -652,13 +652,48 @@ public class PaymentController : ControllerBase
                         worksheet.Cell(row, 4).GetString().Trim().ToLower(), 
                         @"\s+", " ", System.Text.RegularExpressions.RegexOptions.None, System.TimeSpan.FromMilliseconds(500));
 
-                    if (string.IsNullOrEmpty(blockLetter) || string.IsNullOrEmpty(unitNum) || string.IsNullOrEmpty(name)) continue;
+                    if (string.IsNullOrEmpty(blockLetter) || (string.IsNullOrEmpty(unitNum) && string.IsNullOrEmpty(name))) continue;
                     
                     if (rawStatus == "fasum" || rawStatus == "fasilitasumum" || rawStatus == "developer") continue;
 
                     if (!blockCache.TryGetValue(blockLetter, out var block)) continue;
-                    if (!unitCache.TryGetValue($"{block.Id}_{unitNum}", out var unit)) continue;
-                    if (!householderCache.TryGetValue(unit.Id, out var householder)) continue;
+
+                    // Flexible Householder & Unit resolution for combined/multiple units (e.g. Excel has Unit 7, DB has Unit "7 & 9")
+                    Householder? householder = null;
+                    string displayUnitNum = unitNum;
+
+                    // Try 1: Exact BlockId + UnitNumber lookup
+                    if (!string.IsNullOrEmpty(unitNum) && unitCache.TryGetValue($"{block.Id}_{unitNum}", out var unit))
+                    {
+                        householderCache.TryGetValue(unit.Id, out householder);
+                        displayUnitNum = unit.UnitNumber;
+                    }
+
+                    // Try 2: Combined unit token match (e.g. Excel unit "7" matches DB unit "7 & 9")
+                    if (householder == null && !string.IsNullOrEmpty(unitNum))
+                    {
+                        var matchingUnit = allUnits.FirstOrDefault(u => u.BlockId == block.Id && 
+                            u.UnitNumber.Split('&').Select(p => p.Trim()).Any(p => p.Equals(unitNum, StringComparison.OrdinalIgnoreCase)));
+                        if (matchingUnit != null)
+                        {
+                            householderCache.TryGetValue(matchingUnit.Id, out householder);
+                            displayUnitNum = matchingUnit.UnitNumber;
+                        }
+                    }
+
+                    // Try 3: Match by Householder Name within the same Block
+                    if (householder == null && !string.IsNullOrEmpty(name))
+                    {
+                        householder = allHouseholders.FirstOrDefault(h => h.BlockId == block.Id && 
+                            h.Fullname.Trim().Equals(name.Trim(), StringComparison.OrdinalIgnoreCase));
+                        if (householder != null)
+                        {
+                            var hUnit = allUnits.FirstOrDefault(u => u.Id == householder.UnitId);
+                            displayUnitNum = hUnit?.UnitNumber ?? unitNum;
+                        }
+                    }
+
+                    if (householder == null) continue;
 
                     var amountStr = worksheet.Cell(row, 5).GetString().Trim();
                     if (!decimal.TryParse(amountStr, out var amount) || amount <= 0) continue;
@@ -695,7 +730,7 @@ public class PaymentController : ControllerBase
                                 HouseholderId = householder.Id,
                                 HouseholderName = householder.Fullname,
                                 BlockId = householder.BlockId,
-                                UnitNumber = householder.Unit?.UnitNumber ?? unitNum,
+                                UnitNumber = householder.Unit?.UnitNumber ?? displayUnitNum,
                                 PaymentMonth = paymentMonth,
                                 Amount = amount,
                                 Status = PaymentStatus.Approved,

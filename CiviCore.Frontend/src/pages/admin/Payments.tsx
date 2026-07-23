@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import {
@@ -537,7 +537,7 @@ export default function Payments() {
   const [reviewItem, setReviewItem] = useState(null);
   const [editItem, setEditItem] = useState(null);
   const [addModal, setAddModal] = useState(false);
-  const [confirm, setConfirm] = useState({ open: false, item: null, loading: false });
+  const [confirm, setConfirm] = useState({ open: false, type: 'single', item: null, loading: false });
   const [importing, setImporting] = useState(false);
   const [importJob, setImportJob] = useState<any>(null);
   const [importResult, setImportResult] = useState({ open: false, success: true, title: '', message: '' });
@@ -647,8 +647,20 @@ export default function Payments() {
 
   const doDelete = async () => {
     setConfirm((c) => ({ ...c, loading: true }));
-    try {await axios.delete(`/api/payments/${confirm.item.id}`);fetchData();setConfirm({ open: false, item: null, loading: false });}
-    catch {setConfirm((c) => ({ ...c, loading: false }));}
+    try {
+      if (confirm.type === 'bulk') {
+        await axios.delete('/api/payments/bulk', { data: { ids: selected } });
+        setSelected([]);
+      } else {
+        await axios.delete(`/api/payments/${confirm.item.id}`);
+      }
+      fetchData();
+      setConfirm({ open: false, type: 'single', item: null, loading: false });
+    } catch (err: any) {
+      setConfirm((c) => ({ ...c, loading: false, open: false }));
+      setImportResult({ open: true, success: false, title: t('payments.delete_failed', 'Delete Failed'), message: err.response?.data?.message || 'Delete failed.' });
+      fetchData();
+    }
   };
 
   const currentYear = new Date().getFullYear();
@@ -673,10 +685,11 @@ export default function Payments() {
     <AdminLayout title={t('payments.title')}>
       <PaymentModal open={addModal || !!editItem} onClose={() => {setAddModal(false);setEditItem(null);}} editData={editItem} onSaved={fetchData} />
       <ReviewModal open={!!reviewItem} onClose={() => setReviewItem(null)} payment={reviewItem} onApprove={fetchData} />
-      <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, item: null, loading: false })}
+      <ConfirmModal open={confirm.open} onClose={() => setConfirm({ open: false, type: 'single', item: null, loading: false })}
       onConfirm={doDelete} loading={confirm.loading} icon="delete_outline"
-      title={t('payments.confirm_delete_title')} message={t('payments.confirm_delete_msg')}
-      confirmLabel={t('payments.btn_delete')} />
+      title={confirm.type === 'bulk' ? t('payments.confirm_delete_bulk_title', 'Delete Selected Payments?') : t('payments.confirm_delete_title', 'Delete Payment?')}
+      message={confirm.type === 'bulk' ? <Trans i18nKey="payments.confirm_delete_bulk_msg" values={{ count: selected.length }}>Delete <strong>{selected.length}</strong> selected payment records? This cannot be undone.</Trans> : <Trans i18nKey="payments.confirm_delete_msg">Delete this payment record? This <strong>cannot</strong> be undone.</Trans>}
+      confirmLabel={t('payments.btn_delete', 'Delete')} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -828,9 +841,7 @@ export default function Payments() {
         </div>
       </div>
 
-      <BulkActionBar count={selected.length} onDelete={async () => {
-        try {await axios.delete('/api/payments/bulk', { data: { ids: selected } });setSelected([]);fetchData();} catch {}
-      }} />
+      <BulkActionBar count={selected.length} onDelete={() => setConfirm({ open: true, type: 'bulk', item: null, loading: false })} />
 
       {loading ?
       <div className="flex items-center justify-center py-24"><span className="material-icons text-primary text-4xl animate-spin">autorenew</span></div> :
@@ -957,7 +968,7 @@ export default function Payments() {
                     }
 
                       {can('payments.delete') &&
-                    <button onClick={() => setConfirm({ open: true, item: p, loading: false })}
+                    <button onClick={() => setConfirm({ open: true, type: 'single', item: p, loading: false })}
                     className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer" title={t('payments.btn_delete')}>
                           <span className="material-icons text-lg">delete_outline</span>
                         </button>
