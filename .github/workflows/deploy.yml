@@ -54,7 +54,8 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          timeout: 30m
+          timeout: 30s
+          command_timeout: 30m
           envs: CHANGED_API,CHANGED_WEB,CHANGED_FRONTEND,CHANGED_COMPOSE
           script: |
             set -e
