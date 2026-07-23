@@ -220,9 +220,11 @@ function ApproveModal({ open, onClose, user, onApproved, householders }: {open: 
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    if (open) {
+    if (open && user) {
       axios.get('/api/roles').then((r) => setRoles(Array.isArray(r.data) ? r.data : r.data?.data || [])).catch(() => {});
-      setHouseholderId((user as any)?.householder_id || '');
+      setHouseholderId((user as any)?.householder_id || (user as any)?.householderId || (user as any)?.householder?.id || '');
+      setRoleId((user as any)?.role_id ? String((user as any)?.role_id) : (user as any)?.roleId ? String((user as any)?.roleId) : (user as any)?.role?.id ? String((user as any)?.role?.id) : '');
+      setErrors({});
     }
   }, [open, user]);
 
