@@ -219,12 +219,6 @@ export default function NewsPage() {
                                                         {new Date(ev.date).toLocaleDateString('id-ID', { month: 'short', day: '2-digit' })}
                                                     </div>
                                                 )}
-                                                {isPast && (
-                                                    <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">Berlalu</div>
-                                                )}
-                                                {ev.status === 'ongoing' && (
-                                                    <div className="bg-[#b45309] text-white px-3 py-1 rounded font-bold text-sm">Berlangsung</div>
-                                                )}
                                             </div>
                                         </div>
                                         <div className="p-6 flex flex-col flex-grow">

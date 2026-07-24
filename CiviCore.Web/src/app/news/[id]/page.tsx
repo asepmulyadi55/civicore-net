@@ -81,9 +81,10 @@ export default function NewsDetailPage() {
         );
     }
 
-    const eventDate = newsItem.date ? new Date(newsItem.date) : new Date();
-    const formattedDate = eventDate.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const isPast = (newsItem.status !== 'ongoing') && !!newsItem.date && newsItem.date < new Date().toISOString().slice(0, 10);
+    const eventDate = newsItem.date ? new Date(newsItem.date) : null;
+    const formattedDate = eventDate ? eventDate.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '';
+    const formattedTime = newsItem.date && newsItem.date.includes('T') ? new Date(newsItem.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : (newsItem.time || '');
+    const postedOnText = formattedDate ? `Diposting pada ${formattedDate}${formattedTime ? ` • ${formattedTime}` : ''}` : '';
 
     return (
         <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300 min-h-screen flex flex-col">
@@ -120,15 +121,11 @@ export default function NewsDetailPage() {
                                 <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed-dim/20 text-on-primary-fixed dark:text-primary-fixed-dim font-label-sm text-label-sm uppercase tracking-wider">
                                     {newsItem.category}
                                 </span>
-                                {newsItem.status === 'ongoing' ? (
-                                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#b45309]/20 text-[#b45309] dark:text-[#f59e0b] font-label-sm text-label-sm uppercase tracking-wider">
-                                        Berlangsung
+                                {postedOnText && (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-surface-variant/50 text-on-surface-variant dark:text-on-primary/60 font-label-sm text-label-sm tracking-wider">
+                                        {postedOnText}
                                     </span>
-                                ) : isPast ? (
-                                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-surface-variant/50 text-on-surface-variant dark:text-on-primary/60 font-label-sm text-label-sm uppercase tracking-wider">
-                                        Telah Berlalu
-                                    </span>
-                                ) : null}
+                                )}
                             </div>
 
                             <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-background dark:text-on-primary mb-4">
@@ -170,36 +167,6 @@ export default function NewsDetailPage() {
                                     </div>
                                 </div>
                             )}
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-                                <div className="flex items-start gap-4 p-4 rounded-xl bg-surface-bright dark:bg-[#002117] border border-border-subtle/50 dark:border-primary-container/50">
-                                    <div className="p-3 bg-surface-container dark:bg-primary-container rounded-lg text-primary dark:text-primary-fixed-dim">
-                                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="font-label-md text-label-md text-on-surface dark:text-on-primary/70 mb-1">Tanggal</h3>
-                                        <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary">{formattedDate}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4 p-4 rounded-xl bg-surface-bright dark:bg-[#002117] border border-border-subtle/50 dark:border-primary-container/50">
-                                    <div className="p-3 bg-surface-container dark:bg-primary-container rounded-lg text-primary dark:text-primary-fixed-dim">
-                                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="font-label-md text-label-md text-on-surface dark:text-on-primary/70 mb-1">Waktu</h3>
-                                        <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary">{newsItem.date && newsItem.date.includes('T') ? new Date(newsItem.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '—'}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4 p-4 rounded-xl bg-surface-bright dark:bg-[#002117] border border-border-subtle/50 dark:border-primary-container/50 sm:col-span-2">
-                                    <div className="p-3 bg-surface-container dark:bg-primary-container rounded-lg text-primary dark:text-primary-fixed-dim">
-                                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="font-label-md text-label-md text-on-surface dark:text-on-primary/70 mb-1">Lokasi</h3>
-                                        <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary">{newsItem.location || '—'}</p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         {newsItem.action_type === 'youtube' && (

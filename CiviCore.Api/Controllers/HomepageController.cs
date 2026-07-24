@@ -233,6 +233,7 @@ public class HomepageController : ControllerBase
             ["action_type"] = action_type,
             ["action_value"] = action_value,
             ["created_at"] = DateTime.UtcNow.ToString("o"),
+            ["updated_at"] = DateTime.UtcNow.ToString("o"),
         });
 
         var serialized = JsonSerializer.Serialize(items);
@@ -273,6 +274,7 @@ public class HomepageController : ControllerBase
                     ["status"] = itemStatus,
                     ["action_type"] = action_type,
                     ["action_value"] = action_value,
+                    ["updated_at"] = DateTime.UtcNow.ToString("o"),
                 };
 
                 if (items[i].TryGetValue(PropPhotos, out var photosEl))
@@ -544,6 +546,8 @@ public class HomepageController : ControllerBase
             ["description"] = description,
             [PropImageUrl] = imageUrl,
             [PropPhotos] = new List<object>(),
+            ["created_at"] = DateTime.UtcNow.ToString("o"),
+            ["updated_at"] = DateTime.UtcNow.ToString("o"),
         });
 
         await SaveSetting(KeyHomepageGallery, JsonSerializer.Serialize(items));
@@ -567,7 +571,13 @@ public class HomepageController : ControllerBase
                     ["id"] = id,
                     ["title"] = title,
                     ["description"] = description,
+                    ["updated_at"] = DateTime.UtcNow.ToString("o"),
                 };
+
+                if (items[i].TryGetValue("created_at", out var ca) && ca.ValueKind != JsonValueKind.Null)
+                {
+                    updated["created_at"] = ca.GetString();
+                }
 
                 if (items[i].TryGetValue(PropPhotos, out var photosEl))
                 {
@@ -804,6 +814,8 @@ public class HomepageController : ControllerBase
             ["url"] = url,
             [PropImageUrl] = imageUrl,
             [PropPhotos] = new List<object>(),
+            ["created_at"] = DateTime.UtcNow.ToString("o"),
+            ["updated_at"] = DateTime.UtcNow.ToString("o"),
         });
 
         await SaveSetting(KeyHomepageBuletin, JsonSerializer.Serialize(items));
@@ -831,7 +843,13 @@ public class HomepageController : ControllerBase
                     ["date"] = date,
                     ["category"] = category,
                     ["url"] = url,
+                    ["updated_at"] = DateTime.UtcNow.ToString("o"),
                 };
+
+                if (items[i].TryGetValue("created_at", out var ca) && ca.ValueKind != JsonValueKind.Null)
+                {
+                    updated["created_at"] = ca.GetString();
+                }
 
                 if (items[i].TryGetValue(PropPhotos, out var photosEl))
                 {

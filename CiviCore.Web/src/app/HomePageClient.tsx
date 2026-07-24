@@ -132,12 +132,7 @@ export default function HomePageClient({ hero, news, newsSettings, events, event
                                                 <div className="absolute top-4 left-4 flex gap-2 z-20">
                                                     {ev.date && (
                                                         <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
-                                                            {new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                                        </div>
-                                                    )}
-                                                    {ev.created_at && (
-                                                        <div className="bg-surface-glass backdrop-blur-sm px-3 py-1 rounded text-primary font-bold text-sm">
-                                                            Diposting {new Date(ev.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
+                                                            {new Date(ev.date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
                                                         </div>
                                                     )}
                                                 </div>

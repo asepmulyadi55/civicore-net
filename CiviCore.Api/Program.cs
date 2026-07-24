@@ -114,26 +114,29 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // Global Limit: 100 requests per minute per IP
+    var globalLimit = builder.Configuration.GetValue<int>("RateLimiting:GlobalLimit", 2000);
+    var authLimit = builder.Configuration.GetValue<int>("RateLimiting:AuthLimit", 50);
+
+    // Global Limit: 100 requests per minute per IP (2000 in dev)
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: partition => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
-                PermitLimit = 100,
+                PermitLimit = globalLimit,
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
             }));
 
-    // Auth Limit: 5 requests per minute per IP for sensitive endpoints
+    // Auth Limit: 5 requests per minute per IP for sensitive endpoints (50 in dev)
     options.AddPolicy("AuthLimit", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: partition => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
-                PermitLimit = 5,
+                PermitLimit = authLimit,
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
             }));
