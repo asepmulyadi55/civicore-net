@@ -725,7 +725,9 @@
     "pagination_info": "Menampilkan {{from}}–{{to}} dari {{total}} file",
     "not_found": "Tidak ditemukan",
     "delete_record": "Hapus catatan",
-    "ghost_record": "Catatan hantu"
+    "ghost_record": "Catatan hantu",
+    "error_file_in_use": "File media ini sedang digunakan oleh Berita, Buletin, Properti, atau data pengguna. Hapus referensi gambar dari konten terkait terlebih dahulu.",
+    "error_delete_failed": "Gagal menghapus file media."
   },
   "overview": {
     "title": "Ringkasan",

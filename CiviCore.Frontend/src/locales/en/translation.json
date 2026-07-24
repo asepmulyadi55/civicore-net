@@ -725,7 +725,9 @@
     "pagination_info": "Showing {{from}}–{{to}} of {{total}} files",
     "not_found": "Not found",
     "delete_record": "Delete record",
-    "ghost_record": "Ghost record"
+    "ghost_record": "Ghost record",
+    "error_file_in_use": "This media file is currently in use by News, Bulletins, Properties, or user data. Please remove its references before deleting.",
+    "error_delete_failed": "Failed to delete media file."
   },
   "overview": {
     "title": "Overview",

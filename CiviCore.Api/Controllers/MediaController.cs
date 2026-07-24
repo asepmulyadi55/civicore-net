@@ -105,10 +105,6 @@ public class MediaController : ControllerBase
         }
     }
 
-    // Shared utility, not just the Media library: EditHouseholder and ResidentHousehold
-    // post here to attach a photo. Gating it on media.create would break those flows for
-    // roles that legitimately hold only householders.edit / my_household.edit. Tightening
-    // this properly means per-module upload endpoints — see the note in the handover.
     [HttpPost("upload")]
     [Authorize]
     [NoPermissionRequired]
@@ -179,10 +175,15 @@ public class MediaController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize]
-    public async Task<IActionResult> DeleteMedia(Guid id)
+    public async Task<IActionResult> DeleteMedia(Guid id, [FromQuery] bool force = false)
     {
         var media = await _context.MediaFiles.FindAsync(id);
         if (media == null) return NotFound();
+
+        if (!force && await IsFileInUse(media.FilePath))
+        {
+            return BadRequest(new { message = "File media ini sedang digunakan oleh Berita, Buletin, Properti, atau data pengguna. Hapus referensi gambar dari konten terkait terlebih dahulu." });
+        }
 
         try
         {

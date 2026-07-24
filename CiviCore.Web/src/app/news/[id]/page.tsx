@@ -97,6 +97,7 @@ export default function NewsDetailPage() {
                         alt={newsItem.title}
                         className="w-full h-full object-cover object-center absolute inset-0 z-0"
                         src={newsItem.image_url ? newsItem.image_url : '/placeholder-event.png'}
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-event.png'; }}
                     />
                     <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-surface-container-lowest dark:from-primary to-transparent h-48 z-10"></div>
                 </section>

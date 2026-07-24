@@ -175,11 +175,12 @@ export default function BulletinDetailPage() {
                                     alt={bulletin.title || "Sampul Buletin"}
                                     className="w-full h-auto max-h-[500px] object-cover group-hover:scale-[1.01] transition-transform duration-300"
                                     src={bulletin.image_url}
+                                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-event.png'; }}
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
                                     <div className="flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-md rounded-full text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
                                         <span className="material-symbols-outlined text-sm">zoom_in</span>
-                                        <span>Perbesar Gambar</span>
+                                        <span>Zoom / Perbesar</span>
                                     </div>
                                 </div>
                             </div>

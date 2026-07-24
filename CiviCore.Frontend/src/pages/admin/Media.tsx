@@ -255,13 +255,22 @@ export default function Media() {
     }
   };
 
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const doDelete = async () => {
     if (!deleteConfirm) return;
+    setDeleteError(null);
     try {
       await axios.delete(`/api/media/${deleteConfirm.id}`);
       fetchData();
       setDeleteConfirm(null);
-    } catch {}
+    } catch (e: any) {
+      if (e.response?.status === 400) {
+        setDeleteError(t('media.error_file_in_use', 'This media file is currently in use by News, Bulletins, Properties, or user data. Please remove its references before deleting.'));
+      } else {
+        setDeleteError(e.response?.data?.message || t('media.error_delete_failed', 'Failed to delete media file.'));
+      }
+    }
   };
 
   const pruneOrphans = async () => {
@@ -313,7 +322,7 @@ export default function Media() {
       {deleteConfirm &&
       <div
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-        tabIndex={0} role="button" onClick={() => setDeleteConfirm(null)} onKeyDown={(e) => {if (["Enter", " "].includes(e.key)) {e.preventDefault();e.currentTarget.click();}}}>
+        tabIndex={0} role="button" onClick={() => { setDeleteConfirm(null); setDeleteError(null); }} onKeyDown={(e) => {if (["Enter", " "].includes(e.key)) {e.preventDefault();e.currentTarget.click();}}}>
         
           <div
           className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6"
@@ -331,9 +340,16 @@ export default function Media() {
                   </Trans>
                 </p>
               </div>
+
+              {deleteError && (
+                <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-600 dark:text-rose-300 font-medium text-left w-full">
+                  {deleteError}
+                </div>
+              )}
+
               <div className="flex gap-3 w-full">
                 <button
-                onClick={() => setDeleteConfirm(null)}
+                onClick={() => { setDeleteConfirm(null); setDeleteError(null); }}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">
                 
                   {t('media.btn_cancel')}
