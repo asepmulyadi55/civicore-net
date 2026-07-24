@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
 import { FormInput, FormSelect, ImageUploadBox } from '../../admin/components/ui';
+import { ManageSimplePhotosModal } from './Homepage';
 import { compressImage } from '../../utils/imageCompressor';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
@@ -30,6 +31,7 @@ export default function HomepageNewsForm() {
     const [form, setForm] = useState({ title: '', description: '', date: '', location: '', category: '', status: '', url: '', action_type: 'informational', action_value: '' });
     const [image, setImage] = useState<any>(null);
     const [currentImageUrl, setCurrentImageUrl] = useState('');
+    const [photosModalOpen, setPhotosModalOpen] = useState(false);
 
     const fetchNewsItem = useCallback(async () => {
         if (!id) return;
@@ -150,7 +152,30 @@ export default function HomepageNewsForm() {
                     </div>
 
                     <ImageUploadBox label={t('homepage.field_news_image', 'News Image')} currentUrl={currentImageUrl} file={image} onFileChange={setImage} recommendedSize="1000x600" />
+                    
+                    {isEdit && (
+                        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">{t('homepage.title_manage_news_photos', 'Manage News Photos')}</h4>
+                                <p className="text-xs text-slate-500">{t('homepage.subtitle_manage_news_photos', 'Upload multi-image gallery photos for this article')}</p>
+                            </div>
+                            <button type="button" onClick={() => setPhotosModalOpen(true)} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm font-semibold rounded-xl transition-all cursor-pointer">
+                                <span className="material-icons text-lg">collections</span>
+                                {t('homepage.btn_manage_photos', 'Manage Photos')}
+                            </button>
+                        </div>
+                    )}
                 </div>
+
+                {isEdit && (
+                    <ManageSimplePhotosModal
+                        open={photosModalOpen}
+                        item={{ id, title: form.title }}
+                        itemType="news"
+                        onClose={() => setPhotosModalOpen(false)}
+                        canEdit={true}
+                    />
+                )}
 
                 <div className="flex justify-end gap-3 mt-8">
                     <Link to="/homepage/news" className="px-6 py-2.5 rounded-xl font-bold border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1B2236] transition-colors cursor-pointer">

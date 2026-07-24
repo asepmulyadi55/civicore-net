@@ -31,6 +31,19 @@ export default function NewsDetailPage() {
 
     const [loading, setLoading] = useState(true);
     const [newsItem, setNewsItem] = useState<any>(null);
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+    // Keyboard navigation for lightbox
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (selectedIndex === null || !newsItem || !newsItem.photos) return;
+            if (e.key === 'Escape') setSelectedIndex(null);
+            if (e.key === 'ArrowLeft') setSelectedIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : (newsItem.photos.length - 1)));
+            if (e.key === 'ArrowRight') setSelectedIndex((prev) => (prev !== null && prev < newsItem.photos.length - 1 ? prev + 1 : 0));
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedIndex, newsItem]);
 
     useEffect(() => {
         setLoading(true);
@@ -123,6 +136,40 @@ export default function NewsDetailPage() {
 
                             <div className="font-body-lg text-body-lg text-on-surface-variant dark:text-on-primary/80 mb-8 leading-relaxed space-y-4 rte-content" dangerouslySetInnerHTML={{ __html: (newsItem.description || '').replace(/&nbsp;/g, ' ') }}></div>
 
+                            {/* Gallery Photos Sub-list */}
+                            {newsItem.photos && newsItem.photos.length > 0 && (
+                                <div className="mb-8">
+                                    <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary mb-4 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">collections</span>
+                                        Galeri Foto ({newsItem.photos.length})
+                                    </h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                        {newsItem.photos.slice(0, 6).map((img: any, idx: number) => {
+                                            const isLastAndMore = idx === 5 && newsItem.photos.length > 6;
+                                            return (
+                                                <div
+                                                    key={img.id || idx}
+                                                    tabIndex={0}
+                                                    role="button"
+                                                    onClick={() => setSelectedIndex(idx)}
+                                                    onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); setSelectedIndex(idx); } }}
+                                                    className="cursor-pointer group relative rounded-xl overflow-hidden aspect-[4/3] shadow-sm hover:shadow-md border border-border-subtle/50 dark:border-primary-container/50 bg-surface-container-lowest dark:bg-primary-container"
+                                                >
+                                                    <img alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src={img.image_url} />
+                                                    {isLastAndMore ? (
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 group-hover:bg-black/70 transition-colors backdrop-blur-[2px]">
+                                                            <span className="text-white font-headline-md text-headline-md font-bold">+{newsItem.photos.length - 6} Lagi</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                                 <div className="flex items-start gap-4 p-4 rounded-xl bg-surface-bright dark:bg-[#002117] border border-border-subtle/50 dark:border-primary-container/50">
                                     <div className="p-3 bg-surface-container dark:bg-primary-container rounded-lg text-primary dark:text-primary-fixed-dim">
@@ -196,6 +243,39 @@ export default function NewsDetailPage() {
                     </div>
                 </section>
             </main>
+
+            {/* Lightbox */}
+            {selectedIndex !== null && newsItem?.photos && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" tabIndex={0} role="button" onClick={() => setSelectedIndex(null)} onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); setSelectedIndex(null); } }}>
+                    <button
+                        onClick={() => setSelectedIndex(null)}
+                        className="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-colors z-[110] cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined text-3xl">close</span>
+                    </button>
+                    
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => prev !== null && prev > 0 ? prev - 1 : newsItem.photos.length - 1); }}
+                        className="absolute left-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-3 transition-colors z-[110] cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined text-3xl">chevron_left</span>
+                    </button>
+                    
+                    <div className="relative max-w-4xl max-h-[85vh] p-4 flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+                        <img src={newsItem.photos[selectedIndex]?.image_url} alt="" className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl" />
+                        <p className="text-white/80 text-sm mt-4 font-medium">
+                            {selectedIndex + 1} / {newsItem.photos.length}
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => prev !== null && prev < newsItem.photos.length - 1 ? prev + 1 : 0); }}
+                        className="absolute right-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-3 transition-colors z-[110] cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined text-3xl">chevron_right</span>
+                    </button>
+                </div>
+            )}
 
             <Footer setActiveTab={setActiveTab} />
         </div>

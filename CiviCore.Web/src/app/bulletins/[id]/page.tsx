@@ -12,6 +12,25 @@ export default function BulletinDetailPage() {
     const [recentBulletins, setRecentBulletins] = useState<any[]>([]);
     const [footerData, setFooterData] = useState<any>({});
     const [loading, setLoading] = useState(true);
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+    const allPhotos = [
+        ...(bulletin?.image_url ? [{ id: 'cover', image_url: bulletin.image_url }] : []),
+        ...(bulletin?.photos || [])
+    ];
+
+    // Keyboard navigation for lightbox
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (selectedIndex === null || allPhotos.length === 0) return;
+            if (e.key === 'Escape') setSelectedIndex(null);
+            if (e.key === 'ArrowLeft') setSelectedIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : (allPhotos.length - 1)));
+            if (e.key === 'ArrowRight') setSelectedIndex((prev) => (prev !== null && prev < allPhotos.length - 1 ? prev + 1 : 0));
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedIndex, allPhotos]);
+
     const [isDark, setIsDark] = useState(() => {
         try { return localStorage.getItem('homepageDark') === 'true'; } catch { return false; }
     });
@@ -144,13 +163,63 @@ export default function BulletinDetailPage() {
                     {/* Main Text Column */}
                     <article className="lg:col-span-8 space-y-8 font-body-md text-body-md text-on-surface dark:text-on-primary/90 leading-relaxed">
                         {bulletin.image_url && (
-                            <img
-                                alt={bulletin.title || "Sampul Buletin"}
-                                className="w-full h-auto max-h-[400px] rounded-xl shadow-sm object-cover mb-10"
-                                src={bulletin.image_url}
-                            />
+                            <div
+                                tabIndex={0}
+                                role="button"
+                                onClick={() => setSelectedIndex(0)}
+                                onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); setSelectedIndex(0); } }}
+                                className="relative group cursor-pointer rounded-xl overflow-hidden shadow-sm mb-10 border border-border-subtle/50 dark:border-primary-container/50 bg-surface-container-lowest dark:bg-primary-container"
+                                title="Klik untuk memperbesar / Click to zoom"
+                            >
+                                <img
+                                    alt={bulletin.title || "Sampul Buletin"}
+                                    className="w-full h-auto max-h-[500px] object-cover group-hover:scale-[1.01] transition-transform duration-300"
+                                    src={bulletin.image_url}
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-md rounded-full text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                                        <span className="material-symbols-outlined text-sm">zoom_in</span>
+                                        <span>Perbesar Gambar</span>
+                                    </div>
+                                </div>
+                            </div>
                         )}
                         <div className="rte-content" dangerouslySetInnerHTML={{ __html: (bulletin.description || '').replace(/&nbsp;/g, ' ') }} />
+
+                        {/* Gallery Photos Sub-list */}
+                        {bulletin.photos && bulletin.photos.length > 0 && (
+                            <div className="pt-6 border-t border-border-subtle dark:border-primary-container/50">
+                                <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">collections</span>
+                                    Galeri Foto ({bulletin.photos.length})
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                    {bulletin.photos.slice(0, 6).map((img: any, idx: number) => {
+                                        const isLastAndMore = idx === 5 && bulletin.photos.length > 6;
+                                        const photoIndex = bulletin.image_url ? idx + 1 : idx;
+                                        return (
+                                            <div
+                                                key={img.id || idx}
+                                                tabIndex={0}
+                                                role="button"
+                                                onClick={() => setSelectedIndex(photoIndex)}
+                                                onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); setSelectedIndex(photoIndex); } }}
+                                                className="cursor-pointer group relative rounded-xl overflow-hidden aspect-[4/3] shadow-sm hover:shadow-md border border-border-subtle/50 dark:border-primary-container/50 bg-surface-container-lowest dark:bg-primary-container"
+                                            >
+                                                <img alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src={img.image_url} />
+                                                {isLastAndMore ? (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 group-hover:bg-black/70 transition-colors backdrop-blur-[2px]">
+                                                        <span className="text-white font-headline-md text-headline-md font-bold">+{bulletin.photos.length - 6} Lagi</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </article>
 
                     {/* Sidebar */}
@@ -179,37 +248,28 @@ export default function BulletinDetailPage() {
                                 )}
                                 {(footerData.location) && (
                                     <div className="flex items-start">
-                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1 shrink-0">location_on</span>
-                                        <div className="min-w-0">
+                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1">location_on</span>
+                                        <div>
                                             <p className="font-label-md text-label-md text-on-surface-variant dark:text-on-primary/70">Lokasi</p>
-                                            <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 break-words" dangerouslySetInnerHTML={{ __html: footerData.location }} />
+                                            <p className="font-semibold">{footerData.location}</p>
                                         </div>
                                     </div>
                                 )}
                             </div>
-                            <button
-                                onClick={() => { setShowMsgModal(true); setMsgStatus('idle'); }}
-                                className="w-full mt-8 bg-[#b45309] text-white font-label-md text-label-md py-3 px-4 rounded-lg hover:bg-[#8b4006] transition-colors flex justify-center items-center"
-                            >
-                                <span className="material-symbols-outlined mr-2 text-sm">chat</span>
-                                Hubungi Penerbit
+                            <button onClick={() => setShowMsgModal(true)} className="w-full mt-6 bg-[#b45309] hover:bg-[#8b4006] text-white font-label-md text-label-md py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                                <span className="material-symbols-outlined text-sm">chat</span> Hubungi Penerbit
                             </button>
                         </div>
 
-                        {/* Related Bulletins */}
-                        <div className="bg-surface dark:bg-primary-container rounded-xl p-6 border border-border-subtle dark:border-primary-container/50">
-                            <h3 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mb-6">Pengumuman Terbaru</h3>
-                            <div className="space-y-6">
-                                {recentBulletins.filter(b => b.id !== id).slice(0, 3).map((related, idx) => (
-                                    <React.Fragment key={related.id}>
-                                        <Link href={related.url || `/bulletins/${related.id}`} className="block group">
-                                            <p className="font-label-sm text-label-sm text-on-surface-variant dark:text-on-primary/60 mb-1">{related.date ? new Date(related.date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</p>
-                                            <h4 className="font-body-md text-body-md font-semibold dark:text-on-primary/90 group-hover:text-primary dark:group-hover:text-primary-fixed-dim transition-colors">
-                                                {related.title}
-                                            </h4>
-                                        </Link>
-                                        {idx < 2 && <div className="h-px w-full bg-border-subtle dark:bg-primary-container/50"></div>}
-                                    </React.Fragment>
+                        {/* Recent Bulletins */}
+                        <div className="bg-surface-glass dark:bg-primary-container backdrop-blur-md border border-border-subtle dark:border-primary-container/50 rounded-xl p-6 shadow-sm">
+                            <h3 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mb-6 border-b border-border-subtle dark:border-primary-container/50 pb-4">Pengumuman Terbaru</h3>
+                            <div className="space-y-4">
+                                {recentBulletins.filter(b => b.id !== bulletin.id).slice(0, 4).map((b: any) => (
+                                    <Link key={b.id} href={`/bulletins/${b.id}`} className="block group">
+                                        <p className="font-label-sm text-label-sm text-text-muted dark:text-on-primary/50 mb-1">{b.date ? new Date(b.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</p>
+                                        <p className="font-body-md text-body-md font-semibold text-on-surface dark:text-on-primary group-hover:text-primary dark:group-hover:text-primary-fixed-dim transition-colors line-clamp-2">{b.title}</p>
+                                    </Link>
                                 ))}
                             </div>
                         </div>
@@ -219,26 +279,36 @@ export default function BulletinDetailPage() {
 
             {/* Message Support Modal */}
             {showMsgModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" tabIndex={0} role="button" onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => setShowMsgModal(false)}>
-                    <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-2xl p-8 w-full max-w-md relative" tabIndex={0} role="button" onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.currentTarget.click(); } }} onClick={e => e.stopPropagation()}>
-                        <button onClick={() => setShowMsgModal(false)} className="absolute top-4 right-4 text-text-muted hover:text-primary transition-colors">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" tabIndex={0} role="button" onClick={() => setShowMsgModal(false)} onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); setShowMsgModal(false); } }}>
+                    <div className="bg-surface-container-lowest dark:bg-primary-container rounded-2xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-border-subtle dark:border-primary-container/50 relative" tabIndex={0} role="button" onClick={e => e.stopPropagation()} onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.stopPropagation(); } }}>
+                        <button onClick={() => setShowMsgModal(false)} className="absolute top-4 right-4 text-text-muted hover:text-on-surface dark:hover:text-on-primary cursor-pointer">
                             <span className="material-symbols-outlined">close</span>
                         </button>
-                        <h2 className="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim mb-2">Hubungi Penerbit</h2>
-                        <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6">Terkait: <span className="font-semibold text-on-surface dark:text-on-primary">{bulletin.title}</span></p>
+
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-3 bg-[#b45309]/10 text-[#b45309] rounded-xl">
+                                <span className="material-symbols-outlined text-2xl">chat</span>
+                            </div>
+                            <div>
+                                <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary">Hubungi Penerbit</h3>
+                                <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-on-primary/70">Kirim pesan langsung terkait buletin ini</p>
+                            </div>
+                        </div>
 
                         {msgStatus === 'success' ? (
-                            <div className="text-center py-8">
-                                <span className="material-symbols-outlined text-5xl text-green-600 mb-4 block">check_circle</span>
-                                <p className="font-headline-sm text-primary dark:text-primary-fixed-dim">Pesan Terkirim!</p>
-                                <p className="text-body-md text-text-muted mt-2">Tim kami akan segera merespons.</p>
-                                <button onClick={() => setShowMsgModal(false)} className="mt-6 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-container transition-colors font-label-md">Tutup</button>
+                            <div className="text-center py-6 space-y-4">
+                                <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                                    <span className="material-symbols-outlined text-3xl">check_circle</span>
+                                </div>
+                                <h4 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary">Pesan Terkirim!</h4>
+                                <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/70">Terima kasih. Pengurus akan segera membalas pesan Anda.</p>
+                                <button onClick={() => { setShowMsgModal(false); setMsgStatus('idle'); }} className="mt-4 bg-[#b45309] text-white px-6 py-2.5 rounded-lg font-label-md">Tutup</button>
                             </div>
                         ) : (
                             <form onSubmit={handleSendMessage} className="space-y-4">
                                 <div>
                                     <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="msg-name">Nama Lengkap</label>
-                                    <input required id="msg-name" type="text" value={msgName} onChange={e => setMsgName(e.target.value)} placeholder="Nama Anda" className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary" />
+                                    <input required id="msg-name" type="text" value={msgName} onChange={e => setMsgName(e.target.value)} placeholder="Mis. John Doe" className="w-full rounded-lg border border-border-subtle dark:border-primary-container/50 bg-background dark:bg-primary text-on-surface dark:text-on-primary font-body-md py-3 px-4 focus:outline-none focus:ring-1 focus:ring-primary" />
                                 </div>
                                 <div>
                                     <label className="block font-label-sm text-label-sm text-on-surface dark:text-on-primary/70 mb-1" htmlFor="msg-phone">Nomor Telepon</label>
@@ -258,6 +328,39 @@ export default function BulletinDetailPage() {
                             </form>
                         )}
                     </div>
+                </div>
+            )}
+
+            {/* Lightbox */}
+            {selectedIndex !== null && allPhotos.length > 0 && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" tabIndex={0} role="button" onClick={() => setSelectedIndex(null)} onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); setSelectedIndex(null); } }}>
+                    <button
+                        onClick={() => setSelectedIndex(null)}
+                        className="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-colors z-[110] cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined text-3xl">close</span>
+                    </button>
+                    
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => prev !== null && prev > 0 ? prev - 1 : allPhotos.length - 1); }}
+                        className="absolute left-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-3 transition-colors z-[110] cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined text-3xl">chevron_left</span>
+                    </button>
+                    
+                    <div className="relative max-w-5xl max-h-[90vh] p-4 flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+                        <img src={allPhotos[selectedIndex]?.image_url} alt="" className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" />
+                        <p className="text-white/80 text-sm mt-4 font-medium">
+                            {selectedIndex + 1} / {allPhotos.length}
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => prev !== null && prev < allPhotos.length - 1 ? prev + 1 : 0); }}
+                        className="absolute right-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-3 transition-colors z-[110] cursor-pointer"
+                    >
+                        <span className="material-symbols-outlined text-3xl">chevron_right</span>
+                    </button>
                 </div>
             )}
 

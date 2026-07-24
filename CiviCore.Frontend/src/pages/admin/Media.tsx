@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import axios from 'axios';
 import AdminLayout from '../../admin/AdminLayout';
-import { PageHeader, EmptyState } from '../../admin/components/ui';
+import { PageHeader, EmptyState, Pagination } from '../../admin/components/ui';
 import { usePermissions } from '../../admin/PermissionsContext';
 
 interface MediaFile {
@@ -467,58 +467,16 @@ export default function Media() {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 &&
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {t('media.pagination_info', {
-              from: pageStart + 1,
+          <Pagination
+            meta={{
+              current_page: safePage,
+              last_page: totalPages,
+              from: searchFiltered.length ? pageStart + 1 : 0,
               to: Math.min(pageStart + PAGE_SIZE, searchFiltered.length),
               total: searchFiltered.length
-            })}
-              </p>
-              <div className="flex items-center gap-1">
-                <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={safePage === 1}
-              className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all cursor-pointer">
-              
-                  <span className="material-icons text-sm">chevron_left</span>
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).
-            filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1).
-            reduce((acc, p, idx, arr) => {
-              if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
-              acc.push(p);
-              return acc;
-            }, []).
-            map((p, idx) =>
-            p === '...' ?
-            <span key={`dot-${idx}`} className="w-8 h-8 flex items-center justify-center text-xs text-slate-400">…</span> :
-
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`w-8 h-8 rounded-lg text-xs font-bold border transition-all cursor-pointer ${safePage === p ?
-              'bg-primary border-primary text-white dark:text-surface shadow-sm shadow-primary/20 cursor-default' :
-              'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-primary/5 hover:border-primary/30 hover:text-primary'}`
-              }>
-              
-                        {p}
-                      </button>
-
-            )}
-
-                <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={safePage === totalPages}
-              className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all cursor-pointer">
-              
-                  <span className="material-icons text-sm">chevron_right</span>
-                </button>
-              </div>
-            </div>
-        }
+            }}
+            onChange={(p) => setPage(p)}
+          />
         </>
       }
     </AdminLayout>);

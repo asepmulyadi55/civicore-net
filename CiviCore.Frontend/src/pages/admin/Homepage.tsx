@@ -209,8 +209,18 @@ function NewsTab({ canEdit }: { canEdit: boolean }) {
 
   const catLabel = (c) => CATEGORY_OPTIONS.find(o => o.value === c)?.label || c || '—';
 
+  const [simplePhotosModal, setSimplePhotosModal] = useState<{ open: boolean; item: any; type: string }>({ open: false, item: null, type: 'news' });
+
   return (
     <>
+      <ManageSimplePhotosModal
+        open={simplePhotosModal.open}
+        item={simplePhotosModal.item}
+        itemType={simplePhotosModal.type}
+        onClose={() => setSimplePhotosModal({ open: false, item: null, type: 'news' })}
+        onRefresh={fetchEvents}
+        canEdit={canEdit}
+      />
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
         onConfirm={deleteEvent} loading={deleteModal.loading} icon="delete_outline"
         title={t('homepage.title_delete_news', 'Delete News Article?')} message={<>{t('homepage.text_delete_before', 'Delete')} <strong>{deleteModal.title}</strong>? {t('homepage.text_delete_after', 'This cannot be undone.')}</>} confirmLabel={t('homepage.btn_yes_delete', 'Yes, Delete')} />
@@ -271,6 +281,7 @@ function NewsTab({ canEdit }: { canEdit: boolean }) {
                       <td className="px-4 py-3.5 text-slate-500 text-xs">{ev.location || '—'}</td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
+                          {canEdit && <button onClick={() => setSimplePhotosModal({ open: true, item: ev, type: 'news' })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('homepage.btn_manage_photos', 'Manage Photos')}><span className="material-icons text-lg">collections</span></button>}
                           {canEdit && <Link to={`/homepage/news/${ev.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
                           {canEdit && <button onClick={() => setDeleteModal({ open: true, id: ev.id, title: ev.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
@@ -284,6 +295,132 @@ function NewsTab({ canEdit }: { canEdit: boolean }) {
         </div>
       </SectionCard>
     </>
+  );
+}
+
+export function ManageSimplePhotosModal({ open, item, itemType = 'news', onClose, onRefresh, canEdit }: any) {
+  const { t } = useTranslation();
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+
+  const fetchPhotos = useCallback(async () => {
+    if (!item?.id) return;
+    setLoading(true);
+    try {
+      const endpoint = itemType === 'bulletin' ? `/api/homepage/bulletin/${item.id}` : `/api/homepage/news/${item.id}`;
+      const res = await axios.get(endpoint);
+      setPhotos(res.data?.photos || []);
+    } catch { }
+    setLoading(false);
+  }, [item?.id, itemType]);
+
+  useEffect(() => {
+    if (open) {
+      setFiles([]);
+      fetchPhotos();
+    }
+  }, [open, fetchPhotos]);
+
+  const uploadPhoto = async () => {
+    if (files.length === 0 || !item?.id) return;
+    setUploading(true);
+    
+    try {
+      const uploadEndpoint = itemType === 'bulletin' ? `/api/homepage/bulletin/${item.id}/photos` : `/api/homepage/news/${item.id}/photos`;
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append('image_file', await compressImage(file));
+        await axios.post(uploadEndpoint, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      setFiles([]);
+      await fetchPhotos();
+      if (onRefresh) onRefresh();
+    } catch { }
+    setUploading(false);
+  };
+
+  const deletePhoto = async () => {
+    if (!item?.id || !deleteConfirmId) return;
+    setDeleting(deleteConfirmId);
+    try {
+      const deleteEndpoint = itemType === 'bulletin' ? `/api/homepage/bulletin/${item.id}/photos/${deleteConfirmId}` : `/api/homepage/news/${item.id}/photos/${deleteConfirmId}`;
+      await axios.delete(deleteEndpoint);
+      await fetchPhotos();
+      if (onRefresh) onRefresh();
+    } catch { }
+    setDeleting(null);
+    setDeleteConfirmId(null);
+  };
+
+  const modalTitle = itemType === 'bulletin'
+    ? `${t('homepage.title_manage_bulletin_photos', 'Manage Bulletin Photos')} - ${item?.title || ''}`
+    : `${t('homepage.title_manage_news_photos', 'Manage News Photos')} - ${item?.title || ''}`;
+
+  return (
+    <Modal open={open} onClose={onClose} title={modalTitle} size="xl">
+      <div className="space-y-6">
+        {canEdit && (
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">{t('homepage.title_upload_new_photo', 'Upload New Photo')}</h4>
+            <div className="flex items-end gap-4">
+              <div className="flex-1">
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center bg-white dark:bg-slate-900 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors relative h-[100px]" onClick={() => document.getElementById(`simple-multiple-file-upload-${itemType}`)?.click()}>
+                  <input id={`simple-multiple-file-upload-${itemType}`} type="file" multiple accept="image/*" className="hidden" onChange={e => {
+                    if (e.target.files) {
+                      setFiles(Array.from(e.target.files));
+                    }
+                  }} />
+                  <span className="material-icons text-slate-400 mb-1">cloud_upload</span>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    {files.length > 0 ? `${files.length} file(s) selected` : 'Click to select multiple images'}
+                  </p>
+                </div>
+              </div>
+              <button onClick={uploadPhoto} disabled={files.length === 0 || uploading} className="px-5 h-[100px] rounded-xl bg-primary hover:opacity-90 text-white dark:text-surface text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1">
+                {uploading ? <span className="material-icons animate-spin">autorenew</span> : <span className="material-icons">cloud_upload</span>}
+                {uploading ? t('homepage.text_uploading', 'Uploading...') : t('homepage.text_upload', 'Upload')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div>
+          <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">{t('homepage.text_album_photos', 'Photos')} ({photos.length})</h4>
+          {loading ? (
+            <div className="flex justify-center py-8"><span className="material-icons animate-spin text-primary text-3xl">autorenew</span></div>
+          ) : photos.length === 0 ? (
+            <EmptyState icon="photo_library" title={t('homepage.title_no_photos', 'No photos yet')} subtitle={t('homepage.subtitle_no_photos', 'Upload your first photo above')} />
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2">
+              {photos.map(p => (
+                <div key={p.id} className="relative group rounded-xl overflow-hidden aspect-[4/3] border border-slate-200 dark:border-slate-700">
+                  <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                  {canEdit && (
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                      <button onClick={() => setDeleteConfirmId(p.id)} disabled={deleting === p.id} className="self-end p-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors cursor-pointer disabled:opacity-50">
+                        {deleting === p.id ? <span className="material-icons animate-spin text-sm">autorenew</span> : <span className="material-icons text-sm">delete_outline</span>}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={deletePhoto}
+        title={t('homepage.title_delete_photo', 'Delete Photo')}
+        message={t('homepage.text_delete_photo_confirm', 'Are you sure you want to delete this photo? This action cannot be undone.')}
+        loading={!!deleting}
+      />
+    </Modal>
   );
 }
 
@@ -688,8 +825,18 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
     setSavingSettings(false);
   };
 
+  const [simplePhotosModal, setSimplePhotosModal] = useState<{ open: boolean; item: any; type: string }>({ open: false, item: null, type: 'bulletin' });
+
   return (
     <>
+      <ManageSimplePhotosModal
+        open={simplePhotosModal.open}
+        item={simplePhotosModal.item}
+        itemType={simplePhotosModal.type}
+        onClose={() => setSimplePhotosModal({ open: false, item: null, type: 'bulletin' })}
+        onRefresh={fetch}
+        canEdit={canEdit}
+      />
       <SectionCard icon="settings" iconBg="bg-indigo-100 dark:bg-indigo-900/30" iconColor="text-indigo-500" title={t('homepage.title_bulletin_settings', 'Bulletin Settings')} subtitle={t('homepage.subtitle_bulletin_settings', 'Configure the main bulletin header')}>
         <SuccessBanner show={success === 'settings'} />
         <div className="p-6 space-y-6">
@@ -703,8 +850,6 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
       </SectionCard>
 
       <div className="h-6"></div>
-
-
 
       <ConfirmModal open={deleteModal.open} onClose={() => setDeleteModal({ open: false, id: null, title: '', loading: false })}
         onConfirm={deleteBulletin} loading={deleteModal.loading} icon="delete_outline"
@@ -748,6 +893,7 @@ function BulletinTab({ canEdit }: { canEdit: boolean }) {
                       <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{b.date ? new Date(b.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-1">
+                          {canEdit && <button onClick={() => setSimplePhotosModal({ open: true, item: b, type: 'bulletin' })} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer" title={t('homepage.btn_manage_photos', 'Manage Photos')}><span className="material-icons text-lg">collections</span></button>}
                           {canEdit && <Link to={`/homepage/bulletin/${b.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer block"><span className="material-icons text-lg block">edit</span></Link>}
                           {canEdit && <button onClick={() => setDeleteModal({ open: true, id: b.id, title: b.title, loading: false })} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors cursor-pointer"><span className="material-icons text-lg">delete_outline</span></button>}
                         </div>
