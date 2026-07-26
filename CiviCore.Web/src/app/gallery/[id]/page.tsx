@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
+import { GridSkeleton } from '@/components/Skeletons';
 
 export default function GalleryDetailPage() {
     const { id } = useParams();
@@ -58,8 +59,8 @@ export default function GalleryDetailPage() {
         return (
             <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased min-h-screen flex flex-col">
                 <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
-                <main className="flex-grow pt-32 text-center flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary text-4xl animate-spin">autorenew</span>
+                <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 w-full">
+                    <GridSkeleton count={6} />
                 </main>
                 <Footer setActiveTab={setActiveTab} />
             </div>

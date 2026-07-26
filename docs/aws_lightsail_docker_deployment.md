@@ -257,29 +257,29 @@ Before getting SSL certificates, you must create two DNS A records in your domai
 
 ---
 
-## Step 8: HTTPS with Let's Encrypt (Certbot)
+## Step 8: SSL Configuration
 
-Install Certbot:
+**CRITICAL ARCHITECTURE CHOICE:** How is your domain routed?
+
+### Option A: CloudFront Distribution (Recommended)
+If you are using AWS CloudFront in front of your VPS (e.g., Lightsail Distribution):
+- **DO NOT install Certbot or SSL on the VPS.**
+- CloudFront automatically provisions and renews your SSL certificate via AWS Certificate Manager (ACM).
+- Configure your CloudFront Origin Protocol Policy to **"HTTP Only"** so it connects to your VPS on port 80.
+- Configure your CloudFront Origin Request Policy to **"Managed-AllViewer"** so it forwards the `Host` header to Nginx.
+
+### Option B: Direct VPS Access
+If your domain's DNS A-record points *directly* to the VPS IP address (no CloudFront):
 
 ```bash
 sudo apt install certbot python3-certbot-nginx -y
 ```
 
-Issue SSL certificates for **both** subdomains at once:
-
+Issue SSL certificates:
 ```bash
 sudo certbot --nginx -d dwipapuri.amsite.click -d admin.dwipapuri.amsite.click
 ```
-
-Follow the prompts (enter your email, agree to terms). Certbot will automatically:
-1. Fetch the certificates.
-2. Update both Nginx config files to enable HTTPS.
-3. Set up auto-renewal via a cron job.
-
-Verify auto-renewal works:
-```bash
-sudo certbot renew --dry-run
-```
+Certbot will auto-renew. Verify with: `sudo certbot renew --dry-run`
 
 ---
 

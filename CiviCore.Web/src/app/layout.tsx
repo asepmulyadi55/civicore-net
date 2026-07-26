@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
+import { TopProgressBar } from "@/components/TopProgressBar";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dwipapuri.amsite.click';
 
@@ -44,14 +46,21 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@100..700,0..1,-50..200,20..48&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@100..700,0..1,-50..200,20..48&display=block" rel="stylesheet" />
         <style>{`
-          .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+          .material-symbols-outlined, .material-icons {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-display: block;
+            user-select: none;
+          }
         `}</style>
         <script src="https://www.google.com/recaptcha/api.js?render=6LcYAU4tAAAAAIOUBvSBiUsCre0iHTwZRds2WpI5" async defer></script>
       </head>
       <body className="min-h-screen flex flex-col">
+        <Suspense fallback={null}>
+          <TopProgressBar />
+        </Suspense>
         {children}
         <AnalyticsScript />
       </body>

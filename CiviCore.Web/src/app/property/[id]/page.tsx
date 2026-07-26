@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
+import { DetailSkeleton } from '@/components/Skeletons';
 
 export default function PropertyDetailPage() {
     const { id } = useParams();
@@ -86,7 +87,15 @@ export default function PropertyDetailPage() {
     };
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-surface-container-lowest dark:bg-primary text-primary"><span className="material-symbols-outlined animate-spin text-4xl">autorenew</span></div>;
+        return (
+            <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased transition-colors duration-300 min-h-screen flex flex-col">
+                <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={() => setIsDark(!isDark)} />
+                <main className="flex-grow pt-28">
+                    <DetailSkeleton />
+                </main>
+                <Footer setActiveTab={setActiveTab} />
+            </div>
+        );
     }
     if (!property) {
         return (

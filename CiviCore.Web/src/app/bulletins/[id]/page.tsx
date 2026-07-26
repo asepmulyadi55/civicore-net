@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
+import { DetailSkeleton } from '@/components/Skeletons';
 
 export default function BulletinDetailPage() {
     const { id } = useParams();
@@ -109,8 +110,12 @@ export default function BulletinDetailPage() {
 
     if (loading) {
         return (
-            <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased min-h-screen flex flex-col justify-center items-center">
-                <span className="material-symbols-outlined text-4xl text-primary animate-spin">autorenew</span>
+            <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased min-h-screen flex flex-col">
+                <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={() => setIsDark(!isDark)} />
+                <main className="flex-grow pt-28">
+                    <DetailSkeleton />
+                </main>
+                <Footer footerData={footerData} setActiveTab={setActiveTab} />
             </div>
         );
     }

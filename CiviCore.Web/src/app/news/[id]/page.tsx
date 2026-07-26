@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopNavBar from '@/components/TopNavBar';
 import Footer from '@/components/Footer';
+import { DetailSkeleton } from '@/components/Skeletons';
 
 export default function NewsDetailPage() {
     const { id } = useParams();
@@ -62,8 +63,12 @@ export default function NewsDetailPage() {
 
     if (loading) {
         return (
-            <div className="bg-surface-container-lowest dark:bg-primary min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <div className="bg-surface-container-lowest dark:bg-primary text-on-surface dark:text-on-primary font-body-md antialiased min-h-screen flex flex-col">
+                <TopNavBar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleDark={toggleDark} />
+                <main className="flex-grow pt-28">
+                    <DetailSkeleton />
+                </main>
+                <Footer setActiveTab={setActiveTab} />
             </div>
         );
     }
