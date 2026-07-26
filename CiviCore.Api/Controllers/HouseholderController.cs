@@ -297,7 +297,8 @@ public class HouseholderController : ControllerBase
                         blockLetter = currentBlock;
 
                     var unitNum = worksheet.Cell(row, 2).GetString().Trim();
-                    var name = worksheet.Cell(row, 3).GetString().Trim();
+                    var rawName = worksheet.Cell(row, 3).GetString().Trim();
+                    var name = rawName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? rawName;
                     var rawStatus = System.Text.RegularExpressions.Regex.Replace(
                         worksheet.Cell(row, 4).GetString().Trim().ToLower(),
                         @"\s+", " ", System.Text.RegularExpressions.RegexOptions.None, System.TimeSpan.FromMilliseconds(500));
