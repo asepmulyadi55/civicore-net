@@ -265,6 +265,7 @@ public class HouseholderController : ControllerBase
                 job.TotalRows = rowCount > 1 ? rowCount - 1 : 0;
 
                 int householdersCreated = 0;
+                int householdersUpdated = 0;
                 int householdersSkipped = 0;
                 int feesCreated = 0;
 
@@ -331,7 +332,15 @@ public class HouseholderController : ControllerBase
                     }
                     else
                     {
-                        householdersSkipped++;
+                        if (householder.Fullname != name)
+                        {
+                            householder.Fullname = name;
+                            householdersUpdated++;
+                        }
+                        else
+                        {
+                            householdersSkipped++;
+                        }
                     }
 
                     decimal feeAmount = 0;
@@ -344,7 +353,8 @@ public class HouseholderController : ControllerBase
                         {
                             var fee = new FeeHistory
                             {
-                                Householder = householder,
+                                Id = Guid.NewGuid(),
+                                HouseholderId = householder.Id,
                                 Amount = feeAmount,
                                 EffectiveFrom = effectiveFrom,
                                 Notes = $"Imported from Excel ({year})"
@@ -361,7 +371,7 @@ public class HouseholderController : ControllerBase
                 await dbContext.SaveChangesAsync();
 
                 job.Status = "Completed";
-                job.Message = $"Import complete — {householdersCreated} householder(s) created, {householdersSkipped} already existed | {feesCreated} fee record(s) created.";
+                job.Message = $"Import complete — {householdersCreated} created, {householdersUpdated} updated, {householdersSkipped} unchanged | {feesCreated} fee record(s) created.";
             }
             catch (Exception ex)
             {
