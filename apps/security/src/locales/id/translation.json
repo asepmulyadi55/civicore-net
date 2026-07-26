@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "gate_management": "Manajemen Gerbang",
+    "guest_entry_logs": "Log Masuk Tamu",
+    "account": "Akun",
+    "settings_password": "Pengaturan & Kata Sandi",
+    "sign_out": "Keluar",
+    "portal_title": "Portal Keamanan"
+  },
+  "dashboard": {
+    "in_premises_now": "Di Dalam Area Saat Ini",
+    "checked_out_today": "Keluar Hari Ini",
+    "quick_action": "Tindakan Cepat",
+    "register_visitor": "Daftarkan kedatangan tamu",
+    "check_in": "Check-In",
+    "search_placeholder": "Cari nama tamu atau plat nomor...",
+    "all_logs": "Semua Log",
+    "in_premises": "Di Dalam Area",
+    "checked_out": "Sudah Keluar",
+    "col_guest_name": "Nama Tamu",
+    "col_vehicle_info": "Info Kendaraan",
+    "col_checkin_time": "Waktu Masuk",
+    "col_checkout_time": "Waktu Keluar",
+    "col_status": "Status",
+    "col_action": "Tindakan",
+    "no_entries_title": "Belum Ada Data Tamu",
+    "no_entries_sub": "Lakukan check-in tamu untuk mencatat entri.",
+    "btn_checkout": "Check Out",
+    "btn_edit": "Edit"
+  },
+  "modal": {
+    "checkin_title": "Check-In Pengunjung / Tamu",
+    "checkin_sub": "Catat kedatangan tamu baru di gerbang keamanan",
+    "edit_title": "Edit Catatan Log Tamu",
+    "edit_sub": "Ubah detail pengunjung atau batalkan status check-out",
+    "guest_name": "Nama Tamu",
+    "vehicle_type": "Jenis Kendaraan",
+    "license_plate": "Plat Nomor Kendaraan",
+    "notes": "Catatan / Blok Tujuan",
+    "revert_checkbox": "Kembalikan status ke \"Di Dalam Area\" (Batal Check-Out)",
+    "btn_cancel": "Batal",
+    "btn_save": "Simpan Perubahan",
+    "btn_checkin_submit": "Check-In Tamu"
+  },
+  "settings": {
+    "title": "Pengaturan Keamanan",
+    "sub": "Kelola kata sandi akun, preferensi portal, dan bahasa Anda",
+    "change_pass_title": "Ubah Kata Sandi",
+    "change_pass_sub": "Perbarui kredensial akun keamanan Anda",
+    "current_pass": "Kata Sandi Saat Ini",
+    "new_pass": "Kata Sandi Baru",
+    "confirm_pass": "Konfirmasi Kata Sandi Baru",
+    "btn_update_pass": "Perbarui Kata Sandi",
+    "preferences": "Preferensi",
+    "pref_sub": "Opsi bahasa dan tampilan",
+    "language": "Bahasa",
+    "theme_mode": "Mode Tampilan",
+    "light_mode": "Mode Terang Aktif",
+    "dark_mode": "Mode Gelap Aktif"
+  }
+}

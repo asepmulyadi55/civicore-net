@@ -66,6 +66,7 @@ public class UserPermissionService : IUserPermissionService
     public async Task<bool> RoleHasAsync(string roleName, string permissionKey)
     {
         if (IsSuperRole(roleName)) return true;
+        if (roleName.Equals("Security", StringComparison.OrdinalIgnoreCase) && permissionKey.StartsWith("guest_log", StringComparison.OrdinalIgnoreCase)) return true;
         var keys = await GetForRoleAsync(roleName);
         return keys.Contains(Wildcard) || keys.Contains(permissionKey);
     }

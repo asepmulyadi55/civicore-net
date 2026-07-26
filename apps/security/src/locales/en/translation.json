@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "gate_management": "Gate Management",
+    "guest_entry_logs": "Guest Entry Logs",
+    "account": "Account",
+    "settings_password": "Settings & Password",
+    "sign_out": "Sign Out",
+    "portal_title": "Security Portal"
+  },
+  "dashboard": {
+    "in_premises_now": "In Premises Now",
+    "checked_out_today": "Checked Out Today",
+    "quick_action": "Quick Action",
+    "register_visitor": "Register visitor entry",
+    "check_in": "Check-In",
+    "search_placeholder": "Search guest name or license plate...",
+    "all_logs": "All Logs",
+    "in_premises": "In Premises",
+    "checked_out": "Checked Out",
+    "col_guest_name": "Guest Name",
+    "col_vehicle_info": "Vehicle Info",
+    "col_checkin_time": "Check-In Time",
+    "col_checkout_time": "Check-Out Time",
+    "col_status": "Status",
+    "col_action": "Action",
+    "no_entries_title": "No Guest Entries Recorded",
+    "no_entries_sub": "Check-in guests to record entries.",
+    "btn_checkout": "Check Out",
+    "btn_edit": "Edit"
+  },
+  "modal": {
+    "checkin_title": "Check-In Visitor / Guest",
+    "checkin_sub": "Record new guest arrival at security gate",
+    "edit_title": "Edit Guest Log Entry",
+    "edit_sub": "Modify visitor details or revert check-out status",
+    "guest_name": "Guest Name",
+    "vehicle_type": "Vehicle Type",
+    "license_plate": "Vehicle License Plate",
+    "notes": "Notes / Destination Block",
+    "revert_checkbox": "Revert status to \"In Premises\" (Undo Check-Out)",
+    "btn_cancel": "Cancel",
+    "btn_save": "Save Changes",
+    "btn_checkin_submit": "Check-In Guest"
+  },
+  "settings": {
+    "title": "Security Settings",
+    "sub": "Manage your account password, portal preferences, and language",
+    "change_pass_title": "Change Password",
+    "change_pass_sub": "Update your security account credentials",
+    "current_pass": "Current Password",
+    "new_pass": "New Password",
+    "confirm_pass": "Confirm New Password",
+    "btn_update_pass": "Update Password",
+    "preferences": "Preferences",
+    "pref_sub": "Language and appearance options",
+    "language": "Language",
+    "theme_mode": "Theme Mode",
+    "light_mode": "Light Mode Active",
+    "dark_mode": "Dark Mode Active"
+  }
+}

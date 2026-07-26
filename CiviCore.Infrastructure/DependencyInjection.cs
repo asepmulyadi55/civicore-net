@@ -36,6 +36,12 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("SupabaseConnection")));
 
+        var securityConnStr = configuration.GetConnectionString("SecurityConnection")
+            ?? configuration.GetConnectionString("SupabaseConnection");
+
+        services.AddDbContext<SecurityDbContext>(options =>
+            options.UseNpgsql(securityConnStr));
+
         services.AddIdentity<ApplicationUser, ApplicationRole>(opt => {
             opt.Password.RequireDigit = true;
             opt.Password.RequiredLength = 8;

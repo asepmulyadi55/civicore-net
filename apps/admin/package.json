@@ -1,5 +1,5 @@
 {
-  "name": "civicore-frontend",
+  "name": "@civicore/admin",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -24,7 +24,8 @@
     "react-i18next": "^17.0.8",
     "react-quill-new": "^3.7.0",
     "react-router-dom": "^7.18.0",
-    "tailwindcss": "^4.3.1"
+    "tailwindcss": "^4.3.1",
+    "workbox-window": "^7.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

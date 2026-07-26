@@ -25,3 +25,10 @@ globs: civicore-net/**/*.cs
 - **Soft Deletes:** Implement Soft Deletes behavior across all transactional tables using a `DeletedAt` timestamp. Configure EF Core Global Query Filters (`HasQueryFilter`) to automatically exclude deleted records.
 - **Row Level Security (RLS):** Enable RLS on Supabase tables to protect data from direct client-side exploits using the Anon Key, while ensuring the .NET Backend bypasses it safely using the Service Role Key for authorized requests.
 - **Connection Pooling:** Ensure the DB context utilizes connection pooling effectively to prevent hitting PostgreSQL connection limits on the low-spec Lightsail instance.
+
+## 5. Multi-DbContext & Migration Guidelines
+- **DbContext Isolation:** When adding domain modules with independent DB scopes (e.g. `SecurityDbContext` for Guest Logs), maintain separate `DbContext` classes and connection strings.
+- **Connection Strings:** Define separate connection strings in `appsettings.json` (`ConnectionStrings__DefaultConnection`, `ConnectionStrings__SecurityConnection`).
+- **CLI Migration Commands:** Always specify the `--context` flag when generating or applying EF Core migrations:
+  - Add Migration: `dotnet ef migrations add <Name> --context <DbContextName> --project CiviCore.Infrastructure --startup-project CiviCore.Api`
+  - Apply Migration: `dotnet ef database update --context <DbContextName> --project CiviCore.Infrastructure --startup-project CiviCore.Api`

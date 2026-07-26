@@ -1,0 +1,19 @@
+{
+  "name": "@civicore/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.tsx",
+  "module": "./src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "dependencies": {
+    "axios": "^1.18.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14"
+  }
+}

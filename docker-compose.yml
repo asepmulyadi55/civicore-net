@@ -11,6 +11,8 @@ services:
       - FrontendUrl=https://dwipapuri.amsite.click
       - AdminFrontendUrl=https://admin.dwipapuri.amsite.click
       - ConnectionStrings__Redis=redis:6379
+      - ConnectionStrings__SupabaseConnection=${ConnectionStrings__SupabaseConnection:-}
+      - ConnectionStrings__SecurityConnection=${ConnectionStrings__SecurityConnection:-}
       # Encrypts Nomor KK at rest. `:?` makes compose REFUSE TO START when it is unset,
       # rather than letting the app fall back to the public key compiled into the source.
       # Set ENCRYPTION_KEY in .env — see docs/encryption-key-migration.md
@@ -40,7 +42,7 @@ services:
 
   web:
     build:
-      context: ./CiviCore.Web
+      context: ./apps/public
       dockerfile: Dockerfile
       args:
         - API_URL=http://api:8080
@@ -52,10 +54,17 @@ services:
 
   frontend:
     build:
-      context: ./CiviCore.Frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/admin/Dockerfile
     ports:
       - "8080:8080"
+
+  security:
+    build:
+      context: .
+      dockerfile: apps/security/Dockerfile
+    ports:
+      - "8081:8080"
 
 volumes:
   redis_data:

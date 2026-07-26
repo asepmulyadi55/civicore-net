@@ -1,0 +1,19 @@
+{
+  "name": "@civicore/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.tsx",
+  "module": "./src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "dependencies": {
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-i18next": "^17.0.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14"
+  }
+}

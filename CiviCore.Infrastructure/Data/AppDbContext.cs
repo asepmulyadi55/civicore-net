@@ -32,6 +32,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<NavigationLink> NavigationLinks { get; set; } = null!;
     public DbSet<FormSubmission> FormSubmissions { get; set; } = null!;
     public DbSet<AuditLog> AuditLogs { get; set; } = null!;
+    public DbSet<GuestLog> GuestLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

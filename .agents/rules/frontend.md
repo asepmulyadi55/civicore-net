@@ -6,9 +6,13 @@ globs: civicore-net/CiviCore.Frontend/**/*.{ts,tsx,css}, civicore-net/CiviCore.W
 # CiviCore Frontend Rules (React SPA & Next.js)
 
 ## 1. Tech Stack & Best Practices
-- **Architecture Overview:** The project uses a dual-frontend architecture:
-  - **Admin Dashboard (`CiviCore.Frontend`):** Built with React + Vite (Pure SPA) for authenticated management tools.
-  - **Public Site (`CiviCore.Web`):** Built with Next.js 15 App Router (SSG/SSR) for maximum SEO and performance.
+- **Architecture Overview:** The project uses a Monorepo workspace structure (`apps/` + `packages/`):
+  - `apps/public`: Built with Next.js 15 App Router (`dwipapuri.amsite.click`) for public portal & SEO.
+  - `apps/admin`: Built with React + Vite SPA (`admin.dwipapuri.amsite.click`) for management tools.
+  - `apps/security`: Built with React + Vite SPA (`security.dwipapuri.amsite.click`) for security & guest logs.
+  - `packages/ui`: Shared UI components (Layout, Tables, Modals, Buttons, Forms).
+  - `packages/auth`: Shared Auth context, JWT validator, Axios instance.
+  - `packages/config`: Shared TS/ESLint configurations.
 - **Styling:** Tailwind CSS (v4 for Next.js, v3 for Vite). Use clean utility classes, avoid bloated or redundant styles.
 - **State Management:** Keep it modular. Use Context API for global state (like Theme or Auth) and local state for individual components.
 

@@ -1,0 +1,15 @@
+{
+  "name": "civicore-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev:admin": "pnpm --filter @civicore/admin dev",
+    "dev:public": "pnpm --filter @civicore/public dev",
+    "dev:security": "pnpm --filter @civicore/security dev",
+    "build": "pnpm --recursive build",
+    "lint": "pnpm --recursive lint"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}

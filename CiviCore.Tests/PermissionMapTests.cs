@@ -99,6 +99,7 @@ public class PermissionMapTests
         ["settings_security"] = new[] { "view", "edit" },
         ["settings_memo"] = new[] { "view", "edit" },
         ["settings_posyandu"] = new[] { "view", "edit" },
+        ["guest_log"] = new[] { "view", "create", "edit" },
     };
 
     // Enforcement is fail-closed, so an undeclared endpoint is a broken feature. This

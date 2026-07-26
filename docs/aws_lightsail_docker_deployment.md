@@ -277,7 +277,7 @@ sudo apt install certbot python3-certbot-nginx -y
 
 Issue SSL certificates:
 ```bash
-sudo certbot --nginx -d dwipapuri.amsite.click -d admin.dwipapuri.amsite.click
+sudo certbot --nginx -d dwipapuri.amsite.click -d admin.dwipapuri.amsite.click -d security.dwipapuri.amsite.click
 ```
 Certbot will auto-renew. Verify with: `sudo certbot renew --dry-run`
 
@@ -308,6 +308,10 @@ docker compose up -d web
 # Only rebuild the admin panel
 docker compose build frontend
 docker compose up -d frontend
+
+# Only rebuild the security portal
+docker compose build security
+docker compose up -d security
 
 # Only rebuild the API
 docker compose build api
