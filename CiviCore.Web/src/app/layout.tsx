@@ -17,6 +17,9 @@ export const metadata: Metadata = {
     shortcut: '/logo.png',
     apple: '/logo.png',
   },
+  alternates: {
+    canonical: SITE_URL,
+  },
   openGraph: {
     siteName: "Dwipapuri Residence",
     title: "Dwipapuri Residence - Portal Komunitas & Perumahan",
@@ -53,6 +56,8 @@ export default function RootLayout({
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             font-display: block;
             user-select: none;
+            -webkit-user-select: none;
+            speak: none;
           }
         `}</style>
         <script src="https://www.google.com/recaptcha/api.js?render=6LcYAU4tAAAAAIOUBvSBiUsCre0iHTwZRds2WpI5" async defer></script>
@@ -62,6 +67,17 @@ export default function RootLayout({
           <TopProgressBar />
         </Suspense>
         {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Dwipapuri Residence',
+              url: SITE_URL,
+            }),
+          }}
+        />
         <AnalyticsScript />
       </body>
     </html>

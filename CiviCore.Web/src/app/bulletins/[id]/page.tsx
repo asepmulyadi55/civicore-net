@@ -142,7 +142,7 @@ export default function BulletinDetailPage() {
                 <div className="mb-8">
                     <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm">
                         <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/bulletins">Buletin</Link>
-                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span className="material-symbols-outlined text-[14px]" aria-hidden="true">chevron_right</span>
                         <span className="text-on-surface dark:text-on-primary truncate max-w-[200px] sm:max-w-xs">{bulletin.title}</span>
                     </div>
                 </div>
@@ -154,7 +154,7 @@ export default function BulletinDetailPage() {
                             Buletin
                         </span>
                         <div className="flex items-center text-text-muted dark:text-on-primary/50 text-label-sm font-label-sm">
-                            <span className="material-symbols-outlined text-[16px] mr-1.5">calendar_month</span>
+                            <span className="material-symbols-outlined text-[16px] mr-1.5" aria-hidden="true">calendar_month</span>
                             {bulletin.date ? new Date(bulletin.date).toLocaleDateString('id-ID', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}
                         </div>
                     </div>
@@ -184,7 +184,7 @@ export default function BulletinDetailPage() {
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
                                     <div className="flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-md rounded-full text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                                        <span className="material-symbols-outlined text-sm">zoom_in</span>
+                                        <span className="material-symbols-outlined text-sm" aria-hidden="true">zoom_in</span>
                                         <span>Zoom / Perbesar</span>
                                     </div>
                                 </div>
@@ -196,7 +196,7 @@ export default function BulletinDetailPage() {
                         {bulletin.photos && bulletin.photos.length > 0 && (
                             <div className="pt-6 border-t border-border-subtle dark:border-primary-container/50">
                                 <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary mb-4 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim">collections</span>
+                                    <span className="material-symbols-outlined text-primary dark:text-primary-fixed-dim" aria-hidden="true">collections</span>
                                     Galeri Foto ({bulletin.photos.length})
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -236,7 +236,7 @@ export default function BulletinDetailPage() {
                             <div className="space-y-4 font-body-md text-body-md dark:text-on-primary/90">
                                 {(footerData.contact_phone) && (
                                     <div className="flex items-start">
-                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1">phone</span>
+                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1" aria-hidden="true">phone</span>
                                         <div>
                                             <p className="font-label-md text-label-md text-on-surface-variant dark:text-on-primary/70">Nomor Kontak</p>
                                             <p className="font-semibold">{footerData.contact_phone}</p>
@@ -245,7 +245,7 @@ export default function BulletinDetailPage() {
                                 )}
                                 {(footerData.contact_email) && (
                                     <div className="flex items-start">
-                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1">mail</span>
+                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1" aria-hidden="true">mail</span>
                                         <div>
                                             <p className="font-label-md text-label-md text-on-surface-variant dark:text-on-primary/70">Email</p>
                                             <a className="text-[#b45309] dark:text-[#d97706] hover:underline" href={`mailto:${footerData.contact_email}`}>{footerData.contact_email}</a>
@@ -254,7 +254,7 @@ export default function BulletinDetailPage() {
                                 )}
                                 {(footerData.location) && (
                                     <div className="flex items-start">
-                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1 shrink-0">location_on</span>
+                                        <span className="material-symbols-outlined text-primary-container dark:text-primary-fixed-dim mr-3 mt-1 shrink-0" aria-hidden="true">location_on</span>
                                         <div className="min-w-0">
                                             <p className="font-label-md text-label-md text-on-surface-variant dark:text-on-primary/70">Lokasi</p>
                                             <div className="prose prose-sm dark:prose-invert max-w-none font-semibold text-on-surface dark:text-on-primary [&>p]:m-0 break-words" dangerouslySetInnerHTML={{ __html: typeof footerData.location === 'string' ? footerData.location.replace(/&nbsp;/g, ' ') : footerData.location }} />
@@ -263,7 +263,7 @@ export default function BulletinDetailPage() {
                                 )}
                             </div>
                             <button onClick={() => setShowMsgModal(true)} className="w-full mt-6 bg-[#b45309] hover:bg-[#8b4006] text-white font-label-md text-label-md py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2 cursor-pointer">
-                                <span className="material-symbols-outlined text-sm">chat</span> Hubungi Penerbit
+                                <span className="material-symbols-outlined text-sm" aria-hidden="true">chat</span> Hubungi Penerbit
                             </button>
                         </div>
 
@@ -288,12 +288,12 @@ export default function BulletinDetailPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" tabIndex={0} role="button" onClick={() => setShowMsgModal(false)} onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); setShowMsgModal(false); } }}>
                     <div className="bg-surface-container-lowest dark:bg-primary-container rounded-2xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-border-subtle dark:border-primary-container/50 relative" tabIndex={0} role="button" onClick={e => e.stopPropagation()} onKeyDown={(e) => { if (["Enter", " "].includes(e.key)) { e.preventDefault(); e.stopPropagation(); } }}>
                         <button onClick={() => setShowMsgModal(false)} className="absolute top-4 right-4 text-text-muted hover:text-on-surface dark:hover:text-on-primary cursor-pointer">
-                            <span className="material-symbols-outlined">close</span>
+                            <span className="material-symbols-outlined" aria-hidden="true">close</span>
                         </button>
 
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-3 bg-[#b45309]/10 text-[#b45309] rounded-xl">
-                                <span className="material-symbols-outlined text-2xl">chat</span>
+                                <span className="material-symbols-outlined text-2xl" aria-hidden="true">chat</span>
                             </div>
                             <div>
                                 <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary">Hubungi Penerbit</h3>
@@ -304,7 +304,7 @@ export default function BulletinDetailPage() {
                         {msgStatus === 'success' ? (
                             <div className="text-center py-6 space-y-4">
                                 <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-                                    <span className="material-symbols-outlined text-3xl">check_circle</span>
+                                    <span className="material-symbols-outlined text-3xl" aria-hidden="true">check_circle</span>
                                 </div>
                                 <h4 className="font-headline-sm text-headline-sm text-on-surface dark:text-on-primary">Pesan Terkirim!</h4>
                                 <p className="font-body-md text-body-md text-on-surface-variant dark:text-on-primary/70">Terima kasih. Pengurus akan segera membalas pesan Anda.</p>
@@ -328,7 +328,7 @@ export default function BulletinDetailPage() {
                                     <p className="text-red-600 text-sm">{msgError}</p>
                                 )}
                                 <button type="submit" disabled={msgStatus === 'loading'} className="w-full bg-[#b45309] hover:bg-[#8b4006] text-white font-label-md py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
-                                    {msgStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-sm">autorenew</span> : <span className="material-symbols-outlined text-sm">send</span>}
+                                    {msgStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-sm" aria-hidden="true">autorenew</span> : <span className="material-symbols-outlined text-sm" aria-hidden="true">send</span>}
                                     {msgStatus === 'loading' ? 'Mengirim...' : 'Kirim Pesan'}
                                 </button>
                             </form>
@@ -344,14 +344,14 @@ export default function BulletinDetailPage() {
                         onClick={() => setSelectedIndex(null)}
                         className="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-colors z-[110] cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-3xl">close</span>
+                        <span className="material-symbols-outlined text-3xl" aria-hidden="true">close</span>
                     </button>
                     
                     <button
                         onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => prev !== null && prev > 0 ? prev - 1 : allPhotos.length - 1); }}
                         className="absolute left-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-3 transition-colors z-[110] cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-3xl">chevron_left</span>
+                        <span className="material-symbols-outlined text-3xl" aria-hidden="true">chevron_left</span>
                     </button>
                     
                     <div className="relative max-w-5xl max-h-[90vh] p-4 flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
@@ -365,7 +365,7 @@ export default function BulletinDetailPage() {
                         onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => prev !== null && prev < allPhotos.length - 1 ? prev + 1 : 0); }}
                         className="absolute right-6 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-3 transition-colors z-[110] cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-3xl">chevron_right</span>
+                        <span className="material-symbols-outlined text-3xl" aria-hidden="true">chevron_right</span>
                     </button>
                 </div>
             )}
