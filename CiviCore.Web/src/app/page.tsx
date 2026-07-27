@@ -59,7 +59,7 @@ export async function generateMetadata(): Promise<Metadata> {
             url: SITE_URL,
             type: "website",
             locale: "id_ID",
-            images: [{ url: ogImage }],
+            images: [{ url: ogImage, width: 1200, height: 630, alt: ogTitle }],
         }
     };
 }
@@ -83,13 +83,7 @@ export default async function Page() {
     const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dwipapuri.amsite.click';
     const siteName = seoData?.org_name || 'Dwipapuri Residence';
 
-    const webSiteJsonLd = JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: siteName,
-        alternateName: ['Dwipapuri', `${siteName} Bandung`],
-        url: SITE_URL,
-    });
+    // WebSite JSON-LD is handled in layout.tsx to avoid duplicates
 
     const residenceJsonLd = JSON.stringify({
         '@context': 'https://schema.org',
@@ -111,10 +105,7 @@ export default async function Page() {
 
     return (
         <>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: webSiteJsonLd }}
-            />
+
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: residenceJsonLd }}

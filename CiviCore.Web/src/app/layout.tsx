@@ -74,6 +74,7 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               name: 'Dwipapuri Residence',
+              alternateName: ['Dwipapuri', 'Dwipapuri Residence Bandung'],
               url: SITE_URL,
             }),
           }}
