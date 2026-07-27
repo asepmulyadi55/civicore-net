@@ -48,7 +48,7 @@ export default function GalleryPage() {
                 <div className="mb-12">
                     <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
                         <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Home</Link>
-                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span className="material-symbols-outlined text-[14px]" aria-hidden="true">chevron_right</span>
                         <span className="text-on-surface dark:text-on-primary">Gallery</span>
                     </div>
                     <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">{settings.title || 'Gallery'}</h1>

@@ -74,7 +74,7 @@ export default function LatestNews({ news = [], events = [], loading, isDark = f
                     className="text-sm font-medium flex items-center gap-2 hover:gap-3 transition-all tracking-wide pb-1 border-b self-start sm:self-auto mt-2 sm:mt-0 flex-shrink-0"
                     style={{ color: viewAllColor, borderColor: viewAllBorderColor, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
-                    View All <span className="material-symbols-outlined text-sm">arrow_right_alt</span>
+                    View All <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_right_alt</span>
                 </Link>
             </div>
 
@@ -84,7 +84,7 @@ export default function LatestNews({ news = [], events = [], loading, isDark = f
                 </div>
             ) : newsList.length === 0 ? (
                 <div className="text-center py-16 rounded-2xl shadow-sm" style={{ background: cardBg, border: `1px solid ${cardBorder}` }}>
-                    <span className="material-symbols-outlined text-4xl mb-4 block" style={{ color: isDark ? '#1C2D27' : '#e2e8f0' }}>newspaper</span>
+                    <span className="material-symbols-outlined text-4xl mb-4 block" style={{ color: isDark ? '#1C2D27' : '#e2e8f0' }} aria-hidden="true">newspaper</span>
                     <p className="font-semibold" style={{ color: bodyColor }}>No News Articles</p>
                 </div>
             ) : (
@@ -138,7 +138,7 @@ export default function LatestNews({ news = [], events = [], loading, isDark = f
                                             className="font-medium text-xs md:text-sm flex items-center gap-2 hover:gap-3 transition-all tracking-wide"
                                             style={{ color: '#D4AF37', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                         >
-                                            READ MORE <span className="material-symbols-outlined text-sm">arrow_right_alt</span>
+                                            READ MORE <span className="material-symbols-outlined text-sm" aria-hidden="true">arrow_right_alt</span>
                                         </span>
                                         {item.date && (
                                             <span className="text-xs font-light" style={{ color: bodyColor }}>

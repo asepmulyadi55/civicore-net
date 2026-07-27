@@ -67,21 +67,21 @@ export default function Footer({ setActiveTab, footerData }: FooterProps) {
                     <ul className="space-y-6 font-body-md text-body-md text-on-primary/80">
                         {data.location ? (
                             <li className="flex items-start gap-4">
-                                <span className="material-symbols-outlined shrink-0 mt-1">location_on</span>
+                                <span className="material-symbols-outlined shrink-0 mt-1" aria-hidden="true">location_on</span>
                                 <div className="prose prose-sm prose-invert max-w-none text-on-primary/80 [&>p]:m-0 min-w-0 break-words" dangerouslySetInnerHTML={{ __html: typeof data.location === 'string' ? data.location.replace(/&nbsp;/g, ' ') : data.location }} />
                             </li>
                         ) : (
                             <li className="flex items-start gap-4">
-                                <span className="material-symbols-outlined shrink-0">location_on</span>
+                                <span className="material-symbols-outlined shrink-0" aria-hidden="true">location_on</span>
                                 <span>Jl. Desa Cipadung, Cipadung, Kec.<br />Cibiru, Kota Bandung, Jawa Barat<br />40615</span>
                             </li>
                         )}
                         <li className="flex items-center gap-4">
-                            <span className="material-symbols-outlined shrink-0">phone</span>
+                            <span className="material-symbols-outlined shrink-0" aria-hidden="true">phone</span>
                             <span>{data.contact_phone || '+62 (0) 123 456 789'}</span>
                         </li>
                         <li className="flex items-center gap-4">
-                            <span className="material-symbols-outlined shrink-0">mail</span>
+                            <span className="material-symbols-outlined shrink-0" aria-hidden="true">mail</span>
                             <span>{data.contact_email || 'cs.dwipapuri@gmail.com'}</span>
                         </li>
                     </ul>
@@ -94,7 +94,7 @@ export default function Footer({ setActiveTab, footerData }: FooterProps) {
                         </p>
                         <Link href="/report" className="group flex items-center justify-between w-full bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-3 px-4 rounded-lg transition-colors">
                             Buat Laporan Warga
-                            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
                         </Link>
                     </div>
                 </div>

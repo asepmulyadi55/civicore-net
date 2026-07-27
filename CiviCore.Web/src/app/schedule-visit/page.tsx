@@ -93,7 +93,7 @@ export default function ScheduleVisitPage() {
                 <div className="mb-8 mt-4">
                     <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
                         <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Beranda</Link>
-                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span className="material-symbols-outlined text-[14px]" aria-hidden="true">chevron_right</span>
                         <span className="text-on-surface dark:text-on-primary">Jadwalkan Kunjungan</span>
                     </div>
                     <div className="max-w-2xl">
@@ -111,7 +111,7 @@ export default function ScheduleVisitPage() {
                         <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 p-6 md:p-8">
                             {submitStatus === 'success' ? (
                                 <div className="text-center py-12">
-                                    <span className="material-symbols-outlined text-6xl text-green-600 mb-4 block">check_circle</span>
+                                    <span className="material-symbols-outlined text-6xl text-green-600 mb-4 block" aria-hidden="true">check_circle</span>
                                     <h2 className="font-headline-md text-primary dark:text-primary-fixed-dim mb-2">Permintaan Diterima!</h2>
                                     <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6">{submitMsg}</p>
                                     <button onClick={() => setSubmitStatus('idle')} className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-container transition-colors font-label-md">Buat Permintaan Baru</button>
@@ -196,7 +196,7 @@ export default function ScheduleVisitPage() {
 
                                     <div className="pt-4 border-t border-border-subtle dark:border-primary-container/50 flex justify-end">
                                         <button type="submit" disabled={submitStatus === 'loading'} className="bg-[#b45309] hover:bg-[#8b4006] dark:bg-[#d97706] dark:hover:bg-[#b45309] text-white font-label-md text-label-md py-4 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 w-full sm:w-auto justify-center disabled:opacity-60">
-                                            {submitStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span> : <span className="material-symbols-outlined text-[18px]">calendar_month</span>}
+                                            {submitStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-[18px]" aria-hidden="true">autorenew</span> : <span className="material-symbols-outlined text-[18px]" aria-hidden="true">calendar_month</span>}
                                             {submitStatus === 'loading' ? 'Mengirim...' : 'Konfirmasi Jadwal'}
                                         </button>
                                     </div>
@@ -209,17 +209,17 @@ export default function ScheduleVisitPage() {
                     <div className="lg:col-span-4 space-y-6">
                         <div className="sticky top-28 bg-primary dark:bg-primary-container text-on-primary rounded-2xl shadow-sm p-6 md:p-8 overflow-hidden relative border border-transparent dark:border-border-subtle/20">
                             <div className="absolute -right-8 -top-8 text-white/5 dark:text-primary-fixed-dim/5 rotate-12 pointer-events-none">
-                                <span className="material-symbols-outlined text-[200px]">home</span>
+                                <span className="material-symbols-outlined text-[200px]" aria-hidden="true">home</span>
                             </div>
                             <div className="flex items-center gap-3 mb-6 relative z-10">
-                                <span className="material-symbols-outlined text-[32px] text-primary-fixed-dim dark:text-primary-fixed">diamond</span>
+                                <span className="material-symbols-outlined text-[32px] text-primary-fixed-dim dark:text-primary-fixed" aria-hidden="true">diamond</span>
                                 <h3 className="font-headline-md text-headline-sm">Mengapa Harus Berkunjung?</h3>
                             </div>
                             <ul className="space-y-6 relative z-10 mb-8">
                                 {visitItems.map((item, i) => (
                                     <li key={i} className="flex gap-4">
                                         <div className="w-10 h-10 shrink-0 rounded-full bg-white/10 dark:bg-primary/50 flex items-center justify-center text-primary-fixed-dim dark:text-primary-fixed">
-                                            <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                                            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{item.icon}</span>
                                         </div>
                                         <div>
                                             <h4 className="font-label-lg text-label-lg mb-1">{item.title}</h4>

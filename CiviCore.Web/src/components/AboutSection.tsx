@@ -137,6 +137,7 @@ export default function AboutSection({ about = {}, loading, isDark = false }: Ab
                                     style={{ background: style.background, border: style.border || 'none' }}>
                                     <span
                                         className="material-symbols-outlined"
+                                        aria-hidden="true"
                                         style={{
                                             fontSize: '40px',
                                             fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 40",

@@ -87,7 +87,7 @@ export default function ResidentReportPage() {
                 <div className="mb-8 mt-4">
                     <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
                         <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Beranda</Link>
-                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                        <span className="material-symbols-outlined text-[14px]" aria-hidden="true">chevron_right</span>
                         <span className="text-on-surface dark:text-on-primary">Laporan Warga</span>
                     </div>
                     <div className="max-w-2xl">
@@ -104,7 +104,7 @@ export default function ResidentReportPage() {
                         <div className="bg-surface dark:bg-primary-container rounded-2xl shadow-sm border border-border-subtle/50 dark:border-primary-container/50 p-6 md:p-8">
                             {submitStatus === 'success' ? (
                                 <div className="text-center py-12">
-                                    <span className="material-symbols-outlined text-6xl text-green-600 mb-4 block">check_circle</span>
+                                    <span className="material-symbols-outlined text-6xl text-green-600 mb-4 block" aria-hidden="true">check_circle</span>
                                     <h2 className="font-headline-md text-primary dark:text-primary-fixed-dim mb-2">Laporan Dikirim!</h2>
                                     <p className="text-body-md text-text-muted dark:text-on-primary/70 mb-6">{submitMsg}</p>
                                     <button onClick={() => setSubmitStatus('idle')} className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-container transition-colors font-label-md">Buat Laporan Baru</button>
@@ -169,7 +169,7 @@ export default function ResidentReportPage() {
                                         >
                                             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => setSelectedPhoto(e.target.files?.[0] || null)} />
                                             <div className="w-12 h-12 rounded-full bg-primary-container/10 dark:bg-primary-fixed-dim/10 flex items-center justify-center text-primary dark:text-primary-fixed-dim mb-4 group-hover:scale-110 transition-transform">
-                                                <span className="material-symbols-outlined text-[24px]">cloud_upload</span>
+                                                <span className="material-symbols-outlined text-[24px]" aria-hidden="true">cloud_upload</span>
                                             </div>
                                             {selectedPhoto ? (
                                                 <p className="font-label-md text-label-md text-primary dark:text-primary-fixed-dim">{selectedPhoto.name}</p>
@@ -188,7 +188,7 @@ export default function ResidentReportPage() {
 
                                     <div className="pt-4 border-t border-border-subtle dark:border-primary-container/50 flex justify-end">
                                         <button type="submit" disabled={submitStatus === 'loading'} className="bg-primary hover:bg-primary-fixed-variant dark:bg-primary-fixed-dim dark:hover:bg-primary-fixed text-on-primary dark:text-primary font-label-md text-label-md py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 disabled:opacity-60">
-                                            {submitStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span> : <span className="material-symbols-outlined text-[18px]">send</span>}
+                                            {submitStatus === 'loading' ? <span className="material-symbols-outlined animate-spin text-[18px]" aria-hidden="true">autorenew</span> : <span className="material-symbols-outlined text-[18px]" aria-hidden="true">send</span>}
                                             {submitStatus === 'loading' ? 'Mengirim...' : 'Kirim Laporan'}
                                         </button>
                                     </div>
@@ -202,7 +202,7 @@ export default function ResidentReportPage() {
                         <div className="sticky top-28 bg-[#93000a] text-white rounded-2xl shadow-sm p-6 md:p-8 overflow-hidden relative">
                             <div className="absolute -right-12 -top-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
                             <div className="flex items-center gap-3 mb-6 relative z-10">
-                                <span className="material-symbols-outlined text-[32px]">warning</span>
+                                <span className="material-symbols-outlined text-[32px]" aria-hidden="true">warning</span>
                                 <h3 className="font-headline-md text-headline-sm">Kontak Darurat</h3>
                             </div>
                             <p className="text-white/80 font-body-md text-body-md mb-8 relative z-10">
@@ -213,14 +213,14 @@ export default function ResidentReportPage() {
                                     <li key={idx} className="flex items-center justify-between p-4 bg-black/20 rounded-xl hover:bg-black/30 transition-colors cursor-pointer border border-transparent hover:border-white/10">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-[20px]">{contact.icon || 'phone'}</span>
+                                                <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{contact.icon || 'phone'}</span>
                                             </div>
                                             <div>
                                                 <p className="font-label-sm text-label-sm text-white/70">{contact.label}</p>
                                                 <a href={`tel:${contact.phone}`} className="font-label-md text-label-md text-white hover:underline">{contact.phone}</a>
                                             </div>
                                         </div>
-                                        <span className="material-symbols-outlined">call</span>
+                                        <span className="material-symbols-outlined" aria-hidden="true">call</span>
                                     </li>
                                 ))}
                             </ul>

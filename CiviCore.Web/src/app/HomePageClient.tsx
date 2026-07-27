@@ -115,7 +115,7 @@ export default function HomePageClient({ hero, news, newsSettings, events, event
                         {newsItems && newsItems.length > 0 && (
                             <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/news">
                                 View All 
-                                <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
                             </Link>
                         )}
                     </div>
@@ -144,7 +144,7 @@ export default function HomePageClient({ hero, news, newsSettings, events, event
                                         <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
                                             <Link className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link" href={targetUrl}>
                                                 <span className="group-hover/link:underline">View Details</span> 
-                                                <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
+                                                <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform" aria-hidden="true">arrow_right_alt</span>
                                             </Link>
                                         </div>
                                     </div>
@@ -171,7 +171,7 @@ export default function HomePageClient({ hero, news, newsSettings, events, event
                             {gallery && gallery.length > 0 && (
                                 <Link className="inline-flex items-center gap-2 font-label-md text-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors mt-4 md:mt-0 group" href="/gallery">
                                     View All
-                                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
                                 </Link>
                             )}
                         </div>
@@ -228,7 +228,7 @@ export default function HomePageClient({ hero, news, newsSettings, events, event
                         {bulletins && bulletins.length > 0 && (
                             <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/bulletins">
                                 View All 
-                                <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
                             </Link>
                         )}
                     </div>
@@ -262,7 +262,7 @@ export default function HomePageClient({ hero, news, newsSettings, events, event
                             {properties && properties.length > 0 && (
                                 <Link className="group flex items-center text-label-md font-label-md text-primary dark:text-primary-fixed-dim hover:text-primary-container dark:hover:text-primary-fixed transition-colors" href="/property">
                                     View All
-                                    <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                    <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
                                 </Link>
                             )}
                         </div>
@@ -280,9 +280,9 @@ export default function HomePageClient({ hero, news, newsSettings, events, event
                                             <h3 className="text-headline-sm font-headline-sm text-primary dark:text-on-primary mb-2 line-clamp-1">{p.title}</h3>
                                             <p className="text-display-lg-mobile text-[#b45309] dark:text-[#d97706] mb-4">Rp {p.price?.toLocaleString('id-ID')} {p.listing_type === 'For Rent' || p.status === 'rented' ? <span className="text-body-md text-text-muted dark:text-on-primary/70">/year</span> : null}</p>
                                             <div className="grid grid-cols-3 gap-2 text-text-muted dark:text-on-primary/70 mb-6 border-t border-border-subtle dark:border-primary-container/50 pt-4">
-                                                {p.bedrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">bed</span> {p.bedrooms} Beds</div>}
-                                                {p.bathrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">shower</span> {p.bathrooms} Baths</div>}
-                                                {(p.landArea !== undefined || p.area_sqft !== undefined) && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">square_foot</span> {p.landArea || p.area_sqft} m²</div>}
+                                                {p.bedrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm" aria-hidden="true">bed</span> {p.bedrooms} Beds</div>}
+                                                {p.bathrooms !== undefined && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm" aria-hidden="true">shower</span> {p.bathrooms} Baths</div>}
+                                                {(p.landArea !== undefined || p.area_sqft !== undefined) && <div className="flex items-center gap-1"><span className="material-symbols-outlined text-sm" aria-hidden="true">square_foot</span> {p.landArea || p.area_sqft} m²</div>}
                                             </div>
                                             <Link href={`/property/${p.id}`} className="mt-auto block text-center w-full py-3 border-2 border-primary dark:border-primary-fixed-dim text-primary dark:text-primary-fixed-dim rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary-fixed-dim dark:hover:text-primary transition-colors font-label-md">View Details</Link>
                                         </div>

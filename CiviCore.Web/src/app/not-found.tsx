@@ -10,7 +10,7 @@ export default function NotFound() {
         <div className="relative mb-8 flex items-center justify-center">
           <div className="absolute w-40 h-40 rounded-full bg-primary/5 dark:bg-primary-fixed-dim/5 animate-ping" />
           <div className="relative w-28 h-28 rounded-full bg-primary/10 dark:bg-primary-fixed-dim/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-6xl text-primary dark:text-primary-fixed-dim">
+            <span className="material-symbols-outlined text-6xl text-primary dark:text-primary-fixed-dim" aria-hidden="true">
               search_off
             </span>
           </div>
@@ -31,14 +31,14 @@ export default function NotFound() {
             href="/"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:opacity-90 transition-all duration-200 shadow-lg shadow-primary/20"
           >
-            <span className="material-symbols-outlined text-[18px]">home</span>
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">home</span>
             Kembali ke Beranda
           </Link>
           <button
             onClick={() => window.history.back()}
             className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-border-subtle dark:border-primary-container/50 rounded-xl font-semibold text-on-surface dark:text-on-primary hover:bg-surface-container-low dark:hover:bg-primary-container/20 transition-all duration-200"
           >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
             Kembali
           </button>
         </div>

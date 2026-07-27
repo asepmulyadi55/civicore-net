@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     apple: '/logo.png',
   },
   alternates: {
-    canonical: SITE_URL,
+    canonical: './',
   },
   openGraph: {
     siteName: "Dwipapuri Residence",

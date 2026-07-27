@@ -95,7 +95,7 @@ export default function MemorableMoments({ moments = {}, pastEvents = [], loadin
                             style={{ background: '#1C2D27', color: '#FAF9F6', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                         >
                             View Full Archive
-                            <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+                            <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1" aria-hidden="true">arrow_forward</span>
                         </a>
                     </div>
                 )}

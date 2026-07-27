@@ -67,7 +67,7 @@ export default function BuletinPage() {
                     <div>
                         <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
                             <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Home</Link>
-                            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                            <span className="material-symbols-outlined text-[14px]" aria-hidden="true">chevron_right</span>
                             <span className="text-on-surface dark:text-on-primary">Bulletins</span>
                         </div>
                         <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim mb-4">{settings.title || 'Bulletins'}</h1>
@@ -75,7 +75,7 @@ export default function BuletinPage() {
                     </div>
 
                     <div className="w-full md:w-auto relative">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-on-primary/50 pointer-events-none">search</span>
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-on-primary/50 pointer-events-none" aria-hidden="true">search</span>
                         <input
                             type="text"
                             placeholder="Search bulletins..."
@@ -88,7 +88,7 @@ export default function BuletinPage() {
 
                 {paginatedBulletins.length === 0 ? (
                     <div className="py-20 text-center bg-surface dark:bg-primary-container rounded-2xl border border-border-subtle/50 dark:border-primary-container/50">
-                        <span className="material-symbols-outlined text-4xl text-on-surface-variant dark:text-on-primary/50 mb-2">article</span>
+                        <span className="material-symbols-outlined text-4xl text-on-surface-variant dark:text-on-primary/50 mb-2" aria-hidden="true">article</span>
                         <h3 className="font-headline-sm text-headline-sm text-primary dark:text-on-primary mb-2">No Bulletins Found</h3>
                         <p className="text-on-surface-variant dark:text-on-primary/70">Try adjusting your search criteria.</p>
                     </div>
@@ -114,7 +114,7 @@ export default function BuletinPage() {
                                 <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
                                     <Link className="text-[#b45309] dark:text-[#d97706] font-label-md inline-flex items-center group/link" href={bulletin.url || `/bulletins/${bulletin.id}`}>
                                         <span className="group-hover/link:underline">Read Full Bulletin</span>
-                                        <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
+                                        <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform" aria-hidden="true">arrow_right_alt</span>
                                     </Link>
                                 </div>
                             </div>
@@ -130,7 +130,7 @@ export default function BuletinPage() {
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             className="p-2 rounded-lg border border-border-subtle dark:border-primary-container disabled:opacity-50 hover:bg-surface dark:hover:bg-primary-container transition-colors"
                         >
-                            <span className="material-symbols-outlined text-on-surface dark:text-on-primary">chevron_left</span>
+                            <span className="material-symbols-outlined text-on-surface dark:text-on-primary" aria-hidden="true">chevron_left</span>
                         </button>
 
                         {Array.from({ length: totalPages }).map((_, idx) => {
@@ -152,7 +152,7 @@ export default function BuletinPage() {
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             className="p-2 rounded-lg border border-border-subtle dark:border-primary-container disabled:opacity-50 hover:bg-surface dark:hover:bg-primary-container transition-colors"
                         >
-                            <span className="material-symbols-outlined text-on-surface dark:text-on-primary">chevron_right</span>
+                            <span className="material-symbols-outlined text-on-surface dark:text-on-primary" aria-hidden="true">chevron_right</span>
                         </button>
                     </div>
                 )}

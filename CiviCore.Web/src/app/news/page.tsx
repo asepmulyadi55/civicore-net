@@ -118,7 +118,7 @@ export default function NewsPage() {
                     <div className="mb-10">
                         <div className="flex items-center space-x-2 text-text-muted dark:text-on-primary/70 font-label-sm text-label-sm mb-4">
                             <Link className="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="/">Beranda</Link>
-                            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                            <span className="material-symbols-outlined text-[14px]" aria-hidden="true">chevron_right</span>
                             <span className="text-on-surface dark:text-on-primary">Berita</span>
                         </div>
                         <h1 className="text-display-lg-mobile md:text-display-lg font-display-lg text-primary dark:text-primary-fixed-dim">
@@ -130,7 +130,7 @@ export default function NewsPage() {
                     {/* Filters */}
                     <div className="flex flex-col sm:flex-row gap-4 mb-6">
                         <div className="relative flex-1 sm:max-w-sm">
-                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted dark:text-on-primary/50">search</span>
+                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted dark:text-on-primary/50" aria-hidden="true">search</span>
                             <input
                                 type="text"
                                 value={search}
@@ -194,7 +194,7 @@ export default function NewsPage() {
                     {/* Grid */}
                     {paginated.length === 0 ? (
                         <div className="text-center py-20 rounded-2xl bg-surface dark:bg-primary-container border border-border-subtle/50 dark:border-primary-container/50">
-                            <span className="material-symbols-outlined text-5xl mb-4 text-text-muted dark:text-on-primary/30">newspaper</span>
+                            <span className="material-symbols-outlined text-5xl mb-4 text-text-muted dark:text-on-primary/30" aria-hidden="true">newspaper</span>
                             <p className="font-headline-sm text-primary dark:text-on-primary">Tidak ada berita ditemukan</p>
                             {hasFilters && (
                                 <button onClick={clearFilters} className="mt-4 text-[#b45309] dark:text-[#d97706] hover:underline">
@@ -229,7 +229,7 @@ export default function NewsPage() {
                                             <div className="mt-auto border-t border-border-subtle/50 dark:border-primary-container/50 pt-4 flex justify-between items-center">
                                                 <span className="text-primary dark:text-primary-fixed-dim font-label-md inline-flex items-center group/link">
                                                     <span className="group-hover/link:underline">Lihat Detail</span>
-                                                    <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform">arrow_right_alt</span>
+                                                    <span className="material-symbols-outlined text-sm ml-1 group-hover/link:translate-x-1 transition-transform" aria-hidden="true">arrow_right_alt</span>
                                                 </span>
                                                 <span className="text-label-sm text-text-muted dark:text-on-primary/50">
                                                     {ev.date ? new Date(ev.date).getFullYear() : ''}
@@ -250,7 +250,7 @@ export default function NewsPage() {
                                 onClick={() => setPage(p => p - 1)}
                                 className="w-10 h-10 rounded-lg flex items-center justify-center border border-border-subtle/50 dark:border-primary-container/50 disabled:opacity-50 text-primary dark:text-on-primary hover:bg-surface-container dark:hover:bg-primary-container transition-colors"
                             >
-                                <span className="material-symbols-outlined">chevron_left</span>
+                                <span className="material-symbols-outlined" aria-hidden="true">chevron_left</span>
                             </button>
                             {pages.map((p, i) =>
                                 typeof p === 'string' ? (
@@ -273,7 +273,7 @@ export default function NewsPage() {
                                 onClick={() => setPage(p => p + 1)}
                                 className="w-10 h-10 rounded-lg flex items-center justify-center border border-border-subtle/50 dark:border-primary-container/50 disabled:opacity-50 text-primary dark:text-on-primary hover:bg-surface-container dark:hover:bg-primary-container transition-colors"
                             >
-                                <span className="material-symbols-outlined">chevron_right</span>
+                                <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
                             </button>
                         </div>
                     )}

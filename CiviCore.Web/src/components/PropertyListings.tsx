@@ -91,7 +91,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
                         style={{ color: viewAllColor, borderColor: viewAllBorderColor, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >
                         View All
-                        <span className="material-symbols-outlined text-base">arrow_forward</span>
+                        <span className="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
                     </Link>
                 )}
             </div>
@@ -146,7 +146,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
                                 {/* Location */}
                                 {listing.location_label && (
                                     <p className="text-xs flex items-center gap-1" style={{ color: mutedColor }}>
-                                        <span className="material-symbols-outlined text-xs">location_on</span>
+                                        <span className="material-symbols-outlined text-xs" aria-hidden="true">location_on</span>
                                         {listing.location_label}
                                     </p>
                                 )}
@@ -156,12 +156,12 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
                                     <div className="flex items-center gap-3 text-xs" style={{ color: mutedColor }}>
                                         {listing.bedrooms != null && (
                                             <span className="flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-xs">bed</span> {listing.bedrooms}
+                                                <span className="material-symbols-outlined text-xs" aria-hidden="true">bed</span> {listing.bedrooms}
                                             </span>
                                         )}
                                         {listing.bathrooms != null && (
                                             <span className="flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-xs">bathroom</span> {listing.bathrooms}
+                                                <span className="material-symbols-outlined text-xs" aria-hidden="true">bathroom</span> {listing.bathrooms}
                                             </span>
                                         )}
                                         {listing.land_area && (
@@ -182,7 +182,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
                                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
                                         style={{ background: isDark ? 'rgba(212,175,55,0.15)' : '#fefce8', color: '#D4AF37', border: `1px solid ${isDark ? 'rgba(212,175,55,0.3)' : '#fde68a'}`, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                                     >
-                                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                                        <span className="material-symbols-outlined text-sm" aria-hidden="true">open_in_new</span>
                                         Lihat Detail
                                     </Link>
                                     {!isSoldOrRented && listing.contact_phone && (
@@ -193,7 +193,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
                                             className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
                                             style={{ background: isDark ? 'rgba(212,175,55,0.15)' : 'rgba(28,45,39,0.06)', color: viewAllColor, border: `1px solid ${viewAllBorderColor}` }}
                                         >
-                                            <span className="material-symbols-outlined text-sm">call</span>
+                                            <span className="material-symbols-outlined text-sm" aria-hidden="true">call</span>
                                         </a>
                                     )}
                                 </div>
@@ -212,7 +212,7 @@ export default function PropertyListings({ listings = [], loading, isDark = fals
                         style={{ color: viewAllColor, borderColor: viewAllBorderColor, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >
                         View All
-                        <span className="material-symbols-outlined text-base">arrow_forward</span>
+                        <span className="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
                     </Link>
                 </div>
             )}

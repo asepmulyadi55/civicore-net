@@ -90,7 +90,7 @@ export default function Header({ isDark = false, toggleDark }: HeaderProps) {
                 style={{ color: iconColor }}
                 aria-label="Toggle dark mode"
               >
-                <span className="material-symbols-outlined text-[20px]">
+                <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                   {isDark ? 'light_mode' : 'dark_mode'}
                 </span>
               </button>
@@ -101,7 +101,7 @@ export default function Header({ isDark = false, toggleDark }: HeaderProps) {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
-              <span className="material-symbols-outlined">
+              <span className="material-symbols-outlined" aria-hidden="true">
                 {menuOpen ? 'close' : 'menu'}
               </span>
             </button>
@@ -143,7 +143,7 @@ export default function Header({ isDark = false, toggleDark }: HeaderProps) {
                 onMouseEnter={e => e.currentTarget.style.color = iconHoverColor}
                 onMouseLeave={e => e.currentTarget.style.color = iconColor}
               >
-                <span className="material-symbols-outlined text-[20px]">
+                <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                   {isDark ? 'light_mode' : 'dark_mode'}
                 </span>
               </button>
