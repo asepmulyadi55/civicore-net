@@ -61,6 +61,7 @@ export default function RootLayout({
           }
         `}</style>
         <script src="https://www.google.com/recaptcha/api.js?render=6LcYAU4tAAAAAIOUBvSBiUsCre0iHTwZRds2WpI5" async defer></script>
+        <AnalyticsScript />
       </head>
       <body className="min-h-screen flex flex-col">
         <Suspense fallback={null}>
@@ -79,7 +80,7 @@ export default function RootLayout({
             }),
           }}
         />
-        <AnalyticsScript />
+
       </body>
     </html>
   );
